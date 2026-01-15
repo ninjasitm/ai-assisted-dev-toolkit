@@ -1,0 +1,11 @@
+---
+description: Anti-patterns to avoid when editing templates
+globs:
+alwaysApply: agent
+---
+
+- No hardcoded project-specific values in templates (use placeholders).
+- No breaking `{{PLACEHOLDER}}` syntax when editing.
+- No undocumented placeholders (all must be in README.md).
+- No mixing root config with template files.
+- No framework-specific assumptions without conditional sections.

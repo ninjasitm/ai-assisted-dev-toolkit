@@ -1,0 +1,11 @@
+---
+description: Toolkit repository context and structure
+globs:
+alwaysApply: agent
+---
+
+- This is a template repository for AI development instructions.
+- Templates in `src/repo/` are for single repositories.
+- Templates in `src/monorepo/` are for monorepos.
+- Root `.cursor/` and `.github/` are this toolkit's own configuration.
+- Review README.md for placeholder reference before editing.

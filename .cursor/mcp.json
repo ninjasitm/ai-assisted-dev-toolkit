@@ -1,0 +1,14 @@
+{
+    "mcpServers": {
+        "motiff": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@motiffcom/motiff-mcp-server@latest"
+            ],
+            "env": {
+                "MOTIFF_TOKEN": "${MOTIFF_TOKEN}"
+            }
+        }
+    }
+}

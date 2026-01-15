@@ -1,0 +1,10 @@
+---
+description: Version control standards for template repository
+globs:
+alwaysApply: agent
+---
+
+- Use conventional commit format: `feat(scope):`, `fix(scope):`, `docs(scope):`.
+- Scope should indicate template type: `repo`, `monorepo`, `root`.
+- Example: `feat(repo): add TypeScript configuration template`.
+- Update README.md placeholder table when adding new placeholders.

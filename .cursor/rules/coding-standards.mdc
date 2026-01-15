@@ -1,0 +1,11 @@
+---
+description: Template file editing standards
+globs:
+alwaysApply: agent
+---
+
+- Preserve `{{PLACEHOLDER}}` syntax when editing templates.
+- Use SCREAMING_SNAKE_CASE for placeholder names.
+- Keep templates generic and framework-agnostic where possible.
+- Document all new placeholders in README.md.
+- Use consistent formatting across all template files.
