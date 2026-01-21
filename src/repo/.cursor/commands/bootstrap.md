@@ -145,21 +145,121 @@ You are helping to bootstrap AI instructions for this project by analyzing the c
 
    - **Spring Boot**: Controllers, Services, Repositories, JPA entities
 
-7. **Report Completion**:
+7. **Recommend and Install AI Agent Skills**:
+
+   Based on the detected ecosystem and frameworks, recommend relevant skills from [skills.sh](https://skills.sh/).
+
+   **Core Skills (Always Recommend):**
+
+   | Skill Repository           | Skills Included                       | Purpose                             |
+   | -------------------------- | ------------------------------------- | ----------------------------------- |
+   | `obra/superpowers`         | TDD, debugging, planning, code review | Development workflow best practices |
+   | `trailofbits/skills`       | Semgrep, security analysis            | Security and code quality           |
+   | `softaworks/agent-toolkit` | README writing, clear writing         | Documentation quality               |
+
+   **Framework-Specific Skills:**
+
+   | Detected          | Skill Repository                      | Install Command                                      |
+   | ----------------- | ------------------------------------- | ---------------------------------------------------- |
+   | React/Next.js     | `vercel-labs/agent-skills`            | `npx skills add vercel-labs/agent-skills`            |
+   | Vue/Nuxt          | `onmax/nuxt-skills`                   | `npx skills add onmax/nuxt-skills`                   |
+   | Expo/React Native | `expo/skills`                         | `npx skills add expo/skills`                         |
+   | Better-Auth       | `better-auth/skills`                  | `npx skills add better-auth/skills`                  |
+   | NestJS            | `Kadajett/agent-nestjs-skills`        | `npx skills add Kadajett/agent-nestjs-skills`        |
+   | Remotion          | `remotion-dev/skills`                 | `npx skills add remotion-dev/skills`                 |
+   | Elysia.js         | `elysiajs/skills`                     | `npx skills add elysiajs/skills`                     |
+   | Three.js          | `CloudAI-X/threejs-skills`            | `npx skills add CloudAI-X/threejs-skills`            |
+   | Convex            | `waynesutton/convexskills`            | `npx skills add waynesutton/convexskills`            |
+   | TanStack Query    | `jezweb/claude-skills`                | `npx skills add jezweb/claude-skills`                |
+   | TailwindCSS       | `expo/skills`                         | `npx skills add expo/skills`                         |
+   | shadcn/ui         | `giuseppe-trisciuoglio/developer-kit` | `npx skills add giuseppe-trisciuoglio/developer-kit` |
+   | Stripe            | `anthropics/claude-plugins-official`  | `npx skills add anthropics/claude-plugins-official`  |
+   | SwiftUI/iOS       | `Dimillian/Skills`                    | `npx skills add Dimillian/Skills`                    |
+   | Obsidian          | `kepano/obsidian-skills`              | `npx skills add kepano/obsidian-skills`              |
+
+   **Language-Specific Skills:**
+
+   | Language/Framework | Skill Repository                      | Install Command                                                                     |
+   | ------------------ | ------------------------------------- | ----------------------------------------------------------------------------------- |
+   | PHP                | `vapvarun/claude-backup` (php)        | `npx skills add vapvarun/claude-backup --skill "php"`                               |
+   | Laravel            | `vapvarun/claude-backup` (laravel)    | `npx skills add vapvarun/claude-backup --skill "laravel"`                           |
+   | Python             | `siviter-xyz/dot-agent` (python)      | `npx skills add siviter-xyz/dot-agent --skill "python"`                             |
+   | Django             | `vintasoftware/django-ai-plugins`     | `npx skills add vintasoftware/django-ai-plugins --skill "django-expert"`            |
+   | Next.js            | `sickn33/antigravity-awesome-skills`  | `npx skills add sickn33/antigravity-awesome-skills --skill "nextjs-best-practices"` |
+   | React              | `vercel-labs/agent-skills`            | `npx skills add vercel-labs/agent-skills --skill "vercel-react-best-practices"`     |
+   | Vue                | `onmax/nuxt-skills` (vue)             | `npx skills add onmax/nuxt-skills --skill "vue"`                                    |
+   | Nuxt               | `onmax/nuxt-skills` (nuxt)            | `npx skills add onmax/nuxt-skills --skill "nuxt"`                                   |
+   | Expo               | `expo/skills`                         | `npx skills add expo/skills`                                                        |
+   | TypeScript         | `pproenca/dot-skills` (typescript)    | `npx skills add pproenca/dot-skills`                                                |
+   | Advanced Types     | `wshobson/agents` (ts-advanced-types) | `npx skills add wshobson/agents`                                                    |
+
+   **Skill Creation for Unsupported Frameworks:**
+
+   Use `npx skills add anthropics/skills` (includes `skill-creator`) to create custom skills for frameworks not yet in the ecosystem.
+
+   **Present Skills Recommendation:**
+
+   ```
+   🎯 Recommended AI Agent Skills
+
+   Based on your project ({{FRAMEWORK}}/{{LANGUAGE}}), these skills will enhance your AI assistant:
+
+   📦 Core Skills (recommended for all projects):
+   - npx skills add obra/superpowers
+   - npx skills add trailofbits/skills
+   - npx skills add softaworks/agent-toolkit
+
+   🔧 Framework-Specific Skills:
+   - npx skills add {{FRAMEWORK_SKILL_REPO}}
+
+   Install all recommended skills? (Y/n)
+   ```
+
+   **On Confirmation:**
+
+   - Execute skill installation commands
+   - Create `.cursor/skills/` directory structure
+   - Update `AGENTS.md` to reference installed skills
+
+   **Skills Directory Structure After Installation:**
+
+   ```
+   .cursor/                  # or .github/ for GitHub Copilot
+   ├── rules/                # Cursor IDE rules
+   ├── commands/             # Custom commands
+   └── skills/               # Installed skills
+       ├── superpowers/      # From obra/superpowers
+       │   └── SKILL.md
+       ├── agent-skills/     # From vercel-labs/agent-skills
+       │   └── SKILL.md
+       └── {skill-name}/     # Each skill by name (not org/repo)
+           └── SKILL.md
+   ```
+
+   **Note:** Skills are installed by skill name, not org/repo path. For example, `npx skills add obra/superpowers` installs to `.cursor/skills/superpowers/`.
+
+8. **Report Completion**:
 
    ```
    ✅ Bootstrap Complete!
 
-   Updated Files:
+   📁 Updated Files:
    - AGENTS.md (with {{LANGUAGE}}/{{FRAMEWORK}} patterns)
    - .github/copilot-instructions.md
    - .github/instructions/project-context.instructions.md
    - ... (list all updated files)
 
+   🎯 Installed Skills:
+   - obra/superpowers (TDD, debugging, planning)
+   - {{FRAMEWORK_SKILLS}} (framework best practices)
+   - ... (list installed skills)
+
    Next Steps:
    1. Review the generated files
    2. Add any project-specific patterns to AGENTS.md
    3. Customize prompts and commands as needed
+   4. Browse more skills at https://skills.sh/
+   5. Create custom skills for organization-specific patterns
    ```
 
 ## Example Workflows
