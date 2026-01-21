@@ -182,7 +182,91 @@ Add language and framework-specific patterns to `AGENTS.md`:
 
 - Spring Boot: Controllers, Services, JPA
 
-### Step 6: Completion Report
+### Step 6: AI Agent Skills Recommendation
+
+Based on detected ecosystem and frameworks, recommend relevant skills from [skills.sh](https://skills.sh/) and [agentskills.io](https://agentskills.io/).
+
+**Core Skills (Always Recommend):**
+
+| Skill Repository           | Purpose                                                    |
+| -------------------------- | ---------------------------------------------------------- |
+| `obra/superpowers`         | TDD, systematic debugging, planning, code review workflows |
+| `trailofbits/skills`       | Security analysis, Semgrep, property-based testing         |
+| `softaworks/agent-toolkit` | README writing, clear documentation                        |
+
+**Framework-Specific Skills:**
+
+| Detected Framework | Skill Repository                      |
+| ------------------ | ------------------------------------- |
+| React/Next.js      | `vercel-labs/agent-skills`            |
+| Vue/Nuxt           | `onmax/nuxt-skills`                   |
+| Expo/React Native  | `expo/skills`                         |
+| Better-Auth        | `better-auth/skills`                  |
+| NestJS             | `Kadajett/agent-nestjs-skills`        |
+| Elysia.js          | `elysiajs/skills`                     |
+| Three.js           | `CloudAI-X/threejs-skills`            |
+| Remotion           | `remotion-dev/skills`                 |
+| Convex             | `waynesutton/convexskills`            |
+| TanStack Query     | `jezweb/claude-skills`                |
+| shadcn/ui          | `giuseppe-trisciuoglio/developer-kit` |
+| SwiftUI/iOS        | `Dimillian/Skills`                    |
+| Obsidian           | `kepano/obsidian-skills`              |
+| Stripe Integration | `anthropics/claude-plugins-official`  |
+
+**Language-Specific Skills:**
+
+| Language/Framework | Skill Repository                      | Install Command                                                                     |
+| ------------------ | ------------------------------------- | ----------------------------------------------------------------------------------- |
+| PHP                | `vapvarun/claude-backup` (php)        | `npx skills add vapvarun/claude-backup --skill "php"`                               |
+| Laravel            | `vapvarun/claude-backup` (laravel)    | `npx skills add vapvarun/claude-backup --skill "laravel"`                           |
+| Python             | `siviter-xyz/dot-agent` (python)      | `npx skills add siviter-xyz/dot-agent --skill "python"`                             |
+| Django             | `vintasoftware/django-ai-plugins`     | `npx skills add vintasoftware/django-ai-plugins --skill "django-expert"`            |
+| Next.js            | `sickn33/antigravity-awesome-skills`  | `npx skills add sickn33/antigravity-awesome-skills --skill "nextjs-best-practices"` |
+| React              | `vercel-labs/agent-skills`            | `npx skills add vercel-labs/agent-skills --skill "vercel-react-best-practices"`     |
+| Vue                | `onmax/nuxt-skills` (vue)             | `npx skills add onmax/nuxt-skills --skill "vue"`                                    |
+| Nuxt               | `onmax/nuxt-skills` (nuxt)            | `npx skills add onmax/nuxt-skills --skill "nuxt"`                                   |
+| Expo               | `expo/skills`                         | `npx skills add expo/skills`                                                        |
+| TypeScript         | `pproenca/dot-skills` (typescript)    | `npx skills add pproenca/dot-skills`                                                |
+| Advanced Types     | `wshobson/agents` (ts-advanced-types) | `npx skills add wshobson/agents`                                                    |
+
+**Skill Creation for Unsupported Frameworks:**
+
+Use `npx skills add anthropics/skills` (includes `skill-creator`) to create custom skills.
+
+**Present Recommendation:**
+
+````markdown
+## 🎯 Recommended AI Agent Skills
+
+Based on your project ({{FRAMEWORK}}/{{LANGUAGE}}):
+
+### Core Skills (recommended for all projects)
+
+```bash
+npx skills add obra/superpowers
+npx skills add trailofbits/skills
+npx skills add softaworks/agent-toolkit
+```
+````
+
+### Framework-Specific Skills
+
+```bash
+npx skills add {{FRAMEWORK_SKILL_REPO}}
+```
+
+### Install All?
+
+Would you like to install these skills now? (Y/n)
+
+````
+
+**On Confirmation:**
+- Run skill installation commands
+- Skills installed to `.github/skills/{skill-name}/` (by skill name, not org/repo)
+- Update `AGENTS.md` to reference installed skills
+
+### Step 7: Completion Report
 
 ```markdown
 ## ✅ Bootstrap Complete!
@@ -198,13 +282,21 @@ Add language and framework-specific patterns to `AGENTS.md`:
 - [x] .cursor/commands/\*.md
 - [x] .github/prompts/\*.prompt.md
 
+### Installed Skills
+
+- [x] obra/superpowers - Development workflow
+- [x] trailofbits/skills - Security & quality
+- [x] {{FRAMEWORK_SKILL}} - Framework patterns
+
 ### Next Steps
 
 1. Review generated content in AGENTS.md
 2. Add project-specific patterns and conventions
 3. Customize prompts for your workflow
 4. Test commands with your codebase
-```
+5. Browse more skills at https://skills.sh/
+6. Create custom skills at https://agentskills.io/specification
+````
 
 ## Ecosystem Detection Logic
 

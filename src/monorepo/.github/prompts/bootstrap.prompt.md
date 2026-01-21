@@ -219,7 +219,103 @@ Generate appropriate patterns for each app based on framework:
 - Use libs/domain for entities
 ```
 
-### Step 8: Completion Report
+### Step 8: AI Agent Skills Recommendation
+
+Based on detected ecosystem and frameworks, recommend relevant skills from [skills.sh](https://skills.sh/) and [agentskills.io](https://agentskills.io/).
+
+**Core Skills (Always Recommend):**
+
+| Skill Repository           | Purpose                                                    |
+| -------------------------- | ---------------------------------------------------------- |
+| `obra/superpowers`         | TDD, systematic debugging, planning, code review workflows |
+| `trailofbits/skills`       | Security analysis, Semgrep, property-based testing         |
+| `softaworks/agent-toolkit` | README writing, clear documentation                        |
+
+**Framework-Specific Skills:**
+
+| Detected Framework | Skill Repository                      |
+| ------------------ | ------------------------------------- |
+| React/Next.js      | `vercel-labs/agent-skills`            |
+| Vue/Nuxt           | `onmax/nuxt-skills`                   |
+| Expo/React Native  | `expo/skills`                         |
+| Better-Auth        | `better-auth/skills`                  |
+| NestJS             | `Kadajett/agent-nestjs-skills`        |
+| Elysia.js          | `elysiajs/skills`                     |
+| Three.js           | `CloudAI-X/threejs-skills`            |
+| Remotion           | `remotion-dev/skills`                 |
+| Convex             | `waynesutton/convexskills`            |
+| TanStack Query     | `jezweb/claude-skills`                |
+| shadcn/ui          | `giuseppe-trisciuoglio/developer-kit` |
+| SwiftUI/iOS        | `Dimillian/Skills`                    |
+| Obsidian           | `kepano/obsidian-skills`              |
+| Stripe Integration | `anthropics/claude-plugins-official`  |
+
+**Language-Specific Skills:**
+
+| Language/Framework | Skill Repository                      | Install Command                                                                     |
+| ------------------ | ------------------------------------- | ----------------------------------------------------------------------------------- |
+| PHP                | `vapvarun/claude-backup` (php)        | `npx skills add vapvarun/claude-backup --skill "php"`                               |
+| Laravel            | `vapvarun/claude-backup` (laravel)    | `npx skills add vapvarun/claude-backup --skill "laravel"`                           |
+| Python             | `siviter-xyz/dot-agent` (python)      | `npx skills add siviter-xyz/dot-agent --skill "python"`                             |
+| Django             | `vintasoftware/django-ai-plugins`     | `npx skills add vintasoftware/django-ai-plugins --skill "django-expert"`            |
+| Next.js            | `sickn33/antigravity-awesome-skills`  | `npx skills add sickn33/antigravity-awesome-skills --skill "nextjs-best-practices"` |
+| React              | `vercel-labs/agent-skills`            | `npx skills add vercel-labs/agent-skills --skill "vercel-react-best-practices"`     |
+| Vue                | `onmax/nuxt-skills` (vue)             | `npx skills add onmax/nuxt-skills --skill "vue"`                                    |
+| Nuxt               | `onmax/nuxt-skills` (nuxt)            | `npx skills add onmax/nuxt-skills --skill "nuxt"`                                   |
+| Expo               | `expo/skills`                         | `npx skills add expo/skills`                                                        |
+| TypeScript         | `pproenca/dot-skills` (typescript)    | `npx skills add pproenca/dot-skills`                                                |
+| Advanced Types     | `wshobson/agents` (ts-advanced-types) | `npx skills add wshobson/agents`                                                    |
+
+**Skill Creation for Unsupported Frameworks:**
+
+Use `npx skills add anthropics/skills` (includes `skill-creator`) to create custom skills.
+
+**Monorepo-Specific Considerations:**
+
+- Install skills at workspace root (`.github/skills/{skill-name}/` or `.cursor/skills/{skill-name}/`)
+- Skills are installed by skill name, not org/repo path (e.g., `superpowers/` not `obra/superpowers/`)
+- Consider per-app skills if apps use different frameworks
+- Update root `AGENTS.md` to reference installed skills
+
+**Present Recommendation:**
+
+````markdown
+## 🎯 Recommended AI Agent Skills
+
+Based on your monorepo ({{BUILD_SYSTEM}}/{{LANGUAGE}}):
+
+### Core Skills (recommended for all projects)
+
+```bash
+npx skills add obra/superpowers
+npx skills add trailofbits/skills
+npx skills add softaworks/agent-toolkit
+```
+````
+
+### Framework-Specific Skills
+
+```bash
+# For web app (Next.js)
+npx skills add vercel-labs/agent-skills
+
+# For api (Hono/Elysia)
+npx skills add elysiajs/skills
+```
+
+### Install All?
+
+Would you like to install these skills now? (Y/n)
+
+````
+
+**On Confirmation:**
+- Run skill installation commands at workspace root
+- Skills installed to `.github/skills/{skill-name}/` (by skill name, not org/repo)
+- Update root `AGENTS.md` to reference installed skills
+- Add skill references to relevant app `AGENTS.md` files
+
+### Step 9: Completion Report
 
 ```markdown
 ## ✅ Bootstrap Complete!
@@ -247,13 +343,21 @@ Generate appropriate patterns for each app based on framework:
 - [x] {{PACKAGES_DIR}}/shared/README.md
 - [x] {{PACKAGES_DIR}}/core/README.md
 
+### Installed Skills
+
+- [x] obra/superpowers - Development workflow
+- [x] trailofbits/skills - Security & quality
+- [x] {{FRAMEWORK_SKILL}} - Framework patterns
+
 ### Next Steps
 
 1. Review AGENTS.md files for accuracy
 2. Add project-specific patterns
 3. Customize prompts and commands
 4. Test with your workflow
-```
+5. Browse more skills at https://skills.sh/
+6. Create custom skills at https://agentskills.io/specification
+````
 
 ## Monorepo Detection Logic
 

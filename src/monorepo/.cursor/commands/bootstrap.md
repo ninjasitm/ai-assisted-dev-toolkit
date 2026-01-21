@@ -135,33 +135,124 @@ You are helping to bootstrap AI instructions for this monorepo by analyzing the 
    - State management patterns
    - API integration patterns
 
-9. **Report Completion**:
+9. **Recommend and Install AI Agent Skills**:
+
+   Based on detected ecosystem and frameworks, recommend relevant skills from [skills.sh](https://skills.sh/) and [agentskills.io](https://agentskills.io/).
+
+   **Core Skills (Always Recommend):**
+
+   | Skill Repository           | Purpose                                            |
+   | -------------------------- | -------------------------------------------------- |
+   | `obra/superpowers`         | TDD, systematic debugging, planning, code review   |
+   | `trailofbits/skills`       | Security analysis, Semgrep, property-based testing |
+   | `softaworks/agent-toolkit` | README writing, clear documentation                |
+
+   **Framework-Specific Skills:**
+
+   | Detected Framework | Skill Repository                      |
+   | ------------------ | ------------------------------------- |
+   | React/Next.js      | `vercel-labs/agent-skills`            |
+   | Vue/Nuxt           | `onmax/nuxt-skills`                   |
+   | Expo/React Native  | `expo/skills`                         |
+   | Better-Auth        | `better-auth/skills`                  |
+   | NestJS             | `Kadajett/agent-nestjs-skills`        |
+   | Elysia.js          | `elysiajs/skills`                     |
+   | Three.js           | `CloudAI-X/threejs-skills`            |
+   | Remotion           | `remotion-dev/skills`                 |
+   | Convex             | `waynesutton/convexskills`            |
+   | TanStack Query     | `jezweb/claude-skills`                |
+   | shadcn/ui          | `giuseppe-trisciuoglio/developer-kit` |
+   | SwiftUI/iOS        | `Dimillian/Skills`                    |
+   | Obsidian           | `kepano/obsidian-skills`              |
+   | Stripe Integration | `anthropics/claude-plugins-official`  |
+
+   **Language-Specific Skills:**
+
+   | Language/Framework | Skill Repository                      | Install Command                                                                     |
+   | ------------------ | ------------------------------------- | ----------------------------------------------------------------------------------- |
+   | PHP                | `vapvarun/claude-backup` (php)        | `npx skills add vapvarun/claude-backup --skill "php"`                               |
+   | Laravel            | `vapvarun/claude-backup` (laravel)    | `npx skills add vapvarun/claude-backup --skill "laravel"`                           |
+   | Python             | `siviter-xyz/dot-agent` (python)      | `npx skills add siviter-xyz/dot-agent --skill "python"`                             |
+   | Django             | `vintasoftware/django-ai-plugins`     | `npx skills add vintasoftware/django-ai-plugins --skill "django-expert"`            |
+   | Next.js            | `sickn33/antigravity-awesome-skills`  | `npx skills add sickn33/antigravity-awesome-skills --skill "nextjs-best-practices"` |
+   | React              | `vercel-labs/agent-skills`            | `npx skills add vercel-labs/agent-skills --skill "vercel-react-best-practices"`     |
+   | Vue                | `onmax/nuxt-skills` (vue)             | `npx skills add onmax/nuxt-skills --skill "vue"`                                    |
+   | Nuxt               | `onmax/nuxt-skills` (nuxt)            | `npx skills add onmax/nuxt-skills --skill "nuxt"`                                   |
+   | Expo               | `expo/skills`                         | `npx skills add expo/skills`                                                        |
+   | TypeScript         | `pproenca/dot-skills` (typescript)    | `npx skills add pproenca/dot-skills`                                                |
+   | Advanced Types     | `wshobson/agents` (ts-advanced-types) | `npx skills add wshobson/agents`                                                    |
+
+   **Skill Creation for Unsupported Frameworks:**
+
+   Use `npx skills add anthropics/skills` (includes `skill-creator`) to create custom skills.
+
+   **Monorepo-Specific Considerations:**
+
+   - Install skills at workspace root (`.cursor/skills/{skill-name}/` or `.github/skills/{skill-name}/`)
+   - Skills are installed by skill name, not org/repo path (e.g., `superpowers/` not `obra/superpowers/`)
+   - Consider per-app skills if apps use different frameworks
+   - Update root `AGENTS.md` to reference installed skills
+
+   **Present Recommendation:**
 
    ```
-   ✅ Monorepo Bootstrap Complete!
+   🎯 Recommended AI Agent Skills
 
-   Ecosystem: {{LANGUAGE}} / {{BUILD_SYSTEM}}
+   Based on your monorepo ({{BUILD_SYSTEM}}/{{LANGUAGE}}):
 
-   Root Files Updated:
-   - AGENTS.md
-   - .github/copilot-instructions.md
-   - .github/instructions/*.instructions.md
-   - .cursor/rules/*.mdc
-   - .cursor/commands/*.md
+   Core Skills (recommended for all projects):
+   npx skills add obra/superpowers
+   npx skills add trailofbits/skills
+   npx skills add softaworks/agent-toolkit
 
-   App Files Created/Updated:
-   - {{APP_DIR}}/{{APP_1}}/AGENTS.md
-   - {{APP_DIR}}/{{APP_1}}/README.md
+   Framework-Specific Skills:
+   - web (Next.js): npx skills add vercel-labs/agent-skills
+   - api (Hono): npx skills add elysiajs/skills
 
-   Package/Library Files Updated:
-   - {{PACKAGES_DIR}}/{{PACKAGE_1}}/README.md
-
-   Next Steps:
-   1. Review root AGENTS.md for accuracy
-   2. Review each app's AGENTS.md
-   3. Add project-specific patterns
-   4. Customize commands and prompts
+   Install All? (Y/n)
    ```
+
+   **On Confirmation:**
+
+   - Run skill installation commands at workspace root
+   - Skills installed to `.cursor/skills/`
+   - Update root `AGENTS.md` to reference installed skills
+   - Add skill references to relevant app `AGENTS.md` files
+
+10. **Report Completion**:
+
+```
+✅ Monorepo Bootstrap Complete!
+
+Ecosystem: {{LANGUAGE}} / {{BUILD_SYSTEM}}
+
+Root Files Updated:
+- AGENTS.md
+- .github/copilot-instructions.md
+- .github/instructions/*.instructions.md
+- .cursor/rules/*.mdc
+- .cursor/commands/*.md
+
+App Files Created/Updated:
+- {{APP_DIR}}/{{APP_1}}/AGENTS.md
+- {{APP_DIR}}/{{APP_1}}/README.md
+
+Package/Library Files Updated:
+- {{PACKAGES_DIR}}/{{PACKAGE_1}}/README.md
+
+Installed Skills:
+- obra/superpowers - Development workflow
+- trailofbits/skills - Security & quality
+- {{FRAMEWORK_SKILL}} - Framework patterns
+
+Next Steps:
+1. Review root AGENTS.md for accuracy
+2. Review each app's AGENTS.md
+3. Add project-specific patterns
+4. Customize commands and prompts
+5. Browse more skills at https://skills.sh/
+6. Create custom skills at https://agentskills.io/specification
+```
 
 ## Example Workflows
 
