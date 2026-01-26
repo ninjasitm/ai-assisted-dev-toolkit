@@ -252,23 +252,23 @@ Based on detected ecosystem and frameworks, recommend relevant skills from [skil
 
 **Language-Specific Skills:**
 
-| Language/Framework | Skill Repository                      | Install Command                                                                     |
-| ------------------ | ------------------------------------- | ----------------------------------------------------------------------------------- |
-| PHP                | `vapvarun/claude-backup` (php)        | `npx skills add vapvarun/claude-backup --skill "php"`                               |
-| Laravel            | `vapvarun/claude-backup` (laravel)    | `npx skills add vapvarun/claude-backup --skill "laravel"`                           |
-| Python             | `siviter-xyz/dot-agent` (python)      | `npx skills add siviter-xyz/dot-agent --skill "python"`                             |
-| Django             | `vintasoftware/django-ai-plugins`     | `npx skills add vintasoftware/django-ai-plugins --skill "django-expert"`            |
-| Next.js            | `sickn33/antigravity-awesome-skills`  | `npx skills add sickn33/antigravity-awesome-skills --skill "nextjs-best-practices"` |
-| React              | `vercel-labs/agent-skills`            | `npx skills add vercel-labs/agent-skills --skill "vercel-react-best-practices"`     |
-| Vue                | `onmax/nuxt-skills` (vue)             | `npx skills add onmax/nuxt-skills --skill "vue"`                                    |
-| Nuxt               | `onmax/nuxt-skills` (nuxt)            | `npx skills add onmax/nuxt-skills --skill "nuxt"`                                   |
-| Expo               | `expo/skills`                         | `npx skills add expo/skills`                                                        |
-| TypeScript         | `pproenca/dot-skills` (typescript)    | `npx skills add pproenca/dot-skills`                                                |
-| Advanced Types     | `wshobson/agents` (ts-advanced-types) | `npx skills add wshobson/agents`                                                    |
+| Language/Framework | Skill Repository                      | Install Command                                                                        |
+| ------------------ | ------------------------------------- | -------------------------------------------------------------------------------------- |
+| PHP                | `vapvarun/claude-backup` (php)        | `npx -y skills add vapvarun/claude-backup --skill "php"`                               |
+| Laravel            | `vapvarun/claude-backup` (laravel)    | `npx -y skills add vapvarun/claude-backup --skill "laravel"`                           |
+| Python             | `siviter-xyz/dot-agent` (python)      | `npx -y skills add siviter-xyz/dot-agent --skill "python"`                             |
+| Django             | `vintasoftware/django-ai-plugins`     | `npx -y skills add vintasoftware/django-ai-plugins --skill "django-expert"`            |
+| Next.js            | `sickn33/antigravity-awesome-skills`  | `npx -y skills add sickn33/antigravity-awesome-skills --skill "nextjs-best-practices"` |
+| React              | `vercel-labs/agent-skills`            | `npx -y skills add vercel-labs/agent-skills --skill "vercel-react-best-practices"`     |
+| Vue                | `onmax/nuxt-skills` (vue)             | `npx -y skills add onmax/nuxt-skills --skill "vue"`                                    |
+| Nuxt               | `onmax/nuxt-skills` (nuxt)            | `npx -y skills add onmax/nuxt-skills --skill "nuxt"`                                   |
+| Expo               | `expo/skills`                         | `npx -y skills add expo/skills`                                                        |
+| TypeScript         | `pproenca/dot-skills` (typescript)    | `npx -y skills add pproenca/dot-skills`                                                |
+| Advanced Types     | `wshobson/agents` (ts-advanced-types) | `npx -y skills add wshobson/agents`                                                    |
 
 **Skill Creation for Unsupported Frameworks:**
 
-Use `npx skills add anthropics/skills` (includes `skill-creator`) to create custom skills.
+Use `npx -y skills add anthropics/skills` (includes `skill-creator`) to create custom skills.
 
 **Monorepo-Specific Considerations:**
 
@@ -287,9 +287,9 @@ Based on your monorepo ({{BUILD_SYSTEM}}/{{LANGUAGE}}):
 ### Core Skills (recommended for all projects)
 
 ```bash
-npx skills add obra/superpowers
-npx skills add trailofbits/skills
-npx skills add softaworks/agent-toolkit
+npx -y skills add obra/superpowers
+npx -y skills add trailofbits/skills
+npx -y skills add softaworks/agent-toolkit
 ```
 ````
 
@@ -297,10 +297,10 @@ npx skills add softaworks/agent-toolkit
 
 ```bash
 # For web app (Next.js)
-npx skills add vercel-labs/agent-skills
+npx -y skills add vercel-labs/agent-skills
 
 # For api (Hono/Elysia)
-npx skills add elysiajs/skills
+npx -y skills add elysiajs/skills
 ```
 
 ### Install All?
@@ -315,7 +315,177 @@ Would you like to install these skills now? (Y/n)
 - Update root `AGENTS.md` to reference installed skills
 - Add skill references to relevant app `AGENTS.md` files
 
-### Step 9: Completion Report
+### Step 9: Pattern Discovery & Custom Skills
+
+Scan the codebase to identify reusable patterns that could become custom AI skills:
+
+**Pattern Categories to Detect:**
+
+| Category           | What to Look For                                                                       |
+| ------------------ | -------------------------------------------------------------------------------------- |
+| **Components**     | UI component libraries, shared components, design system patterns                      |
+| **Logging**        | Custom loggers, log formatters, observability patterns, error tracking                 |
+| **API**            | API client wrappers, request/response patterns, authentication flows                   |
+| **Scaffolding**    | Code generators, templates, boilerplate patterns                                       |
+| **UI Patterns**    | Layout patterns, responsive design systems, accessibility patterns                     |
+| **Font Patterns**  | Typography systems, font loading strategies, text styling conventions                  |
+| **Color Patterns** | Color systems, theme providers, dark/light mode implementations                        |
+| **UX Patterns**    | Navigation patterns, form handling, validation, loading states, error boundaries       |
+| **State**          | State management patterns, caching strategies, data fetching patterns                  |
+| **Testing**        | Test utilities, mock factories, fixture patterns                                       |
+| **Config**         | Environment handling, feature flags, configuration patterns                            |
+| **Security**       | Auth patterns, permission systems, input sanitization                                  |
+
+**Detection Approach:**
+
+```markdown
+Search for patterns in:
+1. `components/` or `ui/` directories - Component patterns
+2. `lib/`, `utils/`, `helpers/` - Utility patterns
+3. `hooks/`, `composables/` - Reactive patterns
+4. `services/`, `api/` - API and service patterns
+5. `config/`, `constants/` - Configuration patterns
+6. `styles/`, `theme/` - Styling patterns
+7. `test/`, `__tests__/`, `spec/` - Testing patterns
+8. Look for files with 10+ imports (heavily reused)
+9. Look for consistent naming conventions
+10. Identify wrapper/adapter patterns around external libraries
+```
+
+**Pattern Analysis Report:**
+
+```markdown
+## 🔍 Discovered Codebase Patterns
+
+Analyzing your monorepo for reusable patterns that could become AI skills...
+
+### 📦 Component Patterns
+| Pattern | Location | Usage Count | Description |
+|---------|----------|-------------|-------------|
+| Button variants | `packages/ui/src/Button/` | 47 imports | Consistent button system with variants |
+| Form components | `packages/ui/src/Form/` | 32 imports | Form handling with validation |
+| Modal system | `packages/ui/src/Modal/` | 18 imports | Accessible modal implementation |
+
+### 🎨 Styling Patterns
+| Pattern | Location | Description |
+|---------|----------|-------------|
+| Theme tokens | `packages/ui/src/theme/` | CSS custom properties system |
+| Responsive utils | `packages/ui/src/responsive/` | Breakpoint utilities |
+| Color palette | `packages/ui/src/colors/` | Semantic color system |
+
+### 🔌 API Patterns
+| Pattern | Location | Description |
+|---------|----------|-------------|
+| API client | `packages/api/src/client.ts` | Typed API wrapper with retry logic |
+| Auth flow | `packages/auth/src/` | OAuth/JWT authentication pattern |
+| Error handling | `packages/api/src/errors.ts` | Standardized error responses |
+
+### 📊 Logging Patterns
+| Pattern | Location | Description |
+|---------|----------|-------------|
+| Logger service | `packages/core/src/logger/` | Structured logging with context |
+| Error tracker | `packages/core/src/tracking/` | Error boundary + Sentry integration |
+
+### 🧪 Testing Patterns
+| Pattern | Location | Description |
+|---------|----------|-------------|
+| Test utils | `packages/testing/src/` | Shared test helpers and mocks |
+| Fixtures | `packages/testing/fixtures/` | Reusable test data factories |
+```
+
+**Confirm Pattern Skills:**
+
+```markdown
+## 🎯 Create Custom Skills from Patterns?
+
+These patterns could be converted to AI skills for consistent code generation:
+
+### Recommended Custom Skills:
+
+1. **ui-components** - Your component library patterns
+   - Button, Form, Modal conventions
+   - Prop patterns and accessibility standards
+   - Would help AI generate consistent UI code
+
+2. **api-patterns** - Your API integration patterns
+   - Client wrapper conventions
+   - Error handling standards
+   - Auth flow patterns
+
+3. **logging-observability** - Your logging standards
+   - Log levels and formatting
+   - Context propagation
+   - Error tracking integration
+
+4. **testing-utils** - Your test conventions
+   - Mock patterns
+   - Fixture factories
+   - Test organization
+
+### Create these custom skills? (Select options)
+
+- [ ] All recommended skills
+- [ ] ui-components only
+- [ ] api-patterns only
+- [ ] logging-observability only
+- [ ] testing-utils only
+- [ ] Skip custom skill creation
+```
+
+**On Skill Creation Confirmation:**
+
+1. Generate skill files in `.github/skills/{skill-name}/` or `.cursor/skills/{skill-name}/`
+2. Each skill includes:
+   - `SKILL.md` - Skill definition with patterns and examples
+   - Code examples extracted from codebase
+   - Do's and Don'ts based on existing patterns
+3. Update `AGENTS.md` to reference new custom skills
+4. Provide instructions for skill refinement
+
+**Custom Skill Template:**
+
+```markdown
+---
+name: {{SKILL_NAME}}
+description: {{SKILL_DESCRIPTION}}
+author: {{PROJECT_NAME}}
+version: 1.0.0
+---
+
+# {{SKILL_NAME}}
+
+## Overview
+{{SKILL_DESCRIPTION}}
+
+## Patterns
+
+### {{PATTERN_1_NAME}}
+{{PATTERN_1_DESCRIPTION}}
+
+**Example:**
+```{{LANGUAGE}}
+{{PATTERN_1_EXAMPLE}}
+```
+
+### {{PATTERN_2_NAME}}
+...
+
+## Do's and Don'ts
+
+✅ **Do:**
+- {{DO_1}}
+- {{DO_2}}
+
+❌ **Don't:**
+- {{DONT_1}}
+- {{DONT_2}}
+
+## Related Files
+- {{RELATED_FILE_1}}
+- {{RELATED_FILE_2}}
+```
+
+### Step 10: Completion Report
 
 ```markdown
 ## ✅ Bootstrap Complete!
