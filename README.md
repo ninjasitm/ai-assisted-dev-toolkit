@@ -331,7 +331,7 @@ Skills are installed to `{.cursor|.agents|.github)/skills/` and automatically av
 
 ### Bundled Universal Skills
 
-This toolkit includes **14 pre-installed universal skills** in the `.agents/skills/` folder. These skills are copied automatically when you set up your project and require **no additional installation**.
+This toolkit includes **16 pre-installed universal skills** in the `.agents/skills/` folder. These skills are copied automatically when you set up your project and require **no additional installation**.
 
 | Skill                              | Description                                                                                          |
 | ---------------------------------- | ---------------------------------------------------------------------------------------------------- |
@@ -349,6 +349,8 @@ This toolkit includes **14 pre-installed universal skills** in the `.agents/skil
 | **dispatching-parallel-agents**    | Coordinating multiple AI agents on related tasks.                                                    |
 | **subagent-driven-development**    | Breaking complex tasks into subagent-manageable chunks.                                              |
 | **finishing-a-development-branch** | Completing and merging development branches cleanly.                                                 |
+| **logging**                        | Structured logging standards, log levels, and observability patterns.                                |
+| **project-documentation**          | README files, code comments, ADRs, and changelog best practices.                                     |
 
 **These skills are ready to use immediately after copying the templates.** No `npx skills add` commands needed.
 

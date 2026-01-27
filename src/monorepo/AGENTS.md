@@ -185,3 +185,17 @@ Each app has its own `AGENTS.md` with detailed patterns:
 - [README.md](README.md) - Project overview
 - [{{APP_DIR}}/{{APP_NAME_1}}/AGENTS.md]({{APP_DIR}}/{{APP_NAME_1}}/AGENTS.md) - App context
 - [{{PACKAGES_DIR}}/{{PACKAGE_NAME_1}}/README.md]({{PACKAGES_DIR}}/{{PACKAGE_NAME_1}}/README.md) - Package docs
+
+## Skills
+
+For detailed standards on specific topics, refer to these skills in `.agents/skills/`:
+
+| Skill             | File                               | Purpose                                                 |
+| ----------------- | ---------------------------------- | ------------------------------------------------------- |
+| **Logging**       | `logging/SKILL.md`                 | Structured logging standards, log levels, observability |
+| **Documentation** | `project-documentation/SKILL.md`   | README, comments, ADRs, changelogs                      |
+| **Writing Plans** | `writing-plans/SKILL.md`           | Feature planning and specifications                     |
+| **Code Review**   | `requesting-code-review/SKILL.md`  | Review process and checklists                           |
+| **Debugging**     | `systematic-debugging/SKILL.md`    | Debugging workflows                                     |
+| **TDD**           | `test-driven-development/SKILL.md` | Test-driven development                                 |
+| **Git Worktrees** | `using-git-worktrees/SKILL.md`     | Parallel development branches                           |

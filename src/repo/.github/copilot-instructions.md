@@ -44,3 +44,16 @@
 - [AGENTS.md](../AGENTS.md) - AI agent context
 - [README.md](../README.md) - Project documentation
 - [.cursor/rules/](../.cursor/rules/) - Cursor IDE rules
+
+## Skills References
+
+For detailed standards on specific topics, refer to these skills:
+
+| Topic             | Skill Location                                    | Description                                                  |
+| ----------------- | ------------------------------------------------- | ------------------------------------------------------------ |
+| **Logging**       | `.agents/skills/logging/SKILL.md`                 | Structured logging standards, log levels, message formatting |
+| **Documentation** | `.agents/skills/project-documentation/SKILL.md`   | README standards, code comments, ADRs, changelogs            |
+| **Writing Plans** | `.agents/skills/writing-plans/SKILL.md`           | Feature planning and specification                           |
+| **Code Review**   | `.agents/skills/requesting-code-review/SKILL.md`  | Code review process and checklists                           |
+| **Debugging**     | `.agents/skills/systematic-debugging/SKILL.md`    | Systematic debugging workflows                               |
+| **TDD**           | `.agents/skills/test-driven-development/SKILL.md` | Test-driven development practices                            |
