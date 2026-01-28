@@ -42,6 +42,10 @@ You are helping to bootstrap AI instructions for this monorepo by analyzing the 
    | `{{BUILD_SYSTEM}}`        | Build tool (Turborepo, Nx, MSBuild, Maven, etc.)   |
    | `{{DEFAULT_BRANCH}}`      | Git config or assume "main"                        |
    | `{{TEST_FRAMEWORK}}`      | Common test framework across packages              |
+   | `{{PM_TOOL}}`             | Detected project management tool                   |
+   | `{{PM_URL}}`              | Project management URL (if applicable)             |
+   | `{{PM_PROJECT_ID}}`       | Project/workspace ID (if applicable)               |
+   | `{{PM_ISSUE_KEY}}`        | Issue key format (e.g., PROJ-###, #42)             |
 
 3. **Analyze Apps**:
 
@@ -63,6 +67,15 @@ You are helping to bootstrap AI instructions for this monorepo by analyzing the 
    | --------------------------- | -------------------------- |
    | `{{PACKAGE_NAME_N}}`        | Directory names            |
    | `{{PACKAGE_N_DESCRIPTION}}` | Package config description |
+
+4.5. **Detect Project Management Tool**:
+
+- **GitHub Issues**: `.github/ISSUE_TEMPLATE/` directory or GitHub remote URL
+- **Jira**: `jira.properties`, `jira.yml`, or Jira issue keys in commits (e.g., `PROJ-123`)
+- **Azure DevOps**: `azure-pipelines.yml`, `.azure/` directory
+- **Linear**: `.linear/` directory, `linear.json`, or Linear references in commits
+- **GitLab Issues**: `.gitlab-ci.yml` or GitLab remote URL
+- Extract URL and project/workspace ID where applicable
 
 5. **Report Inferred Values**:
 
@@ -91,6 +104,12 @@ You are helping to bootstrap AI instructions for this monorepo by analyzing the 
    │ config  │ Shared configuration    │
    └─────────┴─────────────────────────┘
 
+   📋 Project Management:
+   - Tool: GitHub Issues (detected)
+   - URL: https://github.com/owner/monorepo
+   - Project ID: owner/monorepo
+   - Issue Key: #{{NUM}}
+
    ❓ Please Provide:
    - PROJECT_DESCRIPTION: What is this monorepo for?
    ```
@@ -99,14 +118,16 @@ You are helping to bootstrap AI instructions for this monorepo by analyzing the 
 
    Ask specific questions for values that couldn't be inferred:
    - "What is the main purpose of this monorepo?"
-   - "What issue tracker do you use (GitHub Issues, Jira, Linear)?"
+   - "Confirm detected project management tool or specify different one (GitHub Issues, Jira, Azure DevOps, Linear, GitLab)?"
+   - "Provide project management URL if applicable?"
+   - "Provide project/workspace ID if applicable?"
    - "Any additional apps or packages to document?"
 
 7. **Update Template Files**:
 
    **Root Level:**
-   - `AGENTS.md`
-   - `.github/copilot-instructions.md`
+   - `AGENTS.md` (include project management section)
+   - `.github/copilot-instructions.md` (include PM context)
    - `.github/instructions/*.instructions.md`
    - `.github/prompts/*.prompt.md`
    - `.cursor/rules/*.mdc`

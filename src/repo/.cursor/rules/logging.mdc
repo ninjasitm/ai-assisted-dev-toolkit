@@ -1,0 +1,84 @@
+---
+title: Logging Standards
+description: Structured logging conventions for {{PROJECT_NAME}}
+---
+
+# Logging Standards
+
+## Format
+
+Use bracketed tags: `[Source] [Context]: Message | Details`
+
+```{{FILE_EXTENSION}}
+// Good
+console.log('[UserService] [fetch]: Retrieved user | id:', userId);
+console.error('[PaymentService] [process]: Failed | error:', error);
+
+// Bad
+console.log('user fetched');
+console.error(error);
+```
+
+## Log Levels
+
+- **error**: Critical failures (database, API, unhandled exceptions)
+- **warn**: Non-critical issues (deprecations, fallbacks, config warnings)
+- **info**: Significant events (startup, auth, state changes)
+- **debug**: Diagnostic details (function calls, variable values)
+
+## Best Practices
+
+✅ Include context (user ID, request ID)
+✅ Log at service boundaries
+✅ Include error stack traces
+✅ Sanitize sensitive data
+✅ Use appropriate log levels
+
+❌ Don't log in loops
+❌ Don't log passwords/tokens
+❌ Don't use vague messages
+❌ Don't log raw user data
+
+## Sensitive Data
+
+Never log:
+
+- Passwords
+- API keys/tokens
+- Credit card numbers
+- SSN/PII
+- Session cookies
+
+Sanitize before logging:
+
+```javascript
+const sanitized = {
+	...data,
+	password: undefined,
+	token: undefined,
+	cardNumber: "****" + data.cardNumber?.slice(-4),
+};
+console.log("[Service]: Data", sanitized);
+```
+
+## Error Logging
+
+```javascript
+try {
+	await operation();
+} catch (error) {
+	console.error("[ServiceName] [operation]: Failed", {
+		error: error.message,
+		stack: error.stack,
+		context: { userId, requestId },
+	});
+}
+```
+
+## Production
+
+- Use logging library (not console.log)
+- Add correlation/request IDs
+- Integrate with log aggregation (Sentry, Datadog)
+- Set up error rate alerts
+- Extract performance metrics

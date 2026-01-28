@@ -54,6 +54,10 @@ Detect the primary language ecosystem:
 | `{{PACKAGE_MANAGER}}` | Lock file / config |
 | `{{RUNTIME_VERSION}}` | Version file (.nvmrc, .python-version, global.json, etc.) |
 | `{{DEFAULT_BRANCH}}` | Git config |
+| `{{PM_TOOL}}` | Detected project management tool |
+| `{{PM_URL}}` | Project management tool URL/workspace (if applicable) |
+| `{{PM_PROJECT_ID}}` | Project ID or workspace ID (if applicable) |
+| `{{PM_ISSUE_KEY}}` | Issue key format (e.g., PROJ-###) |
 
 **App Variables (for each app):**
 | Variable | Source |
@@ -105,6 +109,54 @@ Detect the primary language ecosystem:
 - Gin, Echo, Fiber, Chi (web)
 - gRPC, Connect (API)
 
+### Step 4.5: Project Management Detection
+
+**Detection Strategy:**
+
+1. **GitHub Issues** - Check for:
+   - `.github/ISSUE_TEMPLATE/` directory
+   - Repository issues enabled (via git remote URL)
+   - Default detection for GitHub-hosted repos
+
+2. **Jira** - Check for:
+   - `jira.properties` or `jira.yml`
+   - References in CI/CD configs (`.github/workflows/`, `azure-pipelines.yml`)
+   - `JIRA_` environment variables in config files
+   - Jira issue keys (e.g., `PROJ-123`) in commit history
+
+3. **Azure DevOps (Azure Boards)** - Check for:
+   - `azure-pipelines.yml` with Azure Boards integration
+   - `.azure/` directory
+   - Azure DevOps URLs in README
+
+4. **Linear** - Check for:
+   - `.linear/` directory or `linear.json`
+   - Linear issue references in commits (e.g., `ENG-123`)
+
+5. **GitLab Issues** - Check for:
+   - `.gitlab-ci.yml`
+   - GitLab remote URL
+
+**Issue Key Format Detection:**
+
+| PM Tool       | Key Format    | Example  | Detection Method                  |
+| ------------- | ------------- | -------- | --------------------------------- |
+| GitHub Issues | `#{NUM}`      | `#42`    | GitHub remote URL                 |
+| Jira          | `{KEY}-{NUM}` | `PROJ-1` | Scan commits for `[A-Z]+-\d+`     |
+| Azure Boards  | `#{NUM}`      | `#123`   | Azure DevOps URL in config        |
+| Linear        | `{KEY}-{NUM}` | `ENG-42` | Scan commits for `[A-Z]{2,5}-\d+` |
+| GitLab Issues | `#{NUM}`      | `#8`     | GitLab remote URL                 |
+
+**If Multiple Tools Detected:**
+
+- Prioritize: Jira > Azure Boards > Linear > GitHub Issues > GitLab Issues
+- Ask user to confirm which is primary
+
+**If No Tool Detected:**
+
+- Ask user if they use issue tracking
+- Provide common options to choose from
+
 ### Step 5: Present Findings
 
 ```markdown
@@ -125,7 +177,15 @@ Detect the primary language ecosystem:
 | ------------ | ----------- |
 | PROJECT_NAME | my-monorepo |
 
-### 📱 Apps
+### � Project Management
+
+| Property  | Value                             |
+| --------- | --------------------------------- |
+| Tool      | {{PM_TOOL}} (detected/inferred)   |
+| URL       | {{PM_URL}} or "Not configured"    |
+| Issue Key | {{PM_ISSUE_KEY}} (e.g., PROJ-###) |
+
+### �📱 Apps
 
 | App | Framework  | Port | Deploy     |
 | --- | ---------- | ---- | ---------- |
@@ -139,22 +199,68 @@ Detect the primary language ecosystem:
 | @scope/ui    | UI components |
 | @scope/utils | Utilities     |
 
-### ❓ Please Provide
+### ❓ Please Confirm/Provide
 
-1. PROJECT_DESCRIPTION: What is this monorepo for?
-2. ISSUE_TRACKER: Issue tracking system?
+1. **PROJECT_DESCRIPTION**: What is this monorepo for?
+2. **Project Management** (detected: {{PM_TOOL}} or "None detected"):
+   - Confirm detected tool or specify different tool
+   - Provide URL if applicable (e.g., `https://yourorg.atlassian.net` for Jira)
+   - Provide project/workspace ID if applicable (e.g., Azure DevOps project ID, Linear workspace)
+   - Confirm issue key format (e.g., `PROJ-###` for Jira, `#42` for GitHub)
 ```
 
 ### Step 6: Template Updates
 
 **Root Level Files:**
 
-- `AGENTS.md`
-- `.github/copilot-instructions.md`
+- `AGENTS.md` (include project management section)
+- `.github/copilot-instructions.md` (include PM tool context)
 - `.github/instructions/*.instructions.md`
 - `.github/prompts/*.prompt.md`
 - `.cursor/rules/*.mdc`
 - `.cursor/commands/*.md`
+
+**Project Management Section (added to AGENTS.md):**
+
+```markdown
+## 📋 Project Management
+
+**Tool:** {{PM_TOOL}}
+**URL:** {{PM_URL}} _(if applicable)_
+**Project ID:** {{PM_PROJECT_ID}} _(if applicable)_
+**Issue Key Format:** `{{PM_ISSUE_KEY}}`
+
+### Conventions
+
+- Reference issues in commit messages: `{{PM_ISSUE_KEY}}: Brief description`
+- Link PRs to issues: Include issue key in PR title or description
+- Use issue keys for traceability: `Fixes {{PM_ISSUE_KEY}}`, `Relates to {{PM_ISSUE_KEY}}`
+
+### Examples
+
+**Commit Messages:**
+```
+
+{{PM_EXAMPLE_KEY}}: Add user authentication
+{{PM_EXAMPLE_KEY}}: Fix database connection timeout
+
+```
+
+**PR Titles:**
+```
+
+{{PM_EXAMPLE_KEY}}: Implement OAuth2 login flow
+feat(auth): Add SSO support ({{PM_EXAMPLE_KEY}})
+
+````
+
+**PR Descriptions:**
+```markdown
+Fixes {{PM_EXAMPLE_KEY}}
+Relates to {{PM_EXAMPLE_KEY_2}}
+````
+
+````
 
 **App-Level Files (create for each app):**
 
@@ -177,7 +283,7 @@ Generate appropriate patterns for each app based on framework:
 - App Router with Server Components
 - API Routes in app/api/
 - Use @scope/ui for components
-```
+````
 
 **.NET (Blazor):**
 
@@ -492,10 +598,17 @@ version: 1.0.0
 
 ### Ecosystem: {{LANGUAGE}} / {{BUILD_SYSTEM}}
 
+### Project Management: {{PM_TOOL}}
+
+- **Tool:** {{PM_TOOL}}
+- **URL:** {{PM_URL}} _(if applicable)_
+- **Project ID:** {{PM_PROJECT_ID}} _(if applicable)_
+- **Issue Format:** `{{PM_ISSUE_KEY}}`
+
 ### Root Files (N updated)
 
-- [x] AGENTS.md
-- [x] .github/copilot-instructions.md
+- [x] AGENTS.md (with PM section)
+- [x] .github/copilot-instructions.md (with PM context)
 - [x] .github/instructions/\*.instructions.md
 - [x] .cursor/rules/\*.mdc
 - [x] .cursor/commands/\*.md
@@ -805,6 +918,15 @@ All instruction files are automatically loaded by GitHub Copilot when editing ma
 | Skills installed          | {{N}} | ✓      |
 | Skills removed            | {{N}} | ✓      |
 | Instruction files created | {{N}} | ✓      |
+| Project management        | 1     | ✓      |
+
+### Project Management Configuration
+
+**Tool:** {{PM_TOOL}}
+**URL:** {{PM_URL}} _(if applicable)_
+**Project ID:** {{PM_PROJECT_ID}} _(if applicable)_
+**Issue Format:** `{{PM_ISSUE_KEY}}`
+**Location:** Root AGENTS.md and copilot-instructions.md
 
 ### Skill Inventory
 
@@ -915,7 +1037,94 @@ const analyzeMonorepo = async () => {
 		}
 	}
 
-	return { type: "unknown" };
+	// Project Management Detection
+	const pm = await detectProjectManagement();
+	return { ...detected, projectManagement: pm };
+};
+
+// Detect project management tool
+const detectProjectManagement = async () => {
+	const gitRemote = await exec("git remote get-url origin");
+
+	// Check for Jira
+	const jiraFiles = await glob("**/jira.{properties,yml,yaml}");
+	const hasJiraRefs = await searchCommits(/[A-Z]{2,10}-\d+/);
+	if (jiraFiles.length > 0 || hasJiraRefs) {
+		const projectKey = hasJiraRefs ? extractJiraKey(hasJiraRefs[0]) : "PROJ";
+		const jiraUrl = extractFromConfig(jiraFiles[0], "url") || "";
+		return {
+			tool: "Jira",
+			url: jiraUrl,
+			projectId: projectKey,
+			keyFormat: `${projectKey}-{{NUM}}`,
+			detected: true,
+		};
+	}
+
+	// Check for Azure DevOps
+	if ((await exists("azure-pipelines.yml")) || (await exists(".azure"))) {
+		const azureUrl = extractFromReadme(
+			/https:\/\/dev\.azure\.com\/[^\/]+\/[^\/]+/,
+		);
+		const projectId = extractFromAzureConfig("azure-pipelines.yml", "project");
+		return {
+			tool: "Azure DevOps",
+			url: azureUrl || "",
+			projectId: projectId || "",
+			keyFormat: "#{{NUM}}",
+			detected: true,
+		};
+	}
+
+	// Check for Linear
+	if ((await exists(".linear")) || (await exists("linear.json"))) {
+		const linearConfig = await readJson("linear.json");
+		const workspaceId = linearConfig?.workspaceId || "";
+		return {
+			tool: "Linear",
+			url: "https://linear.app",
+			projectId: workspaceId,
+			keyFormat: "ENG-{{NUM}}",
+			detected: true,
+		};
+	}
+
+	// Check for GitLab
+	if (gitRemote.includes("gitlab")) {
+		const gitlabUrl = extractGitUrl(gitRemote);
+		const projectPath = extractGitLabPath(gitRemote);
+		return {
+			tool: "GitLab Issues",
+			url: gitlabUrl,
+			projectId: projectPath,
+			keyFormat: "#{{NUM}}",
+			detected: true,
+		};
+	}
+
+	// Check for GitHub Issues
+	if (
+		(await exists(".github/ISSUE_TEMPLATE")) ||
+		gitRemote.includes("github")
+	) {
+		const githubUrl = extractGitUrl(gitRemote);
+		const repoPath = extractGitHubRepo(gitRemote); // e.g., "owner/repo"
+		return {
+			tool: "GitHub Issues",
+			url: githubUrl,
+			projectId: repoPath,
+			keyFormat: "#{{NUM}}",
+			detected: true,
+		};
+	}
+
+	return {
+		tool: null,
+		url: null,
+		projectId: null,
+		keyFormat: null,
+		detected: false,
+	};
 };
 
 // Detect app framework (language-specific)

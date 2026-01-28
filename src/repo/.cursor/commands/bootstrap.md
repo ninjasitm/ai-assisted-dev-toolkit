@@ -40,6 +40,14 @@ You are helping to bootstrap AI instructions for this project by analyzing the c
    - Styling: TailwindCSS, Bootstrap, SASS, Material UI
    - Deployment configs: vercel.json, netlify.toml, wrangler.toml, Dockerfile, fly.toml, railway.toml
 
+   **Detect Project Management Tool:**
+   - GitHub Issues: `.github/ISSUE_TEMPLATE/` directory or GitHub remote URL
+   - Jira: `jira.properties`, `jira.yml`, or Jira issue keys in commits (e.g., `PROJ-123`)
+   - Azure DevOps: `azure-pipelines.yml`, `.azure/` directory
+   - Linear: `.linear/` directory, `linear.json`, or Linear references in commits
+   - GitLab Issues: `.gitlab-ci.yml` or GitLab remote URL
+   - Extract URL and project/workspace ID where applicable
+
 2. **Infer Template Variables**:
 
    Based on your analysis, determine values for:
@@ -48,6 +56,18 @@ You are helping to bootstrap AI instructions for this project by analyzing the c
    | ------------------------- | ---------------------------------------------------------------------- |
    | `{{PROJECT_NAME}}`        | Config file name field or directory name                               |
    | `{{PROJECT_DESCRIPTION}}` | Config file description or README                                      |
+   | `{{LANGUAGE}}`            | Detected language                                                      |
+   | `{{FRAMEWORK}}`           | Detected framework                                                     |
+   | `{{PACKAGE_MANAGER}}`     | Lock file or config                                                    |
+   | `{{DEV_PORT}}`            | Scripts, config, or framework default                                  |
+   | `{{DATABASE}}`            | ORM/database dependencies                                              |
+   | `{{TEST_FRAMEWORK}}`      | Test framework                                                         |
+   | `{{DEPLOY_PLATFORM}}`     | Deployment config files                                                |
+   | `{{RUNTIME_VERSION}}`     | Runtime version from config                                            |
+   | `{{PM_TOOL}}`             | Detected project management tool (GitHub, Jira, Azure, Linear, GitLab) |
+   | `{{PM_URL}}`              | Project management URL (if applicable)                                 |
+   | `{{PM_PROJECT_ID}}`       | Project/workspace ID (if applicable)                                   |
+   | `{{PM_ISSUE_KEY}}`        | Issue key format (e.g., PROJ-###, #42)                                 |
    | `{{LANGUAGE}}`            | Detected ecosystem (TypeScript, PHP, C#, Python, Ruby, Go, Rust, Java) |
    | `{{FRAMEWORK}}`           | Detected framework with version                                        |
    | `{{PACKAGE_MANAGER}}`     | Detected package manager                                               |
@@ -76,6 +96,12 @@ You are helping to bootstrap AI instructions for this project by analyzing the c
    - TEST_FRAMEWORK: PHPUnit
    ...
 
+   📋 Project Management:
+   - Tool: GitHub Issues (detected)
+   - URL: https://github.com/owner/repo
+   - Project ID: owner/repo
+   - Issue Key: #{{NUM}}
+
    ❓ Unable to Infer (please provide):
    - PROJECT_DESCRIPTION: What does this project do?
    - DEPLOY_PLATFORM: Where will this be deployed?
@@ -86,7 +112,9 @@ You are helping to bootstrap AI instructions for this project by analyzing the c
    For any values that couldn't be inferred, ask the user specific questions:
    - "What is a brief description of this project?"
    - "Where will this project be deployed?"
-   - "What issue tracker do you use (GitHub Issues, Jira, Linear)?"
+   - "Confirm detected project management tool or specify different one (GitHub Issues, Jira, Azure DevOps, Linear, GitLab)?"
+   - "Provide project management URL if applicable?"
+   - "Provide project/workspace ID if applicable?"
 
 5. **Update Template Files**:
 

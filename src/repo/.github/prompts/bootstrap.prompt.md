@@ -98,7 +98,59 @@ Map discovered information to template variables:
 | `{{TEST_FRAMEWORK}}`        | Test framework                                                              |
 | `{{DEPLOY_PLATFORM}}`       | Deployment config files                                                     |
 | `{{RUNTIME_VERSION}}`       | Runtime version from config                                                 |
+| `{{PM_TOOL}}`               | Detected project management tool                                            |
+| `{{PM_URL}}`                | Project management tool URL/workspace (if applicable)                       |
+| `{{PM_PROJECT_ID}}`         | Project ID or workspace ID (if applicable)                                  |
+| `{{PM_ISSUE_KEY}}`          | Issue key format (e.g., PROJ-###)                                           |
 | `{{NEW_RELEVANT_VARIABLE}}` | ...other inferred values...                                                 |
+
+### Step 2.5: Project Management Detection
+
+**Detection Strategy:**
+
+1. **GitHub Issues** - Check for:
+   - `.github/ISSUE_TEMPLATE/` directory
+   - Repository issues enabled (via git remote URL)
+   - Default detection for GitHub-hosted repos
+
+2. **Jira** - Check for:
+   - `jira.properties` or `jira.yml`
+   - References in CI/CD configs (`.github/workflows/`, `azure-pipelines.yml`)
+   - `JIRA_` environment variables in config files
+   - Jira issue keys (e.g., `PROJ-123`) in commit history
+
+3. **Azure DevOps (Azure Boards)** - Check for:
+   - `azure-pipelines.yml` with Azure Boards integration
+   - `.azure/` directory
+   - Azure DevOps URLs in README
+
+4. **Linear** - Check for:
+   - `.linear/` directory or `linear.json`
+   - Linear issue references in commits (e.g., `ENG-123`)
+
+5. **GitLab Issues** - Check for:
+   - `.gitlab-ci.yml`
+   - GitLab remote URL
+
+**Issue Key Format Detection:**
+
+| PM Tool       | Key Format    | Example  | Detection Method                  |
+| ------------- | ------------- | -------- | --------------------------------- |
+| GitHub Issues | `#{NUM}`      | `#42`    | GitHub remote URL                 |
+| Jira          | `{KEY}-{NUM}` | `PROJ-1` | Scan commits for `[A-Z]+-\d+`     |
+| Azure Boards  | `#{NUM}`      | `#123`   | Azure DevOps URL in config        |
+| Linear        | `{KEY}-{NUM}` | `ENG-42` | Scan commits for `[A-Z]{2,5}-\d+` |
+| GitLab Issues | `#{NUM}`      | `#8`     | GitLab remote URL                 |
+
+**If Multiple Tools Detected:**
+
+- Prioritize: Jira > Azure Boards > Linear > GitHub Issues > GitLab Issues
+- Ask user to confirm which is primary
+
+**If No Tool Detected:**
+
+- Ask user if they use issue tracking
+- Provide common options to choose from
 
 ### Step 3: User Confirmation
 
@@ -120,11 +172,24 @@ Present inferred values and ask for missing ones:
 | DATABASE        | Eloquent (MySQL) |
 | ...             | ...              |
 
+### 📋 Project Management
+
+| Property   | Value                             |
+| ---------- | --------------------------------- |
+| Tool       | {{PM_TOOL}} (detected/inferred)   |
+| URL        | {{PM_URL}} or "N/A"               |
+| Project ID | {{PM_PROJECT_ID}} or "N/A"        |
+| Issue Key  | {{PM_ISSUE_KEY}} (e.g., PROJ-###) |
+
 ### ❓ Please Provide
 
 1. **PROJECT_DESCRIPTION**: Brief description of the project?
 2. **DEPLOY_PLATFORM**: Where will this be deployed?
-3. **ISSUE_TRACKER**: What issue tracker do you use?
+3. **Project Management** (detected: {{PM_TOOL}} or "None detected"):
+   - Confirm detected tool or specify different tool
+   - Provide URL if applicable (e.g., `https://yourorg.atlassian.net` for Jira)
+   - Provide project/workspace ID if applicable (e.g., Azure DevOps project ID, Linear workspace)
+   - Confirm issue key format (e.g., `PROJ-###` for Jira, `#42` for GitHub)
 ```
 
 ### Step 4: Template Customization
@@ -133,12 +198,54 @@ Replace placeholders in all template files:
 
 **Files to Update:**
 
-- `AGENTS.md` - Project context and patterns
+- `AGENTS.md` - Project context and patterns (include project management section)
 - `.github/copilot-instructions.md` - Copilot configuration
 - `.github/instructions/*.instructions.md` - Context instructions
 - `.github/prompts/*.prompt.md` - Reusable prompts
 - `.cursor/rules/*.mdc` - Cursor IDE rules
 - `.cursor/commands/*.md` - Custom commands
+
+**Project Management Section (added to AGENTS.md):**
+
+```markdown
+## 📋 Project Management
+
+**Tool:** {{PM_TOOL}}
+**URL:** {{PM_URL}} _(if applicable)_
+**Project ID:** {{PM_PROJECT_ID}} _(if applicable)_
+**Issue Key Format:** `{{PM_ISSUE_KEY}}`
+
+### Conventions
+
+- Reference issues in commit messages: `{{PM_ISSUE_KEY}}: Brief description`
+- Link PRs to issues: Include issue key in PR title or description
+- Use issue keys for traceability: `Fixes {{PM_ISSUE_KEY}}`, `Relates to {{PM_ISSUE_KEY}}`
+
+### Examples
+
+**Commit Messages:**
+```
+
+{{PM_EXAMPLE_KEY}}: Add user authentication
+{{PM_EXAMPLE_KEY}}: Fix database connection timeout
+
+```
+
+**PR Titles:**
+```
+
+{{PM_EXAMPLE_KEY}}: Implement OAuth2 login flow
+feat(auth): Add SSO support ({{PM_EXAMPLE_KEY}})
+
+````
+
+**PR Descriptions:**
+```markdown
+Fixes {{PM_EXAMPLE_KEY}}
+Relates to {{PM_EXAMPLE_KEY_2}}
+````
+
+`````
 
 ### Step 5: Language-Specific Enhancements
 
@@ -246,7 +353,8 @@ Based on your project ({{FRAMEWORK}}/{{LANGUAGE}}):
 npx -y skills add obra/superpowers
 npx -y skills add trailofbits/skills
 npx -y skills add softaworks/agent-toolkit
-```
+`````
+
 ````
 
 ### Framework-Specific Skills
@@ -262,6 +370,7 @@ Would you like to install these skills now? (Y/n)
 ````
 
 **On Confirmation:**
+
 - Run skill installation commands
 - Skills installed to `.github/skills/{skill-name}/` (by skill name, not org/repo)
 - Update `AGENTS.md` to reference installed skills
@@ -272,6 +381,13 @@ Would you like to install these skills now? (Y/n)
 ## ✅ Bootstrap Complete!
 
 ### Ecosystem: {{LANGUAGE}} / {{FRAMEWORK}}
+
+### Project Management: {{PM_TOOL}}
+
+- **Tool:** {{PM_TOOL}}
+- **URL:** {{PM_URL}} _(if applicable)_
+- **Project ID:** {{PM_PROJECT_ID}} _(if applicable)_
+- **Issue Format:** `{{PM_ISSUE_KEY}}`
 
 ### Updated Files
 
@@ -296,7 +412,7 @@ Would you like to install these skills now? (Y/n)
 4. Test commands with your codebase
 5. Browse more skills at https://skills.sh/
 6. Create custom skills at https://agentskills.io/specification
-````
+```
 
 ### Step 8: Skills Review & Cleanup
 
@@ -568,6 +684,15 @@ All instruction files are automatically loaded by GitHub Copilot when editing ma
 | Skills installed          | {{N}} | ✓      |
 | Skills removed            | {{N}} | ✓      |
 | Instruction files created | {{N}} | ✓      |
+| Project management        | 1     | ✓      |
+
+### Project Management Configuration
+
+**Tool:** {{PM_TOOL}}
+**URL:** {{PM_URL}} _(if applicable)_
+**Project ID:** {{PM_PROJECT_ID}} _(if applicable)_
+**Issue Format:** `{{PM_ISSUE_KEY}}`
+**Location:** Root AGENTS.md and copilot-instructions.md
 
 ### Skill Inventory
 
