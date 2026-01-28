@@ -8,7 +8,7 @@ Conduct comprehensive code review for pull requests with structured fix tracking
 
 ## Usage
 
-```
+```bash
 /review-pr 42
 /review-pr https://github.com/{{REPO_OWNER}}/{{PROJECT_NAME}}/pull/42
 ```
@@ -91,33 +91,18 @@ Conduct comprehensive code review for pull requests with structured fix tracking
    - [ ] Performance bottlenecks flagged
    - Add all identified issues to todo list
 
-6. **Fix Tracking with Internal Todo List**:
-   - **Before Starting Work**:
-     - Use `manage_todo_list` to create comprehensive list of ALL fixes:
-       - PR comments requiring fixes (by severity)
-       - Code quality issues
-       - Potential bugs or security concerns
-       - Performance improvements
-   - **During Implementation**:
-     - Mark ONE todo as `in-progress` before starting
-     - Complete the specific fix
-     - Test the fix (if applicable)
-     - Mark todo as `completed` IMMEDIATELY after finishing
-     - Move to next todo and repeat
-   - **Never batch completions** - mark each done immediately
-
-7. **Review Decision**:
+6. **Review Decision**:
    - **✅ Approve**: All criteria met, ready for merge
    - **❌ Request Changes**: Blocking issues found
    - **💬 Comment**: Non-blocking suggestions only
 
-8. **Provide Actionable Improvements**:
+7. **Provide Actionable Improvements**:
    - For each suggestion:
      - Provide clear explanation of why improvement is needed
      - Include specific code examples or patterns
      - Reference best practices or conventions
 
-9. **Output Format**:
+8. **Output Format**:
 
    ```markdown
    ## Review Summary
@@ -156,20 +141,20 @@ Conduct comprehensive code review for pull requests with structured fix tracking
 
    ## Potential Issues
 
-   ### Bugs & Edge Cases
+   ### Bugs & Edge Cases (If Applicable)
 
    - [Description of potential bug]
    - [Edge case not handled]
 
-   ### Security Concerns
+   ### Security Concerns (If Applicable)
 
    - [Security vulnerability or concern]
 
-   ### Performance Bottlenecks
+   ### Performance Bottlenecks (If Applicable)
 
    - [Performance issue identified]
 
-   ## Testing Notes
+   ## Testing Notes (If Applicable)
 
    - [Verification performed or needed]
    - [Test coverage assessment]
@@ -182,9 +167,27 @@ Conduct comprehensive code review for pull requests with structured fix tracking
    - [ ] Improve: [Medium priority suggestion]
    ```
 
-10. **Report Review Status**:
-    - Review decision with clear justification
-    - Summary of key findings by severity
-    - Inline comments for specific code locations
-    - Todo list status showing progress
-    - Next steps if changes requested
+9. **Report Review Status**:
+   - Review decision with clear justification
+   - Summary of key findings by severity
+   - Inline comments for specific code locations
+   - Todo list status showing progress
+   - Next steps if changes requested
+
+10. **Confirm Execution Plan**
+    - If there are changes, ask the user to confirm the execution plan with a (Y/n)
+
+11. **If the plan is confirmed, proceed with fix Tracking with Internal Todo List**:
+    - **Before Starting Work**:
+      - Use `manage_todo_list` to create comprehensive list of ALL fixes:
+        - PR comments requiring fixes (by severity)
+        - Code quality issues
+        - Potential bugs or security concerns
+        - Performance improvements
+    - **During Implementation**:
+      - Mark ONE todo as `in-progress` before starting
+      - Complete the specific fix
+      - Test the fix (if applicable)
+      - Mark todo as `completed` IMMEDIATELY after finishing
+      - Move to next todo and repeat
+    - **Never batch completions** - mark each done immediately
