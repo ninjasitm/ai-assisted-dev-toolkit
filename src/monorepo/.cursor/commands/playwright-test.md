@@ -31,7 +31,7 @@ Validate scenarios using Playwright for end-to-end testing.
    ```bash
    {{PACKAGE_MANAGER}} run test:e2e
    # or
-   npx playwright test <test-file>
+   npx -y playwright test <test-file>
 ````
 
 4. **Report Results**:

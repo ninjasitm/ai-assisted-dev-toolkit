@@ -205,12 +205,12 @@ You are helping to bootstrap AI instructions for this project by analyzing the c
    Based on your project ({{FRAMEWORK}}/{{LANGUAGE}}), these skills will enhance your AI assistant:
 
    📦 Core Skills (recommended for all projects):
-   - npx skills add obra/superpowers
-   - npx skills add trailofbits/skills
-   - npx skills add softaworks/agent-toolkit
+   - npx -y skills add obra/superpowers
+   - npx -y skills add trailofbits/skills
+   - npx -y skills add softaworks/agent-toolkit
 
    🔧 Framework-Specific Skills:
-   - npx skills add {{FRAMEWORK_SKILL_REPO}}
+   - npx -y skills add {{FRAMEWORK_SKILL_REPO}}
 
    Install all recommended skills? (Y/n)
    ```
@@ -236,7 +236,7 @@ You are helping to bootstrap AI instructions for this project by analyzing the c
            └── SKILL.md
    ```
 
-   **Note:** Skills are installed by skill name, not org/repo path. For example, `npx skills add obra/superpowers` installs to `.cursor/skills/superpowers/`.
+   **Note:** Skills are installed by skill name, not org/repo path. For example, `npx -y skills add obra/superpowers` installs to `.cursor/skills/superpowers/`.
 
 8. **Discover Codebase Patterns for Custom Skills**:
 

@@ -1,6 +1,6 @@
 # Cursor Skills
 
-This folder is for skills installed via `npx skills add <owner/repo>`.
+This folder is for skills installed via `npx -y skills add <owner/repo>`.
 
 ## About Skills
 
@@ -11,7 +11,7 @@ Skills are folders of instructions and resources that help AI agents perform spe
 Install skills from [skills.sh](https://skills.sh/):
 
 ```bash
-npx skills add <owner/repo>
+npx -y skills add <owner/repo>
 ```
 
 ## Pre-installed Skills
@@ -29,14 +29,14 @@ Universal workflow skills are pre-installed in `.agents/skills/`. These include:
 
 ```bash
 # Frontend skills
-npx skills add onmax/nuxt-skills
-npx skills add vercel-labs/agent-skills
+npx -y skills add onmax/nuxt-skills
+npx -y skills add vercel-labs/agent-skills
 
 # Security skills
-npx skills add trailofbits/skills
+npx -y skills add trailofbits/skills
 
 # Framework-specific
-npx skills add better-auth/skills
+npx -y skills add better-auth/skills
 ```
 
 See the main README.md for a full list of recommended skills.

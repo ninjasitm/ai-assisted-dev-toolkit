@@ -1,6 +1,6 @@
 # GitHub Copilot Skills
 
-This folder is for skills installed via `npx skills add <owner/repo>` when using GitHub Copilot.
+This folder is for skills installed via `npx -y skills add <owner/repo>` when using GitHub Copilot.
 
 ## About Skills
 
@@ -11,7 +11,7 @@ Skills are folders of instructions and resources that help AI agents perform spe
 Install skills from [skills.sh](https://skills.sh/):
 
 ```bash
-npx skills add <owner/repo>
+npx -y skills add <owner/repo>
 ```
 
 When prompted, select GitHub Copilot as your agent to install skills here.

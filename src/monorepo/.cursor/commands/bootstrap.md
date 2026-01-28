@@ -168,23 +168,23 @@ You are helping to bootstrap AI instructions for this monorepo by analyzing the 
 
    **Language-Specific Skills:**
 
-   | Language/Framework | Skill Repository                      | Install Command                                                                     |
-   | ------------------ | ------------------------------------- | ----------------------------------------------------------------------------------- |
-   | PHP                | `vapvarun/claude-backup` (php)        | `npx skills add vapvarun/claude-backup --skill "php"`                               |
-   | Laravel            | `vapvarun/claude-backup` (laravel)    | `npx skills add vapvarun/claude-backup --skill "laravel"`                           |
-   | Python             | `siviter-xyz/dot-agent` (python)      | `npx skills add siviter-xyz/dot-agent --skill "python"`                             |
-   | Django             | `vintasoftware/django-ai-plugins`     | `npx skills add vintasoftware/django-ai-plugins --skill "django-expert"`            |
-   | Next.js            | `sickn33/antigravity-awesome-skills`  | `npx skills add sickn33/antigravity-awesome-skills --skill "nextjs-best-practices"` |
-   | React              | `vercel-labs/agent-skills`            | `npx skills add vercel-labs/agent-skills --skill "vercel-react-best-practices"`     |
-   | Vue                | `onmax/nuxt-skills` (vue)             | `npx skills add onmax/nuxt-skills --skill "vue"`                                    |
-   | Nuxt               | `onmax/nuxt-skills` (nuxt)            | `npx skills add onmax/nuxt-skills --skill "nuxt"`                                   |
-   | Expo               | `expo/skills`                         | `npx skills add expo/skills`                                                        |
-   | TypeScript         | `pproenca/dot-skills` (typescript)    | `npx skills add pproenca/dot-skills`                                                |
-   | Advanced Types     | `wshobson/agents` (ts-advanced-types) | `npx skills add wshobson/agents`                                                    |
+   | Language/Framework | Skill Repository                      | Install Command                                                                        |
+   | ------------------ | ------------------------------------- | -------------------------------------------------------------------------------------- |
+   | PHP                | `vapvarun/claude-backup` (php)        | `npx -y skills add vapvarun/claude-backup --skill "php"`                               |
+   | Laravel            | `vapvarun/claude-backup` (laravel)    | `npx -y skills add vapvarun/claude-backup --skill "laravel"`                           |
+   | Python             | `siviter-xyz/dot-agent` (python)      | `npx -y skills add siviter-xyz/dot-agent --skill "python"`                             |
+   | Django             | `vintasoftware/django-ai-plugins`     | `npx -y skills add vintasoftware/django-ai-plugins --skill "django-expert"`            |
+   | Next.js            | `sickn33/antigravity-awesome-skills`  | `npx -y skills add sickn33/antigravity-awesome-skills --skill "nextjs-best-practices"` |
+   | React              | `vercel-labs/agent-skills`            | `npx -y skills add vercel-labs/agent-skills --skill "vercel-react-best-practices"`     |
+   | Vue                | `onmax/nuxt-skills` (vue)             | `npx -y skills add onmax/nuxt-skills --skill "vue"`                                    |
+   | Nuxt               | `onmax/nuxt-skills` (nuxt)            | `npx -y skills add onmax/nuxt-skills --skill "nuxt"`                                   |
+   | Expo               | `expo/skills`                         | `npx -y skills add expo/skills`                                                        |
+   | TypeScript         | `pproenca/dot-skills` (typescript)    | `npx -y skills add pproenca/dot-skills`                                                |
+   | Advanced Types     | `wshobson/agents` (ts-advanced-types) | `npx -y skills add wshobson/agents`                                                    |
 
    **Skill Creation for Unsupported Frameworks:**
 
-   Use `npx skills add anthropics/skills` (includes `skill-creator`) to create custom skills.
+   Use `npx -y skills add anthropics/skills` (includes `skill-creator`) to create custom skills.
 
    **Monorepo-Specific Considerations:**
 
@@ -201,13 +201,13 @@ You are helping to bootstrap AI instructions for this monorepo by analyzing the 
    Based on your monorepo ({{BUILD_SYSTEM}}/{{LANGUAGE}}):
 
    Core Skills (recommended for all projects):
-   npx skills add obra/superpowers
-   npx skills add trailofbits/skills
-   npx skills add softaworks/agent-toolkit
+   npx -y skills add obra/superpowers
+   npx -y skills add trailofbits/skills
+   npx -y skills add softaworks/agent-toolkit
 
    Framework-Specific Skills:
-   - web (Next.js): npx skills add vercel-labs/agent-skills
-   - api (Hono): npx skills add elysiajs/skills
+   - web (Next.js): npx -y skills add vercel-labs/agent-skills
+   - api (Hono): npx -y skills add elysiajs/skills
 
    Install All? (Y/n)
    ```
