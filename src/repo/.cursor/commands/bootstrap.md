@@ -35,7 +35,6 @@ You are helping to bootstrap AI instructions for this project by analyzing the c
    | **Java**   | Spring Boot, Quarkus, Micronaut, Jakarta EE                                |
 
    **Detect Additional Tools:**
-
    - Database: Prisma, Drizzle, Entity Framework, Eloquent, SQLAlchemy, ActiveRecord, GORM, Diesel
    - Testing: Vitest, Jest, PHPUnit, xUnit, pytest, RSpec, go test, cargo test, JUnit
    - Styling: TailwindCSS, Bootstrap, SASS, Material UI
@@ -85,7 +84,6 @@ You are helping to bootstrap AI instructions for this project by analyzing the c
 4. **Prompt for Missing Values**:
 
    For any values that couldn't be inferred, ask the user specific questions:
-
    - "What is a brief description of this project?"
    - "Where will this project be deployed?"
    - "What issue tracker do you use (GitHub Issues, Jira, Linear)?"
@@ -93,7 +91,6 @@ You are helping to bootstrap AI instructions for this project by analyzing the c
 5. **Update Template Files**:
 
    Once all values are confirmed, update these files by replacing `{{PLACEHOLDER}}` with actual values:
-
    - `AGENTS.md`
    - `.github/copilot-instructions.md`
    - `.github/instructions/*.instructions.md`
@@ -107,42 +104,34 @@ You are helping to bootstrap AI instructions for this project by analyzing the c
    Based on the detected language and framework, add relevant patterns to `AGENTS.md`:
 
    **JavaScript/TypeScript:**
-
    - **Next.js**: App Router patterns, Server Components, API routes
    - **Nuxt**: Composables, auto-imports, Nitro server
    - **React/Vue**: Component patterns, hooks/composables, state management
    - **Express/Hono**: Route handlers, middleware patterns
 
    **PHP:**
-
    - **Laravel**: Eloquent models, Controllers, Blade templates, Artisan commands
    - **Symfony**: Services, Doctrine entities, Twig templates
 
    **.NET:**
-
    - **Blazor**: Components, services, dependency injection
    - **ASP.NET Core**: Controllers, Minimal APIs, Entity Framework
 
    **Python:**
-
    - **Django**: Models, Views, Templates, Admin
    - **FastAPI**: Routes, Pydantic models, dependency injection
    - **Flask**: Blueprints, SQLAlchemy models
 
    **Ruby:**
-
    - **Rails**: Models, Controllers, Views, ActiveRecord
 
    **Go:**
-
    - **Gin/Echo**: Handlers, middleware, repository pattern
 
    **Rust:**
-
    - **Actix/Axum**: Handlers, extractors, state management
 
    **Java:**
-
    - **Spring Boot**: Controllers, Services, Repositories, JPA entities
 
 7. **Recommend and Install AI Agent Skills**:
@@ -216,7 +205,6 @@ You are helping to bootstrap AI instructions for this project by analyzing the c
    ```
 
    **On Confirmation:**
-
    - Execute skill installation commands
    - Create `.cursor/skills/` directory structure
    - Update `AGENTS.md` to reference installed skills
@@ -356,7 +344,6 @@ You are helping to bootstrap AI instructions for this project by analyzing the c
    ```
 
    **On Skill Creation Confirmation:**
-
    1. Generate skill files in `.cursor/skills/{skill-name}/` or `.github/skills/{skill-name}/`
    2. Each skill includes:
       - `SKILL.md` - Skill definition with patterns and examples
@@ -401,17 +388,14 @@ You are helping to bootstrap AI instructions for this project by analyzing the c
    ## Do's and Don'ts
 
    ✅ **Do:**
-
    - {{DO_1}}
    - {{DO_2}}
 
    ❌ **Don't:**
-
    - {{DONT_1}}
    - {{DONT_2}}
 
    ## Related Files
-
    - {{RELATED_FILE_1}}
    - {{RELATED_FILE_2}}
 
@@ -442,6 +426,91 @@ You are helping to bootstrap AI instructions for this project by analyzing the c
    4. Browse more skills at https://skills.sh/
    5. Create custom skills for organization-specific patterns
    ```
+
+10. **Review Installed Skills**:
+
+    After completion, audit all installed skills:
+    - Scan `.github/skills/` and `.cursor/skills/` directories
+    - Compare each skill against detected ecosystem and framework
+    - Flag skills that don't match the project's tech stack
+
+    ```
+    ## 🔍 Skill Review
+
+    ### ✅ Relevant Skills ({{N}} installed)
+    | Skill | Purpose | Match |
+    |-------|---------|-------|
+    | superpowers | TDD workflows | Core practices |
+    | {{FRAMEWORK_SKILL}} | {{FRAMEWORK}} patterns | Matches framework |
+
+    ### ⚠️ Potentially Unnecessary Skills ({{N}} found)
+    | Skill | Purpose | Why Flagged |
+    |-------|---------|-------------|
+    | django-expert | Django patterns | No Django detected |
+    | php | PHP patterns | TypeScript project |
+
+    Remove flagged skills? (Y/n)
+    ```
+
+    **On Confirmation:**
+    - Remove unnecessary skill directories
+    - Update AGENTS.md to remove references
+    - Report cleanup results
+
+11. **Verify Instruction Files**:
+
+    Check for required instruction files:
+
+    ```
+    ## 📋 Instruction Files Audit
+
+    ### ✅ Found ({{N}} files)
+    | File | Purpose | Status |
+    |------|---------|--------|
+    | copilot-instructions.md | Main context | ✓ |
+    | typescript.instructions.md | TS patterns | ✓ |
+
+    ### ⚠️ Missing Recommended ({{N}} files)
+    | File | Purpose | Why Needed |
+    |------|---------|------------|
+    | nextjs.instructions.md | Next.js patterns | Framework detected |
+    | testing.instructions.md | Test conventions | Tests detected |
+
+    Create missing instruction files? (Y/n)
+    ```
+
+    **On Confirmation:**
+    - Generate instruction files with appropriate templates
+    - Include framework-specific patterns from skills
+    - Report created files
+
+12. **Final Verification Report**:
+
+    ```
+    ## ✅ Bootstrap Complete & Verified!
+
+    ### Summary
+    | Category | Count | Status |
+    |----------|-------|--------|
+    | Files updated | {{N}} | ✓ |
+    | Skills installed | {{N}} | ✓ |
+    | Skills removed | {{N}} | ✓ |
+    | Instructions created | {{N}} | ✓ |
+
+    ### Quality Checks
+    - [x] Placeholders replaced
+    - [x] Skills match tech stack
+    - [x] No duplicate skills
+    - [x] Instructions cover frameworks
+    - [x] AGENTS.md configured
+
+    ### Your Project is Ready! 🎉
+
+    Try asking:
+    - "Create an API endpoint using our patterns"
+    - "Add a component following our conventions"
+    - "Write tests for this service"
+    ```
 
 ## Example Workflows
 

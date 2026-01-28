@@ -529,6 +529,324 @@ version: 1.0.0
 6. Create custom skills at https://agentskills.io/specification
 ````
 
+### Step 11: Skills Review & Cleanup
+
+After bootstrap completion, review all installed skills for relevance:
+
+**Skill Audit Process:**
+
+1. **Inventory Installed Skills**
+   - Scan `.github/skills/` and `.cursor/skills/` directories
+   - List all installed skill names and descriptions
+   - Check each skill's SKILL.md for its purpose
+
+2. **Relevance Analysis**
+   - Compare skills against detected ecosystem, frameworks, and languages
+   - Identify skills that don't match the project's tech stack
+   - Flag generic skills that may not be needed
+
+**Relevance Criteria:**
+
+| Skill Category     | Keep If...                    | Consider Removing If...                                      |
+| ------------------ | ----------------------------- | ------------------------------------------------------------ |
+| Language-specific  | Matches detected language(s)  | Different language (e.g., PHP skills in .NET project)        |
+| Framework-specific | Matches detected framework(s) | Different framework (e.g., Django skills in FastAPI project) |
+| Core workflow      | TDD, debugging, planning      | Duplicate functionality                                      |
+| Security/Quality   | Always relevant               | Very specialized (e.g., crypto for non-crypto projects)      |
+| UI-specific        | Has frontend apps             | Backend-only monorepo                                        |
+| Testing            | Always relevant               | Redundant test patterns                                      |
+
+**Review Report:**
+
+```markdown
+## 🔍 Skill Review
+
+### ✅ Relevant Skills ({{N}} installed)
+
+| Skill                       | Purpose                   | Reason                     |
+| --------------------------- | ------------------------- | -------------------------- |
+| superpowers                 | TDD & debugging workflows | Core development practices |
+| vercel-react-best-practices | React patterns            | Matches web app framework  |
+| {{FRAMEWORK_SKILL}}         | {{FRAMEWORK}} patterns    | Matches api framework      |
+
+### ⚠️ Potentially Unnecessary Skills ({{N}} found)
+
+| Skill             | Purpose          | Why Flagged                                         |
+| ----------------- | ---------------- | --------------------------------------------------- |
+| django-expert     | Django patterns  | No Django detected - you're using FastAPI           |
+| php               | PHP patterns     | No PHP files found - JavaScript/TypeScript monorepo |
+| swift-development | SwiftUI patterns | No iOS/Swift code detected                          |
+
+### 🚫 Remove Unnecessary Skills?
+
+These skills don't match your detected tech stack and may clutter AI context.
+
+Remove flagged skills? (Y/n)
+```
+
+**On Confirmation:**
+
+```bash
+# Remove unnecessary skills
+rm -rf .github/skills/django-expert/
+rm -rf .cursor/skills/php/
+rm -rf .github/skills/swift-development/
+
+# Update AGENTS.md to remove references
+```
+
+**Post-Cleanup Report:**
+
+```markdown
+## ✅ Skill Cleanup Complete
+
+Removed {{N}} unnecessary skills:
+
+- django-expert
+- php
+- swift-development
+
+Kept {{N}} relevant skills:
+
+- superpowers
+- vercel-react-best-practices
+- {{FRAMEWORK_SKILL}}
+```
+
+### Step 12: Instruction Files Verification
+
+Verify that all necessary instruction files exist and are properly configured:
+
+**Required Instruction Files:**
+
+| File                          | Purpose                         | Location                |
+| ----------------------------- | ------------------------------- | ----------------------- |
+| `copilot-instructions.md`     | Main GitHub Copilot context     | `.github/`              |
+| `{framework}.instructions.md` | Framework-specific patterns     | `.github/instructions/` |
+| `{language}.instructions.md`  | Language-specific patterns      | `.github/instructions/` |
+| `patterns.instructions.md`    | Project patterns                | `.github/instructions/` |
+| `testing.instructions.md`     | Testing conventions             | `.github/instructions/` |
+| `api.instructions.md`         | API conventions (if API exists) | `.github/instructions/` |
+
+**Detection & Validation:**
+
+```markdown
+## 📋 Instruction Files Audit
+
+### ✅ Found ({{N}} files)
+
+| File                       | Purpose             | Status       |
+| -------------------------- | ------------------- | ------------ |
+| copilot-instructions.md    | Main context        | ✓ Configured |
+| typescript.instructions.md | TypeScript patterns | ✓ Configured |
+| patterns.instructions.md   | Project patterns    | ✓ Configured |
+
+### ⚠️ Missing Recommended Instructions ({{N}} files)
+
+| File                          | Purpose          | Why Needed                        |
+| ----------------------------- | ---------------- | --------------------------------- |
+| nextjs.instructions.md        | Next.js patterns | Web app uses Next.js 15           |
+| fastapi.instructions.md       | FastAPI patterns | API app uses FastAPI              |
+| testing.instructions.md       | Test conventions | Multiple test frameworks detected |
+| api-standards.instructions.md | API conventions  | REST API in apps/api/             |
+
+### 📝 Create Missing Instruction Files?
+
+These files would help AI understand your project's conventions.
+
+Create recommended instructions? (Y/n)
+```
+
+**On Confirmation:**
+
+Generate missing instruction files with appropriate templates:
+
+**Example: Framework Instruction Template**
+
+```markdown
+---
+applyTo: "apps/{{APP_NAME}}/**"
+description: "{{FRAMEWORK}} patterns and conventions for {{APP_NAME}}"
+---
+
+# {{FRAMEWORK}} Instructions
+
+## Project Context
+
+App: {{APP_NAME}}
+Framework: {{FRAMEWORK}} {{VERSION}}
+Port: {{DEV_PORT}}
+Deploy: {{DEPLOY_PLATFORM}}
+
+## Patterns
+
+### {{PATTERN_1}}
+
+{{AUTO_DETECTED_PATTERN_1}}
+
+### {{PATTERN_2}}
+
+{{AUTO_DETECTED_PATTERN_2}}
+
+## File Structure
+
+{{AUTO_DETECTED_STRUCTURE}}
+
+## Dependencies
+
+Key packages:
+{{LIST_KEY_DEPENDENCIES}}
+
+## Do's and Don'ts
+
+✅ **Do:**
+
+- Follow {{FRAMEWORK}} best practices
+- {{DO_1_FROM_FRAMEWORK_SKILL}}
+- {{DO_2_FROM_FRAMEWORK_SKILL}}
+
+❌ **Don't:**
+
+- {{DONT_1_FROM_FRAMEWORK_SKILL}}
+- {{DONT_2_FROM_FRAMEWORK_SKILL}}
+
+## Related Documentation
+
+- [{{FRAMEWORK}} Docs]({{DOCS_URL}})
+- [Project README](../../apps/{{APP_NAME}}/README.md)
+```
+
+**Example: Testing Instruction Template**
+
+```markdown
+---
+applyTo: "**/*.{test,spec}.{ts,tsx,py,php,cs}"
+description: "Testing conventions and patterns"
+---
+
+# Testing Instructions
+
+## Test Frameworks
+
+Detected test frameworks:
+{{LIST_DETECTED_TEST_FRAMEWORKS}}
+
+## Test Structure
+
+{{AUTO_DETECTED_TEST_PATTERNS}}
+
+## Conventions
+
+### Naming
+
+- Test files: {{DETECTED_TEST_FILE_PATTERN}}
+- Test functions: {{DETECTED_TEST_FUNCTION_PATTERN}}
+
+### Organization
+
+{{DETECTED_TEST_ORGANIZATION}}
+
+## Utilities
+
+Available test utilities:
+{{LIST_TEST_UTILS_FROM_CODEBASE}}
+
+## Coverage Requirements
+
+{{COVERAGE_CONFIG_IF_FOUND}}
+
+## Best Practices
+
+✅ **Do:**
+
+- {{TESTING_BEST_PRACTICE_1}}
+- {{TESTING_BEST_PRACTICE_2}}
+
+❌ **Don't:**
+
+- {{TESTING_ANTIPATTERN_1}}
+- {{TESTING_ANTIPATTERN_2}}
+```
+
+**Post-Creation Report:**
+
+```markdown
+## ✅ Instruction Files Created
+
+Created {{N}} new instruction files:
+
+- [x] `.github/instructions/nextjs.instructions.md`
+- [x] `.github/instructions/fastapi.instructions.md`
+- [x] `.github/instructions/testing.instructions.md`
+- [x] `.github/instructions/api-standards.instructions.md`
+
+### Next Steps
+
+1. Review generated instruction files for accuracy
+2. Customize patterns based on your preferences
+3. Add project-specific conventions
+4. Test with GitHub Copilot
+
+All instruction files are automatically loaded by GitHub Copilot when editing matching files.
+```
+
+### Step 13: Final Verification
+
+```markdown
+## ✅ Bootstrap Complete & Verified!
+
+### Summary
+
+| Category                  | Count | Status |
+| ------------------------- | ----- | ------ |
+| Root files updated        | {{N}} | ✓      |
+| App files created         | {{N}} | ✓      |
+| Package files updated     | {{N}} | ✓      |
+| Skills installed          | {{N}} | ✓      |
+| Skills removed            | {{N}} | ✓      |
+| Instruction files created | {{N}} | ✓      |
+
+### Skill Inventory
+
+**Installed & Relevant ({{N}}):**
+
+- {{SKILL_1}}
+- {{SKILL_2}}
+- {{SKILL_N}}
+
+### Instruction Files
+
+**Active Instructions ({{N}}):**
+
+- {{INSTRUCTION_1}}
+- {{INSTRUCTION_2}}
+- {{INSTRUCTION_N}}
+
+### Quality Checks
+
+- [x] All placeholders replaced
+- [x] Framework patterns match detected stack
+- [x] No duplicate skills
+- [x] All apps have AGENTS.md
+- [x] Instruction files cover all frameworks
+- [x] Skills align with tech stack
+
+### Your Monorepo is Ready! 🎉
+
+GitHub Copilot and Cursor will now understand:
+
+- Your monorepo structure
+- Framework-specific patterns
+- Custom conventions
+- Available packages and utilities
+
+Try asking:
+
+- "Create a new API endpoint in apps/api using our patterns"
+- "Add a component to the design system following our conventions"
+- "Write tests for UserService using our test utilities"
+```
+
 ## Monorepo Detection Logic
 
 ```typescript

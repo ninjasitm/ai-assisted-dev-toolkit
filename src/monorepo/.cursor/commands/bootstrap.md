@@ -21,14 +21,12 @@ You are helping to bootstrap AI instructions for this monorepo by analyzing the 
    | **Java**                  | `pom.xml` / `build.gradle` | Maven modules, Gradle multi-project                 |
 
    **Detect Build System:**
-
    - JavaScript: Turborepo (`turbo.json`), Nx (`nx.json`), Lerna (`lerna.json`)
    - .NET: Solution files, MSBuild
    - Java: Maven, Gradle
    - Other: Makefiles, Bazel, etc.
 
    **Scan Workspace:**
-
    - Scan `apps/` or similar directories for applications
    - Scan `packages/`, `libs/`, `modules/` for shared code
    - For each app/package, analyze their config files
@@ -100,7 +98,6 @@ You are helping to bootstrap AI instructions for this monorepo by analyzing the 
 6. **Prompt for Missing Values**:
 
    Ask specific questions for values that couldn't be inferred:
-
    - "What is the main purpose of this monorepo?"
    - "What issue tracker do you use (GitHub Issues, Jira, Linear)?"
    - "Any additional apps or packages to document?"
@@ -108,7 +105,6 @@ You are helping to bootstrap AI instructions for this monorepo by analyzing the 
 7. **Update Template Files**:
 
    **Root Level:**
-
    - `AGENTS.md`
    - `.github/copilot-instructions.md`
    - `.github/instructions/*.instructions.md`
@@ -117,18 +113,15 @@ You are helping to bootstrap AI instructions for this monorepo by analyzing the 
    - `.cursor/commands/*.md`
 
    **Per App** (copy from `apps/app-template/` if needed):
-
    - `apps/{app}/AGENTS.md`
    - `apps/{app}/README.md`
 
    **Per Package:**
-
    - `packages/{package}/README.md`
 
 8. **Generate App-Specific AGENTS.md**:
 
    For each detected app, create a customized `AGENTS.md` with:
-
    - Framework-specific patterns
    - Directory structure
    - Component/route conventions
@@ -187,7 +180,6 @@ You are helping to bootstrap AI instructions for this monorepo by analyzing the 
    Use `npx -y skills add anthropics/skills` (includes `skill-creator`) to create custom skills.
 
    **Monorepo-Specific Considerations:**
-
    - Install skills at workspace root (`.cursor/skills/{skill-name}/` or `.github/skills/{skill-name}/`)
    - Skills are installed by skill name, not org/repo path (e.g., `superpowers/` not `obra/superpowers/`)
    - Consider per-app skills if apps use different frameworks
@@ -213,7 +205,6 @@ You are helping to bootstrap AI instructions for this monorepo by analyzing the 
    ```
 
    **On Confirmation:**
-
    - Run skill installation commands at workspace root
    - Skills installed to `.cursor/skills/`
    - Update root `AGENTS.md` to reference installed skills
@@ -253,6 +244,102 @@ Next Steps:
 5. Browse more skills at https://skills.sh/
 6. Create custom skills at https://agentskills.io/specification
 ```
+
+9. **Review Installed Skills**:
+
+   After completion, audit all installed skills:
+   - Scan `.github/skills/` and `.cursor/skills/` directories
+   - Compare each skill against detected ecosystems and frameworks
+   - Flag skills that don't match any app's tech stack
+
+   ```
+   ## 🔍 Skill Review
+
+   ### ✅ Relevant Skills ({{N}} installed)
+   | Skill | Purpose | Matches |
+   |-------|---------|----------|
+   | superpowers | TDD workflows | All apps |
+   | vercel-react-best-practices | React patterns | web app |
+   | {{FRAMEWORK_SKILL}} | API patterns | api app |
+
+   ### ⚠️ Potentially Unnecessary Skills ({{N}} found)
+   | Skill | Purpose | Why Flagged |
+   |-------|---------|-------------|
+   | django-expert | Django patterns | No Django apps detected |
+   | php | PHP patterns | JavaScript/TypeScript monorepo |
+
+   Remove flagged skills? (Y/n)
+   ```
+
+   **On Confirmation:**
+   - Remove unnecessary skill directories
+   - Update root AGENTS.md to remove references
+   - Report cleanup results
+
+10. **Verify Instruction Files**:
+
+    Check for required instruction files at root and app levels:
+
+    ```
+    ## 📋 Instruction Files Audit
+
+    ### ✅ Found ({{N}} files)
+    | File | Purpose | Status |
+    |------|---------|--------|
+    | copilot-instructions.md | Root context | ✓ |
+    | typescript.instructions.md | TS patterns | ✓ |
+
+    ### ⚠️ Missing Recommended ({{N}} files)
+    | File | Purpose | Why Needed |
+    |------|---------|------------|
+    | nextjs.instructions.md | Next.js patterns | web app uses Next.js |
+    | fastapi.instructions.md | FastAPI patterns | api app uses FastAPI |
+    | testing.instructions.md | Test conventions | Multiple frameworks |
+
+    Create missing instruction files? (Y/n)
+    ```
+
+    **On Confirmation:**
+    - Generate instruction files with appropriate templates
+    - Include app-specific scoping (applyTo paths)
+    - Include framework-specific patterns from skills
+    - Report created files
+
+11. **Final Verification Report**:
+
+    ```
+    ## ✅ Bootstrap Complete & Verified!
+
+    ### Summary
+    | Category | Count | Status |
+    |----------|-------|--------|
+    | Root files updated | {{N}} | ✓ |
+    | App files created | {{N}} | ✓ |
+    | Package files updated | {{N}} | ✓ |
+    | Skills installed | {{N}} | ✓ |
+    | Skills removed | {{N}} | ✓ |
+    | Instructions created | {{N}} | ✓ |
+
+    ### Quality Checks
+    - [x] Placeholders replaced
+    - [x] Skills match tech stack
+    - [x] No duplicate skills
+    - [x] All apps have AGENTS.md
+    - [x] Instructions cover all frameworks
+
+    ### Your Monorepo is Ready! 🎉
+
+    GitHub Copilot and Cursor understand:
+    - Monorepo structure
+    - App-specific frameworks
+    - Shared packages
+    - Cross-cutting patterns
+
+    Try asking:
+    - "Create an endpoint in apps/api using our patterns"
+    - "Add a component to the design system"
+    - "Write tests for UserService in packages/core"
+    ```
 
 ## Example Workflows
 
