@@ -162,9 +162,33 @@ You are helping to bootstrap AI instructions for this project by analyzing the c
    **Java:**
    - **Spring Boot**: Controllers, Services, Repositories, JPA entities
 
-7. **Recommend and Install AI Agent Skills**:
+7. **Detect Installed AI Agents**:
+
+   Before recommending skills, detect which AI agent directories exist in the workspace:
+
+   | Directory Pattern                      | Agent Flag        | Agent Name     |
+   | -------------------------------------- | ----------------- | -------------- |
+   | `.cursor/` or `~/.cursor/`             | `cursor`          | Cursor         |
+   | `.github/` (check for Copilot)         | `copilot`         | GitHub Copilot |
+   | `.agents/`                             | Multiple possible | See note below |
+   | `.windsurf/` or `~/.codeium/windsurf/` | `windsurf`        | Windsurf       |
+   | `.cline/` or `~/.cline/`               | `cline`           | Cline          |
+   | `.continue/` or `~/.continue/`         | `continue`        | Continue       |
+   | `.roo/` or `~/.roo/`                   | `roo`             | Roo Code       |
+   | `.claude/` or `~/.claude/`             | `claude-code`     | Claude Code    |
+
+   **Note:** `.agents/` directory is used by multiple agents: `amp`, `codex`, `gemini-cli`, `github-copilot`, `opencode`, `replit`. If only `.agents/` exists, default to `codex` or `github-copilot` based on other indicators.
+
+   **Build the agent flags string:**
+   - For each detected agent, add `-a <agent>` to the command
+   - Example: If `.cursor/` and `.github/` exist → use `-a cursor -a copilot`
+   - If no agents detected, omit `-a` flags (CLI will prompt)
+
+8. **Recommend and Install AI Agent Skills**:
 
    Based on the detected ecosystem and frameworks, recommend relevant skills from [skills.sh](https://skills.sh/).
+
+   **Important:** Use the detected agent flags from step 7 in all `npx skills add` commands. This prevents creating unnecessary configurations for agents the user doesn't have installed.
 
    **Core Skills (Always Recommend):**
 
@@ -174,7 +198,16 @@ You are helping to bootstrap AI instructions for this project by analyzing the c
    | `trailofbits/skills`       | Semgrep, security analysis            | Security and code quality           |
    | `softaworks/agent-toolkit` | README writing, clear writing         | Documentation quality               |
 
+   **Example commands** (replace `<detected-agents>` with the actual flags from step 7, e.g., `-a cursor -a copilot`):
+
+   ```bash
+   npx -y skills add <detected-agents> obra/superpowers
+   npx -y skills add <detected-agents> trailofbits/skills
+   ```
+
    **Framework-Specific Skills:**
+
+   When recommending framework-specific skills, include the detected agent flags. Examples:
 
    | Detected          | Skill Repository                      | Install Command                                         |
    | ----------------- | ------------------------------------- | ------------------------------------------------------- |
@@ -216,21 +249,31 @@ You are helping to bootstrap AI instructions for this project by analyzing the c
 
    **Present Skills Recommendation:**
 
+   After detecting agents in step 7, present the recommendations with the appropriate agent flags:
+
    ```
    🎯 Recommended AI Agent Skills
+
+   Detected agents: {{DETECTED_AGENTS_LIST}}
+   Using flags: {{AGENT_FLAGS}}
 
    Based on your project ({{FRAMEWORK}}/{{LANGUAGE}}), these skills will enhance your AI assistant:
 
    📦 Core Skills (recommended for all projects):
-   - npx -y skills add obra/superpowers
-   - npx -y skills add trailofbits/skills
-   - npx -y skills add softaworks/agent-toolkit
+   - npx -y skills add {{AGENT_FLAGS}} obra/superpowers
+   - npx -y skills add {{AGENT_FLAGS}} trailofbits/skills
+   - npx -y skills add {{AGENT_FLAGS}} softaworks/agent-toolkit
 
    🔧 Framework-Specific Skills:
-   - npx -y skills add {{FRAMEWORK_SKILL_REPO}}
+   - npx -y skills add {{AGENT_FLAGS}} {{FRAMEWORK_SKILL_REPO}}
 
    Install all recommended skills? (Y/n)
    ```
+
+   **Example with detected agents:**
+   - If `.cursor/` and `.github/` exist: `AGENT_FLAGS="-a cursor -a copilot"`
+   - If only `.cursor/` exists: `AGENT_FLAGS="-a cursor"`
+   - Commands become: `npx -y skills add -a cursor -a copilot obra/superpowers`
 
    **On Confirmation:**
    - Execute skill installation commands
@@ -254,7 +297,7 @@ You are helping to bootstrap AI instructions for this project by analyzing the c
 
    **Note:** Skills are installed by skill name, not org/repo path. For example, `npx -y skills add obra/superpowers` installs to `.cursor/skills/superpowers/`.
 
-8. **Discover Codebase Patterns for Custom Skills**:
+9. **Discover Codebase Patterns for Custom Skills**:
 
    Scan the codebase to identify reusable patterns that could become custom AI skills:
 
@@ -431,31 +474,31 @@ You are helping to bootstrap AI instructions for this project by analyzing the c
 
    ```
 
-9. **Report Completion**:
+10. **Report Completion**:
 
-   ```
-   ✅ Bootstrap Complete!
+    ```
+    ✅ Bootstrap Complete!
 
-   📁 Updated Files:
-   - AGENTS.md (with {{LANGUAGE}}/{{FRAMEWORK}} patterns)
-   - .github/copilot-instructions.md
-   - .github/instructions/project-context.instructions.md
-   - ... (list all updated files)
+    📁 Updated Files:
+    - AGENTS.md (with {{LANGUAGE}}/{{FRAMEWORK}} patterns)
+    - .github/copilot-instructions.md
+    - .github/instructions/project-context.instructions.md
+    - ... (list all updated files)
 
-   🎯 Installed Skills:
-   - obra/superpowers (TDD, debugging, planning)
-   - {{FRAMEWORK_SKILLS}} (framework best practices)
-   - ... (list installed skills)
+    🎯 Installed Skills:
+    - obra/superpowers (TDD, debugging, planning)
+    - {{FRAMEWORK_SKILLS}} (framework best practices)
+    - ... (list installed skills)
 
-   Next Steps:
-   1. Review the generated files
-   2. Add any project-specific patterns to AGENTS.md
-   3. Customize prompts and commands as needed
-   4. Browse more skills at https://skills.sh/
-   5. Create custom skills for organization-specific patterns
-   ```
+    Next Steps:
+    1. Review the generated files
+    2. Add any project-specific patterns to AGENTS.md
+    3. Customize prompts and commands as needed
+    4. Browse more skills at https://skills.sh/
+    5. Create custom skills for organization-specific patterns
+    ```
 
-10. **Review Installed Skills**:
+11. **Review Installed Skills**:
 
     After completion, audit all installed skills:
     - Scan `.github/skills/` and `.cursor/skills/` directories
@@ -485,7 +528,7 @@ You are helping to bootstrap AI instructions for this project by analyzing the c
     - Update AGENTS.md to remove references
     - Report cleanup results
 
-11. **Verify Instruction Files**:
+12. **Verify Instruction Files**:
 
     Check for required instruction files:
 
@@ -512,7 +555,7 @@ You are helping to bootstrap AI instructions for this project by analyzing the c
     - Include framework-specific patterns from skills
     - Report created files
 
-12. **Final Verification Report**:
+13. **Final Verification Report**:
 
     ```
     ## ✅ Bootstrap Complete & Verified!

@@ -321,13 +321,47 @@ my-skill/
 
 ### Installing Skills
 
-Install skills from [skills.sh](https://skills.sh/) with a single command:
+Install skills from [skills.sh](https://skills.sh/) using the `-a` or `--agent` flag to specify your AI agent:
 
 ```bash
-npx -y skills add <owner/repo>
+# For a single agent
+npx -y skills add -a cursor <owner/repo>
+
+# For multiple agents (use multiple -a flags)
+npx -y skills add -a cursor -a copilot <owner/repo>
 ```
 
-Skills are installed to `{.cursor|.agents|.github)/skills/` and automatically available to Cursor IDE and compatible AI agents.
+#### Agent Detection
+
+The skills CLI **automatically detects** which agents you have installed when you run any command. If you don't specify the `-a` flag, you'll be prompted to select from your detected agents.
+
+Supported agents include:
+
+- **Cursor, GitHub Copilot, Windsurf, Cline, Continue, Aider, Zed, Roo Code, and 35+ more**
+- See [full list of supported agents](https://github.com/vercel-labs/skills?tab=readme-ov-file#supported-agents)
+
+#### Agent-Specific Installation Examples
+
+```bash
+# For GitHub Copilot only
+npx -y skills add -a copilot <owner/repo>
+
+# For Cursor only
+npx -y skills add -a cursor <owner/repo>
+
+# For Windsurf only
+npx -y skills add -a windsurf <owner/repo>
+
+# For Cline only
+npx -y skills add -a cline <owner/repo>
+
+# For both Cursor and GitHub Copilot
+npx -y skills add -a cursor -a copilot <owner/repo>
+```
+
+**Important:** Always specify the agent(s) explicitly using `-a <agent-name>` to install only for the agents you actively use. You can specify multiple agents using multiple `-a` flags. This prevents creating unnecessary configurations for unused agents.
+
+Skills are installed to `{.cursor|.agents|.github}/skills/` and automatically available to your selected AI agent(s).
 
 ### Bundled Universal Skills
 
@@ -352,11 +386,19 @@ This toolkit includes **16 pre-installed universal skills** in the `.agents/skil
 | **logging**                        | Structured logging standards, log levels, and observability patterns.                                |
 | **project-documentation**          | README files, code comments, ADRs, and changelog best practices.                                     |
 
-**These skills are ready to use immediately after copying the templates.** No `npx -y skills add` commands needed.
+**These skills are ready to use immediately after copying the templates.** No `npx -y skills add -a <agent>` commands needed.
 
 ### Additional Recommended Skills
 
 Beyond the bundled skills, these additional skills complement this toolkit for specific use cases:
+
+**Note:** All install commands in the tables below should include the `-a <agent>` flag to specify your AI agent. For example:
+
+- `npx -y skills add -a copilot obra/superpowers` (for GitHub Copilot only)
+- `npx -y skills add -a cursor obra/superpowers` (for Cursor only)
+- `npx -y skills add -a cursor -a copilot obra/superpowers` (for both Cursor and GitHub Copilot)
+
+**Tip:** If you omit the `-a` flag, the CLI will automatically detect your installed agents and prompt you to choose.
 
 #### Development Workflow Skills (External)
 
@@ -420,7 +462,7 @@ If you want the original `obra/superpowers` skills (which the bundled skills are
 | **TypeScript**     | `npx -y skills add pproenca/dot-skills`                                                | TypeScript best practices         |
 | **Advanced Types** | `npx -y skills add wshobson/agents`                                                    | TypeScript advanced type patterns |
 
-**Note:** For frameworks without dedicated skills, use `npx -y skills add anthropics/skills` which includes `skill-creator` to help you create custom skills.
+**Note:** For frameworks without dedicated skills, use `npx -y skills add -a <agent> anthropics/skills` which includes `skill-creator` to help you create custom skills. Remember to replace `<agent>` with your AI agent name (e.g., `copilot`, `cursor`, `windsurf`, `cline`).
 
 #### Documentation & Writing Skills
 
@@ -435,7 +477,7 @@ If you want the original `obra/superpowers` skills (which the bundled skills are
 After bootstrapping your project with this toolkit:
 
 1. **Identify your tech stack** - Review your framework and tooling
-2. **Install relevant skills** - Add skills that match your technologies
+2. **Install relevant skills** - Add skills that match your technologies using `-a <agent>` flags
 3. **Add custom skills** - Create project-specific skills as needed
 
 **Example for a Nuxt + Hono monorepo:**
@@ -444,15 +486,17 @@ After bootstrapping your project with this toolkit:
 # Note: Development workflow skills (TDD, debugging, planning, etc.)
 # are already bundled in .agents/skills/ - no installation needed!
 
-# Frontend skills
-npx -y skills add onmax/nuxt-skills
-npx -y skills add vercel-labs/agent-skills
+# For Cursor only
+npx -y skills add -a cursor onmax/nuxt-skills
+npx -y skills add -a cursor vercel-labs/agent-skills
+npx -y skills add -a cursor better-auth/skills
+npx -y skills add -a cursor trailofbits/skills
 
-# Backend skills
-npx -y skills add better-auth/skills
-
-# Security (optional, for additional security analysis)
-npx -y skills add trailofbits/skills
+# Or, for multiple agents (e.g., Cursor + GitHub Copilot)
+npx -y skills add -a cursor -a copilot onmax/nuxt-skills
+npx -y skills add -a cursor -a copilot vercel-labs/agent-skills
+npx -y skills add -a cursor -a copilot better-auth/skills
+npx -y skills add -a cursor -a copilot trailofbits/skills
 ```
 
 ### Creating Custom Skills
@@ -519,13 +563,15 @@ After copying templates and installing additional skills, your project will have
 
 **Skill Locations:**
 
-| Location          | Contents                                                   | Source                            |
-| ----------------- | ---------------------------------------------------------- | --------------------------------- |
-| `.agents/skills/` | Universal workflow skills (TDD, debugging, planning, etc.) | Bundled with this toolkit         |
-| `.cursor/skills/` | Framework/language-specific skills                         | Installed via `npx -y skills add` |
-| `.github/skills/` | Alternative location for GitHub Copilot                    | Installed via `npx -y skills add` |
+| Location          | Contents                                                   | Source                                       |
+| ----------------- | ---------------------------------------------------------- | -------------------------------------------- |
+| `.agents/skills/` | Universal workflow skills (TDD, debugging, planning, etc.) | Bundled with this toolkit                    |
+| `.cursor/skills/` | Framework/language-specific skills                         | Installed via `npx -y skills add -a <agent>` |
+| `.github/skills/` | Alternative location for GitHub Copilot                    | Installed via `npx -y skills add -a <agent>` |
 
-**Note:** Skills installed via `npx -y skills add` use the skill name as the folder name (not org/repo path). For example, `npx -y skills add obra/superpowers` installs to `.cursor/skills/superpowers/` if you select Cursor as your agent and do not symlink.
+**Note:** Skills installed via `npx -y skills add -a <agent>` use the skill name as the folder name (not org/repo path). For example, `npx -y skills add -a cursor obra/superpowers` installs to `.cursor/skills/superpowers/`.
+
+**Recommendation:** Only install skills for agents you have installed and actively use. Symlinking to all known agents creates unnecessary configuration files and can clutter your project.
 
 **Note:** Skills complement the templates in this toolkit. The templates provide project structure and conventions, while skills provide procedural knowledge for specific technologies.
 
