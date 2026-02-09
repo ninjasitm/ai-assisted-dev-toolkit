@@ -325,9 +325,33 @@ Generate appropriate patterns for each app based on framework:
 - Use libs/domain for entities
 ```
 
-### Step 8: AI Agent Skills Recommendation
+### Step 8: Detect Installed AI Agents
+
+Before recommending skills, detect which AI agent directories exist in the workspace:
+
+| Directory Pattern                      | Agent Flag        | Agent Name     |
+| -------------------------------------- | ----------------- | -------------- |
+| `.cursor/` or `~/.cursor/`             | `cursor`          | Cursor         |
+| `.github/` (check for Copilot)         | `copilot`         | GitHub Copilot |
+| `.agents/`                             | Multiple possible | See note below |
+| `.windsurf/` or `~/.codeium/windsurf/` | `windsurf`        | Windsurf       |
+| `.cline/` or `~/.cline/`               | `cline`           | Cline          |
+| `.continue/` or `~/.continue/`         | `continue`        | Continue       |
+| `.roo/` or `~/.roo/`                   | `roo`             | Roo Code       |
+| `.claude/` or `~/.claude/`             | `claude-code`     | Claude Code    |
+
+**Note:** `.agents/` directory is used by multiple agents: `amp`, `codex`, `gemini-cli`, `github-copilot`, `opencode`, `replit`. If only `.agents/` exists, default to `codex` or `github-copilot` based on other indicators.
+
+**Build the agent flags string:**
+- For each detected agent, add `-a <agent>` to the command
+- Example: If `.cursor/` and `.github/` exist → use `-a cursor -a copilot`
+- If no agents detected, omit `-a` flags (CLI will prompt)
+
+### Step 9: AI Agent Skills Recommendation
 
 Based on detected ecosystem and frameworks, recommend relevant skills from [skills.sh](https://skills.sh/) and [agentskills.io](https://agentskills.io/).
+
+**Important:** Use the detected agent flags from Step 8 in all `npx skills add` commands. This prevents creating unnecessary configurations for agents the user doesn't have installed.
 
 **Core Skills (Always Recommend):**
 
@@ -388,14 +412,17 @@ Use `npx -y skills add anthropics/skills` (includes `skill-creator`) to create c
 ````markdown
 ## 🎯 Recommended AI Agent Skills
 
+Detected agents: {{DETECTED_AGENTS_LIST}}
+Using flags: {{AGENT_FLAGS}}
+
 Based on your monorepo ({{BUILD_SYSTEM}}/{{LANGUAGE}}):
 
 ### Core Skills (recommended for all projects)
 
 ```bash
-npx -y skills add obra/superpowers
-npx -y skills add trailofbits/skills
-npx -y skills add softaworks/agent-toolkit
+npx -y skills add {{AGENT_FLAGS}} obra/superpowers
+npx -y skills add {{AGENT_FLAGS}} trailofbits/skills
+npx -y skills add {{AGENT_FLAGS}} softaworks/agent-toolkit
 ```
 ````
 
@@ -403,10 +430,10 @@ npx -y skills add softaworks/agent-toolkit
 
 ```bash
 # For web app (Next.js)
-npx -y skills add vercel-labs/agent-skills
+npx -y skills add {{AGENT_FLAGS}} vercel-labs/agent-skills
 
 # For api (Hono/Elysia)
-npx -y skills add elysiajs/skills
+npx -y skills add {{AGENT_FLAGS}} elysiajs/skills
 ```
 
 ### Install All?
