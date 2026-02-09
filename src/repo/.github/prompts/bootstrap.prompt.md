@@ -109,22 +109,26 @@ Map discovered information to template variables:
 **Detection Strategy:**
 
 1. **GitHub Issues** - Check for:
+
    - `.github/ISSUE_TEMPLATE/` directory
    - Repository issues enabled (via git remote URL)
    - Default detection for GitHub-hosted repos
 
 2. **Jira** - Check for:
+
    - `jira.properties` or `jira.yml`
    - References in CI/CD configs (`.github/workflows/`, `azure-pipelines.yml`)
    - `JIRA_` environment variables in config files
    - Jira issue keys (e.g., `PROJ-123`) in commit history
 
 3. **Azure DevOps (Azure Boards)** - Check for:
+
    - `azure-pipelines.yml` with Azure Boards integration
    - `.azure/` directory
    - Azure DevOps URLs in README
 
 4. **Linear** - Check for:
+
    - `.linear/` directory or `linear.json`
    - Linear issue references in commits (e.g., `ENG-123`)
 
@@ -291,18 +295,7 @@ Add language and framework-specific patterns to `AGENTS.md`:
 
 ### Step 6: Detect Installed AI Agents
 
-Before recommending skills, detect which AI agent directories exist in the workspace:
-
-| Directory Pattern                      | Agent Flag        | Agent Name     |
-| -------------------------------------- | ----------------- | -------------- |
-| `.cursor/` or `~/.cursor/`             | `cursor`          | Cursor         |
-| `.github/` (check for Copilot)         | `copilot`         | GitHub Copilot |
-| `.agents/`                             | Multiple possible | See note below |
-| `.windsurf/` or `~/.codeium/windsurf/` | `windsurf`        | Windsurf       |
-| `.cline/` or `~/.cline/`               | `cline`           | Cline          |
-| `.continue/` or `~/.continue/`         | `continue`        | Continue       |
-| `.roo/` or `~/.roo/`                   | `roo`             | Roo Code       |
-| `.claude/` or `~/.claude/`             | `claude-code`     | Claude Code    |
+Before recommending skills, detect which AI agent directories exist in the workspace. Supported agents are located here: https://github.com/vercel-labs/skills?tab=readme-ov-file#available-agents:
 
 **Note:** `.agents/` directory is used by multiple agents: `amp`, `codex`, `gemini-cli`, `github-copilot`, `opencode`, `replit`. If only `.agents/` exists, default to `codex` or `github-copilot` based on other indicators.
 
@@ -346,23 +339,23 @@ Based on detected ecosystem and frameworks, recommend relevant skills from [skil
 
 **Language-Specific Skills:**
 
-| Language/Framework | Skill Repository                      | Install Command                                                                        |
-| ------------------ | ------------------------------------- | -------------------------------------------------------------------------------------- |
-| PHP                | `vapvarun/claude-backup` (php)        | `npx -y skills add vapvarun/claude-backup --skill "php"`                               |
-| Laravel            | `vapvarun/claude-backup` (laravel)    | `npx -y skills add vapvarun/claude-backup --skill "laravel"`                           |
-| Python             | `siviter-xyz/dot-agent` (python)      | `npx -y skills add siviter-xyz/dot-agent --skill "python"`                             |
-| Django             | `vintasoftware/django-ai-plugins`     | `npx -y skills add vintasoftware/django-ai-plugins --skill "django-expert"`            |
-| Next.js            | `sickn33/antigravity-awesome-skills`  | `npx -y skills add sickn33/antigravity-awesome-skills --skill "nextjs-best-practices"` |
-| React              | `vercel-labs/agent-skills`            | `npx -y skills add vercel-labs/agent-skills --skill "vercel-react-best-practices"`     |
-| Vue                | `onmax/nuxt-skills` (vue)             | `npx -y skills add onmax/nuxt-skills --skill "vue"`                                    |
-| Nuxt               | `onmax/nuxt-skills` (nuxt)            | `npx -y skills add onmax/nuxt-skills --skill "nuxt"`                                   |
-| Expo               | `expo/skills`                         | `npx -y skills add expo/skills`                                                        |
-| TypeScript         | `pproenca/dot-skills` (typescript)    | `npx -y skills add pproenca/dot-skills`                                                |
-| Advanced Types     | `wshobson/agents` (ts-advanced-types) | `npx -y skills add wshobson/agents`                                                    |
+| Language/Framework | Skill Repository                      | Install Command                                                                                       |
+| ------------------ | ------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| PHP                | `vapvarun/claude-backup` (php)        | `npx -y skills add {{AGENT_FLAGS}} vapvarun/claude-backup --skill "php"`                               |
+| Laravel            | `vapvarun/claude-backup` (laravel)    | `npx -y skills add {{AGENT_FLAGS}} vapvarun/claude-backup --skill "laravel"`                           |
+| Python             | `siviter-xyz/dot-agent` (python)      | `npx -y skills add {{AGENT_FLAGS}} siviter-xyz/dot-agent --skill "python"`                             |
+| Django             | `vintasoftware/django-ai-plugins`     | `npx -y skills add {{AGENT_FLAGS}} vintasoftware/django-ai-plugins --skill "django-expert"`            |
+| Next.js            | `sickn33/antigravity-awesome-skills`  | `npx -y skills add {{AGENT_FLAGS}} sickn33/antigravity-awesome-skills --skill "nextjs-best-practices"` |
+| React              | `vercel-labs/agent-skills`            | `npx -y skills add {{AGENT_FLAGS}} vercel-labs/agent-skills --skill "vercel-react-best-practices"`     |
+| Vue                | `onmax/nuxt-skills` (vue)             | `npx -y skills add {{AGENT_FLAGS}} onmax/nuxt-skills --skill "vue"`                                    |
+| Nuxt               | `onmax/nuxt-skills` (nuxt)            | `npx -y skills add {{AGENT_FLAGS}} onmax/nuxt-skills --skill "nuxt"`                                   |
+| Expo               | `expo/skills`                         | `npx -y skills add {{AGENT_FLAGS}} expo/skills`                                                        |
+| TypeScript         | `pproenca/dot-skills` (typescript)    | `npx -y skills add {{AGENT_FLAGS}} pproenca/dot-skills`                                                |
+| Advanced Types     | `wshobson/agents` (ts-advanced-types) | `npx -y skills add {{AGENT_FLAGS}} wshobson/agents`                                                    |
 
 **Skill Creation for Unsupported Frameworks:**
 
-Use `npx -y skills add anthropics/skills` (includes `skill-creator`) to create custom skills.
+Use `npx -y skills add {{AGENT_FLAGS}} anthropics/skills` (includes `skill-creator`) to create custom skills.
 
 **Present Recommendation:**
 
@@ -448,6 +441,7 @@ After bootstrap completion, review all installed skills for relevance:
 **Skill Audit Process:**
 
 1. **Inventory Installed Skills**
+
    - Scan `.github/skills/` and `.cursor/skills/` directories
    - List all installed skill names and descriptions
    - Check each skill's SKILL.md for its purpose
