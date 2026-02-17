@@ -7,100 +7,27 @@
 - **Apps:** `apps/{{APP_NAME_1}}/`, `apps/{{APP_NAME_2}}/`
 - **Packages:** `packages/{{PACKAGE_NAME_1}}/`, `packages/{{PACKAGE_NAME_2}}/`, `packages/config/`
 
-## Architecture
+## Instruction Sources
 
-### Workspace Structure
+Detailed standards are organized into focused instruction files. Copilot will automatically load these based on the `applyTo` patterns:
 
-```
-{{PROJECT_NAME}}/
-├── apps/                    # Deployable applications
-│   ├── {{APP_NAME_1}}/      # {{APP_1_DESCRIPTION}}
-│   └── {{APP_NAME_2}}/      # {{APP_2_DESCRIPTION}}
-├── packages/                # Shared packages
-│   ├── {{PACKAGE_NAME_1}}/ # {{PACKAGE_1_DESCRIPTION}}
-│   ├── {{PACKAGE_NAME_2}}/ # {{PACKAGE_2_DESCRIPTION}}
-│   └── config/             # Shared configuration
-└── {{MONOREPO_CONFIG}}     # Monorepo config
-```
-
-### Import Conventions
-
-```typescript
-// Cross-package imports
-import { Component } from "@{{PROJECT_NAME}}/ui";
-import { utils } from "@{{PROJECT_NAME}}/utils";
-
-// Internal app imports
-import { Component } from "@/components";
-import { utils } from "~/utils";
-```
-
-## Development Workflow
-
-### Commands
-
-```bash
-# Development
-{{PACKAGE_MANAGER}} dev                    # All apps
-{{PACKAGE_MANAGER}} dev --filter={{APP_NAME_1}}  # Specific app
-
-# Building
-{{PACKAGE_MANAGER}} build                  # All packages
-{{PACKAGE_MANAGER}} build --filter=<name>  # Specific package
-
-# Testing
-{{PACKAGE_MANAGER}} test                   # All tests
-{{PACKAGE_MANAGER}} test --filter=<name>   # Specific tests
-
-# Linting
-{{PACKAGE_MANAGER}} lint
-{{PACKAGE_MANAGER}} check-types
-```
-
-### Adding Dependencies
-
-```bash
-# To specific app/package
-{{PACKAGE_MANAGER}} add <package> --filter={{APP_NAME_1}}
-
-# To root workspace
-{{PACKAGE_MANAGER}} add -D <package> -w
-
-# Internal package dependency
-{{PACKAGE_MANAGER}} add @{{PROJECT_NAME}}/{{PACKAGE_NAME_1}} --filter={{APP_NAME_1}}
-```
-
-## Key Patterns
-
-### Shared Package Usage
-
-```typescript
-// packages/{{PACKAGE_NAME_1}}/src/index.ts
-export { Component } from "./Component";
-export type { ComponentProps } from "./types";
-
-// apps/{{APP_NAME_1}}/src/pages/index.tsx
-import { Component } from "@{{PROJECT_NAME}}/{{PACKAGE_NAME_1}}";
-```
-
-### Configuration Sharing
-
-```typescript
-// packages/config/eslint/base.js
-module.exports = {
-	/* shared rules */
-};
-
-// apps/{{APP_NAME_1}}/eslint.config.js
-import base from "@{{PROJECT_NAME}}/config/eslint";
-export default [...base];
-```
+| Instruction File                   | Description                                       |
+| ---------------------------------- | ------------------------------------------------- |
+| `agent-conduct.instructions.md`    | Agent conduct rules, clarification protocols      |
+| `project-context.instructions.md`  | Monorepo architecture and project context         |
+| `coding-standards.instructions.md` | Coding standards and shared code conventions      |
+| `patterns.instructions.md`         | Monorepo patterns, workspace conventions, imports |
+| `workflows.instructions.md`        | Development commands and monorepo workflows       |
+| `testing.instructions.md`          | Testing strategy across apps and packages         |
+| `deployment.instructions.md`       | Deployment configuration per app                  |
+| `logging.instructions.md`          | Monorepo logging standards and best practices     |
+| `documentation.instructions.md`    | Distributed documentation strategy                |
 
 ## Context Sources
 
-- [AGENTS.md](AGENTS.md) - Monorepo architecture
-- [apps/{{APP_NAME_1}}/AGENTS.md](apps/{{APP_NAME_1}}/AGENTS.md) - App-specific patterns
-- [apps/{{APP_NAME_2}}/AGENTS.md](apps/{{APP_NAME_2}}/AGENTS.md) - App-specific patterns
+- [AGENTS.md](../AGENTS.md) - Monorepo architecture and agent conduct
+- [apps/{{APP_NAME_1}}/AGENTS.md](../apps/{{APP_NAME_1}}/AGENTS.md) - App-specific patterns
+- [apps/{{APP_NAME_2}}/AGENTS.md](../apps/{{APP_NAME_2}}/AGENTS.md) - App-specific patterns
 
 ## Skills References
 

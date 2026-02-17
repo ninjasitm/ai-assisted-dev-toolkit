@@ -92,3 +92,42 @@ export default [...base];
 2. Add `package.json` with proper scope
 3. Update monorepo config if needed
 4. Add to consuming packages
+
+## Adding Dependencies
+
+```bash
+# To specific app/package
+{{PACKAGE_MANAGER}} add <package> --filter={{APP_NAME_1}}
+
+# To root workspace
+{{PACKAGE_MANAGER}} add -D <package> -w
+
+# Internal package dependency
+{{PACKAGE_MANAGER}} add @{{PROJECT_NAME}}/{{PACKAGE_NAME_1}} --filter={{APP_NAME_1}}
+```
+
+## Code Sharing Patterns
+
+### Shared Package Usage
+
+```typescript
+// packages/{{PACKAGE_NAME_1}}/src/index.ts
+export { Component } from "./Component";
+export type { ComponentProps } from "./types";
+
+// apps/{{APP_NAME_1}}/src/pages/index.tsx
+import { Component } from "@{{PROJECT_NAME}}/{{PACKAGE_NAME_1}}";
+```
+
+### Configuration Sharing
+
+```typescript
+// packages/config/eslint/base.js
+module.exports = {
+	/* shared rules */
+};
+
+// apps/{{APP_NAME_1}}/eslint.config.js
+import base from "@{{PROJECT_NAME}}/config/eslint";
+export default [...base];
+```

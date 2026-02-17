@@ -23,85 +23,55 @@
 **Testing:** {{TEST_FRAMEWORK}}
 **Build:** {{BUILD_TOOL}}
 
-## Coding Standards
+## Agent Conduct & Interaction Rules
 
-### {{PRIMARY_PATTERN_NAME}}
+### Clarification & Assumption Handling
 
-```{{FILE_EXTENSION}}
-{{PRIMARY_PATTERN_EXAMPLE}}
-```
+**CRITICAL**: Before making assumptions or proceeding with ambiguous requirements, agents MUST proactively ask the user for clarification. This applies to:
 
-**Rules:**
+- **Ambiguous requirements**: If a task description is vague, incomplete, or could be interpreted multiple ways, ask the user to clarify before proceeding.
+- **Architecture decisions**: When multiple valid approaches exist (e.g., adding a new service vs. extending an existing one), present options and ask for the user's preference.
+- **Data model changes**: Before adding/modifying database columns, relationships, or entities, confirm the intended schema with the user.
+- **Breaking changes**: If an implementation could break existing functionality, API contracts, or database compatibility, flag it and ask before proceeding.
+- **Scope uncertainty**: If unsure whether a feature should be minimal (MVP) or comprehensive, ask about the desired scope.
+- **External dependencies**: When a task requires secrets, third-party services, or infrastructure not yet configured, ask the user before assuming.
+- **Domain-specific decisions**: Sensitive UX choices or domain-specific behavior should be confirmed with the user first.
 
-- {{CODING_RULE_1}}
-- {{CODING_RULE_2}}
-- {{CODING_RULE_3}}
+### How to Ask for Clarification
 
-## Patterns
+- Be specific about what is unclear and why it matters
+- Offer 2-3 concrete options when possible (with a recommended default)
+- Explain the trade-offs of each option briefly
+- If there is a clearly best practice, recommend it but still confirm
 
-### Data Access
+**Example:**
 
-```{{FILE_EXTENSION}}
-{{DATA_ACCESS_PATTERN}}
-```
+> "This endpoint could return paginated results or the full list. Given the expected data volume, I'd recommend pagination with a default page size of 20. Should I proceed with that approach, or do you prefer returning all results?"
 
-### API/Routes
+### Guardrails
 
-```{{FILE_EXTENSION}}
-{{API_PATTERN}}
-```
+- **Never silently change** database schemas, API contracts, or auth flows without confirmation
+- **Never assume scope** — if a task says "add search," ask whether it means basic text search, full-text search, or filter/facet search
+- **Never skip tests** for assumed-correct behavior — confirm expectations first
+- **Prefer reversible changes** when acting without full clarity
 
-## Testing
+> **Full details:** See `.github/instructions/agent-conduct.instructions.md`
 
-```bash
-# Run all tests
-{{TEST_COMMAND}}
+## Detailed Instructions
 
-# Run tests with coverage
-{{TEST_COVERAGE_COMMAND}}
-```
+Detailed standards are split into focused instruction files in `.github/instructions/`:
 
-### Test Structure
-
-```{{FILE_EXTENSION}}
-{{TEST_EXAMPLE}}
-```
-
-## Environment Variables
-
-| Variable        | Description        | Required |
-| --------------- | ------------------ | -------- |
-| `{{ENV_VAR_1}}` | {{ENV_VAR_1_DESC}} | Yes      |
-| `{{ENV_VAR_2}}` | {{ENV_VAR_2_DESC}} | No       |
-
-## Commands
-
-```bash
-# Install dependencies
-{{INSTALL_COMMAND}}
-
-# Run development server
-{{DEV_COMMAND}}
-
-# Build for production
-{{BUILD_COMMAND}}
-
-# Run linting
-{{LINT_COMMAND}}
-```
-
-## Deployment
-
-```bash
-# Deploy to {{DEPLOY_PLATFORM}}
-{{DEPLOY_COMMAND}}
-```
-
-## Related Documentation
-
-- [README.md](README.md) - Project overview
-- [docs/](docs/) - Detailed documentation
-- [.cursor/rules/](.cursor/rules/) - Cursor IDE rules
+| Instruction File                   | Description                                     |
+| ---------------------------------- | ----------------------------------------------- |
+| `agent-conduct.instructions.md`    | Agent conduct rules, clarification protocols    |
+| `project-context.instructions.md`  | Project architecture and data flow              |
+| `coding-standards.instructions.md` | Coding standards, patterns, and conventions     |
+| `patterns.instructions.md`         | State management, API, and component patterns   |
+| `workflows.instructions.md`        | Development commands and environment setup      |
+| `testing.instructions.md`          | Testing standards, commands, and conventions    |
+| `deployment.instructions.md`       | Deployment configuration and commands           |
+| `logging.instructions.md`          | Structured logging standards and best practices |
+| `documentation.instructions.md`    | Feature and fix documentation standards         |
 
 ## Skills
 
@@ -130,3 +100,10 @@ For detailed standards on specific topics, refer to these skills in `.agents/ski
 
 **Standards:** Follow {{FRAMEWORK}} and {{LANGUAGE}} best practices
 **Process:** Feature branch → tests → lint → build → PR
+
+## Related Documentation
+
+- [README.md](README.md) - Project overview
+- [docs/](docs/) - Detailed documentation
+- [.cursor/rules/](.cursor/rules/) - Cursor IDE rules
+- [.github/instructions/](.github/instructions/) - Copilot instruction files
