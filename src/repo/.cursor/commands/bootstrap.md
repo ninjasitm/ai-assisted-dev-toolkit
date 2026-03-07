@@ -35,14 +35,12 @@ You are helping to bootstrap AI instructions for this project by analyzing the c
    | **Java**   | Spring Boot, Quarkus, Micronaut, Jakarta EE                                |
 
    **Detect Additional Tools:**
-
    - Database: Prisma, Drizzle, Entity Framework, Eloquent, SQLAlchemy, ActiveRecord, GORM, Diesel
    - Testing: Vitest, Jest, PHPUnit, xUnit, pytest, RSpec, go test, cargo test, JUnit
    - Styling: TailwindCSS, Bootstrap, SASS, Material UI
    - Deployment configs: vercel.json, netlify.toml, wrangler.toml, Dockerfile, fly.toml, railway.toml
 
    **Detect Project Management Tool:**
-
    - GitHub Issues: `.github/ISSUE_TEMPLATE/` directory or GitHub remote URL
    - Jira: `jira.properties`, `jira.yml`, or Jira issue keys in commits (e.g., `PROJ-123`)
    - Azure DevOps: `azure-pipelines.yml`, `.azure/` directory
@@ -112,7 +110,6 @@ You are helping to bootstrap AI instructions for this project by analyzing the c
 4. **Prompt for Missing Values**:
 
    For any values that couldn't be inferred, ask the user specific questions:
-
    - "What is a brief description of this project?"
    - "Where will this project be deployed?"
    - "Confirm detected project management tool or specify different one (GitHub Issues, Jira, Azure DevOps, Linear, GitLab)?"
@@ -122,7 +119,6 @@ You are helping to bootstrap AI instructions for this project by analyzing the c
 5. **Update Template Files**:
 
    Once all values are confirmed, update these files by replacing `{{PLACEHOLDER}}` with actual values:
-
    - `AGENTS.md`
    - `.github/copilot-instructions.md`
    - `.github/instructions/*.instructions.md`
@@ -136,42 +132,34 @@ You are helping to bootstrap AI instructions for this project by analyzing the c
    Based on the detected language and framework, add relevant patterns to `AGENTS.md`:
 
    **JavaScript/TypeScript:**
-
    - **Next.js**: App Router patterns, Server Components, API routes
    - **Nuxt**: Composables, auto-imports, Nitro server
    - **React/Vue**: Component patterns, hooks/composables, state management
    - **Express/Hono**: Route handlers, middleware patterns
 
    **PHP:**
-
    - **Laravel**: Eloquent models, Controllers, Blade templates, Artisan commands
    - **Symfony**: Services, Doctrine entities, Twig templates
 
    **.NET:**
-
    - **Blazor**: Components, services, dependency injection
    - **ASP.NET Core**: Controllers, Minimal APIs, Entity Framework
 
    **Python:**
-
    - **Django**: Models, Views, Templates, Admin
    - **FastAPI**: Routes, Pydantic models, dependency injection
    - **Flask**: Blueprints, SQLAlchemy models
 
    **Ruby:**
-
    - **Rails**: Models, Controllers, Views, ActiveRecord
 
    **Go:**
-
    - **Gin/Echo**: Handlers, middleware, repository pattern
 
    **Rust:**
-
    - **Actix/Axum**: Handlers, extractors, state management
 
    **Java:**
-
    - **Spring Boot**: Controllers, Services, Repositories, JPA entities
 
 7. **Detect Installed AI Agents**:
@@ -181,7 +169,6 @@ You are helping to bootstrap AI instructions for this project by analyzing the c
    **Note:** `.agents/` directory is used by multiple agents: `amp`, `codex`, `gemini-cli`, `github-copilot`, `opencode`, `replit`. If only `.agents/` exists, default to `codex` or `github-copilot` based on other indicators.
 
    **Build the agent flags string:**
-
    - For each detected agent, add `-a <agent>` to the command
    - Example: If `.cursor/` and `.github/` exist → use `-a cursor -a copilot`
    - If no agents detected, omit `-a` flags (CLI will prompt)
@@ -203,31 +190,31 @@ You are helping to bootstrap AI instructions for this project by analyzing the c
    **Example commands** (replace `<detected-agents>` with the actual flags from step 7, e.g., `-a cursor -a copilot`):
 
    ```bash
-   npx -y skills add <detected-agents> obra/superpowers
-   npx -y skills add <detected-agents> trailofbits/skills
+   npx -y skills add <detected-agents> obra/superpowers --all
+   npx -y skills add <detected-agents> trailofbits/skills --all
    ```
 
    **Framework-Specific Skills:**
 
    When recommending framework-specific skills, include the detected agent flags. Examples:
 
-   | Detected          | Skill Repository                      | Install Command                                                           |
-   | ----------------- | ------------------------------------- | ------------------------------------------------------------------------- |
-   | React/Next.js     | `vercel-labs/agent-skills`            | `npx -y skills add <detected-agents> vercel-labs/agent-skills`            |
-   | Vue/Nuxt          | `onmax/nuxt-skills`                   | `npx -y skills add <detected-agents> onmax/nuxt-skills`                   |
-   | Expo/React Native | `expo/skills`                         | `npx -y skills add <detected-agents> expo/skills`                         |
-   | Better-Auth       | `better-auth/skills`                  | `npx -y skills add <detected-agents> better-auth/skills`                  |
-   | NestJS            | `Kadajett/agent-nestjs-skills`        | `npx -y skills add <detected-agents> Kadajett/agent-nestjs-skills`        |
-   | Remotion          | `remotion-dev/skills`                 | `npx -y skills add <detected-agents> remotion-dev/skills`                 |
-   | Elysia.js         | `elysiajs/skills`                     | `npx -y skills add <detected-agents> elysiajs/skills`                     |
-   | Three.js          | `CloudAI-X/threejs-skills`            | `npx -y skills add <detected-agents> CloudAI-X/threejs-skills`            |
-   | Convex            | `waynesutton/convexskills`            | `npx -y skills add <detected-agents> waynesutton/convexskills`            |
-   | TanStack Query    | `jezweb/claude-skills`                | `npx -y skills add <detected-agents> jezweb/claude-skills`                |
-   | TailwindCSS       | `expo/skills`                         | `npx -y skills add <detected-agents> expo/skills`                         |
-   | shadcn/ui         | `giuseppe-trisciuoglio/developer-kit` | `npx -y skills add <detected-agents> giuseppe-trisciuoglio/developer-kit` |
-   | Stripe            | `anthropics/claude-plugins-official`  | `npx -y skills add <detected-agents> anthropics/claude-plugins-official`  |
-   | SwiftUI/iOS       | `Dimillian/Skills`                    | `npx -y skills add <detected-agents> Dimillian/Skills`                    |
-   | Obsidian          | `kepano/obsidian-skills`              | `npx -y skills add <detected-agents> kepano/obsidian-skills`              |
+   | Detected          | Skill Repository                      | Install Command                                                                 |
+   | ----------------- | ------------------------------------- | ------------------------------------------------------------------------------- |
+   | React/Next.js     | `vercel-labs/agent-skills`            | `npx -y skills add <detected-agents> vercel-labs/agent-skills --all`            |
+   | Vue/Nuxt          | `onmax/nuxt-skills`                   | `npx -y skills add <detected-agents> onmax/nuxt-skills --all`                   |
+   | Expo/React Native | `expo/skills`                         | `npx -y skills add <detected-agents> expo/skills --all`                         |
+   | Better-Auth       | `better-auth/skills`                  | `npx -y skills add <detected-agents> better-auth/skills --all`                  |
+   | NestJS            | `Kadajett/agent-nestjs-skills`        | `npx -y skills add <detected-agents> Kadajett/agent-nestjs-skills --all`        |
+   | Remotion          | `remotion-dev/skills`                 | `npx -y skills add <detected-agents> remotion-dev/skills --all`                 |
+   | Elysia.js         | `elysiajs/skills`                     | `npx -y skills add <detected-agents> elysiajs/skills --all`                     |
+   | Three.js          | `CloudAI-X/threejs-skills`            | `npx -y skills add <detected-agents> CloudAI-X/threejs-skills --all`            |
+   | Convex            | `waynesutton/convexskills`            | `npx -y skills add <detected-agents> waynesutton/convexskills --all`            |
+   | TanStack Query    | `jezweb/claude-skills`                | `npx -y skills add <detected-agents> jezweb/claude-skills --all`                |
+   | TailwindCSS       | `expo/skills`                         | `npx -y skills add <detected-agents> expo/skills --all`                         |
+   | shadcn/ui         | `giuseppe-trisciuoglio/developer-kit` | `npx -y skills add <detected-agents> giuseppe-trisciuoglio/developer-kit --all` |
+   | Stripe            | `anthropics/claude-plugins-official`  | `npx -y skills add <detected-agents> anthropics/claude-plugins-official --all`  |
+   | SwiftUI/iOS       | `Dimillian/Skills`                    | `npx -y skills add <detected-agents> Dimillian/Skills --all`                    |
+   | Obsidian          | `kepano/obsidian-skills`              | `npx -y skills add <detected-agents> kepano/obsidian-skills --all`              |
 
    **Language-Specific Skills:**
 
@@ -241,13 +228,13 @@ You are helping to bootstrap AI instructions for this project by analyzing the c
    | React              | `vercel-labs/agent-skills`            | `npx -y skills add <detected-agents> vercel-labs/agent-skills --skill "vercel-react-best-practices"`     |
    | Vue                | `onmax/nuxt-skills` (vue)             | `npx -y skills add <detected-agents> onmax/nuxt-skills --skill "vue"`                                    |
    | Nuxt               | `onmax/nuxt-skills` (nuxt)            | `npx -y skills add <detected-agents> onmax/nuxt-skills --skill "nuxt"`                                   |
-   | Expo               | `expo/skills`                         | `npx -y skills add <detected-agents> expo/skills`                                                        |
-   | TypeScript         | `pproenca/dot-skills` (typescript)    | `npx -y skills add <detected-agents> pproenca/dot-skills`                                                |
-   | Advanced Types     | `wshobson/agents` (ts-advanced-types) | `npx -y skills add <detected-agents> wshobson/agents`                                                    |
+   | Expo               | `expo/skills`                         | `npx -y skills add <detected-agents> expo/skills --all`                                                  |
+   | TypeScript         | `pproenca/dot-skills` (typescript)    | `npx -y skills add <detected-agents> pproenca/dot-skills --all`                                          |
+   | Advanced Types     | `wshobson/agents` (ts-advanced-types) | `npx -y skills add <detected-agents> wshobson/agents --all`                                              |
 
    **Skill Creation for Unsupported Frameworks:**
 
-   Use `npx -y skills add <detected-agents> anthropics/skills` (includes `skill-creator`) to create custom skills for frameworks not yet in the ecosystem.
+   Use `npx -y skills add <detected-agents> anthropics/skills --all` (includes `skill-creator`) to create custom skills for frameworks not yet in the ecosystem.
 
    **Present Skills Recommendation:**
 
@@ -262,24 +249,22 @@ You are helping to bootstrap AI instructions for this project by analyzing the c
    Based on your project ({{FRAMEWORK}}/{{LANGUAGE}}), these skills will enhance your AI assistant:
 
    📦 Core Skills (recommended for all projects):
-   - npx -y skills add {{AGENT_FLAGS}} obra/superpowers
-   - npx -y skills add {{AGENT_FLAGS}} trailofbits/skills
-   - npx -y skills add {{AGENT_FLAGS}} softaworks/agent-toolkit
+   - npx -y skills add {{AGENT_FLAGS}} obra/superpowers --all
+   - npx -y skills add {{AGENT_FLAGS}} trailofbits/skills --all
+   - npx -y skills add {{AGENT_FLAGS}} softaworks/agent-toolkit --all
 
    🔧 Framework-Specific Skills:
-   - npx -y skills add {{AGENT_FLAGS}} {{FRAMEWORK_SKILL_REPO}}
+   - npx -y skills add {{AGENT_FLAGS}} {{FRAMEWORK_SKILL_REPO}} --all
 
    Install all recommended skills? (Y/n)
    ```
 
    **Example with detected agents:**
-
    - If `.cursor/` and `.github/` exist: `AGENT_FLAGS="-a cursor -a copilot"`
    - If only `.cursor/` exists: `AGENT_FLAGS="-a cursor"`
-   - Commands become: `npx -y skills add -a cursor -a copilot obra/superpowers`
+   - Commands become: `npx -y skills add -a cursor -a copilot obra/superpowers --all`
 
    **On Confirmation:**
-
    - Execute skill installation commands
    - Create `.cursor/skills/` directory structure
    - Update `AGENTS.md` to reference installed skills
@@ -299,7 +284,7 @@ You are helping to bootstrap AI instructions for this project by analyzing the c
            └── SKILL.md
    ```
 
-   **Note:** Skills are installed by skill name, not org/repo path. For example, `npx -y skills add obra/superpowers` installs to `.cursor/skills/superpowers/`.
+   **Note:** Skills are installed by skill name, not org/repo path. For example, `npx -y skills add obra/superpowers --all` installs to `.cursor/skills/superpowers/`.
 
 9. **Discover Codebase Patterns for Custom Skills**:
 
@@ -419,7 +404,6 @@ You are helping to bootstrap AI instructions for this project by analyzing the c
    ```
 
    **On Skill Creation Confirmation:**
-
    1. Generate skill files in `.cursor/skills/{skill-name}/` or `.github/skills/{skill-name}/`
    2. Each skill includes:
       - `SKILL.md` - Skill definition with patterns and examples
@@ -464,17 +448,14 @@ You are helping to bootstrap AI instructions for this project by analyzing the c
    ## Do's and Don'ts
 
    ✅ **Do:**
-
    - {{DO_1}}
    - {{DO_2}}
 
    ❌ **Don't:**
-
    - {{DONT_1}}
    - {{DONT_2}}
 
    ## Related Files
-
    - {{RELATED_FILE_1}}
    - {{RELATED_FILE_2}}
 
@@ -509,7 +490,6 @@ You are helping to bootstrap AI instructions for this project by analyzing the c
 11. **Review Installed Skills**:
 
     After completion, audit all installed skills:
-
     - Scan `.github/skills/` and `.cursor/skills/` directories
     - Compare each skill against detected ecosystem and framework
     - Flag skills that don't match the project's tech stack
@@ -533,7 +513,6 @@ You are helping to bootstrap AI instructions for this project by analyzing the c
     ```
 
     **On Confirmation:**
-
     - Remove unnecessary skill directories
     - Update AGENTS.md to remove references
     - Report cleanup results
@@ -561,7 +540,6 @@ You are helping to bootstrap AI instructions for this project by analyzing the c
     ```
 
     **On Confirmation:**
-
     - Generate instruction files with appropriate templates
     - Include framework-specific patterns from skills
     - Report created files

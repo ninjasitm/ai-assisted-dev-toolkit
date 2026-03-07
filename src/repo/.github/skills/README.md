@@ -1,6 +1,6 @@
 # GitHub Copilot Skills
 
-This folder is for skills installed via `npx -y skills add <owner/repo>` when using GitHub Copilot.
+This folder is for skills installed via `npx -y skills add <owner/repo> --all` when using GitHub Copilot.
 
 ## About Skills
 
@@ -12,13 +12,13 @@ Install skills from [skills.sh](https://skills.sh/) using the `-a copilot` flag:
 
 ```bash
 # For GitHub Copilot only
-npx -y skills add -a copilot <owner/repo>
+npx -y skills add -a copilot <owner/repo> --all
 
 # For multiple agents (e.g., Copilot + Cursor)
-npx -y skills add -a copilot -a cursor <owner/repo>
+npx -y skills add -a copilot -a cursor <owner/repo> --all
 ```
 
-**Tip:** The skills CLI automatically detects installed agents. If you omit `-a copilot`, you'll be prompted to choose from detected agents.
+**Tip:** The skills CLI automatically detects installed agents. If you omit `-a copilot`, you'll be prompted to choose from detected agents. Use `--all` to avoid skill-selection prompts when installing from a repo.
 
 **Important:** Always use `-a copilot` to install only for GitHub Copilot (or add multiple `-a` flags if you use multiple agents). This prevents creating unnecessary configuration files for other agents.
 

@@ -109,26 +109,22 @@ Map discovered information to template variables:
 **Detection Strategy:**
 
 1. **GitHub Issues** - Check for:
-
    - `.github/ISSUE_TEMPLATE/` directory
    - Repository issues enabled (via git remote URL)
    - Default detection for GitHub-hosted repos
 
 2. **Jira** - Check for:
-
    - `jira.properties` or `jira.yml`
    - References in CI/CD configs (`.github/workflows/`, `azure-pipelines.yml`)
    - `JIRA_` environment variables in config files
    - Jira issue keys (e.g., `PROJ-123`) in commit history
 
 3. **Azure DevOps (Azure Boards)** - Check for:
-
    - `azure-pipelines.yml` with Azure Boards integration
    - `.azure/` directory
    - Azure DevOps URLs in README
 
 4. **Linear** - Check for:
-
    - `.linear/` directory or `linear.json`
    - Linear issue references in commits (e.g., `ENG-123`)
 
@@ -349,13 +345,13 @@ Based on detected ecosystem and frameworks, recommend relevant skills from [skil
 | React              | `vercel-labs/agent-skills`            | `npx -y skills add {{AGENT_FLAGS}} vercel-labs/agent-skills --skill "vercel-react-best-practices"`     |
 | Vue                | `onmax/nuxt-skills` (vue)             | `npx -y skills add {{AGENT_FLAGS}} onmax/nuxt-skills --skill "vue"`                                    |
 | Nuxt               | `onmax/nuxt-skills` (nuxt)            | `npx -y skills add {{AGENT_FLAGS}} onmax/nuxt-skills --skill "nuxt"`                                   |
-| Expo               | `expo/skills`                         | `npx -y skills add {{AGENT_FLAGS}} expo/skills`                                                        |
-| TypeScript         | `pproenca/dot-skills` (typescript)    | `npx -y skills add {{AGENT_FLAGS}} pproenca/dot-skills`                                                |
-| Advanced Types     | `wshobson/agents` (ts-advanced-types) | `npx -y skills add {{AGENT_FLAGS}} wshobson/agents`                                                    |
+| Expo               | `expo/skills`                         | `npx -y skills add {{AGENT_FLAGS}} expo/skills --all`                                                        |
+| TypeScript         | `pproenca/dot-skills` (typescript)    | `npx -y skills add {{AGENT_FLAGS}} pproenca/dot-skills --all`                                                |
+| Advanced Types     | `wshobson/agents` (ts-advanced-types) | `npx -y skills add {{AGENT_FLAGS}} wshobson/agents --all`                                                    |
 
 **Skill Creation for Unsupported Frameworks:**
 
-Use `npx -y skills add {{AGENT_FLAGS}} anthropics/skills` (includes `skill-creator`) to create custom skills.
+Use `npx -y skills add {{AGENT_FLAGS}} anthropics/skills --all` (includes `skill-creator`) to create custom skills.
 
 **Present Recommendation:**
 
@@ -370,9 +366,9 @@ Based on your project ({{FRAMEWORK}}/{{LANGUAGE}}):
 ### Core Skills (recommended for all projects)
 
 ```bash
-npx -y skills add {{AGENT_FLAGS}} obra/superpowers
-npx -y skills add {{AGENT_FLAGS}} trailofbits/skills
-npx -y skills add {{AGENT_FLAGS}} softaworks/agent-toolkit
+npx -y skills add {{AGENT_FLAGS}} obra/superpowers --all
+npx -y skills add {{AGENT_FLAGS}} trailofbits/skills --all
+npx -y skills add {{AGENT_FLAGS}} softaworks/agent-toolkit --all
 `````
 
 ````
@@ -380,7 +376,7 @@ npx -y skills add {{AGENT_FLAGS}} softaworks/agent-toolkit
 ### Framework-Specific Skills
 
 ```bash
-npx -y skills add {{FRAMEWORK_SKILL_REPO}}
+npx -y skills add {{FRAMEWORK_SKILL_REPO}} --all
 ```
 
 ### Install All?
@@ -441,7 +437,6 @@ After bootstrap completion, review all installed skills for relevance:
 **Skill Audit Process:**
 
 1. **Inventory Installed Skills**
-
    - Scan `.github/skills/` and `.cursor/skills/` directories
    - List all installed skill names and descriptions
    - Check each skill's SKILL.md for its purpose

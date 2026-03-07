@@ -325,10 +325,10 @@ Install skills from [skills.sh](https://skills.sh/) using the `-a` or `--agent` 
 
 ```bash
 # For a single agent
-npx -y skills add -a cursor <owner/repo>
+npx -y skills add -a cursor <owner/repo> --all
 
 # For multiple agents (use multiple -a flags)
-npx -y skills add -a cursor -a copilot <owner/repo>
+npx -y skills add -a cursor -a copilot <owner/repo> --all
 ```
 
 #### Agent Detection
@@ -344,19 +344,19 @@ Supported agents include:
 
 ```bash
 # For GitHub Copilot only
-npx -y skills add -a copilot <owner/repo>
+npx -y skills add -a copilot <owner/repo> --all
 
 # For Cursor only
-npx -y skills add -a cursor <owner/repo>
+npx -y skills add -a cursor <owner/repo> --all
 
 # For Windsurf only
-npx -y skills add -a windsurf <owner/repo>
+npx -y skills add -a windsurf <owner/repo> --all
 
 # For Cline only
-npx -y skills add -a cline <owner/repo>
+npx -y skills add -a cline <owner/repo> --all
 
 # For both Cursor and GitHub Copilot
-npx -y skills add -a cursor -a copilot <owner/repo>
+npx -y skills add -a cursor -a copilot <owner/repo> --all
 ```
 
 **Important:** Always specify the agent(s) explicitly using `-a <agent-name>` to install only for the agents you actively use. You can specify multiple agents using multiple `-a` flags. This prevents creating unnecessary configurations for unused agents.
@@ -386,7 +386,7 @@ This toolkit includes **16 pre-installed universal skills** in the `.agents/skil
 | **logging**                        | Structured logging standards, log levels, and observability patterns.                                |
 | **project-documentation**          | README files, code comments, ADRs, and changelog best practices.                                     |
 
-**These skills are ready to use immediately after copying the templates.** No `npx -y skills add -a <agent>` commands needed.
+**These skills are ready to use immediately after copying the templates.** No `npx -y skills add -a <agent> <owner/repo> --all` commands needed.
 
 ### Additional Recommended Skills
 
@@ -394,9 +394,9 @@ Beyond the bundled skills, these additional skills complement this toolkit for s
 
 **Note:** All install commands in the tables below should include the `-a <agent>` flag to specify your AI agent. For example:
 
-- `npx -y skills add -a copilot obra/superpowers` (for GitHub Copilot only)
-- `npx -y skills add -a cursor obra/superpowers` (for Cursor only)
-- `npx -y skills add -a cursor -a copilot obra/superpowers` (for both Cursor and GitHub Copilot)
+- `npx -y skills add -a copilot obra/superpowers --all` (for GitHub Copilot only)
+- `npx -y skills add -a cursor obra/superpowers --all` (for Cursor only)
+- `npx -y skills add -a cursor -a copilot obra/superpowers --all` (for both Cursor and GitHub Copilot)
 
 **Tip:** If you omit the `-a` flag, the CLI will automatically detect your installed agents and prompt you to choose.
 
@@ -404,47 +404,47 @@ Beyond the bundled skills, these additional skills complement this toolkit for s
 
 If you want the original `obra/superpowers` skills (which the bundled skills are derived from), or additional workflow skills:
 
-| Skill                      | Install Command                      | Description                                  |
-| -------------------------- | ------------------------------------ | -------------------------------------------- |
-| **Full Superpowers Suite** | `npx -y skills add obra/superpowers` | All workflow skills from the original source |
+| Skill                      | Install Command                            | Description                                  |
+| -------------------------- | ------------------------------------------ | -------------------------------------------- |
+| **Full Superpowers Suite** | `npx -y skills add obra/superpowers --all` | All workflow skills from the original source |
 
 #### Security & Quality Skills
 
-| Skill                      | Install Command                                    | Description                            |
-| -------------------------- | -------------------------------------------------- | -------------------------------------- |
-| **Semgrep**                | `npx -y skills add trailofbits/skills`             | Static analysis patterns               |
-| **Property-Based Testing** | `npx -y skills add trailofbits/skills`             | Testing with property-based approaches |
-| **Code Review**            | `npx -y skills add skillcreatorai/Ai-Agent-Skills` | Comprehensive code review guidance     |
-| **Logging Best Practices** | `npx -y skills add boristane/agent-skills`         | Structured logging patterns            |
+| Skill                      | Install Command                                          | Description                            |
+| -------------------------- | -------------------------------------------------------- | -------------------------------------- |
+| **Semgrep**                | `npx -y skills add trailofbits/skills --all`             | Static analysis patterns               |
+| **Property-Based Testing** | `npx -y skills add trailofbits/skills --all`             | Testing with property-based approaches |
+| **Code Review**            | `npx -y skills add skillcreatorai/Ai-Agent-Skills --all` | Comprehensive code review guidance     |
+| **Logging Best Practices** | `npx -y skills add boristane/agent-skills --all`         | Structured logging patterns            |
 
 #### Frontend Skills
 
-| Skill                           | Install Command                              | Description                     |
-| ------------------------------- | -------------------------------------------- | ------------------------------- |
-| **Vercel React Best Practices** | `npx -y skills add vercel-labs/agent-skills` | React patterns and optimization |
-| **Web Design Guidelines**       | `npx -y skills add vercel-labs/agent-skills` | UI/UX design principles         |
-| **Frontend Design**             | `npx -y skills add anthropics/skills`        | General frontend patterns       |
-| **TailwindCSS Setup**           | `npx -y skills add expo/skills`              | Tailwind configuration          |
+| Skill                           | Install Command                                    | Description                     |
+| ------------------------------- | -------------------------------------------------- | ------------------------------- |
+| **Vercel React Best Practices** | `npx -y skills add vercel-labs/agent-skills --all` | React patterns and optimization |
+| **Web Design Guidelines**       | `npx -y skills add vercel-labs/agent-skills --all` | UI/UX design principles         |
+| **Frontend Design**             | `npx -y skills add anthropics/skills --all`        | General frontend patterns       |
+| **TailwindCSS Setup**           | `npx -y skills add expo/skills --all`              | Tailwind configuration          |
 
 #### Framework-Specific Skills
 
-| Skill           | Install Command                                         | Description               |
-| --------------- | ------------------------------------------------------- | ------------------------- |
-| **Vue**         | `npx -y skills add onmax/nuxt-skills`                   | Vue.js best practices     |
-| **Nuxt**        | `npx -y skills add onmax/nuxt-skills`                   | Nuxt framework patterns   |
-| **Nuxt UI**     | `npx -y skills add onmax/nuxt-skills`                   | Nuxt UI component library |
-| **Better Auth** | `npx -y skills add better-auth/skills`                  | Authentication patterns   |
-| **Expo**        | `npx -y skills add expo/skills`                         | React Native with Expo    |
-| **NestJS**      | `npx -y skills add Kadajett/agent-nestjs-skills`        | NestJS backend patterns   |
-| **Elysia.js**   | `npx -y skills add elysiajs/skills`                     | Elysia.js API patterns    |
-| **Three.js**    | `npx -y skills add CloudAI-X/threejs-skills`            | Three.js 3D graphics      |
-| **Remotion**    | `npx -y skills add remotion-dev/skills`                 | Remotion video creation   |
-| **Convex**      | `npx -y skills add waynesutton/convexskills`            | Convex backend patterns   |
-| **TanStack**    | `npx -y skills add jezweb/claude-skills`                | TanStack Query patterns   |
-| **SwiftUI**     | `npx -y skills add Dimillian/Skills`                    | SwiftUI iOS patterns      |
-| **Obsidian**    | `npx -y skills add kepano/obsidian-skills`              | Obsidian note-taking      |
-| **shadcn/ui**   | `npx -y skills add giuseppe-trisciuoglio/developer-kit` | shadcn/ui components      |
-| **Stripe**      | `npx -y skills add anthropics/claude-plugins-official`  | Stripe integration        |
+| Skill           | Install Command                                               | Description               |
+| --------------- | ------------------------------------------------------------- | ------------------------- |
+| **Vue**         | `npx -y skills add onmax/nuxt-skills --all`                   | Vue.js best practices     |
+| **Nuxt**        | `npx -y skills add onmax/nuxt-skills --all`                   | Nuxt framework patterns   |
+| **Nuxt UI**     | `npx -y skills add onmax/nuxt-skills --all`                   | Nuxt UI component library |
+| **Better Auth** | `npx -y skills add better-auth/skills --all`                  | Authentication patterns   |
+| **Expo**        | `npx -y skills add expo/skills --all`                         | React Native with Expo    |
+| **NestJS**      | `npx -y skills add Kadajett/agent-nestjs-skills --all`        | NestJS backend patterns   |
+| **Elysia.js**   | `npx -y skills add elysiajs/skills --all`                     | Elysia.js API patterns    |
+| **Three.js**    | `npx -y skills add CloudAI-X/threejs-skills --all`            | Three.js 3D graphics      |
+| **Remotion**    | `npx -y skills add remotion-dev/skills --all`                 | Remotion video creation   |
+| **Convex**      | `npx -y skills add waynesutton/convexskills --all`            | Convex backend patterns   |
+| **TanStack**    | `npx -y skills add jezweb/claude-skills --all`                | TanStack Query patterns   |
+| **SwiftUI**     | `npx -y skills add Dimillian/Skills --all`                    | SwiftUI iOS patterns      |
+| **Obsidian**    | `npx -y skills add kepano/obsidian-skills --all`              | Obsidian note-taking      |
+| **shadcn/ui**   | `npx -y skills add giuseppe-trisciuoglio/developer-kit --all` | shadcn/ui components      |
+| **Stripe**      | `npx -y skills add anthropics/claude-plugins-official --all`  | Stripe integration        |
 
 #### Language-Specific Skills
 
@@ -458,19 +458,19 @@ If you want the original `obra/superpowers` skills (which the bundled skills are
 | **React**          | `npx -y skills add vercel-labs/agent-skills --skill "vercel-react-best-practices"`     | React + Vercel patterns           |
 | **Vue**            | `npx -y skills add onmax/nuxt-skills --skill "vue"`                                    | Vue.js best practices             |
 | **Nuxt**           | `npx -y skills add onmax/nuxt-skills --skill "nuxt"`                                   | Nuxt patterns                     |
-| **Expo**           | `npx -y skills add expo/skills`                                                        | Expo/React Native                 |
-| **TypeScript**     | `npx -y skills add pproenca/dot-skills`                                                | TypeScript best practices         |
-| **Advanced Types** | `npx -y skills add wshobson/agents`                                                    | TypeScript advanced type patterns |
+| **Expo**           | `npx -y skills add expo/skills --all`                                                  | Expo/React Native                 |
+| **TypeScript**     | `npx -y skills add pproenca/dot-skills --all`                                          | TypeScript best practices         |
+| **Advanced Types** | `npx -y skills add wshobson/agents --all`                                              | TypeScript advanced type patterns |
 
-**Note:** For frameworks without dedicated skills, use `npx -y skills add -a <agent> anthropics/skills` which includes `skill-creator` to help you create custom skills. Remember to replace `<agent>` with your AI agent name (e.g., `copilot`, `cursor`, `windsurf`, `cline`).
+**Note:** For frameworks without dedicated skills, use `npx -y skills add -a <agent> anthropics/skills --all` which includes `skill-creator` to help you create custom skills. Remember to replace `<agent>` with your AI agent name (e.g., `copilot`, `cursor`, `windsurf`, `cline`).
 
 #### Documentation & Writing Skills
 
-| Skill                             | Install Command                              | Description                 |
-| --------------------------------- | -------------------------------------------- | --------------------------- |
-| **Crafting Effective READMEs**    | `npx -y skills add softaworks/agent-toolkit` | README writing guidance     |
-| **Writing Clearly and Concisely** | `npx -y skills add softaworks/agent-toolkit` | Clear technical writing     |
-| **Doc Coauthoring**               | `npx -y skills add anthropics/skills`        | Collaborative documentation |
+| Skill                             | Install Command                                    | Description                 |
+| --------------------------------- | -------------------------------------------------- | --------------------------- |
+| **Crafting Effective READMEs**    | `npx -y skills add softaworks/agent-toolkit --all` | README writing guidance     |
+| **Writing Clearly and Concisely** | `npx -y skills add softaworks/agent-toolkit --all` | Clear technical writing     |
+| **Doc Coauthoring**               | `npx -y skills add anthropics/skills --all`        | Collaborative documentation |
 
 ### Adding Skills to Your Project
 
@@ -487,16 +487,16 @@ After bootstrapping your project with this toolkit:
 # are already bundled in .agents/skills/ - no installation needed!
 
 # For Cursor only
-npx -y skills add -a cursor onmax/nuxt-skills
-npx -y skills add -a cursor vercel-labs/agent-skills
-npx -y skills add -a cursor better-auth/skills
-npx -y skills add -a cursor trailofbits/skills
+npx -y skills add -a cursor onmax/nuxt-skills --all
+npx -y skills add -a cursor vercel-labs/agent-skills --all
+npx -y skills add -a cursor better-auth/skills --all
+npx -y skills add -a cursor trailofbits/skills --all
 
 # Or, for multiple agents (e.g., Cursor + GitHub Copilot)
-npx -y skills add -a cursor -a copilot onmax/nuxt-skills
-npx -y skills add -a cursor -a copilot vercel-labs/agent-skills
-npx -y skills add -a cursor -a copilot better-auth/skills
-npx -y skills add -a cursor -a copilot trailofbits/skills
+npx -y skills add -a cursor -a copilot onmax/nuxt-skills --all
+npx -y skills add -a cursor -a copilot vercel-labs/agent-skills --all
+npx -y skills add -a cursor -a copilot better-auth/skills --all
+npx -y skills add -a cursor -a copilot trailofbits/skills --all
 ```
 
 ### Creating Custom Skills
@@ -563,13 +563,13 @@ After copying templates and installing additional skills, your project will have
 
 **Skill Locations:**
 
-| Location          | Contents                                                   | Source                                       |
-| ----------------- | ---------------------------------------------------------- | -------------------------------------------- |
-| `.agents/skills/` | Universal workflow skills (TDD, debugging, planning, etc.) | Bundled with this toolkit                    |
-| `.cursor/skills/` | Framework/language-specific skills                         | Installed via `npx -y skills add -a <agent>` |
-| `.github/skills/` | Alternative location for GitHub Copilot                    | Installed via `npx -y skills add -a <agent>` |
+| Location          | Contents                                                   | Source                                                          |
+| ----------------- | ---------------------------------------------------------- | --------------------------------------------------------------- |
+| `.agents/skills/` | Universal workflow skills (TDD, debugging, planning, etc.) | Bundled with this toolkit                                       |
+| `.cursor/skills/` | Framework/language-specific skills                         | Installed via `npx -y skills add -a <agent> <owner/repo> --all` |
+| `.github/skills/` | Alternative location for GitHub Copilot                    | Installed via `npx -y skills add -a <agent> <owner/repo> --all` |
 
-**Note:** Skills installed via `npx -y skills add -a <agent>` use the skill name as the folder name (not org/repo path). For example, `npx -y skills add -a cursor obra/superpowers` installs to `.cursor/skills/superpowers/`.
+**Note:** Skills installed via `npx -y skills add -a <agent> <owner/repo> --all` use the skill name as the folder name (not org/repo path). For example, `npx -y skills add -a cursor obra/superpowers --all` installs to `.cursor/skills/superpowers/`.
 
 **Recommendation:** Only install skills for agents you have installed and actively use. Symlinking to all known agents creates unnecessary configuration files and can clutter your project.
 

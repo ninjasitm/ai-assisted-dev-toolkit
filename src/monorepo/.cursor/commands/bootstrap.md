@@ -21,14 +21,12 @@ You are helping to bootstrap AI instructions for this monorepo by analyzing the 
    | **Java**                  | `pom.xml` / `build.gradle` | Maven modules, Gradle multi-project                 |
 
    **Detect Build System:**
-
    - JavaScript: Turborepo (`turbo.json`), Nx (`nx.json`), Lerna (`lerna.json`)
    - .NET: Solution files, MSBuild
    - Java: Maven, Gradle
    - Other: Makefiles, Bazel, etc.
 
    **Scan Workspace:**
-
    - Scan `apps/` or similar directories for applications
    - Scan `packages/`, `libs/`, `modules/` for shared code
    - For each app/package, analyze their config files
@@ -119,7 +117,6 @@ You are helping to bootstrap AI instructions for this monorepo by analyzing the 
 6. **Prompt for Missing Values**:
 
    Ask specific questions for values that couldn't be inferred:
-
    - "What is the main purpose of this monorepo?"
    - "Confirm detected project management tool or specify different one (GitHub Issues, Jira, Azure DevOps, Linear, GitLab)?"
    - "Provide project management URL if applicable?"
@@ -129,7 +126,6 @@ You are helping to bootstrap AI instructions for this monorepo by analyzing the 
 7. **Update Template Files**:
 
    **Root Level:**
-
    - `AGENTS.md` (include project management section)
    - `.github/copilot-instructions.md` (include PM context)
    - `.github/instructions/*.instructions.md`
@@ -138,18 +134,15 @@ You are helping to bootstrap AI instructions for this monorepo by analyzing the 
    - `.cursor/commands/*.md`
 
    **Per App** (copy from `apps/app-template/` if needed):
-
    - `apps/{app}/AGENTS.md`
    - `apps/{app}/README.md`
 
    **Per Package:**
-
    - `packages/{package}/README.md`
 
 8. **Generate App-Specific AGENTS.md**:
 
    For each detected app, create a customized `AGENTS.md` with:
-
    - Framework-specific patterns
    - Directory structure
    - Component/route conventions
@@ -163,7 +156,6 @@ You are helping to bootstrap AI instructions for this monorepo by analyzing the 
    **Note:** `.agents/` directory is used by multiple agents: `amp`, `codex`, `gemini-cli`, `github-copilot`, `opencode`, `replit`. If only `.agents/` exists, default to `codex` or `github-copilot` based on other indicators.
 
    **Build the agent flags string:**
-
    - For each detected agent, add `-a <agent>` to the command
    - Example: If `.cursor/` and `.github/` exist → use `-a cursor -a copilot`
    - If no agents detected, omit `-a` flags (CLI will prompt)
@@ -185,8 +177,8 @@ Based on detected ecosystem and frameworks, recommend relevant skills from [skil
 **Example commands** (replace `<detected-agents>` with the actual flags from step 9, e.g., `-a cursor -a copilot`):
 
 ```bash
-npx -y skills add <detected-agents> obra/superpowers
-npx -y skills add <detected-agents> trailofbits/skills
+npx -y skills add <detected-agents> obra/superpowers --all
+npx -y skills add <detected-agents> trailofbits/skills --all
 ```
 
 **Framework-Specific Skills:**
@@ -222,13 +214,13 @@ When recommending framework-specific skills, include the detected agent flags. E
 | React              | `vercel-labs/agent-skills`            | `npx -y skills add <detected-agents> vercel-labs/agent-skills --skill "vercel-react-best-practices"`     |
 | Vue                | `onmax/nuxt-skills` (vue)             | `npx -y skills add <detected-agents> onmax/nuxt-skills --skill "vue"`                                    |
 | Nuxt               | `onmax/nuxt-skills` (nuxt)            | `npx -y skills add <detected-agents> onmax/nuxt-skills --skill "nuxt"`                                   |
-| Expo               | `expo/skills`                         | `npx -y skills add <detected-agents> expo/skills`                                                        |
-| TypeScript         | `pproenca/dot-skills` (typescript)    | `npx -y skills add <detected-agents> pproenca/dot-skills`                                                |
-| Advanced Types     | `wshobson/agents` (ts-advanced-types) | `npx -y skills add <detected-agents> wshobson/agents`                                                    |
+| Expo               | `expo/skills`                         | `npx -y skills add <detected-agents> expo/skills --all`                                                  |
+| TypeScript         | `pproenca/dot-skills` (typescript)    | `npx -y skills add <detected-agents> pproenca/dot-skills --all`                                          |
+| Advanced Types     | `wshobson/agents` (ts-advanced-types) | `npx -y skills add <detected-agents> wshobson/agents --all`                                              |
 
 **Skill Creation for Unsupported Frameworks:**
 
-Use `npx -y skills add <detected-agents> anthropics/skills` (includes `skill-creator`) to create custom skills.
+Use `npx -y skills add <detected-agents> anthropics/skills --all` (includes `skill-creator`) to create custom skills.
 
 **Monorepo-Specific Considerations:**
 
@@ -250,13 +242,13 @@ Using flags: {{AGENT_FLAGS}}
 Based on your monorepo ({{BUILD_SYSTEM}}/{{LANGUAGE}}):
 
 Core Skills (recommended for all projects):
-npx -y skills add {{AGENT_FLAGS}} obra/superpowers
-npx -y skills add {{AGENT_FLAGS}} trailofbits/skills
-npx -y skills add {{AGENT_FLAGS}} softaworks/agent-toolkit
+npx -y skills add {{AGENT_FLAGS}} obra/superpowers --all
+npx -y skills add {{AGENT_FLAGS}} trailofbits/skills --all
+npx -y skills add {{AGENT_FLAGS}} softaworks/agent-toolkit --all
 
 Framework-Specific Skills:
-- web (Next.js): npx -y skills add {{AGENT_FLAGS}} vercel-labs/agent-skills
-- api (Hono): npx -y skills add {{AGENT_FLAGS}} elysiajs/skills
+- web (Next.js): npx -y skills add {{AGENT_FLAGS}} vercel-labs/agent-skills --all
+- api (Hono): npx -y skills add {{AGENT_FLAGS}} elysiajs/skills --all
 
 Install All? (Y/n)
 ```
@@ -265,7 +257,7 @@ Install All? (Y/n)
 
 - If `.cursor/` and `.github/` exist: `AGENT_FLAGS="-a cursor -a copilot"`
 - If only `.cursor/` exists: `AGENT_FLAGS="-a cursor"`
-- Commands become: `npx -y skills add -a cursor -a copilot obra/superpowers`
+- Commands become: `npx -y skills add -a cursor -a copilot obra/superpowers --all`
 
 **On Confirmation:**
 
@@ -312,7 +304,6 @@ Next Steps:
 9. **Review Installed Skills**:
 
    After completion, audit all installed skills:
-
    - Scan `.github/skills/` and `.cursor/skills/` directories
    - Compare each skill against detected ecosystems and frameworks
    - Flag skills that don't match any app's tech stack
@@ -337,7 +328,6 @@ Next Steps:
    ```
 
    **On Confirmation:**
-
    - Remove unnecessary skill directories
    - Update root AGENTS.md to remove references
    - Report cleanup results
@@ -366,7 +356,6 @@ Next Steps:
     ```
 
     **On Confirmation:**
-
     - Generate instruction files with appropriate templates
     - Include app-specific scoping (applyTo paths)
     - Include framework-specific patterns from skills
