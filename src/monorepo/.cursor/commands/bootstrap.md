@@ -157,7 +157,7 @@ You are helping to bootstrap AI instructions for this monorepo by analyzing the 
 
    **Build the agent flags string:**
    - For each detected agent, add `-a <agent>` to the command
-   - Example: If `.cursor/` and `.github/` exist → use `-a cursor -a copilot`
+   - Example: If `.cursor/` and `.github/` exist → use `-a cursor -a github-copilot`
    - If no agents detected, omit `-a` flags (CLI will prompt)
 
 10. **Recommend and Install AI Agent Skills**:
@@ -174,11 +174,11 @@ Based on detected ecosystem and frameworks, recommend relevant skills from [skil
 | `trailofbits/skills`       | Security analysis, Semgrep, property-based testing |
 | `softaworks/agent-toolkit` | README writing, clear documentation                |
 
-**Example commands** (replace `<detected-agents>` with the actual flags from step 9, e.g., `-a cursor -a copilot`):
+**Example commands** (replace `<detected-agents>` with the actual flags from step 9, e.g., `-a cursor -a github-copilot`):
 
 ```bash
-npx -y skills add <detected-agents> obra/superpowers --all
-npx -y skills add <detected-agents> trailofbits/skills --all
+npx -y skills add <detected-agents> obra/superpowers --skill '*' --agent github-copilot cursor
+npx -y skills add <detected-agents> trailofbits/skills --skill '*' --agent github-copilot cursor
 ```
 
 **Framework-Specific Skills:**
@@ -214,13 +214,13 @@ When recommending framework-specific skills, include the detected agent flags. E
 | React              | `vercel-labs/agent-skills`            | `npx -y skills add <detected-agents> vercel-labs/agent-skills --skill "vercel-react-best-practices"`     |
 | Vue                | `onmax/nuxt-skills` (vue)             | `npx -y skills add <detected-agents> onmax/nuxt-skills --skill "vue"`                                    |
 | Nuxt               | `onmax/nuxt-skills` (nuxt)            | `npx -y skills add <detected-agents> onmax/nuxt-skills --skill "nuxt"`                                   |
-| Expo               | `expo/skills`                         | `npx -y skills add <detected-agents> expo/skills --all`                                                  |
-| TypeScript         | `pproenca/dot-skills` (typescript)    | `npx -y skills add <detected-agents> pproenca/dot-skills --all`                                          |
-| Advanced Types     | `wshobson/agents` (ts-advanced-types) | `npx -y skills add <detected-agents> wshobson/agents --all`                                              |
+| Expo               | `expo/skills`                         | `npx -y skills add <detected-agents> expo/skills --skill '*' --agent github-copilot cursor`                                                  |
+| TypeScript         | `pproenca/dot-skills` (typescript)    | `npx -y skills add <detected-agents> pproenca/dot-skills --skill '*' --agent github-copilot cursor`                                          |
+| Advanced Types     | `wshobson/agents` (ts-advanced-types) | `npx -y skills add <detected-agents> wshobson/agents --skill '*' --agent github-copilot cursor`                                              |
 
 **Skill Creation for Unsupported Frameworks:**
 
-Use `npx -y skills add <detected-agents> anthropics/skills --all` (includes `skill-creator`) to create custom skills.
+Use `npx -y skills add <detected-agents> anthropics/skills --skill '*' --agent github-copilot cursor` (includes `skill-creator`) to create custom skills.
 
 **Monorepo-Specific Considerations:**
 
@@ -242,22 +242,22 @@ Using flags: {{AGENT_FLAGS}}
 Based on your monorepo ({{BUILD_SYSTEM}}/{{LANGUAGE}}):
 
 Core Skills (recommended for all projects):
-npx -y skills add {{AGENT_FLAGS}} obra/superpowers --all
-npx -y skills add {{AGENT_FLAGS}} trailofbits/skills --all
-npx -y skills add {{AGENT_FLAGS}} softaworks/agent-toolkit --all
+npx -y skills add {{AGENT_FLAGS}} obra/superpowers --skill '*' --agent github-copilot cursor
+npx -y skills add {{AGENT_FLAGS}} trailofbits/skills --skill '*' --agent github-copilot cursor
+npx -y skills add {{AGENT_FLAGS}} softaworks/agent-toolkit --skill '*' --agent github-copilot cursor
 
 Framework-Specific Skills:
-- web (Next.js): npx -y skills add {{AGENT_FLAGS}} vercel-labs/agent-skills --all
-- api (Hono): npx -y skills add {{AGENT_FLAGS}} elysiajs/skills --all
+- web (Next.js): npx -y skills add {{AGENT_FLAGS}} vercel-labs/agent-skills --skill '*' --agent github-copilot cursor
+- api (Hono): npx -y skills add {{AGENT_FLAGS}} elysiajs/skills --skill '*' --agent github-copilot cursor
 
 Install All? (Y/n)
 ```
 
 **Example with detected agents:**
 
-- If `.cursor/` and `.github/` exist: `AGENT_FLAGS="-a cursor -a copilot"`
+- If `.cursor/` and `.github/` exist: `AGENT_FLAGS="-a cursor -a github-copilot"`
 - If only `.cursor/` exists: `AGENT_FLAGS="-a cursor"`
-- Commands become: `npx -y skills add -a cursor -a copilot obra/superpowers --all`
+- Commands become: `npx -y skills add -a cursor -a github-copilot obra/superpowers --skill '*' --agent github-copilot cursor`
 
 **On Confirmation:**
 

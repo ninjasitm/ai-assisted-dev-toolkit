@@ -334,7 +334,7 @@ Before recommending skills, detect which AI agent directories exist in the works
 **Build the agent flags string:**
 
 - For each detected agent, add `-a <agent>` to the command
-- Example: If `.cursor/` and `.github/` exist → use `-a cursor -a copilot`
+- Example: If `.cursor/` and `.github/` exist → use `-a cursor -a github-copilot`
 - If no agents detected, omit `-a` flags (CLI will prompt)
 
 ### Step 9: AI Agent Skills Recommendation
@@ -382,13 +382,13 @@ Based on detected ecosystem and frameworks, recommend relevant skills from [skil
 | React              | `vercel-labs/agent-skills`            | `npx -y skills add {{AGENT_FLAGS}} vercel-labs/agent-skills --skill "vercel-react-best-practices"`     |
 | Vue                | `onmax/nuxt-skills` (vue)             | `npx -y skills add {{AGENT_FLAGS}} onmax/nuxt-skills --skill "vue"`                                    |
 | Nuxt               | `onmax/nuxt-skills` (nuxt)            | `npx -y skills add {{AGENT_FLAGS}} onmax/nuxt-skills --skill "nuxt"`                                   |
-| Expo               | `expo/skills`                         | `npx -y skills add {{AGENT_FLAGS}} expo/skills --all`                                                  |
-| TypeScript         | `pproenca/dot-skills` (typescript)    | `npx -y skills add {{AGENT_FLAGS}} pproenca/dot-skills --all`                                          |
-| Advanced Types     | `wshobson/agents` (ts-advanced-types) | `npx -y skills add {{AGENT_FLAGS}} wshobson/agents --all`                                              |
+| Expo               | `expo/skills`                         | `npx -y skills add {{AGENT_FLAGS}} expo/skills --skill '*' --agent github-copilot cursor`                                                  |
+| TypeScript         | `pproenca/dot-skills` (typescript)    | `npx -y skills add {{AGENT_FLAGS}} pproenca/dot-skills --skill '*' --agent github-copilot cursor`                                          |
+| Advanced Types     | `wshobson/agents` (ts-advanced-types) | `npx -y skills add {{AGENT_FLAGS}} wshobson/agents --skill '*' --agent github-copilot cursor`                                              |
 
 **Skill Creation for Unsupported Frameworks:**
 
-Use `npx -y skills add {{AGENT_FLAGS}} anthropics/skills --all` (includes `skill-creator`) to create custom skills.
+Use `npx -y skills add {{AGENT_FLAGS}} anthropics/skills --skill '*' --agent github-copilot cursor` (includes `skill-creator`) to create custom skills.
 
 **Monorepo-Specific Considerations:**
 
@@ -410,9 +410,9 @@ Based on your monorepo ({{BUILD_SYSTEM}}/{{LANGUAGE}}):
 ### Core Skills (recommended for all projects)
 
 ```bash
-npx -y skills add {{AGENT_FLAGS}} obra/superpowers --all
-npx -y skills add {{AGENT_FLAGS}} trailofbits/skills --all
-npx -y skills add {{AGENT_FLAGS}} softaworks/agent-toolkit --all
+npx -y skills add {{AGENT_FLAGS}} obra/superpowers --skill '*' --agent github-copilot cursor
+npx -y skills add {{AGENT_FLAGS}} trailofbits/skills --skill '*' --agent github-copilot cursor
+npx -y skills add {{AGENT_FLAGS}} softaworks/agent-toolkit --skill '*' --agent github-copilot cursor
 ```
 ````
 
@@ -420,10 +420,10 @@ npx -y skills add {{AGENT_FLAGS}} softaworks/agent-toolkit --all
 
 ```bash
 # For web app (Next.js)
-npx -y skills add {{AGENT_FLAGS}} vercel-labs/agent-skills --all
+npx -y skills add {{AGENT_FLAGS}} vercel-labs/agent-skills --skill '*' --agent github-copilot cursor
 
 # For api (Hono/Elysia)
-npx -y skills add {{AGENT_FLAGS}} elysiajs/skills --all
+npx -y skills add {{AGENT_FLAGS}} elysiajs/skills --skill '*' --agent github-copilot cursor
 ```
 
 ### Install All?
