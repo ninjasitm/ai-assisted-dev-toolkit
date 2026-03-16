@@ -84,11 +84,13 @@ import type { User } from "@{{PROJECT_NAME}}/types";
 ## Testing
 
 ### Unit Tests
+
 ```typescript
 {{APP_UNIT_TEST_EXAMPLE}}
 ```
 
 ### E2E Tests
+
 ```typescript
 {{APP_E2E_TEST_EXAMPLE}}
 ```
@@ -97,6 +99,26 @@ import type { User } from "@{{PROJECT_NAME}}/types";
 
 - **Platform:** {{APP_DEPLOY_PLATFORM}}
 - **Command:** `{{PACKAGE_MANAGER}} deploy:{{APP_NAME}}`
+
+## Documentation Requirements
+
+Documentation updates are **mandatory before committing**. See the root [`.github/instructions/documentation.instructions.md`](../../.github/instructions/documentation.instructions.md) for the full pre-commit checklist and AI agent directives.
+
+**Quick summary:**
+
+- Ensure feature spec/plan exists and is current in `docs/features/`
+- Update `docs/api/` for any API surface changes
+- Update `README.md` for setup, command, or env var changes
+- If a `docs` app exists in the monorepo, update its content pages and navigation
+
+### If This App IS the Docs App
+
+If `{{APP_NAME}}` is the dedicated documentation site for this monorepo:
+
+- Every new or changed feature in **any** app or package requires a corresponding page update here
+- Register new pages in the sidebar/navigation config
+- Preview locally before committing: `{{PACKAGE_MANAGER}} dev --filter={{APP_NAME}}`
+- Include docs-app changes in the same commit/PR as the code they document
 
 ## Related
 

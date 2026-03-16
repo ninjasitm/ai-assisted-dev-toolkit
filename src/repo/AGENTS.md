@@ -126,7 +126,18 @@ For detailed standards on specific topics, refer to these skills in `.agents/ski
 | **Logging**         | `logging/SKILL.md`                        | Structured logging standards, log levels, observability |
 | **Documentation**   | `project-documentation/SKILL.md`          | README, comments, ADRs, changelogs                      |
 
+## Documentation Requirements
+
+Documentation updates are **mandatory before committing** any feature or fix. See [`.github/instructions/documentation.instructions.md`](.github/instructions/documentation.instructions.md) for the full pre-commit checklist, templates, and AI agent directives.
+
+**Quick summary:**
+
+- Create or update `docs/features/{{ISSUE_ID}}-FEATURE-NAME/` (spec + plan) for every feature
+- Add fixes to the monthly log in `docs/fixes/{YYYY-MM}.md` (or a dedicated folder for complex fixes)
+- Update `docs/api/`, `README.md`, and `CHANGELOG.md` when applicable
+- Include all doc changes in the same commit/PR as the code
+
 ## Contributing
 
 **Standards:** Follow {{FRAMEWORK}} and {{LANGUAGE}} best practices
-**Process:** Feature branch → tests → lint → build → PR
+**Process:** Feature branch → spec/plan docs → tests → implementation → update docs → lint → build → PR

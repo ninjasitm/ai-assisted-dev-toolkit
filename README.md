@@ -173,6 +173,9 @@ Templates use `{{PLACEHOLDER}}` syntax for values you need to customize. The boo
 | `{{APP_DIR}}`               | Apps directory             | `apps`, `src`, `services`, `Modules`                    |
 | `{{PACKAGES_DIR}}`          | Packages directory         | `packages`, `libs`, `internal`, `pkg`                   |
 | `{{PACKAGE_SCOPE}}`         | Package scope/namespace    | `@my-org`, `MyCompany`, `my_package`                    |
+| `{{DOCS_APP}}`              | Docs app name              | `docs`, `documentation`, `storybook`                    |
+| `{{DOCS_CONTENT_DIR}}`      | Docs app content path      | `content/docs/`, `pages/`, `src/content/`               |
+| `{{APP_3}}`                 | Third app name             | `web`, `marketing`, `landing`                           |
 | `{{PROJECT_STRUCTURE}}`     | Full project structure     | (Generated tree diagram)                                |
 
 ## Supported Ecosystems

@@ -180,6 +180,18 @@ Each app has its own `AGENTS.md` with detailed patterns:
 { { CI_WORKFLOW_EXAMPLE } }
 ```
 
+## Documentation Requirements
+
+Documentation updates are **mandatory before committing** any feature or fix. See [`.github/instructions/documentation.instructions.md`](.github/instructions/documentation.instructions.md) for the full pre-commit checklist, doc placement rules, and AI agent directives.
+
+**Quick summary:**
+
+- Create or update feature specs in the appropriate `docs/features/` folder (app-level for app-specific changes, root for cross-cutting concerns)
+- Add fixes to the monthly log in `docs/fixes/{YYYY-MM}.md` (or a dedicated folder for complex fixes)
+- Update `docs/api/`, relevant `README.md`, and `CHANGELOG.md` when applicable
+- **If a `docs` app exists in `{{APP_DIR}}/`**, update its content pages and navigation to reflect the change
+- Include all doc and docs-app changes in the same commit/PR as the code
+
 ## Related Documentation
 
 - [README.md](README.md) - Project overview
