@@ -117,9 +117,54 @@ For detailed standards on specific topics, refer to these skills in `.agents/ski
 | **TDD**           | `test-driven-development/SKILL.md` | Test-driven development                                 |
 | **Git Worktrees** | `using-git-worktrees/SKILL.md`     | Parallel development branches                           |
 
+## Custom Agents (Subagents)
+
+Custom agents enable **context-isolated delegation** — a coordinator agent breaks complex tasks into subtasks and dispatches specialized subagents, each with their own tools and focus.
+
+### Available Agents
+
+Agent definitions live in `.github/agents/` (GitHub Copilot) and `.cursor/agents/` (Cursor):
+
+| Agent               | Type        | Tools                        | Purpose                                         |
+| ------------------- | ----------- | ---------------------------- | ----------------------------------------------- |
+| **Feature Builder** | Coordinator | agent, edit, search, read    | Orchestrates end-to-end feature development     |
+| **TDD**             | Coordinator | agent, edit, search, read    | Test-driven development with red-green-refactor |
+| **Planner**         | Worker      | read, search                 | Break down features into implementation tasks   |
+| **Implementer**     | Worker      | read, search, edit, terminal | Write production code following TDD             |
+| **Reviewer**        | Worker      | read, search                 | Multi-perspective code review                   |
+| **Researcher**      | Worker      | read, search                 | Codebase analysis without changes               |
+| **Red**             | Worker      | read, search, edit, terminal | Write failing tests (TDD red phase)             |
+| **Green**           | Worker      | read, search, edit, terminal | Write minimal code to pass tests (TDD green)    |
+| **Refactor**        | Worker      | read, search, edit, terminal | Improve code quality, keep tests green          |
+
+### Orchestration Patterns
+
+**Coordinator → Worker**: Feature Builder dispatches Planner, Implementer, Reviewer, and Researcher as subagents. Each worker has context isolation — they see only what the coordinator provides.
+
+**Sequential**: Tasks with dependencies are implemented one at a time.
+**Parallel**: Independent tasks (e.g., changes in different apps) can be dispatched to multiple subagents simultaneously.
+
+**Monorepo-specific**: When implementing features that span multiple apps, coordinate carefully:
+
+- Research each app's patterns independently with Researcher subagents
+- Plan shared package changes before app-specific changes
+- Review cross-app impact after implementation
+
+### Invoking Subagents
+
+Subagents are typically **agent-initiated** — the coordinator decides when to delegate. You can also hint:
+
+- "Use the Feature Builder agent to implement this feature"
+- "Run the TDD agent for this requirement"
+- "Use a subagent to research how authentication works across apps"
+
+> **Docs:** [VS Code Subagents](https://code.visualstudio.com/docs/copilot/agents/subagents) · [Cursor Subagents](https://cursor.com/docs/subagents)
+
 ## Related Documentation
 
 - [README.md](README.md) - Project overview
 - [{{APP_DIR}}/{{APP_NAME_1}}/AGENTS.md]({{APP_DIR}}/{{APP_NAME_1}}/AGENTS.md) - App context
 - [{{PACKAGES_DIR}}/{{PACKAGE_NAME_1}}/README.md]({{PACKAGES_DIR}}/{{PACKAGE_NAME_1}}/README.md) - Package docs
+- [.cursor/agents/](.cursor/agents/) - Cursor custom agents
 - [.github/instructions/](.github/instructions/) - Copilot instruction files
+- [.github/agents/](.github/agents/) - Copilot custom agents

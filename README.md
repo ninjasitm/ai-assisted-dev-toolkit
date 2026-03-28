@@ -20,7 +20,13 @@ This repository serves as a **template source** for AI development instructions 
 ├── src/
 │   ├── repo/           # Templates for single repositories
 │   │   ├── .cursor/    # Cursor IDE configuration
+│   │   │   ├── agents/ # Custom agent templates (subagents)
+│   │   │   ├── rules/  # IDE behavior rules
+│   │   │   └── commands/ # Custom AI commands
 │   │   ├── .github/    # GitHub Copilot instructions
+│   │   │   ├── agents/ # Custom agent templates (subagents)
+│   │   │   ├── instructions/ # Context instructions
+│   │   │   └── prompts/ # Reusable prompts
 │   │   ├── .agents/    # Pre-installed universal skills
 │   │   │   └── skills/ # Bundled skills (TDD, debugging, etc.)
 │   │   ├── AGENTS.md   # AI agent context template
@@ -28,7 +34,13 @@ This repository serves as a **template source** for AI development instructions 
 │   │
 │   └── monorepo/       # Templates for monorepos
 │       ├── .cursor/    # Root-level Cursor config
+│       │   ├── agents/ # Custom agent templates (subagents)
+│       │   ├── rules/  # IDE behavior rules
+│       │   └── commands/ # Custom AI commands
 │       ├── .github/    # Root-level GitHub config
+│       │   ├── agents/ # Custom agent templates (subagents)
+│       │   ├── instructions/ # Context instructions
+│       │   └── prompts/ # Reusable prompts
 │       ├── .agents/    # Pre-installed universal skills
 │       │   └── skills/ # Bundled skills (TDD, debugging, etc.)
 │       ├── apps/       # App-specific templates
@@ -258,6 +270,22 @@ GitHub Copilot instruction files:
 - `workflows.instructions.md` - Development workflows
 - `documentation.instructions.md` - Documentation standards for features and fixes
 
+### .github/agents/\*.agent.md & .cursor/agents/\*.agent.md
+
+Custom agent templates for subagent orchestration (identical files in both directories):
+
+- `feature-builder.agent.md` - **Coordinator** — Orchestrates end-to-end feature development
+- `tdd.agent.md` - **Coordinator** — Test-driven development with red-green-refactor cycle
+- `planner.agent.md` - **Worker** — Breaks features into implementation tasks
+- `implementer.agent.md` - **Worker** — Writes production code with TDD
+- `reviewer.agent.md` - **Worker** — Multi-perspective code review
+- `researcher.agent.md` - **Worker** — Read-only codebase analysis
+- `red.agent.md` - **Worker** — Writes failing tests (TDD red phase)
+- `green.agent.md` - **Worker** — Writes minimal code to pass tests (TDD green phase)
+- `refactor.agent.md` - **Worker** — Improves code quality while keeping tests green
+
+> See [Custom Agents & Subagents](#custom-agents--subagents) for detailed usage.
+
 ### docs/\* (Documentation Structure)
 
 Documentation folders for tracking features and fixes:
@@ -287,6 +315,172 @@ Documentation folders for tracking features and fixes:
 **Decision Tree**: Is fix complex (multi-file, architectural)? → Folder. Otherwise → Monthly log.
 
 See [documentation.instructions.md](src/repo/.github/instructions/documentation.instructions.md) for comprehensive guidelines.
+
+## Custom Agents & Subagents
+
+This toolkit includes **9 custom agent templates** that enable subagent-based workflows — a coordinator agent delegates subtasks to specialized worker agents, each with isolated context and specific tools.
+
+Subagents are supported by both **VS Code (GitHub Copilot)** and **Cursor IDE**. Agent files are placed in:
+
+- `.github/agents/` — GitHub Copilot custom agents
+- `.cursor/agents/` — Cursor custom agents
+
+Both directories contain identical agent files. The toolkit ships both so agents work regardless of your IDE.
+
+> **Official Docs:** [VS Code Subagents](https://code.visualstudio.com/docs/copilot/agents/subagents) · [Cursor Subagents](https://cursor.com/docs/subagents)
+
+### How Subagents Work
+
+Subagents provide **context isolation** — each subagent runs independently, sees only what the coordinator passes, and returns a focused result. This prevents context pollution and keeps each agent focused.
+
+```
+┌─────────────────────────────────┐
+│      Feature Builder            │  ← Coordinator agent
+│      (orchestrates workflow)    │
+├─────────┬───────────┬───────────┤
+│         │           │           │
+▼         ▼           ▼           ▼
+Planner  Implementer  Reviewer   Researcher
+(plan)   (code)       (review)   (read-only)
+         │
+    ┌────┴────┐
+    ▼         ▼
+  Tests    Production
+  first    code
+```
+
+The coordinator decides when to delegate. You don't need to manually invoke subagents — just describe the task:
+
+- _"Use the Feature Builder to implement user authentication"_
+- _"Run the TDD agent for this API endpoint"_
+- _"Use a subagent to research the codebase authentication patterns"_
+
+### Included Agents
+
+| Agent               | Type        | Tools                        | `user-invocable` | Purpose                                       |
+| ------------------- | ----------- | ---------------------------- | ---------------- | --------------------------------------------- |
+| **Feature Builder** | Coordinator | agent, edit, search, read    | `true`           | Orchestrates end-to-end feature development   |
+| **TDD**             | Coordinator | agent, edit, search, read    | `true`           | Red-green-refactor cycle coordination         |
+| **Planner**         | Worker      | read, search                 | `false`          | Break down features into implementation tasks |
+| **Implementer**     | Worker      | read, search, edit, terminal | `false`          | Write production code following TDD           |
+| **Reviewer**        | Worker      | read, search                 | `false`          | Multi-perspective code review                 |
+| **Researcher**      | Worker      | read, search                 | `true`           | Read-only codebase analysis                   |
+| **Red**             | Worker      | read, search, edit, terminal | `false`          | Write failing tests (TDD red phase)           |
+| **Green**           | Worker      | read, search, edit, terminal | `false`          | Write minimal code to pass tests (TDD green)  |
+| **Refactor**        | Worker      | read, search, edit, terminal | `false`          | Improve code quality, keep tests green        |
+
+**Coordinator agents** (Feature Builder, TDD) appear in the agents dropdown and orchestrate worker agents.
+**Worker agents** (`user-invocable: false`) are only accessible as subagents — they don't appear in the dropdown.
+**Researcher** is both user-invocable and usable as a subagent.
+
+### Orchestration Patterns
+
+#### Coordinator → Worker (Feature Builder)
+
+The Feature Builder agent manages the full lifecycle:
+
+1. **Research** → Researcher subagent analyzes codebase patterns
+2. **Plan** → Planner subagent creates implementation tasks
+3. **Implement** → Implementer subagent writes code (per task)
+4. **Review** → Reviewer subagent checks quality (per task)
+5. **Iterate** → Implementer fixes review issues
+6. **Verify** → Final test run
+
+#### TDD Red-Green-Refactor
+
+The TDD agent coordinates the classic cycle using the `agents` frontmatter to restrict which subagents are available:
+
+```yaml
+---
+agents: ["Red", "Green", "Refactor"]
+---
+```
+
+1. **Red** → Red subagent writes failing tests
+2. **Green** → Green subagent writes minimal code to pass
+3. **Refactor** → Refactor subagent improves quality
+
+#### Multi-Perspective Review
+
+You can prompt for parallel review:
+
+> _"Review this PR through multiple perspectives simultaneously: correctness, security, code quality, and architecture."_
+
+The main agent will dispatch independent subagents for each perspective, then synthesize findings.
+
+### Agent Frontmatter Reference
+
+Agent files use YAML frontmatter to configure behavior:
+
+```yaml
+---
+name: MyAgent # Agent name (required)
+description: "When to use..." # Discovery description (required)
+tools: ["read", "search", "edit"] # Allowed tools
+agents: ["Worker1", "Worker2"] # Restrict which subagents can be used
+user-invocable: true # Show in agents dropdown (default: true)
+disable-model-invocation: false # Prevent use as subagent (default: false)
+model: ["Claude Sonnet 4", "GPT-4o"] # Preferred models (optional)
+---
+```
+
+| Property                   | Default | Description                                         |
+| -------------------------- | ------- | --------------------------------------------------- |
+| `name`                     | —       | Agent name used in dropdown and subagent invocation |
+| `description`              | —       | How the agent is discovered and when it's invoked   |
+| `tools`                    | all     | Restrict available tools per agent                  |
+| `agents`                   | `*`     | Restrict which subagents this agent can invoke      |
+| `user-invocable`           | `true`  | Whether it shows in the agents dropdown             |
+| `disable-model-invocation` | `false` | Whether other agents can invoke this as a subagent  |
+| `model`                    | —       | Preferred model(s) for the agent                    |
+
+### Creating Custom Agents
+
+To add project-specific agents:
+
+1. Create a `.agent.md` file in `.github/agents/` and/or `.cursor/agents/`
+2. Add YAML frontmatter with `name`, `description`, and `tools`
+3. Write instructions in the markdown body
+4. For worker-only agents, set `user-invocable: false`
+5. For coordinator agents, list allowed subagents in `agents`
+
+**Example — Documentation Writer agent:**
+
+```markdown
+---
+name: Doc Writer
+description: "Write and update project documentation. Create READMEs, API docs, and changelogs."
+tools: ["read", "search", "edit"]
+user-invocable: true
+---
+
+# Documentation Writer
+
+Write clear, accurate project documentation following the project's conventions.
+
+## Process
+
+1. Read existing documentation and code
+2. Identify what needs documenting
+3. Write documentation following project patterns
+4. Cross-reference with code to ensure accuracy
+```
+
+### Nested Subagents
+
+By default, subagents cannot spawn further subagents (prevents infinite recursion). To enable nested delegation for divide-and-conquer patterns:
+
+- **VS Code**: Enable `chat.subagents.allowInvocationsFromSubagents` in settings
+- **Cursor**: Supported by default with a maximum nesting depth
+
+### Integration with Skills
+
+The bundled skills complement custom agents:
+
+- **`subagent-driven-development`** — Full workflow for executing plans via subagent dispatch with two-stage review
+- **`dispatching-parallel-agents`** — Patterns for parallel agent coordination on independent problems
+- **`writing-plans`** — Creating the plans that Feature Builder and TDD agents execute
+- **`test-driven-development`** — The TDD methodology that Red/Green/Refactor agents implement
 
 ## AI Agent Skills
 
@@ -404,14 +598,14 @@ Beyond the bundled skills, these additional skills complement this toolkit for s
 
 If you want the original `obra/superpowers` skills (which the bundled skills are derived from), or additional workflow skills:
 
-| Skill                      | Install Command                            | Description                                  |
-| -------------------------- | ------------------------------------------ | -------------------------------------------- |
+| Skill                      | Install Command                                                                | Description                                  |
+| -------------------------- | ------------------------------------------------------------------------------ | -------------------------------------------- |
 | **Full Superpowers Suite** | `npx -y skills add obra/superpowers --skill '*' --agent github-copilot cursor` | All workflow skills from the original source |
 
 #### Security & Quality Skills
 
-| Skill                      | Install Command                                          | Description                            |
-| -------------------------- | -------------------------------------------------------- | -------------------------------------- |
+| Skill                      | Install Command                                                                              | Description                            |
+| -------------------------- | -------------------------------------------------------------------------------------------- | -------------------------------------- |
 | **Semgrep**                | `npx -y skills add trailofbits/skills --skill '*' --agent github-copilot cursor`             | Static analysis patterns               |
 | **Property-Based Testing** | `npx -y skills add trailofbits/skills --skill '*' --agent github-copilot cursor`             | Testing with property-based approaches |
 | **Code Review**            | `npx -y skills add skillcreatorai/Ai-Agent-Skills --skill '*' --agent github-copilot cursor` | Comprehensive code review guidance     |
@@ -419,8 +613,8 @@ If you want the original `obra/superpowers` skills (which the bundled skills are
 
 #### Frontend Skills
 
-| Skill                           | Install Command                                    | Description                     |
-| ------------------------------- | -------------------------------------------------- | ------------------------------- |
+| Skill                           | Install Command                                                                        | Description                     |
+| ------------------------------- | -------------------------------------------------------------------------------------- | ------------------------------- |
 | **Vercel React Best Practices** | `npx -y skills add vercel-labs/agent-skills --skill '*' --agent github-copilot cursor` | React patterns and optimization |
 | **Web Design Guidelines**       | `npx -y skills add vercel-labs/agent-skills --skill '*' --agent github-copilot cursor` | UI/UX design principles         |
 | **Frontend Design**             | `npx -y skills add anthropics/skills --skill '*' --agent github-copilot cursor`        | General frontend patterns       |
@@ -428,8 +622,8 @@ If you want the original `obra/superpowers` skills (which the bundled skills are
 
 #### Framework-Specific Skills
 
-| Skill           | Install Command                                               | Description               |
-| --------------- | ------------------------------------------------------------- | ------------------------- |
+| Skill           | Install Command                                                                                   | Description               |
+| --------------- | ------------------------------------------------------------------------------------------------- | ------------------------- |
 | **Vue**         | `npx -y skills add onmax/nuxt-skills --skill '*' --agent github-copilot cursor`                   | Vue.js best practices     |
 | **Nuxt**        | `npx -y skills add onmax/nuxt-skills --skill '*' --agent github-copilot cursor`                   | Nuxt framework patterns   |
 | **Nuxt UI**     | `npx -y skills add onmax/nuxt-skills --skill '*' --agent github-copilot cursor`                   | Nuxt UI component library |
@@ -458,16 +652,16 @@ If you want the original `obra/superpowers` skills (which the bundled skills are
 | **React**          | `npx -y skills add vercel-labs/agent-skills --skill "vercel-react-best-practices"`     | React + Vercel patterns           |
 | **Vue**            | `npx -y skills add onmax/nuxt-skills --skill "vue"`                                    | Vue.js best practices             |
 | **Nuxt**           | `npx -y skills add onmax/nuxt-skills --skill "nuxt"`                                   | Nuxt patterns                     |
-| **Expo**           | `npx -y skills add expo/skills --skill '*' --agent github-copilot cursor`                                                  | Expo/React Native                 |
-| **TypeScript**     | `npx -y skills add pproenca/dot-skills --skill '*' --agent github-copilot cursor`                                          | TypeScript best practices         |
-| **Advanced Types** | `npx -y skills add wshobson/agents --skill '*' --agent github-copilot cursor`                                              | TypeScript advanced type patterns |
+| **Expo**           | `npx -y skills add expo/skills --skill '*' --agent github-copilot cursor`              | Expo/React Native                 |
+| **TypeScript**     | `npx -y skills add pproenca/dot-skills --skill '*' --agent github-copilot cursor`      | TypeScript best practices         |
+| **Advanced Types** | `npx -y skills add wshobson/agents --skill '*' --agent github-copilot cursor`          | TypeScript advanced type patterns |
 
 **Note:** For frameworks without dedicated skills, use `npx -y skills add -a <agent> anthropics/skills --skill '*' --agent github-copilot cursor` which includes `skill-creator` to help you create custom skills. Remember to replace `<agent>` with your AI agent name (e.g., `copilot`, `cursor`, `windsurf`, `cline`).
 
 #### Documentation & Writing Skills
 
-| Skill                             | Install Command                                    | Description                 |
-| --------------------------------- | -------------------------------------------------- | --------------------------- |
+| Skill                             | Install Command                                                                        | Description                 |
+| --------------------------------- | -------------------------------------------------------------------------------------- | --------------------------- |
 | **Crafting Effective READMEs**    | `npx -y skills add softaworks/agent-toolkit --skill '*' --agent github-copilot cursor` | README writing guidance     |
 | **Writing Clearly and Concisely** | `npx -y skills add softaworks/agent-toolkit --skill '*' --agent github-copilot cursor` | Clear technical writing     |
 | **Doc Coauthoring**               | `npx -y skills add anthropics/skills --skill '*' --agent github-copilot cursor`        | Collaborative documentation |
@@ -563,9 +757,9 @@ After copying templates and installing additional skills, your project will have
 
 **Skill Locations:**
 
-| Location          | Contents                                                   | Source                                                          |
-| ----------------- | ---------------------------------------------------------- | --------------------------------------------------------------- |
-| `.agents/skills/` | Universal workflow skills (TDD, debugging, planning, etc.) | Bundled with this toolkit                                       |
+| Location          | Contents                                                   | Source                                                                                              |
+| ----------------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `.agents/skills/` | Universal workflow skills (TDD, debugging, planning, etc.) | Bundled with this toolkit                                                                           |
 | `.cursor/skills/` | Framework/language-specific skills                         | Installed via `npx -y skills add -a <agent> <owner/repo> --skill '*' --agent github-copilot cursor` |
 | `.github/skills/` | Alternative location for GitHub Copilot                    | Installed via `npx -y skills add -a <agent> <owner/repo> --skill '*' --agent github-copilot cursor` |
 

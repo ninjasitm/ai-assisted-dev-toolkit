@@ -29,6 +29,23 @@ Detailed standards are organized into focused instruction files. Copilot will au
 - [README.md](../README.md) - Project documentation
 - [.cursor/rules/](../.cursor/rules/) - Cursor IDE rules
 
+## Custom Agents (Subagents)
+
+Specialized agents for task delegation. Coordinators orchestrate workers via subagents:
+
+| Agent               | Type        | File                              | Purpose                                      |
+| ------------------- | ----------- | --------------------------------- | -------------------------------------------- |
+| **Feature Builder** | Coordinator | `agents/feature-builder.agent.md` | End-to-end feature development orchestration |
+| **TDD**             | Coordinator | `agents/tdd.agent.md`             | Red-green-refactor cycle coordination        |
+| **Planner**         | Worker      | `agents/planner.agent.md`         | Implementation task breakdown                |
+| **Implementer**     | Worker      | `agents/implementer.agent.md`     | Production code implementation               |
+| **Reviewer**        | Worker      | `agents/reviewer.agent.md`        | Multi-perspective code review                |
+| **Researcher**      | Worker      | `agents/researcher.agent.md`      | Read-only codebase analysis                  |
+
+Worker agents (`user-invocable: false`) are only accessible as subagents — they don't appear in the agents dropdown.
+
+> **Docs:** [VS Code Subagents](https://code.visualstudio.com/docs/copilot/agents/subagents) · [Cursor Subagents](https://cursor.com/docs/subagents)
+
 ## Skills References
 
 For detailed standards on specific topics, refer to these skills:

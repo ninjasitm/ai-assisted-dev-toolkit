@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Custom agent templates (`.agent.md`) for subagent orchestration workflows
+- Feature Builder coordinator agent for end-to-end feature development
+- TDD coordinator agent with Red-Green-Refactor cycle
+- Worker agents: Planner, Implementer, Reviewer, Researcher, Red, Green, Refactor
+- Agent templates in both `.github/agents/` and `.cursor/agents/` for VS Code and Cursor support
+- Docs app sync requirements and per-app documentation obligations in monorepo documentation instructions
+- Pre-commit documentation gate checklist for monorepo template
 - Feature specification template (`feature-spec.template.md`)
 - Feature implementation plan template (`feature-plan.template.md`)
 - Complex fix specification template (`complex-fix-spec.template.md`)
@@ -19,6 +26,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Updated AGENTS.md templates with Custom Agents (Subagents) section
+- Updated copilot-instructions.md templates with agent references
+- Updated root README.md with comprehensive subagents documentation
+- Updated repository structure diagrams to include `agents/` directories
+- Updated monorepo `documentation.instructions.md` with docs app (`apps/{{DOCS_APP}}`) sync guidance, per-app documentation obligations table, and content organization patterns
 - Updated bundled skills count from 14 to 16 in README (added `logging` and `project-documentation`)
 - Updated AGENTS.md structure diagram to include `.agents/` folder
 - Cleaned AGENTS.md template to remove project-specific content
