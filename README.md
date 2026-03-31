@@ -22,13 +22,18 @@ This repository serves as a **template source** for AI development instructions 
 │   │   ├── .cursor/    # Cursor IDE configuration
 │   │   │   ├── agents/ # Custom agent templates (subagents)
 │   │   │   ├── rules/  # IDE behavior rules
-│   │   │   └── commands/ # Custom AI commands
+│   │   │   ├── commands/ # Custom AI commands
+│   │   │   ├── skills/ # Additional skills (README placeholder)
+│   │   │   └── mcp.json # MCP server configuration template
 │   │   ├── .github/    # GitHub Copilot instructions
 │   │   │   ├── agents/ # Custom agent templates (subagents)
 │   │   │   ├── instructions/ # Context instructions
-│   │   │   └── prompts/ # Reusable prompts
+│   │   │   ├── prompts/ # Reusable prompts
+│   │   │   └── skills/ # Additional skills (README placeholder)
 │   │   ├── .agents/    # Pre-installed universal skills
 │   │   │   └── skills/ # Bundled skills (TDD, debugging, etc.)
+│   │   ├── docs/       # Documentation structure templates
+│   │   ├── templates/  # Reusable document templates
 │   │   ├── AGENTS.md   # AI agent context template
 │   │   └── README.md   # Project README template
 │   │
@@ -36,15 +41,20 @@ This repository serves as a **template source** for AI development instructions 
 │       ├── .cursor/    # Root-level Cursor config
 │       │   ├── agents/ # Custom agent templates (subagents)
 │       │   ├── rules/  # IDE behavior rules
-│       │   └── commands/ # Custom AI commands
+│       │   ├── commands/ # Custom AI commands
+│       │   ├── skills/ # Additional skills (README placeholder)
+│       │   └── mcp.json # MCP server configuration template
 │       ├── .github/    # Root-level GitHub config
 │       │   ├── agents/ # Custom agent templates (subagents)
 │       │   ├── instructions/ # Context instructions
-│       │   └── prompts/ # Reusable prompts
+│       │   ├── prompts/ # Reusable prompts
+│       │   └── skills/ # Additional skills (README placeholder)
 │       ├── .agents/    # Pre-installed universal skills
 │       │   └── skills/ # Bundled skills (TDD, debugging, etc.)
 │       ├── apps/       # App-specific templates
 │       ├── packages/   # Package-specific templates
+│       ├── docs/       # Documentation structure templates
+│       ├── templates/  # Reusable document templates
 │       └── AGENTS.md   # Monorepo agent context
 │
 ├── .cursor/            # This toolkit's own Cursor config
@@ -218,6 +228,7 @@ The primary context file for AI agents. Contains:
 
 Cursor IDE behavior rules:
 
+- `agent-conduct.mdc` - Agent behavior and conduct guidelines
 - `coding-standards.mdc` - Language and framework standards
 - `project-context.mdc` - Project documentation requirements
 - `version-control.mdc` - Git and commit conventions
@@ -226,9 +237,11 @@ Cursor IDE behavior rules:
 - `composition-api-component-structure.mdc` - Vue Composition API patterns
 - `core-libraries.mdc` - Core library usage
 - `environment-tooling.mdc` - Environment and tooling configuration
+- `logging.mdc` - Structured logging standards
 - `logging-comments.mdc` - Logging and code comment conventions
 - `prisma-migrations.mdc` - Prisma database migrations
 - `server-client-separation.mdc` - Server/client code separation
+- `subagent-workflow.mdc` - Subagent orchestration patterns
 - `testing-quality.mdc` - Testing standards and quality
 - `ui-accessibility.mdc` - UI and accessibility guidelines
 
@@ -240,10 +253,17 @@ Custom Cursor commands for workflows:
 - `specify.md` - Create feature specifications
 - `plan.md` - Generate implementation plans
 - `implement.md` - Execute implementation tasks
+- `implement-feature.md` - Feature implementation workflow
+- `implement-fixes.md` - Bug fix implementation workflow
 - `review.md` - Code review workflow
+- `review-pr.md` - Pull request review workflow
 - `commit-push.md` - Git commit and push workflow
 - `constitution.md` - Project constitution and principles
 - `tasks.md` - Task management workflow
+- `assign-tasks.md` - Task assignment workflow
+- `create-skill.md` - Create custom AI skills
+- `playwright-test.md` - Playwright test generation
+- `release-notes.md` - Release notes generation
 
 ### .github/prompts/\*.prompt.md
 
@@ -253,13 +273,16 @@ Reusable prompts for GitHub Copilot:
 - `commit-push.prompt.md` - Conventional commit workflow
 - `review.prompt.md` - Code review checklist
 - `review-pr.prompt.md` - Pull request review
+- `review-staged.prompt.md` - Review staged changes
 - `implement-feature.prompt.md` - Feature implementation
 - `implement-fixes.prompt.md` - Bug fix implementation
 - `specify.prompt.md` - Feature specification
 - `plan.prompt.md` - Implementation planning
 - `tasks.prompt.md` - Task management
 - `assign-tasks.prompt.md` - Task assignment workflow
+- `create-skill.prompt.md` - Create custom AI skills
 - `playwright-test.prompt.md` - Playwright test generation
+- `release-notes.prompt.md` - Release notes generation
 
 ### .github/instructions/\*.instructions.md
 
@@ -269,6 +292,12 @@ GitHub Copilot instruction files:
 - `patterns.instructions.md` - Coding patterns
 - `workflows.instructions.md` - Development workflows
 - `documentation.instructions.md` - Documentation standards for features and fixes
+- `agent-conduct.instructions.md` - Agent behavior and conduct guidelines
+- `coding-standards.instructions.md` - Language and framework coding standards
+- `deployment.instructions.md` - Deployment patterns and configuration
+- `logging.instructions.md` - Structured logging standards
+- `subagent-workflow.instructions.md` - Subagent orchestration patterns
+- `testing.instructions.md` - Testing standards and quality
 
 ### .github/agents/\*.agent.md & .cursor/agents/\*.agent.md
 
@@ -283,6 +312,11 @@ Custom agent templates for subagent orchestration (identical files in both direc
 - `red.agent.md` - **Worker** — Writes failing tests (TDD red phase)
 - `green.agent.md` - **Worker** — Writes minimal code to pass tests (TDD green phase)
 - `refactor.agent.md` - **Worker** — Improves code quality while keeping tests green
+- `admin-portal.agent.md` - **Domain** — Admin portals with RBAC, dashboards, and reporting
+- `api-specialist.agent.md` - **Domain** — API architecture, documentation, and developer experience
+- `backend-architect.agent.md` - **Domain** — APIs, databases, and server-side architecture
+- `documenter.agent.md` - **Domain** — Codebase analysis and comprehensive documentation
+- `frontend-developer.agent.md` - **Domain** — User interfaces, components, and frontend performance
 
 > See [Custom Agents & Subagents](#custom-agents--subagents) for detailed usage.
 
@@ -318,7 +352,7 @@ See [documentation.instructions.md](src/repo/.github/instructions/documentation.
 
 ## Custom Agents & Subagents
 
-This toolkit includes **9 custom agent templates** that enable subagent-based workflows — a coordinator agent delegates subtasks to specialized worker agents, each with isolated context and specific tools.
+This toolkit includes **14 custom agent templates** that enable subagent-based workflows — a coordinator agent delegates subtasks to specialized worker agents, each with isolated context and specific tools.
 
 Subagents are supported by both **VS Code (GitHub Copilot)** and **Cursor IDE**. Agent files are placed in:
 
@@ -357,20 +391,26 @@ The coordinator decides when to delegate. You don't need to manually invoke suba
 
 ### Included Agents
 
-| Agent               | Type        | Tools                        | `user-invocable` | Purpose                                       |
-| ------------------- | ----------- | ---------------------------- | ---------------- | --------------------------------------------- |
-| **Feature Builder** | Coordinator | agent, edit, search, read    | `true`           | Orchestrates end-to-end feature development   |
-| **TDD**             | Coordinator | agent, edit, search, read    | `true`           | Red-green-refactor cycle coordination         |
-| **Planner**         | Worker      | read, search                 | `false`          | Break down features into implementation tasks |
-| **Implementer**     | Worker      | read, search, edit, terminal | `false`          | Write production code following TDD           |
-| **Reviewer**        | Worker      | read, search                 | `false`          | Multi-perspective code review                 |
-| **Researcher**      | Worker      | read, search                 | `true`           | Read-only codebase analysis                   |
-| **Red**             | Worker      | read, search, edit, terminal | `false`          | Write failing tests (TDD red phase)           |
-| **Green**           | Worker      | read, search, edit, terminal | `false`          | Write minimal code to pass tests (TDD green)  |
-| **Refactor**        | Worker      | read, search, edit, terminal | `false`          | Improve code quality, keep tests green        |
+| Agent                  | Type        | Tools                        | `user-invocable` | Purpose                                       |
+| ---------------------- | ----------- | ---------------------------- | ---------------- | --------------------------------------------- |
+| **Feature Builder**    | Coordinator | agent, edit, search, read    | `true`           | Orchestrates end-to-end feature development   |
+| **TDD**                | Coordinator | agent, edit, search, read    | `true`           | Red-green-refactor cycle coordination         |
+| **Planner**            | Worker      | read, search                 | `false`          | Break down features into implementation tasks |
+| **Implementer**        | Worker      | read, search, edit, terminal | `false`          | Write production code following TDD           |
+| **Reviewer**           | Worker      | read, search                 | `false`          | Multi-perspective code review                 |
+| **Researcher**         | Worker      | read, search                 | `true`           | Read-only codebase analysis                   |
+| **Red**                | Worker      | read, search, edit, terminal | `false`          | Write failing tests (TDD red phase)           |
+| **Green**              | Worker      | read, search, edit, terminal | `false`          | Write minimal code to pass tests (TDD green)  |
+| **Refactor**           | Worker      | read, search, edit, terminal | `false`          | Improve code quality, keep tests green        |
+| **Admin Portal**       | Domain      | read, search, edit, terminal | `true`           | Admin portals with RBAC and dashboards        |
+| **API Specialist**     | Domain      | read, search, edit, terminal | `true`           | API architecture, docs, and DX                |
+| **Backend Architect**  | Domain      | read, search, edit, terminal | `true`           | APIs, databases, and server architecture      |
+| **Documenter**         | Domain      | read, search, edit, terminal | `true`           | Codebase analysis and documentation           |
+| **Frontend Developer** | Domain      | read, search, edit, terminal | `true`           | UI components and frontend performance        |
 
 **Coordinator agents** (Feature Builder, TDD) appear in the agents dropdown and orchestrate worker agents.
 **Worker agents** (`user-invocable: false`) are only accessible as subagents — they don't appear in the dropdown.
+**Domain agents** (Admin Portal, API Specialist, Backend Architect, Documenter, Frontend Developer) are user-invocable specialists for specific development domains.
 **Researcher** is both user-invocable and usable as a subagent.
 
 ### Orchestration Patterns
@@ -741,7 +781,7 @@ After copying templates and installing additional skills, your project will have
     │   └── SKILL.md
     ├── verification-before-completion/
     │   └── SKILL.md
-    └── ... (14 skills total)
+    └── ... (16 skills total)
 
 .cursor/                  # or .github/ for GitHub Copilot
 ├── rules/                # IDE behavior rules (from this toolkit)
