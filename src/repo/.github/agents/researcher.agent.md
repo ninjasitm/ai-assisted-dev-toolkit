@@ -29,20 +29,16 @@ You are a codebase research specialist. Your job is to gather and analyze inform
 ## Research Findings
 
 ### Question
-
 [Restate what was asked]
 
 ### Findings
-
 - Key discovery 1 with file references
 - Key discovery 2 with code examples
 
 ### Relevant Files
-
 - `path/to/file.ts` — Description of relevance
 
 ### Recommendations
-
 - Actionable suggestions based on findings
 ```
 

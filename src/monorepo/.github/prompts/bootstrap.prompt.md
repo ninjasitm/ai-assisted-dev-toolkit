@@ -325,7 +325,76 @@ Generate appropriate patterns for each app based on framework:
 - Use libs/domain for entities
 ```
 
-### Step 8: Detect Installed AI Agents
+### Step 8: Agent Customization
+
+Customize agent definition files (`.github/agents/` and `.cursor/agents/`) based on the detected stack.
+
+**Agent files contain framework placeholders** that should be replaced with detected values:
+
+| Placeholder                  | Source                               | Example                               |
+| ---------------------------- | ------------------------------------ | ------------------------------------- |
+| `{{FRAMEWORK}}`              | Step 4 framework detection           | `Laravel`, `Next.js`, `Django`        |
+| `{{LANGUAGE}}`               | Step 1 ecosystem detection           | `PHP`, `TypeScript`, `Python`         |
+| `{{ADMIN_MONITORING_TOOLS}}` | Framework-specific tools table below | `Horizon, Telescope, Pulse, Filament` |
+
+**Admin Monitoring Tools by Framework:**
+
+| Detected Framework       | `{{ADMIN_MONITORING_TOOLS}}` Value                                                            |
+| ------------------------ | --------------------------------------------------------------------------------------------- |
+| Laravel                  | Horizon (queues), Telescope (debugging), Pulse (performance), Nova or Filament (admin panels) |
+| Django                   | Django Admin, Celery Flower (tasks), django-debug-toolbar, Silk (profiling)                   |
+| Next.js / Express / Node | Bull Board (queues), AdminJS, custom dashboards                                               |
+| Rails                    | ActiveAdmin, Sidekiq Web (jobs), Blazer (SQL queries)                                         |
+| ASP.NET Core / Blazor    | Hangfire Dashboard (jobs), Aspire Dashboard, Health Checks UI                                 |
+| Spring Boot              | Spring Boot Admin, Actuator endpoints, Micrometer                                             |
+| FastAPI                  | FastAPI Admin, Flower (Celery), SQLAdmin                                                      |
+
+**Files to update** (in both `.github/agents/` and `.cursor/agents/`):
+
+- `backend-architect.agent.md` — Replace `{{FRAMEWORK}}` and `{{LANGUAGE}}`
+- `frontend-developer.agent.md` — Replace `{{FRAMEWORK}}` and `{{LANGUAGE}}`
+- `api-specialist.agent.md` — Replace `{{FRAMEWORK}}` and `{{LANGUAGE}}`
+- `admin-portal.agent.md` — Replace `{{FRAMEWORK}}`, `{{LANGUAGE}}`, and `{{ADMIN_MONITORING_TOOLS}}`
+- `documenter.agent.md` — Replace `{{FRAMEWORK}}` and `{{LANGUAGE}}`
+- All other agent files that reference `{{FRAMEWORK}}` or `{{LANGUAGE}}`
+
+**Multi-app monorepos**: If apps use different frameworks, keep the placeholders generic or list all and note which app uses which:
+
+```markdown
+# In agent files, replace with:
+
+{{FRAMEWORK}} → "Laravel (api), Next.js (web)"
+{{LANGUAGE}} → "PHP, TypeScript"
+{{ADMIN_MONITORING_TOOLS}} → "Horizon, Telescope (api); Bull Board (web); Grafana (cross-stack)"
+```
+
+**Presentation:**
+
+```markdown
+## 🤖 Agent Customization
+
+Detected stack: {{LANGUAGE}} / {{FRAMEWORK}}
+
+### Agent Placeholder Replacements
+
+| Placeholder                  | Replacement              |
+| ---------------------------- | ------------------------ |
+| `{{FRAMEWORK}}`              | {{DETECTED_FRAMEWORK}}   |
+| `{{LANGUAGE}}`               | {{DETECTED_LANGUAGE}}    |
+| `{{ADMIN_MONITORING_TOOLS}}` | {{DETECTED_ADMIN_TOOLS}} |
+
+### Files to Update ({{N}} agent files)
+
+- [x] `.github/agents/backend-architect.agent.md`
+- [x] `.github/agents/admin-portal.agent.md`
+- [x] `.cursor/agents/backend-architect.agent.md`
+- [x] `.cursor/agents/admin-portal.agent.md`
+- ... (all files with placeholders)
+
+Apply agent customizations? (Y/n)
+```
+
+### Step 9: Detect Installed AI Agents
 
 Before recommending skills, detect which AI agent directories exist in the workspace. Supported agents are located here: https://github.com/vercel-labs/skills?tab=readme-ov-file#available-agents:
 
@@ -382,9 +451,9 @@ Based on detected ecosystem and frameworks, recommend relevant skills from [skil
 | React              | `vercel-labs/agent-skills`            | `npx -y skills add {{AGENT_FLAGS}} vercel-labs/agent-skills --skill "vercel-react-best-practices"`     |
 | Vue                | `onmax/nuxt-skills` (vue)             | `npx -y skills add {{AGENT_FLAGS}} onmax/nuxt-skills --skill "vue"`                                    |
 | Nuxt               | `onmax/nuxt-skills` (nuxt)            | `npx -y skills add {{AGENT_FLAGS}} onmax/nuxt-skills --skill "nuxt"`                                   |
-| Expo               | `expo/skills`                         | `npx -y skills add {{AGENT_FLAGS}} expo/skills --skill '*' --agent github-copilot cursor`                                                  |
-| TypeScript         | `pproenca/dot-skills` (typescript)    | `npx -y skills add {{AGENT_FLAGS}} pproenca/dot-skills --skill '*' --agent github-copilot cursor`                                          |
-| Advanced Types     | `wshobson/agents` (ts-advanced-types) | `npx -y skills add {{AGENT_FLAGS}} wshobson/agents --skill '*' --agent github-copilot cursor`                                              |
+| Expo               | `expo/skills`                         | `npx -y skills add {{AGENT_FLAGS}} expo/skills --skill '*' --agent github-copilot cursor`              |
+| TypeScript         | `pproenca/dot-skills` (typescript)    | `npx -y skills add {{AGENT_FLAGS}} pproenca/dot-skills --skill '*' --agent github-copilot cursor`      |
+| Advanced Types     | `wshobson/agents` (ts-advanced-types) | `npx -y skills add {{AGENT_FLAGS}} wshobson/agents --skill '*' --agent github-copilot cursor`          |
 
 **Skill Creation for Unsupported Frameworks:**
 

@@ -11,17 +11,18 @@
 
 Detailed standards are organized into focused instruction files. Copilot will automatically load these based on the `applyTo` patterns:
 
-| Instruction File                   | Description                                       |
-| ---------------------------------- | ------------------------------------------------- |
-| `agent-conduct.instructions.md`    | Agent conduct rules, clarification protocols      |
-| `project-context.instructions.md`  | Monorepo architecture and project context         |
-| `coding-standards.instructions.md` | Coding standards and shared code conventions      |
-| `patterns.instructions.md`         | Monorepo patterns, workspace conventions, imports |
-| `workflows.instructions.md`        | Development commands and monorepo workflows       |
-| `testing.instructions.md`          | Testing strategy across apps and packages         |
-| `deployment.instructions.md`       | Deployment configuration per app                  |
-| `logging.instructions.md`          | Monorepo logging standards and best practices     |
-| `documentation.instructions.md`    | Distributed documentation strategy                |
+| Instruction File                    | Description                                       |
+| ----------------------------------- | ------------------------------------------------- |
+| `agent-conduct.instructions.md`     | Agent conduct rules, clarification protocols      |
+| `project-context.instructions.md`   | Monorepo architecture and project context         |
+| `coding-standards.instructions.md`  | Coding standards and shared code conventions      |
+| `patterns.instructions.md`          | Monorepo patterns, workspace conventions, imports |
+| `workflows.instructions.md`         | Development commands and monorepo workflows       |
+| `testing.instructions.md`           | Testing strategy across apps and packages         |
+| `deployment.instructions.md`        | Deployment configuration per app                  |
+| `logging.instructions.md`           | Monorepo logging standards and best practices     |
+| `documentation.instructions.md`     | Distributed documentation strategy                |
+| `subagent-workflow.instructions.md` | Orchestrator-first patterns and agent delegation  |
 
 ## Context Sources
 
@@ -29,20 +30,40 @@ Detailed standards are organized into focused instruction files. Copilot will au
 - [apps/{{APP_NAME_1}}/AGENTS.md](../apps/{{APP_NAME_1}}/AGENTS.md) - App-specific patterns
 - [apps/{{APP_NAME_2}}/AGENTS.md](../apps/{{APP_NAME_2}}/AGENTS.md) - App-specific patterns
 
-## Custom Agents (Subagents)
+## Preferred Workflow: Orchestrator + Subagents
 
-Specialized agents for task delegation. Coordinators orchestrate workers via subagents:
+**Default to using a coordinator agent for non-trivial work.** For details, see `subagent-workflow.instructions.md`.
 
-| Agent               | Type        | File                              | Purpose                                      |
-| ------------------- | ----------- | --------------------------------- | -------------------------------------------- |
-| **Feature Builder** | Coordinator | `agents/feature-builder.agent.md` | End-to-end feature development orchestration |
-| **TDD**             | Coordinator | `agents/tdd.agent.md`             | Red-green-refactor cycle coordination        |
-| **Planner**         | Worker      | `agents/planner.agent.md`         | Implementation task breakdown                |
-| **Implementer**     | Worker      | `agents/implementer.agent.md`     | Production code implementation               |
-| **Reviewer**        | Worker      | `agents/reviewer.agent.md`        | Multi-perspective code review                |
-| **Researcher**      | Worker      | `agents/researcher.agent.md`      | Read-only codebase analysis                  |
+### Coordinators
 
-Worker agents (`user-invocable: false`) are only accessible as subagents — they don't appear in the agents dropdown.
+| Agent               | File                              | Purpose                                      |
+| ------------------- | --------------------------------- | -------------------------------------------- |
+| **Feature Builder** | `agents/feature-builder.agent.md` | End-to-end feature development orchestration |
+| **TDD**             | `agents/tdd.agent.md`             | Red-green-refactor cycle coordination        |
+
+### Domain Specialists (user-invocable)
+
+| Agent                  | File                                 | Purpose                                 |
+| ---------------------- | ------------------------------------ | --------------------------------------- |
+| **Backend Architect**  | `agents/backend-architect.agent.md`  | API design, databases, system arch      |
+| **Frontend Developer** | `agents/frontend-developer.agent.md` | UI components, state, responsive design |
+| **API Specialist**     | `agents/api-specialist.agent.md`     | API contracts, docs, versioning         |
+| **Admin Portal**       | `agents/admin-portal.agent.md`       | RBAC, dashboards, reporting, monitoring |
+| **Documenter**         | `agents/documenter.agent.md`         | AGENTS.md, README, API docs             |
+| **Reviewer**           | `agents/reviewer.agent.md`           | Multi-perspective code review           |
+
+### Process Workers (subagent-only)
+
+| Agent           | File                          | Purpose                                |
+| --------------- | ----------------------------- | -------------------------------------- |
+| **Planner**     | `agents/planner.agent.md`     | Implementation task breakdown          |
+| **Implementer** | `agents/implementer.agent.md` | Production code implementation         |
+| **Researcher**  | `agents/researcher.agent.md`  | Read-only codebase analysis            |
+| **Red**         | `agents/red.agent.md`         | Write failing tests (TDD red phase)    |
+| **Green**       | `agents/green.agent.md`       | Make tests pass (TDD green phase)      |
+| **Refactor**    | `agents/refactor.agent.md`    | Improve code quality, keep tests green |
+
+Process workers (`user-invocable: false`) are only accessible as subagents — they don't appear in the agents dropdown.
 
 > **Docs:** [VS Code Subagents](https://code.visualstudio.com/docs/copilot/agents/subagents) · [Cursor Subagents](https://cursor.com/docs/subagents)
 

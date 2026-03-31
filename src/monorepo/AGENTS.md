@@ -117,6 +117,31 @@ For detailed standards on specific topics, refer to these skills in `.agents/ski
 | **TDD**           | `test-driven-development/SKILL.md` | Test-driven development                                 |
 | **Git Worktrees** | `using-git-worktrees/SKILL.md`     | Parallel development branches                           |
 
+## Preferred Workflow: Orchestrator + Subagents
+
+**Use a coordinator agent (orchestrator) as the default approach for non-trivial work.** Coordinators break complex tasks into focused subtasks and dispatch specialized subagents, each with context isolation and domain expertise.
+
+### When to use orchestrator + subagents
+
+- Features spanning multiple files or domains
+- Tasks requiring planning → implementation → review cycles
+- Work that benefits from domain specialization (backend, frontend, API)
+- Any task with 2+ independent subtasks
+
+### When to use a single agent directly
+
+- Quick one-file fixes or small edits
+- Research questions that don't require code changes
+- Ad-hoc code reviews (invoke Reviewer directly)
+- Simple documentation updates
+
+### How to invoke
+
+- "Use the Feature Builder agent to implement this feature" → Coordinator orchestrates full lifecycle
+- "Run the TDD agent for this requirement" → TDD coordinator manages red-green-refactor
+- "Use the Backend Architect to design the database schema" → Domain specialist works directly
+- "Review my recent changes" → Reviewer works directly on git diff
+
 ## Custom Agents (Subagents)
 
 Custom agents enable **context-isolated delegation** — a coordinator agent breaks complex tasks into subtasks and dispatches specialized subagents, each with their own tools and focus.
@@ -125,21 +150,52 @@ Custom agents enable **context-isolated delegation** — a coordinator agent bre
 
 Agent definitions live in `.github/agents/` (GitHub Copilot) and `.cursor/agents/` (Cursor):
 
-| Agent               | Type        | Tools                        | Purpose                                         |
-| ------------------- | ----------- | ---------------------------- | ----------------------------------------------- |
-| **Feature Builder** | Coordinator | agent, edit, search, read    | Orchestrates end-to-end feature development     |
-| **TDD**             | Coordinator | agent, edit, search, read    | Test-driven development with red-green-refactor |
-| **Planner**         | Worker      | read, search                 | Break down features into implementation tasks   |
-| **Implementer**     | Worker      | read, search, edit, terminal | Write production code following TDD             |
-| **Reviewer**        | Worker      | read, search                 | Multi-perspective code review                   |
-| **Researcher**      | Worker      | read, search                 | Codebase analysis without changes               |
-| **Red**             | Worker      | read, search, edit, terminal | Write failing tests (TDD red phase)             |
-| **Green**           | Worker      | read, search, edit, terminal | Write minimal code to pass tests (TDD green)    |
-| **Refactor**        | Worker      | read, search, edit, terminal | Improve code quality, keep tests green          |
+#### Coordinators
+
+Coordinators orchestrate workflows by dispatching worker and specialist agents.
+
+| Agent               | Tools                     | Agents                                                                                                                      | Purpose                                      |
+| ------------------- | ------------------------- | --------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| **Feature Builder** | agent, edit, search, read | Planner, Implementer, Reviewer, Researcher, Backend Architect, Frontend Developer, API Specialist, Admin Portal, Documenter | End-to-end feature development orchestration |
+| **TDD**             | agent, edit, search, read | Red, Green, Refactor                                                                                                        | Red-green-refactor cycle coordination        |
+
+#### Domain Specialists
+
+Specialists have deep expertise in a specific domain. They can be invoked directly or dispatched by coordinators.
+
+| Agent                  | Tools                        | Purpose                                                 |
+| ---------------------- | ---------------------------- | ------------------------------------------------------- |
+| **Backend Architect**  | read, search, edit, terminal | API design, databases, system architecture, security    |
+| **Frontend Developer** | read, search, edit, terminal | UI components, state management, responsive design      |
+| **API Specialist**     | read, search, edit, terminal | API contracts, documentation, versioning, integration   |
+| **Admin Portal**       | read, search, edit, terminal | RBAC, dashboards, reporting, analytics, monitoring      |
+| **Documenter**         | read, search, edit, terminal | AGENTS.md, README, API docs, architecture documentation |
+| **Reviewer**           | read, search, terminal       | Multi-perspective code review (also usable directly)    |
+
+#### Process Workers
+
+Workers are dispatched by coordinators and are not directly user-invocable.
+
+| Agent           | Tools                        | Purpose                                       |
+| --------------- | ---------------------------- | --------------------------------------------- |
+| **Planner**     | read, search                 | Break down features into implementation tasks |
+| **Implementer** | read, search, edit, terminal | Write production code following TDD           |
+| **Researcher**  | read, search                 | Codebase analysis without changes             |
+| **Red**         | read, search, edit, terminal | Write failing tests (TDD red phase)           |
+| **Green**       | read, search, edit, terminal | Write minimal code to pass tests (TDD green)  |
+| **Refactor**    | read, search, edit, terminal | Improve code quality, keep tests green        |
 
 ### Orchestration Patterns
 
-**Coordinator → Worker**: Feature Builder dispatches Planner, Implementer, Reviewer, and Researcher as subagents. Each worker has context isolation — they see only what the coordinator provides.
+**Coordinator → Specialist/Worker**: Feature Builder dispatches domain specialists (Backend Architect, Frontend Developer, etc.) based on the task domain, and process workers (Planner, Reviewer, Researcher) for workflow stages.
+
+**Domain Matching**: Choose the specialist whose expertise matches the task:
+
+- Backend changes → Backend Architect
+- UI changes → Frontend Developer
+- API contracts/docs → API Specialist
+- Admin dashboards, RBAC, reporting, monitoring → Admin Portal
+- General implementation → Implementer
 
 **Sequential**: Tasks with dependencies are implemented one at a time.
 **Parallel**: Independent tasks (e.g., changes in different apps) can be dispatched to multiple subagents simultaneously.
@@ -156,6 +212,8 @@ Subagents are typically **agent-initiated** — the coordinator decides when to 
 
 - "Use the Feature Builder agent to implement this feature"
 - "Run the TDD agent for this requirement"
+- "Use the Backend Architect to design the database schema"
+- "Use the Documenter to update the project documentation"
 - "Use a subagent to research how authentication works across apps"
 
 > **Docs:** [VS Code Subagents](https://code.visualstudio.com/docs/copilot/agents/subagents) · [Cursor Subagents](https://cursor.com/docs/subagents)

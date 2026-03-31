@@ -149,6 +149,30 @@ You are helping to bootstrap AI instructions for this monorepo by analyzing the 
    - State management patterns
    - API integration patterns
 
+8.5. **Agent Customization**:
+
+Scan agent definition files in `.github/agents/` and `.cursor/agents/` for template placeholders and replace them with detected values:
+
+| Placeholder                  | Source                     | Example                               |
+| ---------------------------- | -------------------------- | ------------------------------------- |
+| `{{FRAMEWORK}}`              | Step 3 framework detection | `Laravel`, `Next.js`, `Django`        |
+| `{{LANGUAGE}}`               | Step 1 ecosystem detection | `PHP`, `TypeScript`, `Python`         |
+| `{{ADMIN_MONITORING_TOOLS}}` | Framework-specific lookup  | `Horizon, Telescope, Pulse, Filament` |
+
+**Admin Monitoring Tools by Framework:**
+
+- **Laravel**: Horizon, Telescope, Pulse, Nova/Filament
+- **Django**: Django Admin, Celery Flower, django-debug-toolbar, Silk
+- **Next.js/Node**: Bull Board, AdminJS
+- **Rails**: ActiveAdmin, Sidekiq Web, Blazer
+- **ASP.NET Core**: Hangfire Dashboard, Aspire Dashboard, Health Checks UI
+- **Spring Boot**: Spring Boot Admin, Actuator, Micrometer
+- **FastAPI**: FastAPI Admin, Flower, SQLAdmin
+
+For multi-app monorepos with different frameworks, list all with app context (e.g., `"Horizon, Telescope (api); Bull Board (web); Grafana (cross-stack)"`).
+
+Present the replacements and confirm before applying.
+
 9. **Detect Installed AI Agents**:
 
    Before recommending skills, detect which AI agent directories exist in the workspace. Supported agents are located here: https://github.com/vercel-labs/skills?tab=readme-ov-file#available-agents:
@@ -214,9 +238,9 @@ When recommending framework-specific skills, include the detected agent flags. E
 | React              | `vercel-labs/agent-skills`            | `npx -y skills add <detected-agents> vercel-labs/agent-skills --skill "vercel-react-best-practices"`     |
 | Vue                | `onmax/nuxt-skills` (vue)             | `npx -y skills add <detected-agents> onmax/nuxt-skills --skill "vue"`                                    |
 | Nuxt               | `onmax/nuxt-skills` (nuxt)            | `npx -y skills add <detected-agents> onmax/nuxt-skills --skill "nuxt"`                                   |
-| Expo               | `expo/skills`                         | `npx -y skills add <detected-agents> expo/skills --skill '*' --agent github-copilot cursor`                                                  |
-| TypeScript         | `pproenca/dot-skills` (typescript)    | `npx -y skills add <detected-agents> pproenca/dot-skills --skill '*' --agent github-copilot cursor`                                          |
-| Advanced Types     | `wshobson/agents` (ts-advanced-types) | `npx -y skills add <detected-agents> wshobson/agents --skill '*' --agent github-copilot cursor`                                              |
+| Expo               | `expo/skills`                         | `npx -y skills add <detected-agents> expo/skills --skill '*' --agent github-copilot cursor`              |
+| TypeScript         | `pproenca/dot-skills` (typescript)    | `npx -y skills add <detected-agents> pproenca/dot-skills --skill '*' --agent github-copilot cursor`      |
+| Advanced Types     | `wshobson/agents` (ts-advanced-types) | `npx -y skills add <detected-agents> wshobson/agents --skill '*' --agent github-copilot cursor`          |
 
 **Skill Creation for Unsupported Frameworks:**
 

@@ -1,7 +1,7 @@
 ---
 name: Implementer
 description: "Implement code changes for a specific task. Follow TDD, write tests alongside code, and self-review before reporting completion."
-tools: ['read', 'search', 'edit', 'terminalLastCommand', 'runInTerminal']
+tools: ["read", "search", "edit", "runInTerminal", "terminalLastCommand"]
 user-invocable: false
 ---
 

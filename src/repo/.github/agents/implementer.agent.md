@@ -1,7 +1,7 @@
 ---
 name: Implementer
 description: "Implement code changes for a specific task. Follow TDD, write tests alongside code, and self-review before reporting completion."
-tools: ["read", "search", "edit", "terminalLastCommand", "runInTerminal"]
+tools: ["read", "search", "edit", "runInTerminal", "terminalLastCommand"]
 user-invocable: false
 ---
 
@@ -31,7 +31,6 @@ You are an implementation specialist. Your job is to write production-quality co
 ## Output
 
 Return a summary of:
-
 - What was implemented
 - Files created/modified
 - Tests added and their status

@@ -289,6 +289,65 @@ Add language and framework-specific patterns to `AGENTS.md`:
 
 - Spring Boot: Controllers, Services, JPA
 
+### Step 5.5: Agent Customization
+
+Customize agent definition files (`.github/agents/` and `.cursor/agents/`) based on the detected stack.
+
+**Agent files contain framework placeholders** that should be replaced with detected values:
+
+| Placeholder | Source | Example |
+|---|---|---|
+| `{{FRAMEWORK}}` | Step 1 framework detection | `Laravel`, `Next.js`, `Django` |
+| `{{LANGUAGE}}` | Step 1 ecosystem detection | `PHP`, `TypeScript`, `Python` |
+| `{{ADMIN_MONITORING_TOOLS}}` | Framework-specific tools table below | `Horizon, Telescope, Pulse, Filament` |
+
+**Admin Monitoring Tools by Framework:**
+
+| Detected Framework | `{{ADMIN_MONITORING_TOOLS}}` Value |
+|---|---|
+| Laravel | Horizon (queues), Telescope (debugging), Pulse (performance), Nova or Filament (admin panels) |
+| Django | Django Admin, Celery Flower (tasks), django-debug-toolbar, Silk (profiling) |
+| Next.js / Express / Node | Bull Board (queues), AdminJS, custom dashboards |
+| Rails | ActiveAdmin, Sidekiq Web (jobs), Blazer (SQL queries) |
+| ASP.NET Core / Blazor | Hangfire Dashboard (jobs), Aspire Dashboard, Health Checks UI |
+| Spring Boot | Spring Boot Admin, Actuator endpoints, Micrometer |
+| FastAPI | FastAPI Admin, Flower (Celery), SQLAdmin |
+
+**Files to update** (in both `.github/agents/` and `.cursor/agents/`):
+
+- `backend-architect.agent.md` — Replace `{{FRAMEWORK}}` and `{{LANGUAGE}}`
+- `frontend-developer.agent.md` — Replace `{{FRAMEWORK}}` and `{{LANGUAGE}}`
+- `api-specialist.agent.md` — Replace `{{FRAMEWORK}}` and `{{LANGUAGE}}`
+- `admin-portal.agent.md` — Replace `{{FRAMEWORK}}`, `{{LANGUAGE}}`, and `{{ADMIN_MONITORING_TOOLS}}`
+- `documenter.agent.md` — Replace `{{FRAMEWORK}}` and `{{LANGUAGE}}`
+- All other agent files that reference `{{FRAMEWORK}}` or `{{LANGUAGE}}`
+
+**Presentation:**
+
+```markdown
+## 🤖 Agent Customization
+
+Detected stack: {{LANGUAGE}} / {{FRAMEWORK}}
+
+### Agent Placeholder Replacements
+
+| Placeholder | Replacement |
+|---|---|
+| `{{FRAMEWORK}}` | {{DETECTED_FRAMEWORK}} |
+| `{{LANGUAGE}}` | {{DETECTED_LANGUAGE}} |
+| `{{ADMIN_MONITORING_TOOLS}}` | {{DETECTED_ADMIN_TOOLS}} |
+
+### Files to Update ({{N}} agent files)
+
+- [x] `.github/agents/backend-architect.agent.md`
+- [x] `.github/agents/admin-portal.agent.md`
+- [x] `.cursor/agents/backend-architect.agent.md`
+- [x] `.cursor/agents/admin-portal.agent.md`
+- ... (all files with placeholders)
+
+Apply agent customizations? (Y/n)
+```
+
 ### Step 6: Detect Installed AI Agents
 
 Before recommending skills, detect which AI agent directories exist in the workspace. Supported agents are located here: https://github.com/vercel-labs/skills?tab=readme-ov-file#available-agents:

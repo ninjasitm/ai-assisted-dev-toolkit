@@ -1,7 +1,7 @@
 ---
 name: Researcher
 description: "Research codebase patterns, dependencies, and technical context. Analyze code structure, find relevant examples, and report findings without making changes."
-tools: ['read', 'search']
+tools: ["read", "search"]
 user-invocable: true
 ---
 

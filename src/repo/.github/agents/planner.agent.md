@@ -28,7 +28,6 @@ Return a structured plan in markdown:
 ## Implementation Plan
 
 ### Task 1: [Title]
-
 - **Files:** list of files to create/modify
 - **Dependencies:** none | Task N
 - **Acceptance Criteria:**
@@ -37,7 +36,6 @@ Return a structured plan in markdown:
 - **Testing:** Unit test / Integration test description
 
 ### Task 2: [Title]
-
 ...
 ```
 

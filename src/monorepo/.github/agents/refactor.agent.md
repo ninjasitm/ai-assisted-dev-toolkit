@@ -1,7 +1,7 @@
 ---
 name: Refactor
 description: "Improve code quality and structure while keeping all tests passing. Part of the TDD red-green-refactor cycle."
-tools: ['read', 'search', 'edit', 'runInTerminal', 'terminalLastCommand']
+tools: ["read", "search", "edit", "runInTerminal", "terminalLastCommand"]
 user-invocable: false
 ---
 
