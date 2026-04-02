@@ -97,6 +97,25 @@ The toolkit includes 16 pre-installed universal skills in `.agents/skills/`:
 
 ## Working on This Repository
 
+### Branch Workflow
+
+**Always work from a feature branch — never commit directly to `main`.**
+
+```bash
+git checkout main
+git pull origin main
+git checkout -b feat/your-change-description
+# ... make changes ...
+git push origin feat/your-change-description
+# Open a PR from the branch into main for review
+```
+
+- Branch naming: `feat/`, `fix/`, `docs/`, `chore/` prefixes
+- All changes go through a PR review before merging to `main`
+- Keep branches focused — one logical change per branch
+
+### Template Editing Rules
+
 When modifying templates:
 
 1. **Preserve placeholders** - Keep `{{VAR}}` syntax intact
@@ -122,6 +141,30 @@ For monorepos with:
 - Multiple apps (`apps/`)
 - Shared packages (`packages/`)
 - Workspace-level configuration
+
+## Documentation Updates
+
+After completing any change to this repository, dispatch the **Documenter** subagent to update affected documentation.
+
+> "Use the Documenter agent to update README.md and any affected template READMEs based on the changes just made. Keep updates concise — add missing entries, correct outdated info, and update paths. Do not rewrite sections that are still accurate."
+
+### What to Update
+
+| Change Type | Files to Update |
+| ----------- | --------------- |
+| New template file | `README.md` — File Descriptions + Repository Structure |
+| New placeholder | `README.md` — Placeholder Reference tables |
+| New template folder | `README.md` — Repository Structure + File Descriptions |
+| New/removed `.claude`, `.cursor`, or `.github` command | `README.md` — relevant `*.md` File Descriptions section |
+| New bundled skill | `README.md` — Bundled Universal Skills table; `AGENTS.md` — Bundled Skills table |
+| New supported ecosystem | `README.md` — Supported Ecosystems table |
+| Any fix or improvement | `CHANGELOG.md` — follow [Keep a Changelog](https://keepachangelog.com/) format |
+
+### Standards
+
+- **Concise**: Add or correct entries; don't rewrite accurate sections.
+- **Placeholder-safe**: Never substitute `{{PLACEHOLDER}}` values inside template files under `src/`.
+- **Accurate paths**: Reference actual paths (`src/repo/` or `src/monorepo/`), not generic names.
 
 ## Contributing
 
