@@ -84,6 +84,34 @@ Tasks with dependencies are implemented one at a time in dependency order. Each 
 
 Independent tasks can be dispatched to multiple specialist subagents simultaneously. Use when tasks don't share files or state.
 
+### Parallelization Analysis (REQUIRED before dispatching)
+
+Before executing any task list, the orchestrator MUST run this analysis:
+
+1. **Scan for `[P]` markers** in the task list — these are pre-identified parallel candidates
+   - If no `[P]` markers exist, do **not** assume sequential-only work. Treat all tasks as candidates and infer parallel-safe groups via the independence test.
+2. **Build a dependency graph**: For each task, list which files it reads and writes
+3. **Apply the independence test**:
+   - Tasks that write to **different files** with **no shared state** → parallel-safe
+   - Tasks that share any writable file → sequential (dependency edge)
+   - Tasks where one reads what another writes → sequential (data dependency)
+4. **Group by domain** for specialist routing:
+   - Backend tasks → Backend Architect
+   - Frontend tasks → Frontend Developer
+   - API contract tasks → API Specialist
+   - Documentation tasks → Documenter
+   - Cross-cutting → Implementer
+5. **Dispatch decision**:
+   - **3+ independent tasks** → Use `dispatching-parallel-agents` skill, one agent per task
+   - **2 independent tasks** → Parallel dispatch (simpler coordination)
+   - **All tasks dependent** → Sequential with `subagent-driven-development` skill
+   - **Mixed** → Dispatch independent group in parallel, then continue sequential chain
+
+```
+Example: 5 tasks → T001 (setup) → T002 [P] (backend API) + T003 [P] (frontend UI) + T004 [P] (docs) → T005 (integration tests)
+         Dispatch: T001 sequential → T002+T003+T004 parallel → T005 sequential
+```
+
 ## Quality Gates
 
 - Every implementation must pass **Reviewer** before proceeding

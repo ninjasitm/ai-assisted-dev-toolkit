@@ -101,3 +101,12 @@ You are helping to break down a feature into actionable tasks.
 - Tasks affecting the same file should be sequential
 - Each task should be completable independently
 - **Quality over quantity**: Fewer, well-defined tasks beat many granular ones
+
+## Orchestrator Dispatch Guide
+
+When this task list is used by `/implement-feature` or `/implement`:
+
+- **Parallel [P] tasks**: Dispatch one subagent per `[P]` task concurrently using `dispatching-parallel-agents` skill
+- **Sequential tasks**: Execute in dependency order, one subagent per task using `subagent-driven-development` skill
+- **Domain routing**: Match each task to the appropriate specialist agent (Backend Architect, Frontend Developer, API Specialist, etc.)
+- **Review gate**: Every task must pass a Reviewer agent before being marked complete

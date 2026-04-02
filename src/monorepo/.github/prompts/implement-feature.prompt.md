@@ -13,6 +13,13 @@ Implement a feature by completing tasks sequentially with proper tracking.
 /implement-feature docs/tasks/feature-name.md
 ```
 
+## Orchestrator Checkpoint
+
+> **🛑 Before starting**: This command involves planning, implementation, testing, and review.
+> Use the **orchestrator-first** flow. Delegate to the **Feature Builder** coordinator or use
+> the `subagent-driven-development` skill to dispatch a fresh subagent per task.
+> See `.github/instructions/subagent-workflow.instructions.md` for full patterns.
+
 ## Process
 
 1. **Load Feature Context**:
@@ -21,15 +28,25 @@ Implement a feature by completing tasks sequentially with proper tracking.
    - Read task list from `docs/tasks/{{FEATURE_NAME}}.md`
    - Review `AGENTS.md` for project patterns
 
-2. **Create Feature Branch**:
+2. **Parallelization Analysis**:
+   - Scan task list for `[P]` markers and independent tasks
+   - Group tasks by domain (backend, frontend, docs, tests)
+   - Tasks that touch **different files with no shared state** → dispatch in parallel
+   - Tasks with dependencies or shared files → keep sequential
+   - Use `dispatching-parallel-agents` skill when 3+ independent tasks exist
+
+3. **Create Feature Branch**:
    ```bash
    git checkout -b feature/{{FEATURE_NAME}}
    git pull origin {{DEFAULT_BRANCH}}
    ```
 
-3. **Sequential Task Implementation**:
+4. **Task Implementation** (sequential or parallel per analysis):
 
-   For each task in dependency order:
+   For tasks with dependencies, execute in order.
+   For `[P]` tasks with no shared state, **dispatch parallel subagents** — one per task domain:
+
+   For each task:
 
    a. **Mark Task In Progress**
 
@@ -57,7 +74,12 @@ Implement a feature by completing tasks sequentially with proper tracking.
 
    f. **Mark Task Complete**
 
-4. **Create Pull Request**:
+5. **Post-Implementation Review**:
+   - Dispatch **Reviewer** agent on all changes before proceeding
+   - If reviewer requests changes, route back to the original domain specialist
+   - Use `verification-before-completion` skill for final quality gate
+
+6. **Create Pull Request**:
 
    After all tasks complete:
 
@@ -74,7 +96,7 @@ Implement a feature by completing tasks sequentially with proper tracking.
       - Create PR targeting `{{DEFAULT_BRANCH}}`
       - Include feature summary and testing notes
 
-5. **Report Status**:
+7. **Report Status**:
    - Completed tasks count
    - PR URL
    - Ready for code review

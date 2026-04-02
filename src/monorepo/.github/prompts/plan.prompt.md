@@ -13,6 +13,13 @@ Plan how to implement the specified feature. This is the second step in the deve
 /plan docs/specs/user-authentication.md
 ```
 
+## Orchestrator Checkpoint
+
+> **🛑 Before starting**: For complex features spanning multiple domains (backend + frontend + API + docs),
+> dispatch **Researcher** subagents in parallel to analyze each domain simultaneously.
+> Use the `writing-plans` skill for structured plan creation.
+> See `.github/instructions/subagent-workflow.instructions.md` for full patterns.
+
 ## Process
 
 1. **Load Feature Context**:
@@ -38,6 +45,7 @@ Plan how to implement the specified feature. This is the second step in the deve
    - **Security Considerations**: Auth, validation, data protection
    - **Testing Strategy**: Unit, integration, E2E approach
    - **Integration Points**: Dependencies on other features
+   - **Parallelization Map**: Identify independent tasks that can be dispatched to parallel subagents during implementation (mark with `[P]`)
 
 4. **Generate Additional Artifacts** (if needed):
    - `docs/research/{{FEATURE_NAME}}.md` - Technical research

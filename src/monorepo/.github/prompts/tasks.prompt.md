@@ -19,12 +19,12 @@ Before creating tasks, apply these consolidation principles:
 
 ### Target Task Counts
 
-| Feature Complexity   | Total Tasks | Max Subtasks/Task |
-| -------------------- | ----------- | ----------------- |
-| Simple (< 4 hours)   | 2-3         | 0                 |
-| Medium (4-16 hours)  | 3-5         | 2-4               |
-| Complex (16-40 hrs)  | 5-8         | 3-6               |
-| Large (40+ hours)    | 8-12        | 5-10              |
+| Feature Complexity  | Total Tasks | Max Subtasks/Task |
+| ------------------- | ----------- | ----------------- |
+| Simple (< 4 hours)  | 2-3         | 0                 |
+| Medium (4-16 hours) | 3-5         | 2-4               |
+| Complex (16-40 hrs) | 5-8         | 3-6               |
+| Large (40+ hours)   | 8-12        | 5-10              |
 
 ### Consolidation Principles
 
@@ -83,21 +83,25 @@ Before creating tasks, apply these consolidation principles:
    **Parallel**: [Yes/No]
 
    **Scope** (what this task covers):
+
    - [Component/feature 1]
    - [Component/feature 2]
    - [Related component 3]
 
    **Files to Create/Modify**:
+
    - `{{SRC_DIR}}/path/to/file.{{FILE_EXTENSION}}`
    - `{{SRC_DIR}}/path/to/related.{{FILE_EXTENSION}}`
    - `{{TEST_DIR}}/path/to/test.{{FILE_EXTENSION}}`
 
    **Acceptance Criteria**:
+
    - [ ] All components implemented
    - [ ] Tests passing
    - [ ] No type/lint errors
 
    **Subtasks** (only if task > 8 hours):
+
    - [ ] Subtask 1
    - [ ] Subtask 2
    ```
@@ -123,13 +127,24 @@ Before creating tasks, apply these consolidation principles:
 ## Anti-Patterns to Avoid
 
 ❌ **Don't create separate tasks for**:
+
 - Each individual file
 - "Create X" then "Configure X" then "Test X"
 - Setup tasks under 1 hour
 - Each CRUD operation separately
 
 ✅ **Do combine into single tasks**:
+
 - All database work for an entity
 - All API endpoints for a resource
 - All configuration/setup work
 - Related service layer methods
+
+## Orchestrator Dispatch Guide
+
+When this task list is used by `/implement-feature` or `/implement`:
+
+- **Parallel [P] tasks**: Dispatch one subagent per `[P]` task concurrently using `dispatching-parallel-agents` skill
+- **Sequential tasks**: Execute in dependency order, one subagent per task using `subagent-driven-development` skill
+- **Domain routing**: Match each task to the appropriate specialist agent (Backend Architect, Frontend Developer, API Specialist, etc.)
+- **Review gate**: Every task must pass a Reviewer agent before being marked complete
