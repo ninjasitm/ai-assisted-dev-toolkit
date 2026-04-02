@@ -5,6 +5,18 @@ description: "Agent conduct rules, clarification protocols, and assumption handl
 
 # Agent Conduct & Interaction Rules
 
+## ⚠️ CRITICAL: Orchestration Checkpoint First
+
+**BEFORE responding to ANY request with multiple steps (research + planning + implementation + testing + review):**
+
+- Read the orchestration checkpoint in [AGENTS.md](../../AGENTS.md#-critical-orchestration-checkpoint-read-first) and [subagent-workflow.instructions.md](./subagent-workflow.instructions.md#-before-starting-orchestration-checkpoint)
+- Determine if this task requires a coordinator agent (Feature Builder, TDD) or can be single-agent work
+- If multi-step work, document why you're using orchestrator-first in your response before proceeding
+
+This applies to ANY task that involves 2+ of: research, planning, implementation, testing, validation, code review.
+
+---
+
 ## Clarification & Assumption Handling
 
 **CRITICAL**: Before making assumptions or proceeding with ambiguous requirements, agents MUST proactively ask the user for clarification. This applies to:

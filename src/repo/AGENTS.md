@@ -96,6 +96,43 @@ For detailed standards on specific topics, refer to these skills in `.agents/ski
 | **Logging**         | `logging/SKILL.md`                        | Structured logging standards, log levels, observability |
 | **Documentation**   | `project-documentation/SKILL.md`          | README, comments, ADRs, changelogs                      |
 
+## ⚠️ CRITICAL: Orchestration Checkpoint (READ FIRST)
+
+**BEFORE starting ANY multi-step task, MUST read this section:**
+
+If your work involves **2+ of these activities**, you MUST use orchestrator-first flow:
+
+- Research / exploration
+- Planning / specification
+- Implementation / code changes
+- Testing / validation
+- Review / quality gate
+
+**Common patterns requiring orchestration:**
+
+- Feature development (research + build + test + review)
+- Bug fix analysis (diagnose + plan + implement + validate)
+- API design (spec + implement + integrate + test)
+- Multi-file refactoring (plan + change multiple files + validate)
+
+**Quick decision tree:**
+
+- Single file edit? → Direct implementation OK
+- 2+ independent fixes? → Use subagent flow (dispatch parallel agents)
+- Feature with planning + implementation + review? → Use Feature Builder coordinator
+- Behavior-driven development? → Use TDD coordinator
+- Uncertain? → Read "Recommended Flow" below
+
+**Cost of skipping this:**
+
+- Wastes tokens on sequential work that could parallelize
+- Breaks established workflow expectations
+- Loses benefits of specialist domain routing
+- Reduces code review quality (less context isolation)
+- Single-agent work accumulates cognitive load
+
+---
+
 ## Preferred Workflow: Orchestrator + Subagents
 
 **Use a coordinator agent (orchestrator) as the default approach for non-trivial work.** Coordinators break complex tasks into focused subtasks and dispatch specialized subagents, each with context isolation and domain expertise.
@@ -113,6 +150,41 @@ For detailed standards on specific topics, refer to these skills in `.agents/ski
 - Research questions that don't require code changes
 - Ad-hoc code reviews (invoke Reviewer directly)
 - Simple documentation updates
+
+### Subagent Guidance
+
+Use custom agents when you want explicit coordinator and worker roles. Use workflow skills when you want tighter manual control over the same process.
+
+#### When to Delegate
+
+- Use `Feature Builder` for feature work that needs research, planning, implementation, and review in one coordinated flow.
+- Use `TDD` when requirements are behavior-driven and you want explicit red-green-refactor execution.
+- Prefer orchestrator-first execution for multi-step work and route tasks to domain specialists when possible.
+- Use `Researcher` directly for read-only exploration.
+- Use `Backend Architect`, `Frontend Developer`, `API Specialist`, `Admin Portal`, and `Documenter` for focused domain tasks.
+- Use `subagent-driven-development` after `writing-plans` when you have a written implementation plan and want to stay in the current session.
+- Use `dispatching-parallel-agents` only when tasks are independent, do not share state, and are unlikely to touch the same files.
+- Use `requesting-code-review` after each task in subagent-driven development, after each major task in ad-hoc work, and before merge so issues do not cascade.
+- Use `executing-plans` instead of `subagent-driven-development` when you want a separate execution session rather than same-session orchestration.
+
+#### Operating Rules
+
+- Give each subagent a narrow scope, the exact task text, and the context it needs to act safely.
+- Treat `Planner`, `Implementer`, `Reviewer`, `Red`, `Green`, and `Refactor` as worker agents intended for coordinator-led handoff.
+- Do not make an implementation subagent read the plan file on its own; pass the relevant task directly.
+- In `subagent-driven-development`, keep the review order strict: spec compliance first, then code quality.
+- If a reviewer finds issues, fix them and re-run the same review before moving on.
+- Do not run multiple implementation subagents in parallel when they could touch shared packages, shared docs, or the same app surface.
+
+#### Recommended Flow
+
+1. Use `brainstorming` if requirements or scope are still fuzzy.
+2. Use `writing-plans` to produce a concrete implementation plan.
+3. Use `subagent-driven-development` for same-session execution or `executing-plans` for a separate execution session.
+4. Use `dispatching-parallel-agents` only for independent investigations or non-overlapping tasks.
+5. Use `requesting-code-review` and `verification-before-completion` before claiming the work is done.
+
+> **Delegation patterns:** See `.github/instructions/subagent-workflow.instructions.md`.
 
 ### How to invoke
 

@@ -1,0 +1,34 @@
+
+- **🛑 Orchestration checkpoint**: If task involves 2+ of (research, planning, implementation, testing, review), MUST use orchestrator-first flow. Single-agent work wastes tokens and loses domain routing benefits.
+- **Default to orchestrator + subagents** for non-trivial work (features, refactors, multi-file fixes).
+- Use a **coordinator agent** (Feature Builder or TDD) as the entry point — they delegate to specialists.
+- Only fall back to a single global agent for simple, single-file tasks.
+- **Recommended flow**: brainstorming → writing-plans → subagent-driven-development → requesting-code-review → verification-before-completion.
+
+## Agent Hierarchy
+
+**Coordinators** (entry points):
+
+- Feature Builder — end-to-end feature orchestration
+- TDD — red-green-refactor cycle
+
+**Domain Specialists** (route by task domain):
+
+- Backend Architect — API design, databases, system architecture
+- Frontend Developer — UI, components, state management, responsive design
+- API Specialist — API contracts, docs, versioning, integration
+- Admin Portal — RBAC, dashboards, reporting, analytics, monitoring
+- Documenter — README, AGENTS.md, API docs, ADRs
+- Reviewer — multi-perspective code review
+
+**Process Workers** (subagent-only):
+
+- Planner, Implementer, Researcher, Red, Green, Refactor
+
+## Dispatch Rules
+
+- Match task domain to the right specialist before defaulting to Implementer.
+- One subagent per independent task — don't overload a single agent.
+- For parallel-safe tasks (different files, no shared state), dispatch domain specialists concurrently.
+- Always run Reviewer after implementation, before marking work complete.
+- See `.github/instructions/subagent-workflow.instructions.md` for full patterns.

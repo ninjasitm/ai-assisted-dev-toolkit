@@ -1,0 +1,9 @@
+---
+paths:
+  - "src/**"
+---
+
+- Comment complex logic and non-obvious implementations.
+- Use bracketed identifiers for logs: `[ModuleName]: message`.
+- Use appropriate log levels: error, warn, info, debug.
+- Remove debug logs before committing to main branch.

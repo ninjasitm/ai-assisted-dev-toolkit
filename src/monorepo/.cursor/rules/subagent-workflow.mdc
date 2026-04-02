@@ -4,9 +4,12 @@ globs:
 alwaysApply: agent
 ---
 
+- **🛑 Orchestration checkpoint**: If task involves 2+ of (research, planning, implementation, testing, review), MUST use orchestrator-first flow. Single-agent work wastes tokens and loses domain routing benefits.
 - **Default to orchestrator + subagents** for non-trivial work (features, refactors, multi-file fixes).
 - Use a **coordinator agent** (Feature Builder or TDD) as the entry point — they delegate to specialists.
 - Only fall back to a single global agent for simple, single-file tasks.
+- **Recommended flow**: brainstorming → writing-plans → subagent-driven-development → requesting-code-review → verification-before-completion.
+- For cross-app work, research boundaries first, sequence shared package changes before app-specific changes.
 
 ## Agent Hierarchy
 

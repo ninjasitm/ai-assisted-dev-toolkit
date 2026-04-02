@@ -1,0 +1,5 @@
+- All code must be {{LANGUAGE}}. {{TYPE_SAFETY_RULE}}
+- {{COMPONENT_SYNTAX_RULE}}
+- Follow {{FRAMEWORK}}'s recommended folder and naming conventions.
+- Keep functions focused and manageable (under 50-75 lines).
+- Use try-catch for async operations; leverage {{FRAMEWORK}} error utilities.

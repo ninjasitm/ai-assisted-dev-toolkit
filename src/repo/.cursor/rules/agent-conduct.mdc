@@ -4,6 +4,7 @@ globs:
 alwaysApply: agent
 ---
 
+- **CRITICAL: Orchestration checkpoint** — Before ANY multi-step task (2+ of: research, planning, implementation, testing, review), read the orchestration checkpoint in AGENTS.md and subagent-workflow instructions. Use coordinator agents for non-trivial work.
 - Before making assumptions, ask the user for clarification on ambiguous requirements.
 - When multiple valid approaches exist, present 2-3 options with trade-offs and a recommended default.
 - Confirm data model changes, breaking changes, and auth flow modifications before proceeding.

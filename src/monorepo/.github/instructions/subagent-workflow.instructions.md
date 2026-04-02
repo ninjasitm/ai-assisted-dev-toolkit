@@ -5,6 +5,37 @@ description: "Subagent workflow patterns and orchestrator-first approach. Loaded
 
 # Subagent Workflow
 
+## 🛑 BEFORE STARTING: Orchestration Checkpoint
+
+**READ THIS SECTION FIRST if you are about to start work.** This instruction file is loaded automatically for multi-step tasks, meaning:
+
+1. **You are likely handling 2+ of:** research, planning, implementation, testing, review, validation
+2. **You MUST answer:** Does this task involve independent subtasks or multiple domains?
+3. **If YES:** Use a coordinator agent (Feature Builder, TDD, or other) instead of single-agent execution
+4. **If NO (single focused task):** Document why you're using a single agent, then proceed
+
+### Signs You Should Use Orchestrator-First
+
+- ✅ Multiple files across different app directories
+- ✅ Planning phase + implementation phase
+- ✅ Multiple independent reviewable chunks
+- ✅ Different domain areas (backend + frontend + docs)
+- ✅ Cross-app impacts or shared package changes
+- ✅ Test coverage needed alongside changes
+- ✅ Architecture decisions before coding
+
+### Signs Single Agent Is OK
+
+- ✅ Single file edit
+- ✅ Quick typo/syntax fix
+- ✅ Research-only task (no code changes)
+- ✅ Small documentation update
+- ✅ Direct code review feedback (no implementation)
+
+**When in doubt, use orchestrator-first.** It is lower-cost than sequential agent work and provides better code review isolation.
+
+---
+
 ## Orchestrator-First Principle
 
 **Default to using a coordinator agent for non-trivial work.** Coordinators break complex tasks into focused subtasks and dispatch specialized subagents with context isolation.
