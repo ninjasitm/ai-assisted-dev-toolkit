@@ -268,6 +268,7 @@ Cursor IDE behavior rules:
 Custom Cursor commands for workflows:
 
 - `bootstrap.md` - **Start here!** Analyze project and customize templates
+- `bootstrap-patch.md` - Apply targeted bootstrap patches
 - `specify.md` - Create feature specifications
 - `plan.md` - Generate implementation plans
 - `implement.md` - Execute implementation tasks
@@ -309,6 +310,7 @@ Custom Claude Code slash commands (mirrors Cursor commands):
 Reusable prompts for GitHub Copilot:
 
 - `bootstrap.prompt.md` - **Start here!** Analyze project and customize templates
+- `bootstrap-patch.prompt.md` - Apply targeted bootstrap patches
 - `commit-push.prompt.md` - Conventional commit workflow
 - `review.prompt.md` - Code review checklist
 - `review-pr.prompt.md` - Pull request review
