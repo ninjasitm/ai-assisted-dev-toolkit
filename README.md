@@ -32,6 +32,12 @@ This repository serves as a **template source** for AI development instructions 
 │   │   │   └── skills/ # Additional skills (README placeholder)
 │   │   ├── .agents/    # Pre-installed universal skills
 │   │   │   └── skills/ # Bundled skills (TDD, debugging, etc.)
+│   │   ├── .claude/    # Claude Code configuration
+│   │   │   ├── agents/ # Custom agent templates (subagents)
+│   │   │   ├── rules/  # Claude behavior rules
+│   │   │   ├── commands/ # Custom Claude commands
+│   │   │   ├── skills/ # Additional skills (README placeholder)
+│   │   │   └── settings.json # Claude settings template
 │   │   ├── docs/       # Documentation structure templates
 │   │   ├── templates/  # Reusable document templates
 │   │   ├── AGENTS.md   # AI agent context template
@@ -51,6 +57,12 @@ This repository serves as a **template source** for AI development instructions 
 │       │   └── skills/ # Additional skills (README placeholder)
 │       ├── .agents/    # Pre-installed universal skills
 │       │   └── skills/ # Bundled skills (TDD, debugging, etc.)
+│       ├── .claude/    # Claude Code configuration
+│       │   ├── agents/ # Custom agent templates (subagents)
+│       │   ├── rules/  # Claude behavior rules
+│       │   ├── commands/ # Custom Claude commands
+│       │   ├── skills/ # Additional skills (README placeholder)
+│       │   └── settings.json # Claude settings template
 │       ├── apps/       # App-specific templates
 │       ├── packages/   # Package-specific templates
 │       ├── docs/       # Documentation structure templates
@@ -72,6 +84,8 @@ This repository serves as a **template source** for AI development instructions 
 cp -r src/repo/.cursor /path/to/your/project/
 cp -r src/repo/.github /path/to/your/project/
 cp -r src/repo/.agents /path/to/your/project/
+cp -r src/repo/.claude /path/to/your/project/
+cp src/repo/CLAUDE.md /path/to/your/project/
 cp src/repo/AGENTS.md /path/to/your/project/
 ```
 
@@ -79,10 +93,11 @@ The `.agents/skills/` folder contains pre-installed universal skills that are re
 
 **Step 2: Run the Bootstrap Command**
 
-Open your project in Cursor IDE or VS Code with GitHub Copilot, then run:
+Open your project in your preferred editor or Claude Code, then run:
 
 - **Cursor IDE**: Use the `/bootstrap` command
 - **GitHub Copilot**: Use the `bootstrap.prompt.md` prompt (`/bootstrap`)
+- **Claude Code**: Use the `/bootstrap` command
 
 The bootstrap process will:
 
@@ -103,6 +118,8 @@ After bootstrapping, review the generated files and add any project-specific pat
 cp -r src/monorepo/.cursor /path/to/your/project/
 cp -r src/monorepo/.github /path/to/your/project/
 cp -r src/monorepo/.agents /path/to/your/project/
+cp -r src/monorepo/.claude /path/to/your/project/
+cp src/monorepo/CLAUDE.md /path/to/your/project/
 cp src/monorepo/AGENTS.md /path/to/your/project/
 # Optionally copy app/package templates
 cp -r src/monorepo/apps/app-template /path/to/your/project/apps/
@@ -113,10 +130,11 @@ The `.agents/skills/` folder contains pre-installed universal skills that are re
 
 **Step 2: Run the Bootstrap Command**
 
-Open your project in Cursor IDE or VS Code with GitHub Copilot, then run:
+Open your project in your preferred editor or Claude Code, then run:
 
 - **Cursor IDE**: Use the `/bootstrap` command
 - **GitHub Copilot**: Use the `bootstrap.prompt.md` prompt (`/bootstrap`)
+- **Claude Code**: Use the `/bootstrap` command
 
 The bootstrap process will:
 
@@ -262,6 +280,27 @@ Custom Cursor commands for workflows:
 - `tasks.md` - Task management workflow
 - `assign-tasks.md` - Task assignment workflow
 - `create-skill.md` - Create custom AI skills
+- `playwright-test.md` - Playwright test generation
+- `release-notes.md` - Release notes generation
+
+### .claude/commands/\*.md
+
+Custom Claude Code slash commands (mirrors Cursor commands):
+
+- `bootstrap.md` - **Start here!** Analyze project and customize templates
+- `specify.md` - Create feature specifications
+- `plan.md` - Generate implementation plans
+- `implement.md` - Execute implementation tasks
+- `implement-feature.md` - Feature implementation workflow
+- `implement-fixes.md` - Bug fix implementation workflow
+- `review.md` - Code review workflow
+- `review-pr.md` - Pull request review workflow
+- `commit-push.md` - Git commit and push workflow
+- `constitution.md` - Project constitution and principles
+- `tasks.md` - Task management workflow
+- `assign-tasks.md` - Task assignment workflow
+- `create-skill.md` - Create custom AI skills
+- `bootstrap-patch.md` - Apply targeted bootstrap patches
 - `playwright-test.md` - Playwright test generation
 - `release-notes.md` - Release notes generation
 
@@ -812,9 +851,9 @@ After copying templates and installing additional skills, your project will have
 ## Contributing
 
 1. Fork this repository
-2. Create a feature branch
+2. **Create a feature branch** (never commit directly to `main`): `git checkout -b feat/your-change`
 3. Make your changes
-4. Submit a pull request
+4. Submit a pull request into `main` for review
 
 ## License
 
