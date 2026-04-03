@@ -106,7 +106,7 @@ git checkout main
 git pull origin main
 git checkout -b feat/your-change-description
 # ... make changes ...
-git push origin feat/your-change-description
+git push -u origin feat/your-change-description
 # Open a PR from the branch into main for review
 ```
 
@@ -146,7 +146,7 @@ For monorepos with:
 
 After completing any change to this repository, dispatch the **Documenter** subagent to update affected documentation.
 
-> "Use the Documenter agent to update README.md and any affected template READMEs based on the changes just made. Keep updates concise — add missing entries, correct outdated info, and update paths. Do not rewrite sections that are still accurate."
+> "Use the Documenter agent to update README.md, CHANGELOG.md, and any affected template READMEs based on the changes just made. Keep updates concise — add missing entries, correct outdated info, and update paths. Do not rewrite sections that are still accurate."
 
 ### What to Update
 
