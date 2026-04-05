@@ -245,7 +245,7 @@ Conduct comprehensive code review for pull requests with structured fix tracking
          - Or use `gh api` to resolve conversation threads:
            ```bash
            # Reply to a review comment indicating resolution
-           gh api repos/{owner}/{repo}/pulls/{pr_number}/comments/{comment_id}/replies \
+           gh api repos/{owner}/{repo}/pulls/comments/{comment_id}/replies \
              -f body="Fixed: [brief description of the fix applied]"
            ```
       2. **If a comment could NOT be addressed**:

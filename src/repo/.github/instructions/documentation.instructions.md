@@ -205,7 +205,7 @@ Brief description of the feature and its purpose.
 
 1. **Is this a complex fix?** (multi-file, architectural changes, affects multiple features)
    - ✅ YES → Create folder `docs/fixes/{{ISSUE_ID}}-FIX-NAME/` with `spec.md` + `plan.md`
-   - ❌ NO → Add entry to `docs/fixes/{YYYY-MM}.md` (monthly log)
+   - ❌ NO → Add entry to `docs/fixes/{{YEAR_MONTH}}.md` (monthly log)
 
 2. **Does the monthly log for this month exist?**
    - ❌ NO → Create it first using the template below
@@ -506,7 +506,7 @@ Before running `git commit`, verify ALL items that apply to your change:
 
 - [ ] **Features**: `docs/features/{{ISSUE_ID}}-FEATURE-NAME/spec.md` exists and reflects the current implementation
 - [ ] **Features**: `docs/features/{{ISSUE_ID}}-FEATURE-NAME/plan.md` is updated if scope changed
-- [ ] **Fixes**: Entry added to `docs/fixes/{{YYYY-MM}}.md` (or complex fix folder created)
+- [ ] **Fixes**: Entry added to `docs/fixes/{YYYY-MM}.md` (or complex fix folder created)
 - [ ] **Breaking changes**: `CHANGELOG.md` updated
 - [ ] **Architectural decisions**: ADR created in `docs/architecture/` if a significant choice was made
 - [ ] **README is accurate** — If setup steps, commands, or env vars changed, `README.md` is updated
@@ -561,7 +561,7 @@ Closes {{ISSUE_ID}}
 ```
 fix({{COMPONENT}}): resolve memory leak
 
-Added to docs/fixes/{{YYYY-MM}}.md
+Added to docs/fixes/{YYYY-MM}.md
 
 Fixes #{{ISSUE_NUMBER}}
 ```

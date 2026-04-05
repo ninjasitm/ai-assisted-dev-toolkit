@@ -1,4 +1,3 @@
-````mdc
 ---
 description: Conduct comprehensive pull request code review
 ---
@@ -12,7 +11,7 @@ Conduct comprehensive code review for pull requests with structured fix tracking
 ```bash
 /review-pr 42
 /review-pr https://github.com/{{REPO_OWNER}}/{{PROJECT_NAME}}/pull/42
-````
+```
 
 ## Orchestrator Checkpoint
 
@@ -214,8 +213,6 @@ Conduct comprehensive code review for pull requests with structured fix tracking
    Every fix must appear in this table — one row per file+issue pair.
    ```
 
-````
-
 9. **Report Review Status**:
    - Review decision with clear justification
    - Summary of key findings by severity
@@ -249,11 +246,10 @@ Conduct comprehensive code review for pull requests with structured fix tracking
          - Or use `gh api` to resolve conversation threads:
            ```bash
            # Reply to a review comment indicating resolution
-           gh api repos/{owner}/{repo}/pulls/{pr_number}/comments/{comment_id}/replies \
+           gh api repos/{owner}/{repo}/pulls/comments/{comment_id}/replies \
              -f body="Fixed: [brief description of the fix applied]"
            ```
       2. **If a comment could NOT be addressed**:
          - Reply to the thread explaining why (e.g., out of scope, needs more context, trade-off decision)
          - Ask the user whether to leave it open or resolve with an explanation
       3. **Verify resolution** — after pushing, confirm the comment threads show as resolved in the PR
-````

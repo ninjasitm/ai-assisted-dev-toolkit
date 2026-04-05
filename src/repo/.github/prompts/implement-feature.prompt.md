@@ -68,7 +68,7 @@ Implement a feature by completing tasks sequentially with proper tracking.
       - Build: `{{PACKAGE_MANAGER}} run build`
 
    e. **Update Documentation**:
-      - Ensure `docs/features/{{ISSUE_ID}}-FEATURE_NAME/spec.md` reflects final implementation
+      - Ensure `docs/features/{{ISSUE_ID}}-FEATURE-NAME/spec.md` reflects final implementation
       - Update `plan.md` if implementation deviated from original plan
       - Update `docs/api/` if any API surfaces changed
       - Update `README.md` if setup steps, commands, or env vars changed

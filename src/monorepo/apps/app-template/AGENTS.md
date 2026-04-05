@@ -56,21 +56,13 @@ apps/{{APP_NAME}}/
 ## State Management
 
 ```typescript
-{
-	{
-		APP_STATE_PATTERN;
-	}
-}
+{{APP_STATE_PATTERN}}
 ```
 
 ## API Integration
 
 ```typescript
-{
-	{
-		APP_API_PATTERN;
-	}
-}
+{{APP_API_PATTERN}}
 ```
 
 ## Shared Package Usage
@@ -94,21 +86,13 @@ import type { User } from "@{{PROJECT_NAME}}/types";
 ### Unit Tests
 
 ```typescript
-{
-	{
-		APP_UNIT_TEST_EXAMPLE;
-	}
-}
+{{APP_UNIT_TEST_EXAMPLE}}
 ```
 
 ### E2E Tests
 
 ```typescript
-{
-	{
-		APP_E2E_TEST_EXAMPLE;
-	}
-}
+{{APP_E2E_TEST_EXAMPLE}}
 ```
 
 ## Deployment
