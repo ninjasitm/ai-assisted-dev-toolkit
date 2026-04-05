@@ -4,6 +4,13 @@ description: Create an implementation plan from a feature specification or requi
 
 You are helping to create an implementation plan for a feature or requirement.
 
+## Orchestrator Checkpoint
+
+> **🛑 Before starting**: For complex features spanning multiple domains (backend + frontend + API + docs),
+> dispatch **Researcher** subagents in parallel to analyze each domain simultaneously.
+> Use the `writing-plans` skill for structured plan creation.
+> See `.github/instructions/subagent-workflow.instructions.md` for full patterns.
+
 ## Your Task
 
 1. **Load context**:
@@ -27,6 +34,7 @@ You are helping to create an implementation plan for a feature or requirement.
    - **API changes**: Any endpoints to add or modify?
    - **Dependencies**: External packages or services needed?
    - **Testing strategy**: How will this be tested?
+   - **Parallelization map**: Identify which tasks are independent and can be dispatched to parallel subagents during implementation (mark with `[P]`)
 
 4. **Output the plan**:
    - Create `docs/plans/{{FEATURE_NAME}}.md` with the plan

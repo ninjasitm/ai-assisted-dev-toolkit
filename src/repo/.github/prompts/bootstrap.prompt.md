@@ -98,7 +98,59 @@ Map discovered information to template variables:
 | `{{TEST_FRAMEWORK}}`        | Test framework                                                              |
 | `{{DEPLOY_PLATFORM}}`       | Deployment config files                                                     |
 | `{{RUNTIME_VERSION}}`       | Runtime version from config                                                 |
+| `{{PM_TOOL}}`               | Detected project management tool                                            |
+| `{{PM_URL}}`                | Project management tool URL/workspace (if applicable)                       |
+| `{{PM_PROJECT_ID}}`         | Project ID or workspace ID (if applicable)                                  |
+| `{{PM_ISSUE_KEY}}`          | Issue key format (e.g., PROJ-###)                                           |
 | `{{NEW_RELEVANT_VARIABLE}}` | ...other inferred values...                                                 |
+
+### Step 2.5: Project Management Detection
+
+**Detection Strategy:**
+
+1. **GitHub Issues** - Check for:
+   - `.github/ISSUE_TEMPLATE/` directory
+   - Repository issues enabled (via git remote URL)
+   - Default detection for GitHub-hosted repos
+
+2. **Jira** - Check for:
+   - `jira.properties` or `jira.yml`
+   - References in CI/CD configs (`.github/workflows/`, `azure-pipelines.yml`)
+   - `JIRA_` environment variables in config files
+   - Jira issue keys (e.g., `PROJ-123`) in commit history
+
+3. **Azure DevOps (Azure Boards)** - Check for:
+   - `azure-pipelines.yml` with Azure Boards integration
+   - `.azure/` directory
+   - Azure DevOps URLs in README
+
+4. **Linear** - Check for:
+   - `.linear/` directory or `linear.json`
+   - Linear issue references in commits (e.g., `ENG-123`)
+
+5. **GitLab Issues** - Check for:
+   - `.gitlab-ci.yml`
+   - GitLab remote URL
+
+**Issue Key Format Detection:**
+
+| PM Tool       | Key Format    | Example  | Detection Method                  |
+| ------------- | ------------- | -------- | --------------------------------- |
+| GitHub Issues | `#{NUM}`      | `#42`    | GitHub remote URL                 |
+| Jira          | `{KEY}-{NUM}` | `PROJ-1` | Scan commits for `[A-Z]+-\d+`     |
+| Azure Boards  | `#{NUM}`      | `#123`   | Azure DevOps URL in config        |
+| Linear        | `{KEY}-{NUM}` | `ENG-42` | Scan commits for `[A-Z]{2,5}-\d+` |
+| GitLab Issues | `#{NUM}`      | `#8`     | GitLab remote URL                 |
+
+**If Multiple Tools Detected:**
+
+- Prioritize: Jira > Azure Boards > Linear > GitHub Issues > GitLab Issues
+- Ask user to confirm which is primary
+
+**If No Tool Detected:**
+
+- Ask user if they use issue tracking
+- Provide common options to choose from
 
 ### Step 3: User Confirmation
 
@@ -120,11 +172,24 @@ Present inferred values and ask for missing ones:
 | DATABASE        | Eloquent (MySQL) |
 | ...             | ...              |
 
+### 📋 Project Management
+
+| Property   | Value                             |
+| ---------- | --------------------------------- |
+| Tool       | {{PM_TOOL}} (detected/inferred)   |
+| URL        | {{PM_URL}} or "N/A"               |
+| Project ID | {{PM_PROJECT_ID}} or "N/A"        |
+| Issue Key  | {{PM_ISSUE_KEY}} (e.g., PROJ-###) |
+
 ### ❓ Please Provide
 
 1. **PROJECT_DESCRIPTION**: Brief description of the project?
 2. **DEPLOY_PLATFORM**: Where will this be deployed?
-3. **ISSUE_TRACKER**: What issue tracker do you use?
+3. **Project Management** (detected: {{PM_TOOL}} or "None detected"):
+   - Confirm detected tool or specify different tool
+   - Provide URL if applicable (e.g., `https://yourorg.atlassian.net` for Jira)
+   - Provide project/workspace ID if applicable (e.g., Azure DevOps project ID, Linear workspace)
+   - Confirm issue key format (e.g., `PROJ-###` for Jira, `#42` for GitHub)
 ```
 
 ### Step 4: Template Customization
@@ -133,12 +198,54 @@ Replace placeholders in all template files:
 
 **Files to Update:**
 
-- `AGENTS.md` - Project context and patterns
+- `AGENTS.md` - Project context and patterns (include project management section)
 - `.github/copilot-instructions.md` - Copilot configuration
 - `.github/instructions/*.instructions.md` - Context instructions
 - `.github/prompts/*.prompt.md` - Reusable prompts
 - `.cursor/rules/*.mdc` - Cursor IDE rules
 - `.cursor/commands/*.md` - Custom commands
+
+**Project Management Section (added to AGENTS.md):**
+
+```markdown
+## 📋 Project Management
+
+**Tool:** {{PM_TOOL}}
+**URL:** {{PM_URL}} _(if applicable)_
+**Project ID:** {{PM_PROJECT_ID}} _(if applicable)_
+**Issue Key Format:** `{{PM_ISSUE_KEY}}`
+
+### Conventions
+
+- Reference issues in commit messages: `{{PM_ISSUE_KEY}}: Brief description`
+- Link PRs to issues: Include issue key in PR title or description
+- Use issue keys for traceability: `Fixes {{PM_ISSUE_KEY}}`, `Relates to {{PM_ISSUE_KEY}}`
+
+### Examples
+
+**Commit Messages:**
+```
+
+{{PM_EXAMPLE_KEY}}: Add user authentication
+{{PM_EXAMPLE_KEY}}: Fix database connection timeout
+
+```
+
+**PR Titles:**
+```
+
+{{PM_EXAMPLE_KEY}}: Implement OAuth2 login flow
+feat(auth): Add SSO support ({{PM_EXAMPLE_KEY}})
+
+````
+
+**PR Descriptions:**
+```markdown
+Fixes {{PM_EXAMPLE_KEY}}
+Relates to {{PM_EXAMPLE_KEY_2}}
+````
+
+`````
 
 ### Step 5: Language-Specific Enhancements
 
@@ -182,9 +289,81 @@ Add language and framework-specific patterns to `AGENTS.md`:
 
 - Spring Boot: Controllers, Services, JPA
 
-### Step 6: AI Agent Skills Recommendation
+### Step 5.5: Agent Customization
+
+Customize agent definition files (`.github/agents/` and `.cursor/agents/`) based on the detected stack.
+
+**Agent files contain framework placeholders** that should be replaced with detected values:
+
+| Placeholder | Source | Example |
+|---|---|---|
+| `{{FRAMEWORK}}` | Step 1 framework detection | `Laravel`, `Next.js`, `Django` |
+| `{{LANGUAGE}}` | Step 1 ecosystem detection | `PHP`, `TypeScript`, `Python` |
+| `{{ADMIN_MONITORING_TOOLS}}` | Framework-specific tools table below | `Horizon, Telescope, Pulse, Filament` |
+
+**Admin Monitoring Tools by Framework:**
+
+| Detected Framework | `{{ADMIN_MONITORING_TOOLS}}` Value |
+|---|---|
+| Laravel | Horizon (queues), Telescope (debugging), Pulse (performance), Nova or Filament (admin panels) |
+| Django | Django Admin, Celery Flower (tasks), django-debug-toolbar, Silk (profiling) |
+| Next.js / Express / Node | Bull Board (queues), AdminJS, custom dashboards |
+| Rails | ActiveAdmin, Sidekiq Web (jobs), Blazer (SQL queries) |
+| ASP.NET Core / Blazor | Hangfire Dashboard (jobs), Aspire Dashboard, Health Checks UI |
+| Spring Boot | Spring Boot Admin, Actuator endpoints, Micrometer |
+| FastAPI | FastAPI Admin, Flower (Celery), SQLAdmin |
+
+**Files to update** (in both `.github/agents/` and `.cursor/agents/`):
+
+- `backend-architect.agent.md` — Replace `{{FRAMEWORK}}` and `{{LANGUAGE}}`
+- `frontend-developer.agent.md` — Replace `{{FRAMEWORK}}` and `{{LANGUAGE}}`
+- `api-specialist.agent.md` — Replace `{{FRAMEWORK}}` and `{{LANGUAGE}}`
+- `admin-portal.agent.md` — Replace `{{FRAMEWORK}}`, `{{LANGUAGE}}`, and `{{ADMIN_MONITORING_TOOLS}}`
+- `documenter.agent.md` — Replace `{{FRAMEWORK}}` and `{{LANGUAGE}}`
+- All other agent files that reference `{{FRAMEWORK}}` or `{{LANGUAGE}}`
+
+**Presentation:**
+
+```markdown
+## 🤖 Agent Customization
+
+Detected stack: {{LANGUAGE}} / {{FRAMEWORK}}
+
+### Agent Placeholder Replacements
+
+| Placeholder | Replacement |
+|---|---|
+| `{{FRAMEWORK}}` | {{DETECTED_FRAMEWORK}} |
+| `{{LANGUAGE}}` | {{DETECTED_LANGUAGE}} |
+| `{{ADMIN_MONITORING_TOOLS}}` | {{DETECTED_ADMIN_TOOLS}} |
+
+### Files to Update ({{N}} agent files)
+
+- [x] `.github/agents/backend-architect.agent.md`
+- [x] `.github/agents/admin-portal.agent.md`
+- [x] `.cursor/agents/backend-architect.agent.md`
+- [x] `.cursor/agents/admin-portal.agent.md`
+- ... (all files with placeholders)
+
+Apply agent customizations? (Y/n)
+```
+
+### Step 6: Detect Installed AI Agents
+
+Before recommending skills, detect which AI agent directories exist in the workspace. Supported agents are located here: https://github.com/vercel-labs/skills?tab=readme-ov-file#available-agents:
+
+**Note:** `.agents/` directory is used by multiple agents: `amp`, `codex`, `gemini-cli`, `github-copilot`, `opencode`, `replit`. If only `.agents/` exists, default to `codex` or `github-copilot` based on other indicators.
+
+**Build the agent flags string:**
+- For each detected agent, add `-a <agent>` to the command
+- Example: If `.cursor/` and `.github/` exist → use `-a cursor -a github-copilot`
+- If no agents detected, omit `-a` flags (CLI will prompt)
+
+### Step 7: AI Agent Skills Recommendation
 
 Based on detected ecosystem and frameworks, recommend relevant skills from [skills.sh](https://skills.sh/) and [agentskills.io](https://agentskills.io/).
+
+**Important:** Use the detected agent flags from Step 6 in all `npx skills add` commands. This prevents creating unnecessary configurations for agents the user doesn't have installed.
 
 **Core Skills (Always Recommend):**
 
@@ -215,44 +394,48 @@ Based on detected ecosystem and frameworks, recommend relevant skills from [skil
 
 **Language-Specific Skills:**
 
-| Language/Framework | Skill Repository                      | Install Command                                                                     |
-| ------------------ | ------------------------------------- | ----------------------------------------------------------------------------------- |
-| PHP                | `vapvarun/claude-backup` (php)        | `npx skills add vapvarun/claude-backup --skill "php"`                               |
-| Laravel            | `vapvarun/claude-backup` (laravel)    | `npx skills add vapvarun/claude-backup --skill "laravel"`                           |
-| Python             | `siviter-xyz/dot-agent` (python)      | `npx skills add siviter-xyz/dot-agent --skill "python"`                             |
-| Django             | `vintasoftware/django-ai-plugins`     | `npx skills add vintasoftware/django-ai-plugins --skill "django-expert"`            |
-| Next.js            | `sickn33/antigravity-awesome-skills`  | `npx skills add sickn33/antigravity-awesome-skills --skill "nextjs-best-practices"` |
-| React              | `vercel-labs/agent-skills`            | `npx skills add vercel-labs/agent-skills --skill "vercel-react-best-practices"`     |
-| Vue                | `onmax/nuxt-skills` (vue)             | `npx skills add onmax/nuxt-skills --skill "vue"`                                    |
-| Nuxt               | `onmax/nuxt-skills` (nuxt)            | `npx skills add onmax/nuxt-skills --skill "nuxt"`                                   |
-| Expo               | `expo/skills`                         | `npx skills add expo/skills`                                                        |
-| TypeScript         | `pproenca/dot-skills` (typescript)    | `npx skills add pproenca/dot-skills`                                                |
-| Advanced Types     | `wshobson/agents` (ts-advanced-types) | `npx skills add wshobson/agents`                                                    |
+| Language/Framework | Skill Repository                      | Install Command                                                                                       |
+| ------------------ | ------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| PHP                | `vapvarun/claude-backup` (php)        | `npx -y skills add {{AGENT_FLAGS}} vapvarun/claude-backup --skill "php"`                               |
+| Laravel            | `vapvarun/claude-backup` (laravel)    | `npx -y skills add {{AGENT_FLAGS}} vapvarun/claude-backup --skill "laravel"`                           |
+| Python             | `siviter-xyz/dot-agent` (python)      | `npx -y skills add {{AGENT_FLAGS}} siviter-xyz/dot-agent --skill "python"`                             |
+| Django             | `vintasoftware/django-ai-plugins`     | `npx -y skills add {{AGENT_FLAGS}} vintasoftware/django-ai-plugins --skill "django-expert"`            |
+| Next.js            | `sickn33/antigravity-awesome-skills`  | `npx -y skills add {{AGENT_FLAGS}} sickn33/antigravity-awesome-skills --skill "nextjs-best-practices"` |
+| React              | `vercel-labs/agent-skills`            | `npx -y skills add {{AGENT_FLAGS}} vercel-labs/agent-skills --skill "vercel-react-best-practices"`     |
+| Vue                | `onmax/nuxt-skills` (vue)             | `npx -y skills add {{AGENT_FLAGS}} onmax/nuxt-skills --skill "vue"`                                    |
+| Nuxt               | `onmax/nuxt-skills` (nuxt)            | `npx -y skills add {{AGENT_FLAGS}} onmax/nuxt-skills --skill "nuxt"`                                   |
+| Expo               | `expo/skills`                         | `npx -y skills add {{AGENT_FLAGS}} expo/skills --skill '*' --agent github-copilot cursor`                                                        |
+| TypeScript         | `pproenca/dot-skills` (typescript)    | `npx -y skills add {{AGENT_FLAGS}} pproenca/dot-skills --skill '*' --agent github-copilot cursor`                                                |
+| Advanced Types     | `wshobson/agents` (ts-advanced-types) | `npx -y skills add {{AGENT_FLAGS}} wshobson/agents --skill '*' --agent github-copilot cursor`                                                    |
 
 **Skill Creation for Unsupported Frameworks:**
 
-Use `npx skills add anthropics/skills` (includes `skill-creator`) to create custom skills.
+Use `npx -y skills add {{AGENT_FLAGS}} anthropics/skills --skill '*' --agent github-copilot cursor` (includes `skill-creator`) to create custom skills.
 
 **Present Recommendation:**
 
 ````markdown
 ## 🎯 Recommended AI Agent Skills
 
+Detected agents: {{DETECTED_AGENTS_LIST}}
+Using flags: {{AGENT_FLAGS}}
+
 Based on your project ({{FRAMEWORK}}/{{LANGUAGE}}):
 
 ### Core Skills (recommended for all projects)
 
 ```bash
-npx skills add obra/superpowers
-npx skills add trailofbits/skills
-npx skills add softaworks/agent-toolkit
-```
+npx -y skills add {{AGENT_FLAGS}} obra/superpowers --skill '*' --agent github-copilot cursor
+npx -y skills add {{AGENT_FLAGS}} trailofbits/skills --skill '*' --agent github-copilot cursor
+npx -y skills add {{AGENT_FLAGS}} softaworks/agent-toolkit --skill '*' --agent github-copilot cursor
+`````
+
 ````
 
 ### Framework-Specific Skills
 
 ```bash
-npx skills add {{FRAMEWORK_SKILL_REPO}}
+npx -y skills add {{FRAMEWORK_SKILL_REPO}} --skill '*' --agent github-copilot cursor
 ```
 
 ### Install All?
@@ -262,6 +445,7 @@ Would you like to install these skills now? (Y/n)
 ````
 
 **On Confirmation:**
+
 - Run skill installation commands
 - Skills installed to `.github/skills/{skill-name}/` (by skill name, not org/repo)
 - Update `AGENTS.md` to reference installed skills
@@ -272,6 +456,13 @@ Would you like to install these skills now? (Y/n)
 ## ✅ Bootstrap Complete!
 
 ### Ecosystem: {{LANGUAGE}} / {{FRAMEWORK}}
+
+### Project Management: {{PM_TOOL}}
+
+- **Tool:** {{PM_TOOL}}
+- **URL:** {{PM_URL}} _(if applicable)_
+- **Project ID:** {{PM_PROJECT_ID}} _(if applicable)_
+- **Issue Format:** `{{PM_ISSUE_KEY}}`
 
 ### Updated Files
 
@@ -296,7 +487,328 @@ Would you like to install these skills now? (Y/n)
 4. Test commands with your codebase
 5. Browse more skills at https://skills.sh/
 6. Create custom skills at https://agentskills.io/specification
-````
+```
+
+### Step 8: Skills Review & Cleanup
+
+After bootstrap completion, review all installed skills for relevance:
+
+**Skill Audit Process:**
+
+1. **Inventory Installed Skills**
+   - Scan `.github/skills/` and `.cursor/skills/` directories
+   - List all installed skill names and descriptions
+   - Check each skill's SKILL.md for its purpose
+
+2. **Relevance Analysis**
+   - Compare skills against detected ecosystem, framework, and language
+   - Identify skills that don't match the project's tech stack
+   - Flag generic skills that may not be needed
+
+**Relevance Criteria:**
+
+| Skill Category     | Keep If...                 | Consider Removing If...                                      |
+| ------------------ | -------------------------- | ------------------------------------------------------------ |
+| Language-specific  | Matches detected language  | Different language (e.g., PHP skills in .NET project)        |
+| Framework-specific | Matches detected framework | Different framework (e.g., Django skills in FastAPI project) |
+| Core workflow      | TDD, debugging, planning   | Duplicate functionality                                      |
+| Security/Quality   | Always relevant            | Very specialized (e.g., crypto for non-crypto projects)      |
+| UI-specific        | Has frontend components    | Backend-only API                                             |
+| Testing            | Always relevant            | Redundant test patterns                                      |
+
+**Review Report:**
+
+```markdown
+## 🔍 Skill Review
+
+### ✅ Relevant Skills ({{N}} installed)
+
+| Skill                       | Purpose                   | Reason                     |
+| --------------------------- | ------------------------- | -------------------------- |
+| superpowers                 | TDD & debugging workflows | Core development practices |
+| vercel-react-best-practices | React patterns            | Matches detected framework |
+| {{FRAMEWORK_SKILL}}         | {{FRAMEWORK}} patterns    | Matches project framework  |
+
+### ⚠️ Potentially Unnecessary Skills ({{N}} found)
+
+| Skill             | Purpose          | Why Flagged                               |
+| ----------------- | ---------------- | ----------------------------------------- |
+| django-expert     | Django patterns  | No Django detected - you're using FastAPI |
+| php               | PHP patterns     | No PHP files found - TypeScript project   |
+| swift-development | SwiftUI patterns | No iOS/Swift code detected                |
+
+### 🚫 Remove Unnecessary Skills?
+
+These skills don't match your detected tech stack and may clutter AI context.
+
+Remove flagged skills? (Y/n)
+```
+
+**On Confirmation:**
+
+```bash
+# Remove unnecessary skills
+rm -rf .github/skills/django-expert/
+rm -rf .cursor/skills/php/
+rm -rf .github/skills/swift-development/
+
+# Update AGENTS.md to remove references
+```
+
+**Post-Cleanup Report:**
+
+```markdown
+## ✅ Skill Cleanup Complete
+
+Removed {{N}} unnecessary skills:
+
+- django-expert
+- php
+- swift-development
+
+Kept {{N}} relevant skills:
+
+- superpowers
+- vercel-react-best-practices
+- {{FRAMEWORK_SKILL}}
+```
+
+### Step 9: Instruction Files Verification
+
+Verify that all necessary instruction files exist and are properly configured:
+
+**Required Instruction Files:**
+
+| File                          | Purpose                         | Location                |
+| ----------------------------- | ------------------------------- | ----------------------- |
+| `copilot-instructions.md`     | Main GitHub Copilot context     | `.github/`              |
+| `{framework}.instructions.md` | Framework-specific patterns     | `.github/instructions/` |
+| `{language}.instructions.md`  | Language-specific patterns      | `.github/instructions/` |
+| `patterns.instructions.md`    | Project patterns                | `.github/instructions/` |
+| `testing.instructions.md`     | Testing conventions             | `.github/instructions/` |
+| `api.instructions.md`         | API conventions (if applicable) | `.github/instructions/` |
+
+**Detection & Validation:**
+
+```markdown
+## 📋 Instruction Files Audit
+
+### ✅ Found ({{N}} files)
+
+| File                       | Purpose             | Status       |
+| -------------------------- | ------------------- | ------------ |
+| copilot-instructions.md    | Main context        | ✓ Configured |
+| typescript.instructions.md | TypeScript patterns | ✓ Configured |
+| patterns.instructions.md   | Project patterns    | ✓ Configured |
+
+### ⚠️ Missing Recommended Instructions ({{N}} files)
+
+| File                          | Purpose          | Why Needed                   |
+| ----------------------------- | ---------------- | ---------------------------- |
+| nextjs.instructions.md        | Next.js patterns | Project uses Next.js 15      |
+| testing.instructions.md       | Test conventions | Multiple test files detected |
+| api-standards.instructions.md | API conventions  | REST API detected in project |
+
+### 📝 Create Missing Instruction Files?
+
+These files would help AI understand your project's conventions.
+
+Create recommended instructions? (Y/n)
+```
+
+**On Confirmation:**
+
+Generate missing instruction files with appropriate templates:
+
+**Example: Framework Instruction Template**
+
+```markdown
+---
+applyTo: "src/**"
+description: "{{FRAMEWORK}} patterns and conventions"
+---
+
+# {{FRAMEWORK}} Instructions
+
+## Project Context
+
+Framework: {{FRAMEWORK}} {{VERSION}}
+Port: {{DEV_PORT}}
+Deploy: {{DEPLOY_PLATFORM}}
+
+## Patterns
+
+### {{PATTERN_1}}
+
+{{AUTO_DETECTED_PATTERN_1}}
+
+### {{PATTERN_2}}
+
+{{AUTO_DETECTED_PATTERN_2}}
+
+## File Structure
+
+{{AUTO_DETECTED_STRUCTURE}}
+
+## Dependencies
+
+Key packages:
+{{LIST_KEY_DEPENDENCIES}}
+
+## Do's and Don'ts
+
+✅ **Do:**
+
+- Follow {{FRAMEWORK}} best practices
+- {{DO_1_FROM_FRAMEWORK_SKILL}}
+- {{DO_2_FROM_FRAMEWORK_SKILL}}
+
+❌ **Don't:**
+
+- {{DONT_1_FROM_FRAMEWORK_SKILL}}
+- {{DONT_2_FROM_FRAMEWORK_SKILL}}
+
+## Related Documentation
+
+- [{{FRAMEWORK}} Docs]({{DOCS_URL}})
+- [Project README](README.md)
+```
+
+**Example: Testing Instruction Template**
+
+```markdown
+---
+applyTo: "**/*.{test,spec}.{ts,tsx,py,php,cs}"
+description: "Testing conventions and patterns"
+---
+
+# Testing Instructions
+
+## Test Framework
+
+Detected: {{TEST_FRAMEWORK}}
+
+## Test Structure
+
+{{AUTO_DETECTED_TEST_PATTERNS}}
+
+## Conventions
+
+### Naming
+
+- Test files: {{DETECTED_TEST_FILE_PATTERN}}
+- Test functions: {{DETECTED_TEST_FUNCTION_PATTERN}}
+
+### Organization
+
+{{DETECTED_TEST_ORGANIZATION}}
+
+## Utilities
+
+Available test utilities:
+{{LIST_TEST_UTILS_FROM_CODEBASE}}
+
+## Coverage Requirements
+
+{{COVERAGE_CONFIG_IF_FOUND}}
+
+## Best Practices
+
+✅ **Do:**
+
+- {{TESTING_BEST_PRACTICE_1}}
+- {{TESTING_BEST_PRACTICE_2}}
+
+❌ **Don't:**
+
+- {{TESTING_ANTIPATTERN_1}}
+- {{TESTING_ANTIPATTERN_2}}
+```
+
+**Post-Creation Report:**
+
+```markdown
+## ✅ Instruction Files Created
+
+Created {{N}} new instruction files:
+
+- [x] `.github/instructions/nextjs.instructions.md`
+- [x] `.github/instructions/testing.instructions.md`
+- [x] `.github/instructions/api-standards.instructions.md`
+
+### Next Steps
+
+1. Review generated instruction files for accuracy
+2. Customize patterns based on your preferences
+3. Add project-specific conventions
+4. Test with GitHub Copilot
+
+All instruction files are automatically loaded by GitHub Copilot when editing matching files.
+```
+
+### Step 10: Final Verification
+
+```markdown
+## ✅ Bootstrap Complete & Verified!
+
+### Summary
+
+| Category                  | Count | Status |
+| ------------------------- | ----- | ------ |
+| Files updated             | {{N}} | ✓      |
+| Skills installed          | {{N}} | ✓      |
+| Skills removed            | {{N}} | ✓      |
+| Instruction files created | {{N}} | ✓      |
+| Project management        | 1     | ✓      |
+
+### Project Management Configuration
+
+**Tool:** {{PM_TOOL}}
+**URL:** {{PM_URL}} _(if applicable)_
+**Project ID:** {{PM_PROJECT_ID}} _(if applicable)_
+**Issue Format:** `{{PM_ISSUE_KEY}}`
+**Location:** Root AGENTS.md and copilot-instructions.md
+
+### Skill Inventory
+
+**Installed & Relevant ({{N}}):**
+
+- {{SKILL_1}}
+- {{SKILL_2}}
+- {{SKILL_N}}
+
+### Instruction Files
+
+**Active Instructions ({{N}}):**
+
+- {{INSTRUCTION_1}}
+- {{INSTRUCTION_2}}
+- {{INSTRUCTION_N}}
+
+### Quality Checks
+
+- [x] All placeholders replaced
+- [x] Framework patterns match detected stack
+- [x] No duplicate skills
+- [x] AGENTS.md configured
+- [x] Instruction files cover all frameworks
+- [x] Skills align with tech stack
+
+### Your Project is Ready! 🎉
+
+GitHub Copilot and Cursor will now understand:
+
+- Your project structure
+- Framework-specific patterns
+- Custom conventions
+- Testing strategies
+
+Try asking:
+
+- "Create a new API endpoint using our patterns"
+- "Add a component following our conventions"
+- "Write tests for UserService using our test utilities"
+```
 
 ## Ecosystem Detection Logic
 

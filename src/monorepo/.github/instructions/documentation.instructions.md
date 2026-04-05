@@ -7,31 +7,20 @@ description: "Monorepo documentation standards for features and fixes"
 
 ## Overview
 
-All project changes must be documented following these standards to maintain clear historical records and enable effective knowledge transfer.
-
-## Documentation Location
-
-All documentation lives in the `docs/` folder at the project root and in per-app `docs/` folders:
-
-- **Features** → `docs/features/{{ISSUE_ID}}-FEATURE-NAME/`
-- **Fixes** → `docs/fixes/` (tiered structure - see below)
-- **Architecture** → `docs/architecture/` (ADRs, system design)
-- **API** → `docs/api/` (API specifications)
+This monorepo uses a **distributed documentation strategy** where app-specific documentation lives with each app, and only monorepo-wide concerns are documented at the root level.
 
 ## Documentation Location Rules
 
 ### CRITICAL: App-Specific vs Root Documentation
 
-This monorepo uses a **distributed documentation strategy** where app-specific documentation lives with each app, and only monorepo-wide concerns are documented at the root level.
-
 **App-specific documentation** must live in respective app folders:
 
-- **{{APP_1}} Features** → `{{APP_DIR}}/{{APP_1}}/docs/features/{{ISSUE_ID}}-FEATURE-NAME/`
-- **{{APP_2}} Features** → `{{APP_DIR}}/{{APP_2}}/docs/features/{{ISSUE_ID}}-FEATURE-NAME/`
-- **{{APP_1}} Fixes** → `{{APP_DIR}}/{{APP_1}}/docs/fixes/`
-- **{{APP_2}} Fixes** → `{{APP_DIR}}/{{APP_2}}/docs/fixes/`
-- **Shared Package Features** → `{{PACKAGES_DIR}}/{{PACKAGE}}/docs/features/`
-- **Shared Package Fixes** → `{{PACKAGES_DIR}}/{{PACKAGE}}/docs/fixes/`
+- **{{APP_1}} Features** → `apps/{{APP_1}}/docs/features/{{ISSUE_ID}}-FEATURE-NAME/`
+- **{{APP_2}} Features** → `apps/{{APP_2}}/docs/features/{{ISSUE_ID}}-FEATURE-NAME/`
+- **{{APP_1}} Fixes** → `apps/{{APP_1}}/docs/fixes/`
+- **{{APP_2}} Fixes** → `apps/{{APP_2}}/docs/fixes/`
+- **Shared Package Features** → `packages/{{PACKAGE}}/docs/features/`
+- **Shared Package Fixes** → `packages/{{PACKAGE}}/docs/fixes/`
 
 **Root `docs/` folder** is ONLY for monorepo-wide documentation:
 
@@ -45,7 +34,7 @@ This monorepo uses a **distributed documentation strategy** where app-specific d
 
 ```
 Is this change specific to ONE app or package?
-├── YES → Document in `{{APP_DIR}}/{app}/docs/` or `{{PACKAGES_DIR}}/{package}/docs/`
+├── YES → Document in `apps/{app}/docs/` or `packages/{package}/docs/`
 └── NO → Does it affect multiple apps or the monorepo structure?
     ├── YES → Document in root `docs/`
     └── NO → You might be documenting the wrong thing
@@ -55,233 +44,117 @@ Is this change specific to ONE app or package?
 
 **✅ Correct Placement:**
 
-- Frontend component refactor → `{{APP_DIR}}/{{APP_1}}/docs/features/{{ISSUE_PREFIX}}-123-COMPONENT-REFACTOR/`
-- API endpoint changes → `{{APP_DIR}}/{{APP_2}}/docs/features/{{ISSUE_PREFIX}}-456-NEW-ENDPOINT/`
-- Shared utility function → `{{PACKAGES_DIR}}/{{PACKAGE_1}}/docs/features/{{ISSUE_PREFIX}}-789-UTIL-FUNC/`
+- Frontend component refactor → `apps/{{APP_1}}/docs/features/LEB-123-COMPONENT-REFACTOR/`
+- API endpoint changes → `apps/{{APP_2}}/docs/features/LEB-456-NEW-ENDPOINT/`
+- Shared utility function → `packages/{{PACKAGE_1}}/docs/features/LEB-789-UTIL-FUNC/`
 - CI/CD pipeline → `docs/infrastructure/github-actions.md`
-- Deployment strategy → `docs/deployment/{{DEPLOY_PLATFORM}}.md`
+- Deployment strategy → `docs/deployment/cloudflare-workers.md`
 - Monorepo migration → `docs/architecture/0001-monorepo-structure.md`
 
 **❌ Incorrect Placement:**
 
-- ❌ App component in root docs → Should be in `{{APP_DIR}}/{{APP_1}}/docs/`
-- ❌ API route in root docs → Should be in `{{APP_DIR}}/{{APP_2}}/docs/`
-- ❌ App-specific bug fix in root → Should be in `{{APP_DIR}}/{app}/docs/fixes/`
+- ❌ Vue component in root docs → Should be in `apps/{{APP_1}}/docs/`
+- ❌ API route in root docs → Should be in `apps/{{APP_2}}/docs/`
+- ❌ App-specific bug fix in root → Should be in `apps/{app}/docs/fixes/`
 - ❌ CI/CD in app docs → Should be in root `docs/infrastructure/`
-
----
 
 ## Per-App Documentation Obligations
 
-These rules apply to **every app** in `{{APP_DIR}}/`. The trigger for writing docs is a code change in that app, not just feature-level work.
+These rules apply to **every app** in `apps/*` and **every package** in `packages/*`. The trigger for writing docs is a code change in that app or package, not just feature-level work.
 
-| App                        | Change type                                                           | Required doc action                                                                                                            |
-| -------------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `{{APP_DIR}}/{{APP_1}}`    | New or modified controller/route                                      | Update `docs/api/` endpoint spec **and** add/update the corresponding page in `{{APP_DIR}}/{{DOCS_APP}}/{{DOCS_CONTENT_DIR}}/` |
-| `{{APP_DIR}}/{{APP_1}}`    | New module / service                                                  | Add to feature spec (`docs/features/`) and note architectural choices                                                          |
-| `{{APP_DIR}}/{{APP_1}}`    | Breaking change (renamed or removed endpoint, changed response shape) | Update `docs/api/`, `{{APP_DIR}}/{{DOCS_APP}}/{{DOCS_CONTENT_DIR}}/`, **and** `CHANGELOG.md`                                   |
-| `{{APP_DIR}}/{{APP_2}}`    | New route handler or API route                                        | Update relevant feature spec                                                                                                   |
-| `{{APP_DIR}}/{{APP_2}}`    | New page / UI feature                                                 | Update feature spec (`docs/features/`) and add/update page in `{{APP_DIR}}/{{DOCS_APP}}/{{DOCS_CONTENT_DIR}}/` if user-facing  |
-| `{{APP_DIR}}/{{APP_3}}`    | New page / UI feature                                                 | Update feature spec (`docs/features/`) and add/update page in `{{APP_DIR}}/{{DOCS_APP}}/{{DOCS_CONTENT_DIR}}/` if user-facing  |
-| `{{APP_DIR}}/{{DOCS_APP}}` | Content-only edits (MDX, meta, config)                                | No extra docs required — changes here **are** the documentation update                                                         |
-| `{{PACKAGES_DIR}}/*`       | New or changed public API                                             | Update `docs/api/` and add/update the relevant page in `{{APP_DIR}}/{{DOCS_APP}}/{{DOCS_CONTENT_DIR}}/`                        |
+| App / Package       | Change type                                                        | Required doc action                                                                                        |
+| ------------------- | ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- |
+| `apps/{{APP_1}}`    | New or modified API route / controller                             | Update `docs/api/` endpoint spec **and** add/update the corresponding page in `apps/{{DOCS_APP}}/content/` |
+| `apps/{{APP_1}}`    | New module / service                                               | Add to feature spec (`docs/features/`) and note architectural choices                                      |
+| `apps/{{APP_1}}`    | Breaking change (renamed/removed endpoint, changed response shape) | Update `docs/api/`, `apps/{{DOCS_APP}}/content/`, **and** `CHANGELOG.md`                                   |
+| `apps/{{APP_2}}`    | New page / UI feature                                              | Update feature spec (`docs/features/`) and add/update page in `apps/{{DOCS_APP}}/content/` if user-facing  |
+| `apps/{{APP_2}}`    | New route handler or API route                                     | Update relevant feature spec                                                                               |
+| `apps/{{DOCS_APP}}` | Content-only edits (MDX/MDC, navigation config)                    | No extra docs required — changes here **are** the documentation update                                     |
+| `packages/*`        | New or changed public API                                          | Update `docs/api/` and add/update the relevant page in `apps/{{DOCS_APP}}/content/`                        |
 
-> **Rule of thumb:** If you added or changed a controller, an API route handler, or any function that is callable from another app or external client, you must update both `docs/api/` **and** `{{APP_DIR}}/{{DOCS_APP}}/{{DOCS_CONTENT_DIR}}/` before committing. The `{{APP_DIR}}/{{DOCS_APP}}` site is the living, user-facing documentation — keep it in sync with every shipped feature.
+> **Rule of thumb:** If you added or changed a controller, an API route handler, or any function that is callable from another app or external client, you must update both `docs/api/` **and** `apps/{{DOCS_APP}}/content/` before committing. The docs app is the **living, user-facing documentation** — keep it in sync with every shipped feature.
 
----
+## Docs App (`apps/{{DOCS_APP}}`) Sync Requirements
 
-## Feature Documentation
+If the monorepo includes a documentation app (e.g., Docus, Nuxt Content, Docusaurus, Nextra, Starlight), the site content **must be updated as part of every commit that changes user-facing behavior**.
 
-### When to Document Features
+### When to Update the Docs App
 
-Create feature documentation for:
+| Trigger                       | Action in `apps/{{DOCS_APP}}/content/`           |
+| ----------------------------- | ------------------------------------------------ |
+| New feature shipped           | Create or update the relevant documentation page |
+| API endpoint added or changed | Update the API reference page                    |
+| Breaking change               | Add migration guide or update affected pages     |
+| Bug fix that changes behavior | Update any page that described the old behavior  |
+| New shared package public API | Add or update the package reference page         |
+| UI component added            | Add usage examples page if user-facing           |
+| Configuration change          | Update setup / configuration pages               |
 
-- New user-facing features
-- API endpoints or major backend services
-- Component libraries or reusable modules
-- Significant architectural changes
-- Any work tracked by issue IDs ({{ISSUE_TRACKER}} tickets)
+### What Does NOT Require a Docs App Update
+
+- Internal refactors with no behavior change
+- CI/CD pipeline changes (unless they affect developer setup)
+- Test-only changes
+- Dependency updates with no API changes
+- Content edits within `apps/{{DOCS_APP}}` itself (these are the docs)
+
+### Pre-Commit Checklist (Docs App)
+
+Before committing code that changes any app or package:
+
+- [ ] **Feature work**: Corresponding docs page created or updated in `apps/{{DOCS_APP}}/content/`
+- [ ] **API changes**: API reference pages reflect the new endpoints, parameters, and response shapes
+- [ ] **Breaking changes**: Migration guide added and affected pages updated
+- [ ] **Bug fixes**: Any page describing the old behavior is corrected
+- [ ] **Navigation**: `apps/{{DOCS_APP}}` navigation/sidebar config updated if new pages were added
+- [ ] **Cross-references**: Links between docs pages and `docs/features/` specs are consistent
+
+### Content Organization
+
+Organize the docs app content to mirror the project structure:
+
+```
+apps/{{DOCS_APP}}/content/
+├── getting-started/          # Onboarding and setup guides
+├── guides/                   # How-to guides and tutorials
+├── api/                      # API reference (mirrors docs/api/)
+├── architecture/             # High-level architecture overview
+├── packages/                 # Shared package documentation
+│   ├── {{PACKAGE_1}}/
+│   └── {{PACKAGE_2}}/
+└── changelog/                # User-facing changelog (optional)
+```
+
+> **Keep `docs/` and `apps/{{DOCS_APP}}/content/` complementary, not duplicative.** Root `docs/` holds internal specs, plans, and ADRs. The docs app holds polished, user-facing content. When a feature spec in `docs/features/` is completed, distill the user-facing parts into a docs app page.
+
+## App-Specific Documentation
 
 ### Feature Documentation Structure
 
 Each app maintains its own feature documentation:
 
-**Location:** `{{APP_DIR}}/{app}/docs/features/{{ISSUE_ID}}-FEATURE-NAME/`
+**Location:** `apps/{app}/docs/features/{{ISSUE_ID}}-FEATURE-NAME/`
 
 **Required Files:**
 
 ```
-{{ISSUE_ID}}-FEATURE-NAME/
+apps/{{APP_1}}/docs/features/{{ISSUE_ID}}-FEATURE-NAME/
 ├── spec.md       # Functional specification
 ├── plan.md       # Implementation plan
-└── [optional]    # Code examples, diagrams, etc.
+└── [optional]    # Code examples, component diagrams
 ```
 
-### Creating Feature Documentation
+### Fix & Bug Documentation
 
-1. **Use the spec workflow**: Run `/spec` command to generate `spec.md`
-2. **Create implementation plan**: Run `/plan` command to generate `plan.md`
-3. **Keep it updated**: Update during implementation if scope changes
-4. **Link from commits**: Reference folder in commit messages
+**App-specific fixes follow a tiered structure:**
 
-### Feature Spec Template (spec.md)
-
-```markdown
-# {{ISSUE_ID}}: {{Feature Name}}
-
-**Status**: Draft | In Progress | Completed
-**Created**: {{Date}}
-**Issue**: [{{ISSUE_ID}}]({{ISSUE_TRACKER_URL}})
-
-## Overview
-
-Brief description of the feature and its purpose.
-
-## User Stories
-
-- As a [user type], I want [goal] so that [benefit]
-- As a [user type], I want [goal] so that [benefit]
-
-## Requirements
-
-### Functional Requirements
-
-1. Must support [capability]
-2. Should handle [scenario]
-3. Must validate [constraint]
-
-### Non-Functional Requirements
-
-- Performance: [metric]
-- Security: [requirement]
-- Accessibility: [standard]
-
-## Technical Approach
-
-### Architecture
-
-- Component structure
-- Data flow
-- Integration points
-
-### API Changes
-
-- New endpoints
-- Modified responses
-- Breaking changes
-
-### Database Changes
-
-- New tables/collections
-- Schema modifications
-- Migration strategy
-
-## Acceptance Criteria
-
-- [ ] Feature works as specified
-- [ ] Tests pass (unit, integration, E2E)
-- [ ] Documentation updated
-- [ ] Code reviewed and approved
-- [ ] Deployed to staging
-
-## Out of Scope
-
-- Features explicitly not included
-- Future enhancements to consider separately
-
-## Open Questions
-
-- [ ] Question 1?
-- [ ] Question 2?
-
----
-
-**Last Updated**: {{Date}}
-```
-
-### Feature Plan Template (plan.md)
-
-```markdown
-# Implementation Plan: {{ISSUE_ID}}
-
-**Feature**: {{Feature Name}}
-**Estimated Effort**: {{Hours/Days}}
-**Dependencies**: {{List dependencies}}
-
-## Implementation Strategy
-
-### Phase 1: Foundation
-
-- [ ] Task 1: Setup infrastructure
-- [ ] Task 2: Create base components
-- [ ] Task 3: Add configuration
-
-### Phase 2: Core Implementation
-
-- [ ] Task 4: Implement main logic
-- [ ] Task 5: Add error handling
-- [ ] Task 6: Write unit tests
-
-### Phase 3: Integration
-
-- [ ] Task 7: Connect to API
-- [ ] Task 8: Add E2E tests
-- [ ] Task 9: Update documentation
-
-### Phase 4: Polish
-
-- [ ] Task 10: Performance optimization
-- [ ] Task 11: Accessibility review
-- [ ] Task 12: Code review fixes
-
-## File Changes
-
-### New Files
-
-- `{{APP_DIR}}/{{APP_NAME}}/src/components/FeatureName.{{FILE_EXTENSION}}`
-- `{{APP_DIR}}/{{APP_NAME}}/test/FeatureName.test.{{FILE_EXTENSION}}`
-
-### Modified Files
-
-- `{{APP_DIR}}/{{APP_NAME}}/src/routes/index.{{FILE_EXTENSION}}`
-- `{{APP_DIR}}/{{APP_NAME}}/src/types/index.{{FILE_EXTENSION}}`
-
-## Testing Strategy
-
-- **Unit Tests**: Component logic, utility functions
-- **Integration Tests**: API interactions, data flow
-- **E2E Tests**: User workflows, critical paths
-
-## Rollout Plan
-
-1. Deploy to development environment
-2. Internal testing and feedback
-3. Deploy to staging
-4. User acceptance testing
-5. Production deployment
-
-## Rollback Plan
-
-- Revert commits: [list SHAs]
-- Database rollback: [migration down command]
-- Feature flag: [toggle off if applicable]
-
----
-
-**Last Updated**: {{Date}}
-```
-
----
-
-## Fix & Bug Documentation
-
-### Decision Tree
+#### Decision Tree
 
 **Before creating any fix documentation, ask:**
 
 1. **Is this a complex fix?** (multi-file, architectural changes, affects multiple features)
-   - ✅ YES → Create folder `{{APP_DIR}}/{app}/docs/fixes/{{ISSUE_ID}}-FIX-NAME/` with `spec.md` + `plan.md`
-   - ❌ NO → Add entry to `{{APP_DIR}}/{app}/docs/fixes/{YYYY-MM}.md` (monthly log)
+   - ✅ YES → Create folder `apps/{app}/docs/fixes/{{ISSUE_ID}}-FIX-NAME/` with `spec.md` + `plan.md`
+   - ❌ NO → Add entry to `apps/{app}/docs/fixes/{YYYY-MM}.md` (monthly log)
 
 2. **Does the monthly log for this month exist?**
    - ❌ NO → Create it first using the template below
@@ -289,22 +162,22 @@ Brief description of the feature and its purpose.
 
 **⚠️ CRITICAL: Do NOT create individual `.md` files for simple fixes!**
 
-### What NOT to Do
+#### What NOT to Do
 
 **DO NOT create individual fix files like:**
 
-- ❌ `{{APP_DIR}}/{{APP_1}}/docs/fixes/2025-10-component-bug.md`
-- ❌ `{{APP_DIR}}/{{APP_2}}/docs/fixes/api-error-handling.md`
-- ❌ `{{PACKAGES_DIR}}/{{PACKAGE_1}}/docs/fixes/type-definition-fix.md`
+- ❌ `apps/{{APP_1}}/docs/fixes/2025-10-component-bug.md`
+- ❌ `apps/{{APP_2}}/docs/fixes/api-error-handling.md`
+- ❌ `packages/{{PACKAGE_1}}/docs/fixes/type-definition-fix.md`
 
 **Instead, add them as sections in the monthly log:**
 
-- ✅ `{{APP_DIR}}/{{APP_1}}/docs/fixes/2025-10.md` with a new section
-- ✅ `{{APP_DIR}}/{{APP_2}}/docs/fixes/2025-10.md` with a new section
+- ✅ `apps/{{APP_1}}/docs/fixes/2025-10.md` with a new section
+- ✅ `apps/{{APP_2}}/docs/fixes/2025-10.md` with a new section
 
-### Complex Fix Structure
+#### Complex Fix Structure
 
-**Location:** `{{APP_DIR}}/{app}/docs/fixes/{{ISSUE_ID}}-FIX-NAME/`
+**Location:** `apps/{app}/docs/fixes/{{ISSUE_ID}}-FIX-NAME/`
 
 **Structure:**
 
@@ -323,9 +196,9 @@ Brief description of the feature and its purpose.
 - Requires migration or data transformation
 - Has significant testing requirements
 
-### Monthly Fix Logs
+#### Monthly Fix Logs
 
-**Location:** `{{APP_DIR}}/{app}/docs/fixes/{YYYY-MM}.md`
+**Location:** `apps/{app}/docs/fixes/{YYYY-MM}.md`
 
 **File Creation Rules:**
 
@@ -369,8 +242,8 @@ Brief overview of the month's focus areas for this app.
   - **Root cause**: Why it happened
   - **Solution**: How it was fixed
   - **Files modified**:
-    - `src/components/Component.{{FILE_EXTENSION}}`
-    - `src/composables/use-feature.{{FILE_EXTENSION}}`
+    - `src/components/Component.vue`
+    - `src/composables/use-feature.ts`
   - **Status**: ✅ Fixed | ⏳ In Progress | 🔄 Under Review
 
 ### Impact
@@ -416,8 +289,6 @@ Brief overview of the month's focus areas for this app.
 **Next Review**: {{Next Month End}}
 ```
 
----
-
 ## Root-Level Documentation
 
 ### When to Use Root `docs/`
@@ -427,7 +298,7 @@ Create root-level documentation for:
 1. **Architecture Decisions** affecting multiple apps
 2. **Deployment & Infrastructure** (CI/CD, hosting, environments)
 3. **Cross-App Integration** patterns and contracts
-4. **Monorepo Tooling** ({{BUILD_SYSTEM}}, workspace management)
+4. **Monorepo Tooling** (Turborepo, workspace management)
 5. **Getting Started** guides for new developers
 6. **Project Overview** and high-level architecture
 
@@ -440,11 +311,8 @@ docs/
 │   ├── 0002-api-gateway-pattern.md
 │   └── decisions.md       # Index of all ADRs
 │
-├── api/                   # API specifications
-│   └── ...
-│
 ├── deployment/            # Infrastructure and deployment
-│   ├── {{DEPLOY_PLATFORM}}.md
+│   ├── cloudflare-workers.md
 │   ├── github-actions.md
 │   └── environments.md
 │
@@ -454,35 +322,25 @@ docs/
 │   └── event-bus.md
 │
 ├── infrastructure/        # Monorepo tooling
-│   ├── {{BUILD_SYSTEM}}.md
+│   ├── turborepo.md
 │   ├── package-management.md
 │   └── workspace-scripts.md
 │
 └── getting-started.md     # New developer onboarding
 ```
 
----
+### Architecture Decision Records (ADRs)
 
-## Architecture Decision Records (ADRs)
+**Location:** `docs/architecture/{{NNNN}}-{{decision-title}}.md`
 
-### When to Create ADRs
+**When to Create Root ADRs:**
 
-Document significant architectural decisions:
-
-- Technology choices (frameworks, libraries, databases)
-- Design patterns and approaches
-- Infrastructure decisions
-- Security or performance trade-offs
 - Choosing monorepo structure
-- Selecting build system ({{BUILD_SYSTEM}}, etc.)
+- Selecting build system (Turborepo, Nx, etc.)
 - API gateway vs direct app communication
 - Shared package strategy
 - Cross-app authentication approach
 - Deployment platform decisions
-
-### ADR Structure
-
-**Location:** `docs/architecture/{{NNNN}}-{{decision-title}}.md`
 
 **Template:**
 
@@ -493,7 +351,6 @@ Document significant architectural decisions:
 **Date**: {{YYYY-MM-DD}}
 **Scope**: Monorepo-wide
 **Affected Apps**: {{APP_1}}, {{APP_2}}, [or "All"]
-**Deciders**: [List key decision makers]
 
 ## Context
 
@@ -531,14 +388,6 @@ What is the change we're proposing for the monorepo?
 - Trade-off 1
 - Trade-off 2
 
-## Alternatives Considered
-
-### Alternative 1: {{Name}}
-
-- Pros: [list]
-- Cons: [list]
-- Why rejected: [reason]
-
 ## Implementation
 
 ### Phase 1: Shared Packages
@@ -563,18 +412,10 @@ What is the change we're proposing for the monorepo?
 3. Monitor and adjust
 4. Migrate {{APP_2}} (production app)
 
-## References
-
-- [Link to research]
-- [Link to documentation]
-- [Related ADRs]
-
 ---
 
 **Last Updated**: {{Date}}
 ```
-
----
 
 ## Cross-App Documentation
 
@@ -625,18 +466,16 @@ data: unknown;
 - 2024-12-01: Initial version
 ```
 
----
-
 ## Shared Package Documentation
 
 ### Package-Level Documentation
 
 Each shared package maintains its own docs:
 
-**Location:** `{{PACKAGES_DIR}}/{{PACKAGE}}/docs/`
+**Location:** `packages/{{PACKAGE}}/docs/`
 
 ```
-{{PACKAGES_DIR}}/{{PACKAGE}}/
+packages/{{PACKAGE}}/
 ├── docs/
 │   ├── features/          # New package features
 │   ├── fixes/             # Monthly fix logs
@@ -648,7 +487,7 @@ Each shared package maintains its own docs:
 
 ### Package Feature Documentation
 
-**Location:** `{{PACKAGES_DIR}}/{{PACKAGE}}/docs/features/{{ISSUE_ID}}-FEATURE-NAME/`
+**Location:** `packages/{{PACKAGE}}/docs/features/{{ISSUE_ID}}-FEATURE-NAME/`
 
 Similar structure to app features, but focus on:
 
@@ -658,7 +497,7 @@ Similar structure to app features, but focus on:
 
 ### Package Fix Documentation
 
-**Location:** `{{PACKAGES_DIR}}/{{PACKAGE}}/docs/fixes/{YYYY-MM}.md`
+**Location:** `packages/{{PACKAGE}}/docs/fixes/{YYYY-MM}.md`
 
 Same monthly log structure, but track:
 
@@ -667,15 +506,13 @@ Same monthly log structure, but track:
 - Breaking changes and deprecations
 - Apps affected by changes
 
----
-
 ## Changelog Management
 
 ### App-Specific Changelogs
 
 Each app maintains its own `CHANGELOG.md`:
 
-**Location:** `{{APP_DIR}}/{app}/CHANGELOG.md`
+**Location:** `apps/{app}/CHANGELOG.md`
 
 ```markdown
 # {{App Name}} Changelog
@@ -717,16 +554,16 @@ Tracks monorepo-wide changes:
 
 ### Infrastructure
 
-- Updated {{BUILD_SYSTEM}} to v{{VERSION}}
+- Updated Turborepo to v{{VERSION}}
 - Added GitHub Actions caching
 
 ### {{APP_1}}
 
-- See [app changelog]({{APP_DIR}}/{{APP_1}}/CHANGELOG.md)
+- See [app changelog](apps/{{APP_1}}/CHANGELOG.md)
 
 ### {{APP_2}}
 
-- See [app changelog]({{APP_DIR}}/{{APP_2}}/CHANGELOG.md)
+- See [app changelog](apps/{{APP_2}}/CHANGELOG.md)
 
 ### Shared Packages
 
@@ -738,43 +575,6 @@ Tracks monorepo-wide changes:
 [Previous releases...]
 ```
 
-### Changelog Format
-
-Follow [Keep a Changelog](https://keepachangelog.com/) format:
-
-```markdown
-## [{{VERSION}}] - {{YYYY-MM-DD}}
-
-### Added
-
-- New feature X ([{{ISSUE_ID}}](docs/features/{{ISSUE_ID}}-FEATURE-NAME/))
-- New API endpoint Y
-
-### Changed
-
-- Updated component behavior ([{{ISSUE_ID}}](docs/fixes/{{ISSUE_ID}}-FIX-NAME/))
-- Improved performance of Z
-
-### Deprecated
-
-- Old API endpoint (will be removed in v{{NEXT_VERSION}})
-
-### Removed
-
-- Deprecated feature from v{{PREV_VERSION}}
-
-### Fixed
-
-- Bug causing issue A ([#123]({{ISSUE_TRACKER_URL}}))
-- Memory leak in component B
-
-### Security
-
-- Patched vulnerability CVE-{{ID}}
-```
-
----
-
 ## Pre-Commit Documentation Gate
 
 **⚠️ MANDATORY: Documentation MUST be written or updated BEFORE committing code. This is a hard requirement — no commit should land without the corresponding docs entry.**
@@ -785,74 +585,34 @@ Before running `git commit`, verify ALL items that apply to your change:
 
 **All changes:**
 
-- [ ] **Features**: Feature spec exists in `docs/features/{{ISSUE_ID}}-FEATURE-NAME/spec.md` and reflects the current implementation
-- [ ] **Features**: `plan.md` is updated if scope changed
-- [ ] **Fixes**: Entry added to `docs/fixes/{{YYYY-MM}}.md` (or complex fix folder created)
+- [ ] **Features**: `docs/features/{{ISSUE_ID}}-FEATURE-NAME/spec.md` exists and reflects the current implementation
+- [ ] **Features**: `docs/features/{{ISSUE_ID}}-FEATURE-NAME/plan.md` is updated if scope changed
+- [ ] **Fixes**: Entry added to `apps/{app}/docs/fixes/{{YYYY-MM}}.md` (or complex fix folder created)
 - [ ] **Breaking changes**: `CHANGELOG.md` updated
 - [ ] **Architectural decisions**: ADR created in `docs/architecture/` if a significant choice was made
-- [ ] **README is accurate** — If setup steps, commands, or env vars changed, the relevant `README.md` is updated
 
-**`{{APP_DIR}}/{{APP_1}}` changes ({{APP_1_FRAMEWORK}}):**
+**App changes (API routes, controllers, services):**
 
-- [ ] New or modified controller endpoints documented in `docs/api/` (HTTP method, path, auth requirements, request/response shape, error codes)
-- [ ] Corresponding `{{APP_DIR}}/{{DOCS_APP}}/{{DOCS_CONTENT_DIR}}/` page created or updated
-- [ ] Removed or renamed endpoints noted as breaking changes in `docs/api/`, `{{APP_DIR}}/{{DOCS_APP}}/{{DOCS_CONTENT_DIR}}/`, and `CHANGELOG.md`
+- [ ] New or modified endpoints documented in `docs/api/` (HTTP method, path, auth requirements, request/response shape, error codes)
+- [ ] Corresponding `apps/{{DOCS_APP}}/content/` page created or updated
+- [ ] Removed or renamed endpoints noted as breaking changes in `docs/api/`, `apps/{{DOCS_APP}}/content/`, and `CHANGELOG.md`
 - [ ] New modules/services referenced in the relevant feature spec
 
-**`{{APP_DIR}}/{{APP_2}}` or `{{APP_DIR}}/{{APP_3}}` changes ({{APP_2_FRAMEWORK}}):**
+**Frontend app changes (pages, UI features):**
 
 - [ ] New route handlers documented in the relevant feature spec under `docs/features/`
-- [ ] Any public-facing or cross-app API routes documented in `docs/api/`
-- [ ] User-facing features have a corresponding `{{APP_DIR}}/{{DOCS_APP}}/{{DOCS_CONTENT_DIR}}/` page created or updated
+- [ ] Any public-facing features have a corresponding `apps/{{DOCS_APP}}/content/` page created or updated
 
-**`{{PACKAGES_DIR}}/*` changes:**
+**`packages/*` changes:**
 
 - [ ] New or changed public exports documented in `docs/api/` or the relevant feature spec
-- [ ] `{{APP_DIR}}/{{DOCS_APP}}/{{DOCS_CONTENT_DIR}}/` updated if the change is developer-facing
+- [ ] `apps/{{DOCS_APP}}/content/` updated if the change is developer-facing
 
-**`{{APP_DIR}}/{{DOCS_APP}}` changes:**
+**`apps/{{DOCS_APP}}` changes:**
 
 - [ ] No extra docs required — the content edit itself is the documentation update
 
 If any applicable item is missing, **write the documentation first, then commit**.
-
-### Updating the Docs App
-
-If this monorepo has a dedicated documentation app (`{{APP_DIR}}/{{DOCS_APP}}`), treat it as a first-class deliverable alongside code changes.
-
-**When to update the docs app:**
-
-- A new user-facing feature is shipped
-- An existing feature's behavior or UI changes
-- A public API or shared package interface is added or modified
-- A breaking change is introduced anywhere
-
-**How to update the docs app:**
-
-1. **Feature guides** — Add or update a page under the relevant section explaining the feature.
-2. **API reference** — Update any auto-generated or hand-written API docs pages.
-3. **Changelog / release notes** — Add an entry if the docs app surfaces a changelog.
-4. **Navigation / sidebar** — Register new pages in the sidebar or nav config if required by the docs framework.
-5. **Preview locally** — Run the docs app to verify content renders correctly before committing:
-   ```bash
-   {{PACKAGE_MANAGER}} dev --filter={{DOCS_APP}}
-   ```
-
-### AI Agent Instructions
-
-When implementing a feature or fix, AI agents **must**:
-
-1. **Check for existing docs first** — Read the appropriate `docs/features/` folder for an existing spec before writing any code. If no spec exists, create one from `templates/feature-spec.template.md` and confirm scope before proceeding.
-2. **Respect the placement decision tree** — Use app-level `docs/` for app-specific changes and root `docs/` only for cross-cutting concerns.
-3. **Check the per-app obligations table** — Identify which apps are affected and follow the required doc actions for each.
-4. **Create docs early** — Spec and plan should be written or updated _before_ implementation begins, not after.
-5. **Keep docs in sync** — Update `spec.md` and `plan.md` as implementation decisions are made. Do not wait until the end.
-6. **Update the docs app** — If `{{APP_DIR}}/{{DOCS_APP}}` is present, update the relevant content pages and sidebar navigation.
-7. **Verify before completing** — After implementation, review all doc files and docs-app pages to ensure they reflect the final state of the code.
-8. **Commit together** — Include all documentation and docs-app changes in the same commit (or PR) as the code changes.
-9. **Never skip for "small" changes** — All fixes go in the monthly log at minimum. All features get a spec folder.
-
----
 
 ## Documentation Workflows
 
@@ -860,114 +620,43 @@ When implementing a feature or fix, AI agents **must**:
 
 1. **Identify scope**: Single app or cross-app?
 2. **Create documentation**:
-   - App-specific: `{{APP_DIR}}/{app}/docs/features/{{ISSUE_ID}}-NAME/`
+   - App-specific: `apps/{app}/docs/features/{{ISSUE_ID}}-NAME/`
    - Cross-app: Root ADR + app-specific implementation docs
 3. **Use spec workflow**: Run `/spec` in context of the app
 4. **Create plan**: Run `/plan` in app context
-5. **Link from commits**: Reference documentation path
+5. **Update docs app**: Create or update the corresponding page in `apps/{{DOCS_APP}}/content/`
+6. **Link from commits**: Reference documentation path
 
 ### Fixing a Bug
 
 1. **Determine complexity**: Simple or complex?
 2. **Check monthly log**: Does current month's log exist?
 3. **Document appropriately**:
-   - Simple: Add section to `{{APP_DIR}}/{app}/docs/fixes/{YYYY-MM}.md`
-   - Complex: Create `{{APP_DIR}}/{app}/docs/fixes/{{ISSUE_ID}}-FIX/`
-4. **Update app changelog**: Reference in `{{APP_DIR}}/{app}/CHANGELOG.md`
+   - Simple: Add section to `apps/{app}/docs/fixes/{YYYY-MM}.md`
+   - Complex: Create `apps/{app}/docs/fixes/{{ISSUE_ID}}-FIX/`
+4. **Update app changelog**: Reference in `apps/{app}/CHANGELOG.md`
+5. **Update docs app**: If the fix changes user-facing behavior, update the relevant page in `apps/{{DOCS_APP}}/content/`
 
 ### Cross-App Changes
 
 1. **Create root ADR**: Document decision at `docs/architecture/`
 2. **Create app-specific docs**: Implementation details in each app
 3. **Update integration docs**: If APIs change, update `docs/integration/`
-4. **Update root changelog**: Reference in root `CHANGELOG.md`
-
----
-
-## Integration with Workflows
-
-### During Development
-
-1. **Starting work**: Create or reference feature spec (`docs/features/` or `docs/fixes/`)
-2. **While implementing**: Keep `spec.md` and `plan.md` updated as scope evolves
-3. **Before every commit**: Run through the Pre-Commit Documentation Gate checklist above
-4. **Bug fixes**: Add to monthly log or create complex fix folder **before committing the fix**
-5. **Code review**: Reviewer verifies documentation is present and accurate
-6. **Merging**: Confirm changelog is updated if the change is user-facing or breaking
-
-### Commit Messages
-
-Reference documentation in commits:
-
-```
-feat({{FEATURE}}): implement new feature X
-
-See docs/features/{{ISSUE_ID}}-FEATURE-NAME/ for details
-
-Closes {{ISSUE_ID}}
-```
-
-```
-fix({{COMPONENT}}): resolve memory leak
-
-Added to docs/fixes/{{YYYY-MM}}.md
-
-Fixes #{{ISSUE_NUMBER}}
-```
-
-### Pull Requests
-
-PR descriptions should:
-
-- Link to feature documentation
-- Reference fix documentation (monthly log or folder)
-- Note any breaking changes
-- List updated documentation files
-
----
-
-## Documentation Maintenance
-
-### Regular Reviews
-
-- **Monthly**: Review and close completed fix logs
-- **Quarterly**: Audit feature documentation for accuracy
-- **Release**: Update changelog and version documentation
-
-### Deprecation Process
-
-1. Mark feature/API as deprecated in code
-2. Add deprecation notice to documentation
-3. Create ADR explaining deprecation
-4. Plan removal timeline
-5. Update changelog
-
-### Documentation Quality Checklist
-
-- [ ] Clear and concise language
-- [ ] Code examples are tested and working
-- [ ] Links are valid and not broken
-- [ ] Follows project conventions
-- [ ] Includes diagrams where helpful
-- [ ] Has proper metadata (dates, status, links)
-- [ ] Reviewed by at least one other person
-
----
+4. **Update docs app**: Reflect cross-app changes in `apps/{{DOCS_APP}}/content/`
+5. **Update root changelog**: Reference in root `CHANGELOG.md`
 
 ## Best Practices
 
 ### Do
 
-- ✅ Document as you develop, not after
 - ✅ Keep app-specific docs with app code
 - ✅ Use root docs only for cross-cutting concerns
-- ✅ Use templates for consistency
 - ✅ Link between related docs across apps
-- ✅ Include practical code examples
 - ✅ Maintain separate changelogs per app
 - ✅ Document API contracts explicitly
 - ✅ Update all affected app docs for shared changes
-- ✅ Use diagrams for complex flows
+- ✅ Update `apps/{{DOCS_APP}}/content/` with every user-facing change
+- ✅ Keep docs app navigation in sync when adding new pages
 
 ### Don't
 
@@ -977,50 +666,29 @@ PR descriptions should:
 - ❌ Forget to update API contract docs
 - ❌ Mix app-specific and monorepo concerns
 - ❌ Let cross-app integration docs become stale
-- ❌ Skip documentation for "small" changes
-- ❌ Use vague or unclear language
-- ❌ Mix different documentation types in same folder
-
----
-
-## Tools and Automation
-
-### Recommended Tools
-
-- **Markdown**: All documentation in Markdown format
-- **Diagrams**: Use Mermaid, draw.io, or similar
-- **API Docs**: Generate from code (JSDoc, TypeDoc, etc.)
-- **Linting**: markdownlint for consistency
-
-### Automation Opportunities
-
-- Auto-generate API documentation from code
-- Validate documentation links in CI
-- Generate changelog from commit messages
-- Create documentation stubs from issue templates
-
----
+- ❌ Commit feature code without updating the docs app
+- ❌ Duplicate internal specs into the docs app verbatim — distill user-facing content instead
 
 ## Quick Reference
 
-| Documentation Type       | Location                                           | Example                       |
-| ------------------------ | -------------------------------------------------- | ----------------------------- |
-| {{APP_1}} Feature        | `{{APP_DIR}}/{{APP_1}}/docs/features/`             | Component implementation      |
-| {{APP_2}} Feature        | `{{APP_DIR}}/{{APP_2}}/docs/features/`             | API endpoint addition         |
-| {{APP_1}} Fix (simple)   | `{{APP_DIR}}/{{APP_1}}/docs/fixes/{YYYY-MM}.md`    | CSS styling bug               |
-| {{APP_2}} Fix (complex)  | `{{APP_DIR}}/{{APP_2}}/docs/fixes/{{ISSUE_ID}}-*/` | Database migration            |
-| Shared Package Feature   | `{{PACKAGES_DIR}}/{pkg}/docs/features/`            | Utility function addition     |
-| Cross-App Architecture   | `docs/architecture/`                               | ADR for authentication        |
-| Deployment               | `docs/deployment/`                                 | CI/CD pipeline documentation  |
-| Integration              | `docs/integration/`                                | API contracts between apps    |
-| Monorepo Tooling         | `docs/infrastructure/`                             | {{BUILD_SYSTEM}} config guide |
-| App Changelog            | `{{APP_DIR}}/{app}/CHANGELOG.md`                   | App-specific version history  |
-| Root Changelog           | `CHANGELOG.md`                                     | Monorepo-wide changes         |
-| App Getting Started      | `{{APP_DIR}}/{app}/README.md`                      | App-specific setup            |
-| Docs App Content         | `{{APP_DIR}}/{{DOCS_APP}}/{{DOCS_CONTENT_DIR}}/`   | User-facing documentation     |
-| Monorepo Getting Started | `docs/getting-started.md` or root `README.md`      | New developer onboarding      |
+| Documentation Type       | Location                                      | Example                         |
+| ------------------------ | --------------------------------------------- | ------------------------------- |
+| {{APP_1}} Feature        | `apps/{{APP_1}}/docs/features/`               | Vue component implementation    |
+| {{APP_2}} Feature        | `apps/{{APP_2}}/docs/features/`               | API endpoint addition           |
+| {{APP_1}} Fix (simple)   | `apps/{{APP_1}}/docs/fixes/{YYYY-MM}.md`      | CSS styling bug                 |
+| {{APP_2}} Fix (complex)  | `apps/{{APP_2}}/docs/fixes/{{ISSUE_ID}}-*/`   | Database migration              |
+| Shared Package Feature   | `packages/{pkg}/docs/features/`               | Utility function addition       |
+| Cross-App Architecture   | `docs/architecture/`                          | ADR for authentication approach |
+| Deployment               | `docs/deployment/`                            | CI/CD pipeline documentation    |
+| Integration              | `docs/integration/`                           | API contracts between apps      |
+| Monorepo Tooling         | `docs/infrastructure/`                        | Turborepo configuration guide   |
+| App Changelog            | `apps/{app}/CHANGELOG.md`                     | App-specific version history    |
+| Root Changelog           | `CHANGELOG.md`                                | Monorepo-wide changes           |
+| App Getting Started      | `apps/{app}/README.md`                        | App-specific setup instructions |
+| Docs App Content         | `apps/{{DOCS_APP}}/content/`                  | User-facing documentation site  |
+| Monorepo Getting Started | `docs/getting-started.md` or root `README.md` | New developer onboarding        |
 
 ---
 
 **Last Updated**: {{Date}}
-**Template Version**: 2.0.0
+**Template Version**: 1.0.0

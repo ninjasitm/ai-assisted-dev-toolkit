@@ -16,6 +16,13 @@ Implement bug fixes and corrections with proper validation and documentation.
 
 ````
 
+## Orchestrator Checkpoint
+
+> **🛑 For multiple independent fixes**: If fixing 2+ unrelated bugs, use `dispatching-parallel-agents`
+> to dispatch one subagent per bug (different root causes, different files = parallel-safe).
+> For a single focused fix, proceed directly — single-agent is appropriate.
+> See `.github/instructions/subagent-workflow.instructions.md` for patterns.
+
 ## Workflow Modes
 
 1. **Issue-Based Fixes**: For tracked fixes requiring documentation
@@ -70,6 +77,25 @@ Implement bug fixes and corrections with proper validation and documentation.
    - Bug fixed and root cause
    - Validation completed
    - PR ready for review
+
+   **Include a Fixes Applied table** summarizing every change:
+
+   ```markdown
+   ## Fixes Applied
+
+   | File | Issue | Fix |
+   | ---- | ----- | --- |
+   | `PostsCategory.php` | Missing `BelongsTo` import → fatal runtime error | Added `use Illuminate\Database\Eloquent\Relations\BelongsTo;` |
+   | `PostsCategory.php` | Timestamp constants with no DB columns | Replaced `CREATED_AT`/`UPDATED_AT` constants with `public $timestamps = false` |
+   | `Metadata.php` | `deleted_at` cast with no SoftDeletes/column | Removed spurious `'deleted_at' => 'datetime'` cast |
+   | `Metadata.php` | Two unreachable `break` after `return` | Removed the dead `break` statements |
+   | `Follow.php` | `end_date` missing from `$casts` | Added `'end_date' => 'datetime'` |
+   | `Follow.php` | `end_date` assigned twice in `beforeDelete()` | Removed the redundant first assignment |
+   | `LoginController.php` | `Request` used but not imported → fatal error | Added `use Illuminate\Http\Request;` |
+   | `RegisterController.php` | Unused `Str` import | Removed `use Illuminate\Support\Str;` |
+   ```
+
+   Every fix must appear in this table — one row per file+issue pair.
 
 ## Fix Guidelines
 

@@ -128,6 +128,52 @@ Assignment Reason: Domain match (Authentication) | Maintenance fallback
    - Report total story points
    - **Consolidation summary**: "Merged X raw items into Y tickets"
 
+## API Rate Limiting & Throttling
+
+**CRITICAL**: {{ISSUE_TRACKER}} APIs have rate limits. When creating multiple tickets:
+
+### Batch Strategy
+
+- **Small batches** (< 5 tickets): Create all tickets immediately
+- **Medium batches** (5-15 tickets): Create in groups of 5 with 2-second delays
+- **Large batches** (15+ tickets): Create in groups of 5 with 3-5 second delays
+
+### Implementation Pattern
+
+```
+1. Create Epic(s) first → Wait 2 seconds
+2. Create Stories (batch of 5) → Wait 2 seconds
+3. Create next Stories (batch of 5) → Wait 2 seconds
+4. Create Tasks (batch of 5) → Wait 3 seconds
+5. Continue batching with delays
+```
+
+### Error Handling
+
+- **429 (Rate Limit)**: Wait 10 seconds, then retry
+- **503 (Service Unavailable)**: Wait 5 seconds, then retry
+- **Max retries**: 3 attempts per ticket
+- **Failed tickets**: Report at end with error details
+
+### Progress Reporting
+
+```
+Creating tickets...
+✓ Epic created: PROJ-123
+  [Waiting 2s to avoid rate limiting...]
+✓ Stories created: PROJ-124, PROJ-125, PROJ-126 (batch 1/3)
+  [Waiting 2s...]
+✓ Stories created: PROJ-127, PROJ-128, PROJ-129 (batch 2/3)
+```
+
+### Best Practices
+
+- ⚠️ **Never create more than 5 tickets without a delay**
+- ⚠️ **Always wait at least 2 seconds between batches**
+- ⚠️ **Increase delays if rate limit errors occur**
+- ✓ **Show progress updates between batches**
+- ✓ **Report any failed tickets with retry instructions**
+
 ## Anti-Patterns to Avoid
 
 ❌ **Don't create separate tickets for**:

@@ -13,6 +13,16 @@ Conduct comprehensive code review for pull requests with structured fix tracking
 /review-pr https://github.com/{{REPO_OWNER}}/{{PROJECT_NAME}}/pull/42
 ```
 
+## Orchestrator Checkpoint
+
+> **🛑 For large PRs** (10+ files or 3+ domains): Dispatch specialist reviewers in parallel:
+> - **Backend Architect** → architecture, API design, database
+> - **Frontend Developer** → UI, components, accessibility
+> - **Reviewer** → code quality, SOLID, DRY
+> - **Documenter** → documentation completeness
+> Each reviewer returns findings independently; the orchestrator merges results.
+> See `.github/instructions/subagent-workflow.instructions.md` for patterns.
+
 ## Process
 
 1. **Load PR Context**:
@@ -165,6 +175,18 @@ Conduct comprehensive code review for pull requests with structured fix tracking
    - [ ] Fix: [Critical issue 2]
    - [ ] Address: [High priority comment]
    - [ ] Improve: [Medium priority suggestion]
+
+   ## Fixes Applied
+
+   _After fixes are implemented, populate this table with every change made:_
+
+   | File | Issue | Fix |
+   | ---- | ----- | --- |
+   | `ExampleFile.php` | Missing import → fatal error | Added `use Namespace\ClassName;` |
+   | `ExampleFile.php` | Unreachable code after `return` | Removed dead `break` statements |
+   | `AnotherFile.php` | Field missing from `$casts` | Added `'field' => 'datetime'` |
+
+   Every fix must appear in this table — one row per file+issue pair.
    ```
 
 9. **Report Review Status**:

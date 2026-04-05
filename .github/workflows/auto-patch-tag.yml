@@ -1,0 +1,56 @@
+name: Auto Patch Tag
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Calculate next patch tag
+        id: semver
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          latest=$(git tag -l '[0-9]*.[0-9]*.[0-9]*' --sort=-v:refname | head -n 1)
+          if [[ -z "$latest" ]]; then
+            latest="0.0.0"
+          fi
+
+          IFS='.' read -r major minor patch <<< "$latest"
+          next_patch=$((patch + 1))
+          candidate="${major}.${minor}.${next_patch}"
+
+          # Skip to the next available patch tag if a rerun or collision occurs.
+          while git rev-parse -q --verify "refs/tags/${candidate}" >/dev/null; do
+            next_patch=$((next_patch + 1))
+            candidate="${major}.${minor}.${next_patch}"
+          done
+
+          echo "latest=${latest}" >> "$GITHUB_OUTPUT"
+          echo "next=${candidate}" >> "$GITHUB_OUTPUT"
+
+      - name: Create and push patch tag
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          next_tag="${{ steps.semver.outputs.next }}"
+          latest_tag="${{ steps.semver.outputs.latest }}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git tag -a "$next_tag" -m "ci: patch bump from ${latest_tag} to ${next_tag}"
+          git push origin "$next_tag"

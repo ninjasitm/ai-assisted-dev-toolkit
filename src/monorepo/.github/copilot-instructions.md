@@ -7,100 +7,65 @@
 - **Apps:** `apps/{{APP_NAME_1}}/`, `apps/{{APP_NAME_2}}/`
 - **Packages:** `packages/{{PACKAGE_NAME_1}}/`, `packages/{{PACKAGE_NAME_2}}/`, `packages/config/`
 
-## Architecture
+## Instruction Sources
 
-### Workspace Structure
+Detailed standards are organized into focused instruction files. Copilot will automatically load these based on the `applyTo` patterns:
 
-```
-{{PROJECT_NAME}}/
-├── apps/                    # Deployable applications
-│   ├── {{APP_NAME_1}}/      # {{APP_1_DESCRIPTION}}
-│   └── {{APP_NAME_2}}/      # {{APP_2_DESCRIPTION}}
-├── packages/                # Shared packages
-│   ├── {{PACKAGE_NAME_1}}/ # {{PACKAGE_1_DESCRIPTION}}
-│   ├── {{PACKAGE_NAME_2}}/ # {{PACKAGE_2_DESCRIPTION}}
-│   └── config/             # Shared configuration
-└── {{MONOREPO_CONFIG}}     # Monorepo config
-```
-
-### Import Conventions
-
-```typescript
-// Cross-package imports
-import { Component } from "@{{PROJECT_NAME}}/ui";
-import { utils } from "@{{PROJECT_NAME}}/utils";
-
-// Internal app imports
-import { Component } from "@/components";
-import { utils } from "~/utils";
-```
-
-## Development Workflow
-
-### Commands
-
-```bash
-# Development
-{{PACKAGE_MANAGER}} dev                    # All apps
-{{PACKAGE_MANAGER}} dev --filter={{APP_NAME_1}}  # Specific app
-
-# Building
-{{PACKAGE_MANAGER}} build                  # All packages
-{{PACKAGE_MANAGER}} build --filter=<name>  # Specific package
-
-# Testing
-{{PACKAGE_MANAGER}} test                   # All tests
-{{PACKAGE_MANAGER}} test --filter=<name>   # Specific tests
-
-# Linting
-{{PACKAGE_MANAGER}} lint
-{{PACKAGE_MANAGER}} check-types
-```
-
-### Adding Dependencies
-
-```bash
-# To specific app/package
-{{PACKAGE_MANAGER}} add <package> --filter={{APP_NAME_1}}
-
-# To root workspace
-{{PACKAGE_MANAGER}} add -D <package> -w
-
-# Internal package dependency
-{{PACKAGE_MANAGER}} add @{{PROJECT_NAME}}/{{PACKAGE_NAME_1}} --filter={{APP_NAME_1}}
-```
-
-## Key Patterns
-
-### Shared Package Usage
-
-```typescript
-// packages/{{PACKAGE_NAME_1}}/src/index.ts
-export { Component } from "./Component";
-export type { ComponentProps } from "./types";
-
-// apps/{{APP_NAME_1}}/src/pages/index.tsx
-import { Component } from "@{{PROJECT_NAME}}/{{PACKAGE_NAME_1}}";
-```
-
-### Configuration Sharing
-
-```typescript
-// packages/config/eslint/base.js
-module.exports = {
-	/* shared rules */
-};
-
-// apps/{{APP_NAME_1}}/eslint.config.js
-import base from "@{{PROJECT_NAME}}/config/eslint";
-export default [...base];
-```
+| Instruction File                    | Description                                       |
+| ----------------------------------- | ------------------------------------------------- |
+| `agent-conduct.instructions.md`     | Agent conduct rules, clarification protocols      |
+| `project-context.instructions.md`   | Monorepo architecture and project context         |
+| `coding-standards.instructions.md`  | Coding standards and shared code conventions      |
+| `patterns.instructions.md`          | Monorepo patterns, workspace conventions, imports |
+| `workflows.instructions.md`         | Development commands and monorepo workflows       |
+| `testing.instructions.md`           | Testing strategy across apps and packages         |
+| `deployment.instructions.md`        | Deployment configuration per app                  |
+| `logging.instructions.md`           | Monorepo logging standards and best practices     |
+| `documentation.instructions.md`     | Distributed documentation strategy                |
+| `subagent-workflow.instructions.md` | Orchestrator-first patterns and agent delegation  |
 
 ## Context Sources
 
-- [AGENTS.md](AGENTS.md) - Monorepo architecture
-- [apps/{{APP_NAME_1}}/AGENTS.md](apps/{{APP_NAME_1}}/AGENTS.md) - App-specific patterns
-- [apps/{{APP_NAME_2}}/AGENTS.md](apps/{{APP_NAME_2}}/AGENTS.md) - App-specific patterns
+- [AGENTS.md](../AGENTS.md) - Monorepo architecture and agent conduct
+- [apps/{{APP_NAME_1}}/AGENTS.md](../apps/{{APP_NAME_1}}/AGENTS.md) - App-specific patterns
+- [apps/{{APP_NAME_2}}/AGENTS.md](../apps/{{APP_NAME_2}}/AGENTS.md) - App-specific patterns
+
+## Preferred Workflow: Orchestrator + Subagents
+
+**Default to using a coordinator agent for non-trivial work.** For details, see `subagent-workflow.instructions.md`.
+
+### Coordinators
+
+| Agent               | File                              | Purpose                                      |
+| ------------------- | --------------------------------- | -------------------------------------------- |
+| **Feature Builder** | `agents/feature-builder.agent.md` | End-to-end feature development orchestration |
+| **TDD**             | `agents/tdd.agent.md`             | Red-green-refactor cycle coordination        |
+
+### Domain Specialists (user-invocable)
+
+| Agent                  | File                                 | Purpose                                 |
+| ---------------------- | ------------------------------------ | --------------------------------------- |
+| **Backend Architect**  | `agents/backend-architect.agent.md`  | API design, databases, system arch      |
+| **Frontend Developer** | `agents/frontend-developer.agent.md` | UI components, state, responsive design |
+| **API Specialist**     | `agents/api-specialist.agent.md`     | API contracts, docs, versioning         |
+| **Admin Portal**       | `agents/admin-portal.agent.md`       | RBAC, dashboards, reporting, monitoring |
+| **Documenter**         | `agents/documenter.agent.md`         | AGENTS.md, README, API docs             |
+| **Reviewer**           | `agents/reviewer.agent.md`           | Multi-perspective code review           |
+
+### Process Workers (subagent-only)
+
+| Agent           | File                          | Purpose                                |
+| --------------- | ----------------------------- | -------------------------------------- |
+| **Planner**     | `agents/planner.agent.md`     | Implementation task breakdown          |
+| **Implementer** | `agents/implementer.agent.md` | Production code implementation         |
+| **Researcher**  | `agents/researcher.agent.md`  | Read-only codebase analysis            |
+| **Red**         | `agents/red.agent.md`         | Write failing tests (TDD red phase)    |
+| **Green**       | `agents/green.agent.md`       | Make tests pass (TDD green phase)      |
+| **Refactor**    | `agents/refactor.agent.md`    | Improve code quality, keep tests green |
+
+Process workers (`user-invocable: false`) are only accessible as subagents — they don't appear in the agents dropdown.
+
+> **Docs:** [VS Code Subagents](https://code.visualstudio.com/docs/copilot/agents/subagents) · [Cursor Subagents](https://cursor.com/docs/subagents)
 
 ## Skills References
 

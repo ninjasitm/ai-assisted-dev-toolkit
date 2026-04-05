@@ -21,14 +21,12 @@ You are helping to bootstrap AI instructions for this monorepo by analyzing the 
    | **Java**                  | `pom.xml` / `build.gradle` | Maven modules, Gradle multi-project                 |
 
    **Detect Build System:**
-
    - JavaScript: Turborepo (`turbo.json`), Nx (`nx.json`), Lerna (`lerna.json`)
    - .NET: Solution files, MSBuild
    - Java: Maven, Gradle
    - Other: Makefiles, Bazel, etc.
 
    **Scan Workspace:**
-
    - Scan `apps/` or similar directories for applications
    - Scan `packages/`, `libs/`, `modules/` for shared code
    - For each app/package, analyze their config files
@@ -44,6 +42,10 @@ You are helping to bootstrap AI instructions for this monorepo by analyzing the 
    | `{{BUILD_SYSTEM}}`        | Build tool (Turborepo, Nx, MSBuild, Maven, etc.)   |
    | `{{DEFAULT_BRANCH}}`      | Git config or assume "main"                        |
    | `{{TEST_FRAMEWORK}}`      | Common test framework across packages              |
+   | `{{PM_TOOL}}`             | Detected project management tool                   |
+   | `{{PM_URL}}`              | Project management URL (if applicable)             |
+   | `{{PM_PROJECT_ID}}`       | Project/workspace ID (if applicable)               |
+   | `{{PM_ISSUE_KEY}}`        | Issue key format (e.g., PROJ-###, #42)             |
 
 3. **Analyze Apps**:
 
@@ -65,6 +67,15 @@ You are helping to bootstrap AI instructions for this monorepo by analyzing the 
    | --------------------------- | -------------------------- |
    | `{{PACKAGE_NAME_N}}`        | Directory names            |
    | `{{PACKAGE_N_DESCRIPTION}}` | Package config description |
+
+4.5. **Detect Project Management Tool**:
+
+- **GitHub Issues**: `.github/ISSUE_TEMPLATE/` directory or GitHub remote URL
+- **Jira**: `jira.properties`, `jira.yml`, or Jira issue keys in commits (e.g., `PROJ-123`)
+- **Azure DevOps**: `azure-pipelines.yml`, `.azure/` directory
+- **Linear**: `.linear/` directory, `linear.json`, or Linear references in commits
+- **GitLab Issues**: `.gitlab-ci.yml` or GitLab remote URL
+- Extract URL and project/workspace ID where applicable
 
 5. **Report Inferred Values**:
 
@@ -93,6 +104,12 @@ You are helping to bootstrap AI instructions for this monorepo by analyzing the 
    │ config  │ Shared configuration    │
    └─────────┴─────────────────────────┘
 
+   📋 Project Management:
+   - Tool: GitHub Issues (detected)
+   - URL: https://github.com/owner/monorepo
+   - Project ID: owner/monorepo
+   - Issue Key: #{{NUM}}
+
    ❓ Please Provide:
    - PROJECT_DESCRIPTION: What is this monorepo for?
    ```
@@ -100,124 +117,178 @@ You are helping to bootstrap AI instructions for this monorepo by analyzing the 
 6. **Prompt for Missing Values**:
 
    Ask specific questions for values that couldn't be inferred:
-
    - "What is the main purpose of this monorepo?"
-   - "What issue tracker do you use (GitHub Issues, Jira, Linear)?"
+   - "Confirm detected project management tool or specify different one (GitHub Issues, Jira, Azure DevOps, Linear, GitLab)?"
+   - "Provide project management URL if applicable?"
+   - "Provide project/workspace ID if applicable?"
    - "Any additional apps or packages to document?"
 
 7. **Update Template Files**:
 
    **Root Level:**
-
-   - `AGENTS.md`
-   - `.github/copilot-instructions.md`
+   - `AGENTS.md` (include project management section)
+   - `.github/copilot-instructions.md` (include PM context)
    - `.github/instructions/*.instructions.md`
    - `.github/prompts/*.prompt.md`
    - `.cursor/rules/*.mdc`
    - `.cursor/commands/*.md`
 
    **Per App** (copy from `apps/app-template/` if needed):
-
    - `apps/{app}/AGENTS.md`
    - `apps/{app}/README.md`
 
    **Per Package:**
-
    - `packages/{package}/README.md`
 
 8. **Generate App-Specific AGENTS.md**:
 
    For each detected app, create a customized `AGENTS.md` with:
-
    - Framework-specific patterns
    - Directory structure
    - Component/route conventions
    - State management patterns
    - API integration patterns
 
-9. **Recommend and Install AI Agent Skills**:
+8.5. **Agent Customization**:
 
-   Based on detected ecosystem and frameworks, recommend relevant skills from [skills.sh](https://skills.sh/) and [agentskills.io](https://agentskills.io/).
+Scan agent definition files in `.github/agents/` and `.cursor/agents/` for template placeholders and replace them with detected values:
 
-   **Core Skills (Always Recommend):**
+| Placeholder                  | Source                     | Example                               |
+| ---------------------------- | -------------------------- | ------------------------------------- |
+| `{{FRAMEWORK}}`              | Step 3 framework detection | `Laravel`, `Next.js`, `Django`        |
+| `{{LANGUAGE}}`               | Step 1 ecosystem detection | `PHP`, `TypeScript`, `Python`         |
+| `{{ADMIN_MONITORING_TOOLS}}` | Framework-specific lookup  | `Horizon, Telescope, Pulse, Filament` |
 
-   | Skill Repository           | Purpose                                            |
-   | -------------------------- | -------------------------------------------------- |
-   | `obra/superpowers`         | TDD, systematic debugging, planning, code review   |
-   | `trailofbits/skills`       | Security analysis, Semgrep, property-based testing |
-   | `softaworks/agent-toolkit` | README writing, clear documentation                |
+**Admin Monitoring Tools by Framework:**
 
-   **Framework-Specific Skills:**
+- **Laravel**: Horizon, Telescope, Pulse, Nova/Filament
+- **Django**: Django Admin, Celery Flower, django-debug-toolbar, Silk
+- **Next.js/Node**: Bull Board, AdminJS
+- **Rails**: ActiveAdmin, Sidekiq Web, Blazer
+- **ASP.NET Core**: Hangfire Dashboard, Aspire Dashboard, Health Checks UI
+- **Spring Boot**: Spring Boot Admin, Actuator, Micrometer
+- **FastAPI**: FastAPI Admin, Flower, SQLAdmin
 
-   | Detected Framework | Skill Repository                      |
-   | ------------------ | ------------------------------------- |
-   | React/Next.js      | `vercel-labs/agent-skills`            |
-   | Vue/Nuxt           | `onmax/nuxt-skills`                   |
-   | Expo/React Native  | `expo/skills`                         |
-   | Better-Auth        | `better-auth/skills`                  |
-   | NestJS             | `Kadajett/agent-nestjs-skills`        |
-   | Elysia.js          | `elysiajs/skills`                     |
-   | Three.js           | `CloudAI-X/threejs-skills`            |
-   | Remotion           | `remotion-dev/skills`                 |
-   | Convex             | `waynesutton/convexskills`            |
-   | TanStack Query     | `jezweb/claude-skills`                |
-   | shadcn/ui          | `giuseppe-trisciuoglio/developer-kit` |
-   | SwiftUI/iOS        | `Dimillian/Skills`                    |
-   | Obsidian           | `kepano/obsidian-skills`              |
-   | Stripe Integration | `anthropics/claude-plugins-official`  |
+For multi-app monorepos with different frameworks, list all with app context (e.g., `"Horizon, Telescope (api); Bull Board (web); Grafana (cross-stack)"`).
 
-   **Language-Specific Skills:**
+Present the replacements and confirm before applying.
 
-   | Language/Framework | Skill Repository                      | Install Command                                                                     |
-   | ------------------ | ------------------------------------- | ----------------------------------------------------------------------------------- |
-   | PHP                | `vapvarun/claude-backup` (php)        | `npx skills add vapvarun/claude-backup --skill "php"`                               |
-   | Laravel            | `vapvarun/claude-backup` (laravel)    | `npx skills add vapvarun/claude-backup --skill "laravel"`                           |
-   | Python             | `siviter-xyz/dot-agent` (python)      | `npx skills add siviter-xyz/dot-agent --skill "python"`                             |
-   | Django             | `vintasoftware/django-ai-plugins`     | `npx skills add vintasoftware/django-ai-plugins --skill "django-expert"`            |
-   | Next.js            | `sickn33/antigravity-awesome-skills`  | `npx skills add sickn33/antigravity-awesome-skills --skill "nextjs-best-practices"` |
-   | React              | `vercel-labs/agent-skills`            | `npx skills add vercel-labs/agent-skills --skill "vercel-react-best-practices"`     |
-   | Vue                | `onmax/nuxt-skills` (vue)             | `npx skills add onmax/nuxt-skills --skill "vue"`                                    |
-   | Nuxt               | `onmax/nuxt-skills` (nuxt)            | `npx skills add onmax/nuxt-skills --skill "nuxt"`                                   |
-   | Expo               | `expo/skills`                         | `npx skills add expo/skills`                                                        |
-   | TypeScript         | `pproenca/dot-skills` (typescript)    | `npx skills add pproenca/dot-skills`                                                |
-   | Advanced Types     | `wshobson/agents` (ts-advanced-types) | `npx skills add wshobson/agents`                                                    |
+9. **Detect Installed AI Agents**:
 
-   **Skill Creation for Unsupported Frameworks:**
+   Before recommending skills, detect which AI agent directories exist in the workspace. Supported agents are located here: https://github.com/vercel-labs/skills?tab=readme-ov-file#available-agents:
 
-   Use `npx skills add anthropics/skills` (includes `skill-creator`) to create custom skills.
+   **Note:** `.agents/` directory is used by multiple agents: `amp`, `codex`, `gemini-cli`, `github-copilot`, `opencode`, `replit`. If only `.agents/` exists, default to `codex` or `github-copilot` based on other indicators.
 
-   **Monorepo-Specific Considerations:**
+   **Build the agent flags string:**
+   - For each detected agent, add `-a <agent>` to the command
+   - Example: If `.cursor/` and `.github/` exist → use `-a cursor -a github-copilot`
+   - If no agents detected, omit `-a` flags (CLI will prompt)
 
-   - Install skills at workspace root (`.cursor/skills/{skill-name}/` or `.github/skills/{skill-name}/`)
-   - Skills are installed by skill name, not org/repo path (e.g., `superpowers/` not `obra/superpowers/`)
-   - Consider per-app skills if apps use different frameworks
-   - Update root `AGENTS.md` to reference installed skills
+10. **Recommend and Install AI Agent Skills**:
 
-   **Present Recommendation:**
+Based on detected ecosystem and frameworks, recommend relevant skills from [skills.sh](https://skills.sh/) and [agentskills.io](https://agentskills.io/).
 
-   ```
-   🎯 Recommended AI Agent Skills
+**Important:** Use the detected agent flags from step 9 in all `npx skills add` commands. This prevents creating unnecessary configurations for agents the user doesn't have installed.
 
-   Based on your monorepo ({{BUILD_SYSTEM}}/{{LANGUAGE}}):
+**Core Skills (Always Recommend):**
 
-   Core Skills (recommended for all projects):
-   npx skills add obra/superpowers
-   npx skills add trailofbits/skills
-   npx skills add softaworks/agent-toolkit
+| Skill Repository           | Purpose                                            |
+| -------------------------- | -------------------------------------------------- |
+| `obra/superpowers`         | TDD, systematic debugging, planning, code review   |
+| `trailofbits/skills`       | Security analysis, Semgrep, property-based testing |
+| `softaworks/agent-toolkit` | README writing, clear documentation                |
 
-   Framework-Specific Skills:
-   - web (Next.js): npx skills add vercel-labs/agent-skills
-   - api (Hono): npx skills add elysiajs/skills
+**Example commands** (replace `<detected-agents>` with the actual flags from step 9, e.g., `-a cursor -a github-copilot`):
 
-   Install All? (Y/n)
-   ```
+```bash
+npx -y skills add <detected-agents> obra/superpowers --skill '*' --agent github-copilot cursor
+npx -y skills add <detected-agents> trailofbits/skills --skill '*' --agent github-copilot cursor
+```
 
-   **On Confirmation:**
+**Framework-Specific Skills:**
 
-   - Run skill installation commands at workspace root
-   - Skills installed to `.cursor/skills/`
-   - Update root `AGENTS.md` to reference installed skills
-   - Add skill references to relevant app `AGENTS.md` files
+When recommending framework-specific skills, include the detected agent flags. Examples:
+
+| Detected Framework | Skill Repository                      |
+| ------------------ | ------------------------------------- |
+| React/Next.js      | `vercel-labs/agent-skills`            |
+| Vue/Nuxt           | `onmax/nuxt-skills`                   |
+| Expo/React Native  | `expo/skills`                         |
+| Better-Auth        | `better-auth/skills`                  |
+| NestJS             | `Kadajett/agent-nestjs-skills`        |
+| Elysia.js          | `elysiajs/skills`                     |
+| Three.js           | `CloudAI-X/threejs-skills`            |
+| Remotion           | `remotion-dev/skills`                 |
+| Convex             | `waynesutton/convexskills`            |
+| TanStack Query     | `jezweb/claude-skills`                |
+| shadcn/ui          | `giuseppe-trisciuoglio/developer-kit` |
+| SwiftUI/iOS        | `Dimillian/Skills`                    |
+| Obsidian           | `kepano/obsidian-skills`              |
+| Stripe Integration | `anthropics/claude-plugins-official`  |
+
+**Language-Specific Skills:**
+
+| Language/Framework | Skill Repository                      | Install Command                                                                                          |
+| ------------------ | ------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| PHP                | `vapvarun/claude-backup` (php)        | `npx -y skills add <detected-agents> vapvarun/claude-backup --skill "php"`                               |
+| Laravel            | `vapvarun/claude-backup` (laravel)    | `npx -y skills add <detected-agents> vapvarun/claude-backup --skill "laravel"`                           |
+| Python             | `siviter-xyz/dot-agent` (python)      | `npx -y skills add <detected-agents> siviter-xyz/dot-agent --skill "python"`                             |
+| Django             | `vintasoftware/django-ai-plugins`     | `npx -y skills add <detected-agents> vintasoftware/django-ai-plugins --skill "django-expert"`            |
+| Next.js            | `sickn33/antigravity-awesome-skills`  | `npx -y skills add <detected-agents> sickn33/antigravity-awesome-skills --skill "nextjs-best-practices"` |
+| React              | `vercel-labs/agent-skills`            | `npx -y skills add <detected-agents> vercel-labs/agent-skills --skill "vercel-react-best-practices"`     |
+| Vue                | `onmax/nuxt-skills` (vue)             | `npx -y skills add <detected-agents> onmax/nuxt-skills --skill "vue"`                                    |
+| Nuxt               | `onmax/nuxt-skills` (nuxt)            | `npx -y skills add <detected-agents> onmax/nuxt-skills --skill "nuxt"`                                   |
+| Expo               | `expo/skills`                         | `npx -y skills add <detected-agents> expo/skills --skill '*' --agent github-copilot cursor`              |
+| TypeScript         | `pproenca/dot-skills` (typescript)    | `npx -y skills add <detected-agents> pproenca/dot-skills --skill '*' --agent github-copilot cursor`      |
+| Advanced Types     | `wshobson/agents` (ts-advanced-types) | `npx -y skills add <detected-agents> wshobson/agents --skill '*' --agent github-copilot cursor`          |
+
+**Skill Creation for Unsupported Frameworks:**
+
+Use `npx -y skills add <detected-agents> anthropics/skills --skill '*' --agent github-copilot cursor` (includes `skill-creator`) to create custom skills.
+
+**Monorepo-Specific Considerations:**
+
+- Install skills at workspace root (`.cursor/skills/{skill-name}/` or `.github/skills/{skill-name}/`)
+- Skills are installed by skill name, not org/repo path (e.g., `superpowers/` not `obra/superpowers/`)
+- Consider per-app skills if apps use different frameworks
+- Update root `AGENTS.md` to reference installed skills
+
+**Present Recommendation:**
+
+After detecting agents in step 9, present the recommendations with the appropriate agent flags:
+
+```
+🎯 Recommended AI Agent Skills
+
+Detected agents: {{DETECTED_AGENTS_LIST}}
+Using flags: {{AGENT_FLAGS}}
+
+Based on your monorepo ({{BUILD_SYSTEM}}/{{LANGUAGE}}):
+
+Core Skills (recommended for all projects):
+npx -y skills add {{AGENT_FLAGS}} obra/superpowers --skill '*' --agent github-copilot cursor
+npx -y skills add {{AGENT_FLAGS}} trailofbits/skills --skill '*' --agent github-copilot cursor
+npx -y skills add {{AGENT_FLAGS}} softaworks/agent-toolkit --skill '*' --agent github-copilot cursor
+
+Framework-Specific Skills:
+- web (Next.js): npx -y skills add {{AGENT_FLAGS}} vercel-labs/agent-skills --skill '*' --agent github-copilot cursor
+- api (Hono): npx -y skills add {{AGENT_FLAGS}} elysiajs/skills --skill '*' --agent github-copilot cursor
+
+Install All? (Y/n)
+```
+
+**Example with detected agents:**
+
+- If `.cursor/` and `.github/` exist: `AGENT_FLAGS="-a cursor -a github-copilot"`
+- If only `.cursor/` exists: `AGENT_FLAGS="-a cursor"`
+- Commands become: `npx -y skills add -a cursor -a github-copilot obra/superpowers --skill '*' --agent github-copilot cursor`
+
+**On Confirmation:**
+
+- Run skill installation commands at workspace root
+- Skills installed to `.cursor/skills/`
+- Update root `AGENTS.md` to reference installed skills
+- Add skill references to relevant app `AGENTS.md` files
 
 10. **Report Completion**:
 
@@ -253,6 +324,102 @@ Next Steps:
 5. Browse more skills at https://skills.sh/
 6. Create custom skills at https://agentskills.io/specification
 ```
+
+9. **Review Installed Skills**:
+
+   After completion, audit all installed skills:
+   - Scan `.github/skills/` and `.cursor/skills/` directories
+   - Compare each skill against detected ecosystems and frameworks
+   - Flag skills that don't match any app's tech stack
+
+   ```
+   ## 🔍 Skill Review
+
+   ### ✅ Relevant Skills ({{N}} installed)
+   | Skill | Purpose | Matches |
+   |-------|---------|----------|
+   | superpowers | TDD workflows | All apps |
+   | vercel-react-best-practices | React patterns | web app |
+   | {{FRAMEWORK_SKILL}} | API patterns | api app |
+
+   ### ⚠️ Potentially Unnecessary Skills ({{N}} found)
+   | Skill | Purpose | Why Flagged |
+   |-------|---------|-------------|
+   | django-expert | Django patterns | No Django apps detected |
+   | php | PHP patterns | JavaScript/TypeScript monorepo |
+
+   Remove flagged skills? (Y/n)
+   ```
+
+   **On Confirmation:**
+   - Remove unnecessary skill directories
+   - Update root AGENTS.md to remove references
+   - Report cleanup results
+
+10. **Verify Instruction Files**:
+
+    Check for required instruction files at root and app levels:
+
+    ```
+    ## 📋 Instruction Files Audit
+
+    ### ✅ Found ({{N}} files)
+    | File | Purpose | Status |
+    |------|---------|--------|
+    | copilot-instructions.md | Root context | ✓ |
+    | typescript.instructions.md | TS patterns | ✓ |
+
+    ### ⚠️ Missing Recommended ({{N}} files)
+    | File | Purpose | Why Needed |
+    |------|---------|------------|
+    | nextjs.instructions.md | Next.js patterns | web app uses Next.js |
+    | fastapi.instructions.md | FastAPI patterns | api app uses FastAPI |
+    | testing.instructions.md | Test conventions | Multiple frameworks |
+
+    Create missing instruction files? (Y/n)
+    ```
+
+    **On Confirmation:**
+    - Generate instruction files with appropriate templates
+    - Include app-specific scoping (applyTo paths)
+    - Include framework-specific patterns from skills
+    - Report created files
+
+11. **Final Verification Report**:
+
+    ```
+    ## ✅ Bootstrap Complete & Verified!
+
+    ### Summary
+    | Category | Count | Status |
+    |----------|-------|--------|
+    | Root files updated | {{N}} | ✓ |
+    | App files created | {{N}} | ✓ |
+    | Package files updated | {{N}} | ✓ |
+    | Skills installed | {{N}} | ✓ |
+    | Skills removed | {{N}} | ✓ |
+    | Instructions created | {{N}} | ✓ |
+
+    ### Quality Checks
+    - [x] Placeholders replaced
+    - [x] Skills match tech stack
+    - [x] No duplicate skills
+    - [x] All apps have AGENTS.md
+    - [x] Instructions cover all frameworks
+
+    ### Your Monorepo is Ready! 🎉
+
+    GitHub Copilot and Cursor understand:
+    - Monorepo structure
+    - App-specific frameworks
+    - Shared packages
+    - Cross-cutting patterns
+
+    Try asking:
+    - "Create an endpoint in apps/api using our patterns"
+    - "Add a component to the design system"
+    - "Write tests for UserService in packages/core"
+    ```
 
 ## Example Workflows
 

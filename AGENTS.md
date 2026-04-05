@@ -15,7 +15,13 @@ This is a **meta-repository** containing templates for AI development instructio
 ├── src/
 │   ├── repo/           # Single repository templates
 │   │   ├── .cursor/    # Cursor IDE config templates
+│   │   │   ├── agents/ # Custom agent templates (subagents)
+│   │   │   ├── rules/  # IDE behavior rules
+│   │   │   └── commands/ # Custom commands
 │   │   ├── .github/    # GitHub Copilot templates
+│   │   │   ├── agents/ # Custom agent templates (subagents)
+│   │   │   ├── instructions/ # Context instructions
+│   │   │   └── prompts/ # Reusable prompts
 │   │   ├── .agents/    # Pre-installed universal skills
 │   │   │   └── skills/ # Bundled skills (TDD, debugging, etc.)
 │   │   ├── docs/       # Documentation structure templates
@@ -24,7 +30,13 @@ This is a **meta-repository** containing templates for AI development instructio
 │   │
 │   └── monorepo/       # Monorepo templates
 │       ├── .cursor/    # Root Cursor config
+│       │   ├── agents/ # Custom agent templates (subagents)
+│       │   ├── rules/  # IDE behavior rules
+│       │   └── commands/ # Custom commands
 │       ├── .github/    # Root GitHub config
+│       │   ├── agents/ # Custom agent templates (subagents)
+│       │   ├── instructions/ # Context instructions
+│       │   └── prompts/ # Reusable prompts
 │       ├── .agents/    # Pre-installed universal skills
 │       │   └── skills/ # Bundled skills (TDD, debugging, etc.)
 │       ├── apps/       # App-specific templates

@@ -21,11 +21,6 @@ description: "Project-specific coding patterns and shared utilities for {{PROJEC
 - Components follow {{COMPONENT_PATTERN}} pattern.
 - {{COMPONENT_PATTERN_DESCRIPTION}}
 
-## Logging
-
-- Use bracketed tags for logs: `[ComponentName]: message`.
-- Log levels: error, warn, info, debug.
-
 ## Utilities
 
 - Shared utilities live in `{{UTILS_DIR}}`.
