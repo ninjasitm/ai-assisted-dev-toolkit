@@ -17,12 +17,13 @@ Conduct comprehensive code review for pull requests with structured fix tracking
 ## Orchestrator Checkpoint
 
 > **🛑 For large PRs** (10+ files or 3+ domains): Dispatch specialist reviewers in parallel:
+>
 > - **Backend Architect** → architecture, API design, database
 > - **Frontend Developer** → UI, components, accessibility
 > - **Reviewer** → code quality, SOLID, DRY
 > - **Documenter** → documentation completeness
-> Each reviewer returns findings independently; the orchestrator merges results.
-> See `.github/instructions/subagent-workflow.instructions.md` for patterns.
+>   Each reviewer returns findings independently; the orchestrator merges results.
+>   See `.github/instructions/subagent-workflow.instructions.md` for patterns.
 
 ## Process
 
@@ -204,16 +205,16 @@ Conduct comprehensive code review for pull requests with structured fix tracking
 
    _After fixes are implemented, populate this table with every change made:_
 
-   | File | Issue | Fix |
-   | ---- | ----- | --- |
-   | `ExampleFile.php` | Missing import → fatal error | Added `use Namespace\ClassName;` |
-   | `ExampleFile.php` | Unreachable code after `return` | Removed dead `break` statements |
-   | `AnotherFile.php` | Field missing from `$casts` | Added `'field' => 'datetime'` |
+   | File              | Issue                           | Fix                              |
+   | ----------------- | ------------------------------- | -------------------------------- |
+   | `ExampleFile.php` | Missing import → fatal error    | Added `use Namespace\ClassName;` |
+   | `ExampleFile.php` | Unreachable code after `return` | Removed dead `break` statements  |
+   | `AnotherFile.php` | Field missing from `$casts`     | Added `'field' => 'datetime'`    |
 
    Every fix must appear in this table — one row per file+issue pair.
    ```
 
-```
+````
 
 9. **Report Review Status**:
    - Review decision with clear justification
@@ -255,4 +256,4 @@ Conduct comprehensive code review for pull requests with structured fix tracking
          - Reply to the thread explaining why (e.g., out of scope, needs more context, trade-off decision)
          - Ask the user whether to leave it open or resolve with an explanation
       3. **Verify resolution** — after pushing, confirm the comment threads show as resolved in the PR
-```
+````
