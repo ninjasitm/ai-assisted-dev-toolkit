@@ -204,9 +204,8 @@ Brief description of the feature and its purpose.
 **Before creating any fix documentation, ask:**
 
 1. **Is this a complex fix?** (multi-file, architectural changes, affects multiple features)
-
    - ✅ YES → Create folder `docs/fixes/{{ISSUE_ID}}-FIX-NAME/` with `spec.md` + `plan.md`
-   - ❌ NO → Add entry to `docs/fixes/{YYYY-MM}.md` (monthly log)
+   - ❌ NO → Add entry to `docs/fixes/{{YEAR_MONTH}}.md` (monthly log)
 
 2. **Does the monthly log for this month exist?**
    - ❌ NO → Create it first using the template below
@@ -495,15 +494,57 @@ What is the change we're proposing and/or doing?
 - [ ] Has proper metadata (dates, status, links)
 - [ ] Reviewed by at least one other person
 
+## Pre-Commit Documentation Gate
+
+**⚠️ MANDATORY: Documentation MUST be written or updated BEFORE committing code. This is a hard requirement — no commit should land without the corresponding docs entry.**
+
+### Pre-Commit Checklist
+
+Before running `git commit`, verify ALL items that apply to your change:
+
+**All changes:**
+
+- [ ] **Features**: `docs/features/{{ISSUE_ID}}-FEATURE-NAME/spec.md` exists and reflects the current implementation
+- [ ] **Features**: `docs/features/{{ISSUE_ID}}-FEATURE-NAME/plan.md` is updated if scope changed
+- [ ] **Fixes**: Entry added to `docs/fixes/{YYYY-MM}.md` (or complex fix folder created)
+- [ ] **Breaking changes**: `CHANGELOG.md` updated
+- [ ] **Architectural decisions**: ADR created in `docs/architecture/` if a significant choice was made
+- [ ] **README is accurate** — If setup steps, commands, or env vars changed, `README.md` is updated
+
+**API / backend changes:**
+
+- [ ] New or modified endpoints documented in `docs/api/` (HTTP method, path, auth requirements, request/response shape, error codes)
+- [ ] Removed or renamed endpoints noted as breaking changes in `docs/api/` and `CHANGELOG.md`
+- [ ] New modules/services referenced in the relevant feature spec
+
+**UI / frontend changes:**
+
+- [ ] New or changed user-facing features have updated feature specs in `docs/features/`
+- [ ] Any new route handlers or API routes are documented in `docs/api/` if they are public-facing
+
+If any applicable item is missing, **write the documentation first, then commit**.
+
+### AI Agent Instructions
+
+When implementing a feature or fix, AI agents **must**:
+
+1. **Check for existing docs first** — Read `docs/features/` for an existing spec before writing any code. If no spec exists, create one from `templates/feature-spec.template.md` and confirm scope before proceeding.
+2. **Create docs early** — Spec and plan should be written or updated _before_ implementation begins, not after.
+3. **Keep docs in sync** — Update `spec.md` and `plan.md` as implementation decisions are made. Do not wait until the end.
+4. **Verify before completing** — After implementation, review all doc files to ensure they reflect the final state of the code.
+5. **Commit together** — Include documentation file changes in the same commit (or PR) as the code changes.
+6. **Never skip for "small" changes** — All fixes go in the monthly log at minimum. All features get a spec folder.
+
 ## Integration with Workflows
 
 ### During Development
 
-1. **Starting work**: Create or reference feature spec
-2. **Making changes**: Update relevant documentation
-3. **Bug fixes**: Add to monthly log or create complex fix folder
-4. **Code review**: Verify documentation is updated
-5. **Merging**: Ensure changelog is updated if needed
+1. **Starting work**: Create or reference feature spec (`docs/features/` or `docs/fixes/`)
+2. **While implementing**: Keep `spec.md` and `plan.md` updated as scope evolves
+3. **Before every commit**: Run through the Pre-Commit Documentation Gate checklist above
+4. **Bug fixes**: Add to monthly log or create complex fix folder **before committing the fix**
+5. **Code review**: Reviewer verifies documentation is present and accurate
+6. **Merging**: Confirm changelog is updated if the change is user-facing or breaking
 
 ### Commit Messages
 
@@ -520,7 +561,7 @@ Closes {{ISSUE_ID}}
 ```
 fix({{COMPONENT}}): resolve memory leak
 
-Added to docs/fixes/{{YYYY-MM}}.md
+Added to docs/fixes/{YYYY-MM}.md
 
 Fixes #{{ISSUE_NUMBER}}
 ```
@@ -575,4 +616,4 @@ PR descriptions should:
 ---
 
 **Last Updated**: {{Date}}
-**Template Version**: 1.0.0
+**Template Version**: 2.0.0

@@ -67,7 +67,15 @@ Implement a feature by completing tasks sequentially with proper tracking.
       - Run tests: `{{PACKAGE_MANAGER}} run test`
       - Build: `{{PACKAGE_MANAGER}} run build`
 
-   e. **Commit Changes**:
+   e. **Update Documentation**:
+      - Ensure feature spec/plan in the appropriate `docs/features/` folder reflects final implementation
+      - Update `docs/api/` if any API surfaces changed
+      - Update the relevant `README.md` if setup steps, commands, or env vars changed
+      - Add entry to app or root `CHANGELOG.md` under `[Unreleased]`
+      - If a `docs` app exists in `{{APP_DIR}}/`, update its content pages and sidebar navigation
+      - See `.github/instructions/documentation.instructions.md` for full pre-commit checklist
+
+   f. **Commit Changes**:
       ```bash
       git commit -m "feat({{SCOPE}}): {{DESCRIPTION}}"
       ```

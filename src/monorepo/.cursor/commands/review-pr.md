@@ -1,4 +1,3 @@
-````mdc
 ---
 description: Conduct comprehensive pull request code review
 ---
@@ -12,17 +11,18 @@ Conduct comprehensive code review for pull requests with structured fix tracking
 ```bash
 /review-pr 42
 /review-pr https://github.com/{{REPO_OWNER}}/{{PROJECT_NAME}}/pull/42
-````
+```
 
 ## Orchestrator Checkpoint
 
 > **🛑 For large PRs** (10+ files or 3+ domains): Dispatch specialist reviewers in parallel:
+>
 > - **Backend Architect** → architecture, API design, database
 > - **Frontend Developer** → UI, components, accessibility
 > - **Reviewer** → code quality, SOLID, DRY
 > - **Documenter** → documentation completeness
-> Each reviewer returns findings independently; the orchestrator merges results.
-> See `.github/instructions/subagent-workflow.instructions.md` for patterns.
+>   Each reviewer returns findings independently; the orchestrator merges results.
+>   See `.github/instructions/subagent-workflow.instructions.md` for patterns.
 
 ## Process
 
@@ -30,17 +30,40 @@ Conduct comprehensive code review for pull requests with structured fix tracking
    - Get PR details (title, description, changed files)
    - Extract issue reference if available
    - Get PR diff and file changes
-   - **CRITICAL**: Use GitHub MCP tools to retrieve ALL unresolved/open comments from ALL reviewers
+   - **CRITICAL — Comment Retrieval Strategy** (use this exact order):
+     1. **Use GitHub MCP tools** (preferred) to retrieve ALL comments:
+        - `mcp_github_github_pull_request_read` — get PR details and review comments
+        - `github-pull-request_activePullRequest` — get the active PR context
+        - Fetch **top-level PR comments** (issue-level comments on the PR conversation)
+        - Fetch **inline review comments** (comments on specific lines of code)
+        - Fetch **pending review comments** (from in-progress reviews)
+     2. **If MCP tools fail or return no comments**, fall back to `gh` CLI:
+        ```bash
+        # Top-level conversation comments (often missed!)
+        gh api repos/{owner}/{repo}/issues/{pr_number}/comments
+        # Review comments (inline on code)
+        gh api repos/{owner}/{repo}/pulls/{pr_number}/comments
+        # Reviews themselves (contain top-level review bodies)
+        gh api repos/{owner}/{repo}/pulls/{pr_number}/reviews
+        ```
+     3. **Always check BOTH** top-level issue comments AND inline review comments — agents commonly miss top-level comments by only checking review comments
+   - Identify which comments are **unresolved/open** vs already resolved
 
 2. **Review PR Comments from ALL Reviewers**:
    - **CRITICAL**: Use `manage_todo_list` tool to create comprehensive todo list
-   - Extract and categorize ALL unresolved/open PR comments by severity:
+   - Extract and categorize ALL **unresolved/open** PR comments by severity:
      - Critical (blocking issues)
      - High Priority (should be fixed before merge)
      - Medium Priority (important improvements)
    - For each comment:
      - Summarize the reviewer's feedback
-     - Propose a resolution plan with 99.9% confidence level
+     - Assess confidence in the resolution — can you fix this with high confidence?
+     - **If the comment is unclear, ambiguous, or you cannot determine the right fix**:
+       - **STOP and ask the user for clarification** before proceeding
+       - Present 2-3 recommended solutions with trade-offs for each
+       - Explain what you understand and what is unclear
+       - Do NOT guess at a fix when the intent is ambiguous
+     - If confident, propose a resolution plan with 99.9% confidence level
      - Add to todo list with appropriate status
 
 3. **Verify Requirements**:
@@ -181,16 +204,14 @@ Conduct comprehensive code review for pull requests with structured fix tracking
 
    _After fixes are implemented, populate this table with every change made:_
 
-   | File | Issue | Fix |
-   | ---- | ----- | --- |
-   | `ExampleFile.php` | Missing import → fatal error | Added `use Namespace\ClassName;` |
-   | `ExampleFile.php` | Unreachable code after `return` | Removed dead `break` statements |
-   | `AnotherFile.php` | Field missing from `$casts` | Added `'field' => 'datetime'` |
+   | File              | Issue                           | Fix                              |
+   | ----------------- | ------------------------------- | -------------------------------- |
+   | `ExampleFile.php` | Missing import → fatal error    | Added `use Namespace\ClassName;` |
+   | `ExampleFile.php` | Unreachable code after `return` | Removed dead `break` statements  |
+   | `AnotherFile.php` | Field missing from `$casts`     | Added `'field' => 'datetime'`    |
 
    Every fix must appear in this table — one row per file+issue pair.
    ```
-
-```
 
 9. **Report Review Status**:
    - Review decision with clear justification
@@ -216,4 +237,19 @@ Conduct comprehensive code review for pull requests with structured fix tracking
       - Mark todo as `completed` IMMEDIATELY after finishing
       - Move to next todo and repeat
     - **Never batch completions** - mark each done immediately
-```
+
+12. **Resolve PR Comment Threads After Fixing**:
+    - **CRITICAL**: After each comment is addressed and the fix is pushed:
+      1. **Resolve the comment thread** via GitHub MCP tools or API:
+         - Use `mcp_github_github_pull_request_review_write` to submit a review resolving threads
+         - Or reply to each resolved thread with a brief summary of what was fixed
+         - Or use `gh api` to resolve conversation threads:
+           ```bash
+           # Reply to a review comment indicating resolution
+           gh api repos/{owner}/{repo}/pulls/comments/{comment_id}/replies \
+             -f body="Fixed: [brief description of the fix applied]"
+           ```
+      2. **If a comment could NOT be addressed**:
+         - Reply to the thread explaining why (e.g., out of scope, needs more context, trade-off decision)
+         - Ask the user whether to leave it open or resolve with an explanation
+      3. **Verify resolution** — after pushing, confirm the comment threads show as resolved in the PR
