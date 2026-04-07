@@ -38,23 +38,24 @@ ls -d worktrees 2>/dev/null      # Alternative
 
 **If found:** Use that directory. If both exist, `.worktrees` wins.
 
-### 2. Check CLAUDE.md
+### 2. Check Project Configuration
 
 ```bash
-grep -i "worktree.*director" CLAUDE.md 2>/dev/null
+# Check common config files for worktree directory preference
+grep -i "worktree.*director" CLAUDE.md AGENTS.md .github/copilot-instructions.md 2>/dev/null
 ```
 
 **If preference specified:** Use it without asking.
 
 ### 3. Ask User
 
-If no directory exists and no CLAUDE.md preference:
+If no directory exists and no project configuration preference:
 
 ```
 No worktree directory found. Where should I create worktrees?
 
 1. .worktrees/ (project-local, hidden)
-2. ~/.config/superpowers/worktrees/<project-name>/ (global location)
+2. ~/.worktrees/<project-name>/ (global location, outside repo)
 
 Which would you prefer?
 ```
@@ -72,7 +73,7 @@ git check-ignore -q .worktrees 2>/dev/null || git check-ignore -q worktrees 2>/d
 
 **If NOT ignored:**
 
-Per Jesse's rule "Fix broken things immediately":
+Fix immediately before proceeding:
 
 1. Add appropriate line to .gitignore
 2. Commit the change
@@ -80,7 +81,7 @@ Per Jesse's rule "Fix broken things immediately":
 
 **Why critical:** Prevents accidentally committing worktree contents to repository.
 
-### For Global Directory (~/.config/superpowers/worktrees)
+### For Global Directory (~/.worktrees)
 
 No .gitignore verification needed - outside project entirely.
 
@@ -100,8 +101,8 @@ case $LOCATION in
   .worktrees|worktrees)
     path="$LOCATION/$BRANCH_NAME"
     ;;
-  ~/.config/superpowers/worktrees/*)
-    path="~/.config/superpowers/worktrees/$project/$BRANCH_NAME"
+  ~/.worktrees/*)
+    path="~/.worktrees/$project/$BRANCH_NAME"
     ;;
 esac
 
@@ -155,15 +156,15 @@ Ready to implement <feature-name>
 
 ## Quick Reference
 
-| Situation                  | Action                     |
-| -------------------------- | -------------------------- |
-| `.worktrees/` exists       | Use it (verify ignored)    |
-| `worktrees/` exists        | Use it (verify ignored)    |
-| Both exist                 | Use `.worktrees/`          |
-| Neither exists             | Check CLAUDE.md → Ask user |
-| Directory not ignored      | Add to .gitignore + commit |
-| Tests fail during baseline | Report failures + ask      |
-| No package.json/Cargo.toml | Skip dependency install    |
+| Situation                  | Action                          |
+| -------------------------- | ------------------------------- |
+| `.worktrees/` exists       | Use it (verify ignored)         |
+| `worktrees/` exists        | Use it (verify ignored)         |
+| Both exist                 | Use `.worktrees/`               |
+| Neither exists             | Check project config → Ask user |
+| Directory not ignored      | Add to .gitignore + commit      |
+| Tests fail during baseline | Report failures + ask           |
+| No package.json/Cargo.toml | Skip dependency install         |
 
 ## Common Mistakes
 
@@ -175,7 +176,7 @@ Ready to implement <feature-name>
 ### Assuming directory location
 
 - **Problem:** Creates inconsistency, violates project conventions
-- **Fix:** Follow priority: existing > CLAUDE.md > ask
+- **Fix:** Follow priority: existing > project config > ask
 
 ### Proceeding with failing tests
 
@@ -198,10 +199,60 @@ You: I'm using the using-git-worktrees skill to set up an isolated workspace.
 [Run npm install]
 [Run npm test - 47 passing]
 
-Worktree ready at /Users/jesse/myproject/.worktrees/auth
+Worktree ready at /home/user/myproject/.worktrees/auth
 Tests passing (47 tests, 0 failures)
 Ready to implement auth feature
 ```
+
+## Cleanup After Merge
+
+Once work is completed and merged into the parent branch, **always remove the worktree** to avoid stale checkouts and disk bloat.
+
+### 1. Verify the branch was merged
+
+```bash
+# Detect the default branch
+base=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@')
+base=${base:-main}  # fallback to main if detection fails
+
+# From the main working tree, confirm the feature branch is merged
+git branch --merged "$base" | grep <feature-branch>
+```
+
+### 2. Remove the worktree
+
+```bash
+# Remove the worktree directory and its administrative files
+git worktree remove <worktree-path>
+```
+
+If the worktree has uncommitted changes, Git will refuse. Use `--force` only after confirming nothing valuable remains:
+
+```bash
+git worktree remove --force <worktree-path>
+```
+
+### 3. Delete the feature branch
+
+```bash
+# Safe delete (fails if not merged)
+git branch -d <feature-branch>
+
+# Also remove the remote tracking branch if pushed
+git push origin --delete <feature-branch>
+```
+
+### 4. Verify cleanup
+
+```bash
+# Confirm no stale worktrees remain
+git worktree list
+
+# Prune any worktrees whose directories were manually deleted
+git worktree prune
+```
+
+**Tip:** Run `git worktree list` periodically to catch forgotten worktrees. Stale entries from manually deleted directories can be cleaned up with `git worktree prune`.
 
 ## Red Flags
 
@@ -211,13 +262,15 @@ Ready to implement auth feature
 - Skip baseline test verification
 - Proceed with failing tests without asking
 - Assume directory location when ambiguous
-- Skip CLAUDE.md check
+- Skip project configuration check
+- Leave worktrees around after the branch has been merged
 
 **Always:**
 
-- Follow directory priority: existing > CLAUDE.md > ask
+- Follow directory priority: existing > project config > ask
 - Verify directory is ignored for project-local
 - Auto-detect and run project setup
+- Clean up worktrees and branches after merge
 - Verify clean test baseline
 
 ## Integration
