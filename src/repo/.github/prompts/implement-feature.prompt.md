@@ -36,6 +36,7 @@ Implement a feature by completing tasks sequentially with proper tracking.
    - Use `dispatching-parallel-agents` skill when 3+ independent tasks exist
 
 3. **Create Feature Branch**:
+
    ```bash
    git checkout -b feature/{{FEATURE_NAME}}
    git pull origin {{DEFAULT_BRANCH}}
@@ -76,6 +77,7 @@ Implement a feature by completing tasks sequentially with proper tracking.
       - See `.github/instructions/documentation.instructions.md` for full pre-commit checklist
 
    f. **Commit Changes**:
+
       ```bash
       git commit -m "feat({{SCOPE}}): {{DESCRIPTION}}"
       ```
@@ -98,9 +100,11 @@ Implement a feature by completing tasks sequentially with proper tracking.
       - Build successful
 
    b. **Push and Create PR**:
+
       ```bash
       git push -u origin feature/{{FEATURE_NAME}}
       ```
+
       - Create PR targeting `{{DEFAULT_BRANCH}}`
       - Include feature summary and testing notes
 
