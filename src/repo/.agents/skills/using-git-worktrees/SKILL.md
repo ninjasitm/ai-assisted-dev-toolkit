@@ -18,8 +18,13 @@ Git worktrees create isolated workspaces sharing the same repository, allowing w
 Before first use, ensure `.worktrees/` is in the project's `.gitignore`:
 
 ```bash
-# Add to .gitignore if not already present
-grep -qxF '.worktrees/' .gitignore 2>/dev/null || echo '.worktrees/' >> .gitignore
+# Add to the repo-root .gitignore if not already present
+git_root="$(git rev-parse --show-toplevel)"
+gitignore_path="$git_root/.gitignore"
+
+grep -qxF '.worktrees' "$gitignore_path" 2>/dev/null \
+  || grep -qxF '.worktrees/' "$gitignore_path" 2>/dev/null \
+  || echo '.worktrees/' >> "$gitignore_path"
 ```
 
 This prevents worktree contents from ever being tracked. Do this **once per project** rather than relying on runtime detection.

@@ -52,35 +52,35 @@ Implement a feature by completing tasks sequentially with proper tracking.
    a. **Mark Task In Progress**
 
    b. **Research & Understand**:
-   - Search codebase for similar patterns
-   - Review referenced files
-   - Understand dependencies
+      - Search codebase for similar patterns
+      - Review referenced files
+      - Understand dependencies
 
    c. **Implement**:
-   - Follow acceptance criteria exactly
-   - Use patterns from `AGENTS.md`
-   - Write tests alongside implementation
-   - Ensure type safety
+      - Follow acceptance criteria exactly
+      - Use patterns from `AGENTS.md`
+      - Write tests alongside implementation
+      - Ensure type safety
 
    d. **Validate**:
-   - Run type checking: `{{PACKAGE_MANAGER}} run check-types`
-   - Run linter: `{{PACKAGE_MANAGER}} run lint`
-   - Run tests: `{{PACKAGE_MANAGER}} run test`
-   - Build: `{{PACKAGE_MANAGER}} run build`
+      - Run type checking: `{{PACKAGE_MANAGER}} run check-types`
+      - Run linter: `{{PACKAGE_MANAGER}} run lint`
+      - Run tests: `{{PACKAGE_MANAGER}} run test`
+      - Build: `{{PACKAGE_MANAGER}} run build`
 
    e. **Update Documentation**:
-   - Ensure `docs/features/{{ISSUE_ID}}-FEATURE-NAME/spec.md` reflects final implementation
-   - Update `plan.md` if implementation deviated from original plan
-   - Update `docs/api/` if any API surfaces changed
-   - Update `README.md` if setup steps, commands, or env vars changed
-   - Add entry to `CHANGELOG.md` under `[Unreleased]`
-   - See `.github/instructions/documentation.instructions.md` for full pre-commit checklist
+      - Ensure `docs/features/{{ISSUE_ID}}-FEATURE-NAME/spec.md` reflects final implementation
+      - Update `plan.md` if implementation deviated from original plan
+      - Update `docs/api/` if any API surfaces changed
+      - Update `README.md` if setup steps, commands, or env vars changed
+      - Add entry to `CHANGELOG.md` under `[Unreleased]`
+      - See `.github/instructions/documentation.instructions.md` for full pre-commit checklist
 
    f. **Commit Changes**:
 
-   ```bash
-   git commit -m "feat({{SCOPE}}): {{DESCRIPTION}}"
-   ```
+      ```bash
+      git commit -m "feat({{SCOPE}}): {{DESCRIPTION}}"
+      ```
 
    f. **Mark Task Complete**
 
@@ -94,19 +94,19 @@ Implement a feature by completing tasks sequentially with proper tracking.
    After all tasks complete:
 
    a. **Final Validation**:
-   - All tests passing
-   - No type errors
-   - No linter errors
-   - Build successful
+      - All tests passing
+      - No type errors
+      - No linter errors
+      - Build successful
 
    b. **Push and Create PR**:
 
-   ```bash
-   git push -u origin feature/{{FEATURE_NAME}}
-   ```
+      ```bash
+      git push -u origin feature/{{FEATURE_NAME}}
+      ```
 
-   - Create PR targeting `{{DEFAULT_BRANCH}}`
-   - Include feature summary and testing notes
+      - Create PR targeting `{{DEFAULT_BRANCH}}`
+      - Include feature summary and testing notes
 
 7. **Report Status**:
    - Completed tasks count
