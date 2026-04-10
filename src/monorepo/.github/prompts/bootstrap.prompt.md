@@ -54,9 +54,9 @@ Detect the primary language ecosystem:
 | `{{PACKAGE_MANAGER}}` | Lock file / config |
 | `{{RUNTIME_VERSION}}` | Version file (.nvmrc, .python-version, global.json, etc.) |
 | `{{DEFAULT_BRANCH}}` | Git config |
-| `{{PM_TOOL}}` | Detected project management tool |
+| `{{ISSUE_TRACKER}}` | Detected project management tool |
 | `{{PM_URL}}` | Project management tool URL/workspace (if applicable) |
-| `{{PM_PROJECT_ID}}` | Project ID or workspace ID (if applicable) |
+| `{{PROJECT_KEY}}` | Project ID or workspace ID (if applicable) |
 | `{{PM_ISSUE_KEY}}` | Issue key format (e.g., PROJ-###) |
 
 **App Variables (for each app):**
@@ -179,11 +179,11 @@ Detect the primary language ecosystem:
 
 ### � Project Management
 
-| Property  | Value                             |
-| --------- | --------------------------------- |
-| Tool      | {{PM_TOOL}} (detected/inferred)   |
-| URL       | {{PM_URL}} or "Not configured"    |
-| Issue Key | {{PM_ISSUE_KEY}} (e.g., PROJ-###) |
+| Property  | Value                                 |
+| --------- | ------------------------------------- |
+| Tracker   | {{ISSUE_TRACKER}} (detected/inferred) |
+| URL       | {{PM_URL}} or "Not configured"        |
+| Issue Key | {{PM_ISSUE_KEY}} (e.g., PROJ-###)     |
 
 ### �📱 Apps
 
@@ -202,7 +202,7 @@ Detect the primary language ecosystem:
 ### ❓ Please Confirm/Provide
 
 1. **PROJECT_DESCRIPTION**: What is this monorepo for?
-2. **Project Management** (detected: {{PM_TOOL}} or "None detected"):
+2. **Project Management** (detected: {{ISSUE_TRACKER}} or "None detected"):
    - Confirm detected tool or specify different tool
    - Provide URL if applicable (e.g., `https://yourorg.atlassian.net` for Jira)
    - Provide project/workspace ID if applicable (e.g., Azure DevOps project ID, Linear workspace)
@@ -225,10 +225,33 @@ Detect the primary language ecosystem:
 ```markdown
 ## 📋 Project Management
 
-**Tool:** {{PM_TOOL}}
+**Tracker:** {{ISSUE_TRACKER}}
 **URL:** {{PM_URL}} _(if applicable)_
-**Project ID:** {{PM_PROJECT_ID}} _(if applicable)_
+**Project Key:** {{PROJECT_KEY}} _(if applicable)_
 **Issue Key Format:** `{{PM_ISSUE_KEY}}`
+
+### Tool Access
+
+Use the first available method when interacting with the issue tracker:
+
+<!-- Only include the entry matching the detected {{ISSUE_TRACKER}}. Remove the others. -->
+
+**If Jira:**
+
+1. **MCP server** (preferred): `mcp_atlassian_atl_*` tools (configured in `.mcp.json`)
+2. **CLI fallback**: [`jira`](https://github.com/ankitpokhrel/jira-cli) — `jira init --server {{PM_URL}} --project {{PROJECT_KEY}}`
+
+**If GitHub Issues:**
+
+1. **MCP server** (preferred): `mcp_github_*` tools
+2. **CLI fallback**: [`gh`](https://cli.github.com/) — `gh auth login`
+
+**If Linear:**
+
+1. **MCP server** (preferred): `mcp_linear_*` tools (configured in `.mcp.json`)
+2. **CLI fallback**: [`linear`](https://github.com/linear/linear-cli) — `linear auth` or set `LINEAR_API_KEY`
+
+See the assign-tasks command for detailed examples.
 
 ### Conventions
 
@@ -420,6 +443,24 @@ Based on detected ecosystem and frameworks, recommend relevant skills from [skil
 | `trailofbits/skills`       | Security analysis, Semgrep, property-based testing         |
 | `softaworks/agent-toolkit` | README writing, clear documentation                        |
 
+**Issue Tracker Skills Health Check (if {{ISSUE_TRACKER}} is configured):**
+
+This template bundles issue tracker skills in `.agents/skills/`. Verify the correct skills are present:
+
+| Detected Tracker | Required Skills                          | Expected Files                                                                |
+| ---------------- | ---------------------------------------- | ----------------------------------------------------------------------------- |
+| Jira             | `issue-tracker` + `jira-cli`             | `.agents/skills/issue-tracker/SKILL.md`, `.agents/skills/jira-cli/SKILL.md`   |
+| GitHub Issues    | `issue-tracker` + `gh-cli`               | `.agents/skills/issue-tracker/SKILL.md`, `.agents/skills/gh-cli/SKILL.md`     |
+| Linear           | `issue-tracker` + `linear-cli`           | `.agents/skills/issue-tracker/SKILL.md`, `.agents/skills/linear-cli/SKILL.md` |
+
+**Health check steps:**
+
+1. **Map tracker → expected CLI skill:** Jira → `jira-cli`, GitHub Issues → `gh-cli`, Linear → `linear-cli`
+2. **Verify presence:** Check `.agents/skills/issue-tracker/SKILL.md` and `.agents/skills/{expected-cli}/SKILL.md` exist
+3. **Warn on mismatch:** If a *different* CLI skill is present, warn the user and offer to prune
+4. **Prune unused CLI skills:** On confirmation, delete mismatched skill directory and update AGENTS.md Skills table
+5. **If missing:** Warn and offer to copy from the template bundle
+
 **Framework-Specific Skills:**
 
 | Detected Framework | Skill Repository                      |
@@ -484,6 +525,14 @@ npx -y skills add {{AGENT_FLAGS}} trailofbits/skills --skill '*' --agent github-
 npx -y skills add {{AGENT_FLAGS}} softaworks/agent-toolkit --skill '*' --agent github-copilot cursor
 ```
 ````
+
+### Issue Tracker Skills (bundled — {{ISSUE_TRACKER}})
+
+```
+✅ .agents/skills/issue-tracker/SKILL.md (shared strategy)
+✅ .agents/skills/{{EXPECTED_CLI_SKILL}}/SKILL.md (CLI reference)
+⚠️ Mismatched skills to prune: {{MISMATCHED_SKILLS}} (if any)
+```
 
 ### Framework-Specific Skills
 
@@ -684,11 +733,11 @@ version: 1.0.0
 
 ### Ecosystem: {{LANGUAGE}} / {{BUILD_SYSTEM}}
 
-### Project Management: {{PM_TOOL}}
+### Project Management: {{ISSUE_TRACKER}}
 
-- **Tool:** {{PM_TOOL}}
+- **Tracker:** {{ISSUE_TRACKER}}
 - **URL:** {{PM_URL}} _(if applicable)_
-- **Project ID:** {{PM_PROJECT_ID}} _(if applicable)_
+- **Project Key:** {{PROJECT_KEY}} _(if applicable)_
 - **Issue Format:** `{{PM_ISSUE_KEY}}`
 
 ### Root Files (N updated)
@@ -1008,9 +1057,9 @@ All instruction files are automatically loaded by GitHub Copilot when editing ma
 
 ### Project Management Configuration
 
-**Tool:** {{PM_TOOL}}
+**Tracker:** {{ISSUE_TRACKER}}
 **URL:** {{PM_URL}} _(if applicable)_
-**Project ID:** {{PM_PROJECT_ID}} _(if applicable)_
+**Project Key:** {{PROJECT_KEY}} _(if applicable)_
 **Issue Format:** `{{PM_ISSUE_KEY}}`
 **Location:** Root AGENTS.md and copilot-instructions.md
 

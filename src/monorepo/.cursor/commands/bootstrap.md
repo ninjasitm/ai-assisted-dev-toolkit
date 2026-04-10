@@ -42,9 +42,9 @@ You are helping to bootstrap AI instructions for this monorepo by analyzing the 
    | `{{BUILD_SYSTEM}}`        | Build tool (Turborepo, Nx, MSBuild, Maven, etc.)   |
    | `{{DEFAULT_BRANCH}}`      | Git config or assume "main"                        |
    | `{{TEST_FRAMEWORK}}`      | Common test framework across packages              |
-   | `{{PM_TOOL}}`             | Detected project management tool                   |
+   | `{{ISSUE_TRACKER}}`       | Detected project management tool                   |
    | `{{PM_URL}}`              | Project management URL (if applicable)             |
-   | `{{PM_PROJECT_ID}}`       | Project/workspace ID (if applicable)               |
+   | `{{PROJECT_KEY}}`         | Project/workspace ID (if applicable)               |
    | `{{PM_ISSUE_KEY}}`        | Issue key format (e.g., PROJ-###, #42)             |
 
 3. **Analyze Apps**:
@@ -205,7 +205,33 @@ npx -y skills add <detected-agents> obra/superpowers --skill '*' --agent github-
 npx -y skills add <detected-agents> trailofbits/skills --skill '*' --agent github-copilot cursor
 ```
 
-**Framework-Specific Skills:**
+**Issue Tracker Skills Health Check (if {{ISSUE_TRACKER}} is configured):**
+
+   This template bundles issue tracker skills in `.agents/skills/`. Verify the correct skills are present:
+
+   | Detected Tracker | Required Skills                          | Expected Files                                                                |
+   | ---------------- | ---------------------------------------- | ----------------------------------------------------------------------------- |
+   | Jira             | `issue-tracker` + `jira-cli`             | `.agents/skills/issue-tracker/SKILL.md`, `.agents/skills/jira-cli/SKILL.md`   |
+   | GitHub Issues    | `issue-tracker` + `gh-cli`               | `.agents/skills/issue-tracker/SKILL.md`, `.agents/skills/gh-cli/SKILL.md`     |
+   | Linear           | `issue-tracker` + `linear-cli`           | `.agents/skills/issue-tracker/SKILL.md`, `.agents/skills/linear-cli/SKILL.md` |
+
+   **Health check steps:**
+
+   1. **Map tracker → expected CLI skill:**
+      - Jira → `jira-cli`, GitHub Issues → `gh-cli`, Linear → `linear-cli`
+   2. **Verify presence:** Check `.agents/skills/issue-tracker/SKILL.md` and `.agents/skills/{expected-cli}/SKILL.md` exist
+   3. **Warn on mismatch:** If a *different* CLI skill is present (e.g., `jira-cli` installed but tracker is Linear), warn the user:
+      ```
+      ⚠️ Mismatched issue tracker skill detected:
+      - Configured tracker: Linear
+      - Found skill: jira-cli (not matching)
+      - Expected skill: linear-cli
+      Remove jira-cli and keep linear-cli? (Y/n)
+      ```
+   4. **Prune unused CLI skills:** On confirmation, delete the mismatched skill directory and update AGENTS.md Skills table
+   5. **If missing:** Warn that the expected CLI skill is not present and offer to copy it from the template bundle
+
+   **Framework-Specific Skills:**
 
 When recommending framework-specific skills, include the detected agent flags. Examples:
 
@@ -269,6 +295,11 @@ Core Skills (recommended for all projects):
 npx -y skills add {{AGENT_FLAGS}} obra/superpowers --skill '*' --agent github-copilot cursor
 npx -y skills add {{AGENT_FLAGS}} trailofbits/skills --skill '*' --agent github-copilot cursor
 npx -y skills add {{AGENT_FLAGS}} softaworks/agent-toolkit --skill '*' --agent github-copilot cursor
+
+Issue Tracker Skills (bundled — {{ISSUE_TRACKER}}):
+✅ .agents/skills/issue-tracker/SKILL.md (shared strategy)
+✅ .agents/skills/{{EXPECTED_CLI_SKILL}}/SKILL.md (CLI reference)
+⚠️ Mismatched skills to prune: {{MISMATCHED_SKILLS}} (if any)
 
 Framework-Specific Skills:
 - web (Next.js): npx -y skills add {{AGENT_FLAGS}} vercel-labs/agent-skills --skill '*' --agent github-copilot cursor

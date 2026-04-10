@@ -154,6 +154,9 @@ Templates use `{{PLACEHOLDER}}` syntax for values you need to customize. The boo
 | `{{DATABASE}}`            | Database/ORM              | `Prisma`, `Eloquent`, `EF Core`, `SQLAlchemy`, `ActiveRecord`         |
 | `{{TEST_FRAMEWORK}}`      | Testing framework         | `Vitest`, `PHPUnit`, `xUnit`, `pytest`, `RSpec`, `JUnit`              |
 | `{{ISSUE_TRACKER}}`       | Issue tracking system     | `Jira`, `Linear`, `GitHub Issues`                                     |
+| `{{PM_URL}}`              | Issue tracker base URL    | `https://yourorg.atlassian.net`, `https://linear.app/myteam`          |
+| `{{PROJECT_KEY}}`         | Project/team key          | `PROJ`, `ENG`                                                         |
+| `{{PM_ISSUE_KEY}}`        | Issue key format          | `PROJ-###`, `#42`, `ENG-###`                                          |
 | `{{DEFAULT_BRANCH}}`      | Default git branch        | `main`, `master`                                                      |
 | `{{RUNTIME_VERSION}}`     | Runtime version           | `Node 20`, `PHP 8.3`, `.NET 8`, `Python 3.12`                         |
 | `{{REPO_URL}}`            | Repository URL            | `https://github.com/org/repo`                                         |

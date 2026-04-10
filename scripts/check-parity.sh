@@ -1,0 +1,128 @@
+#!/usr/bin/env bash
+# check-parity.sh — Verify shared content parity across template variants.
+# Compares assign-tasks and bootstrap files across cursor/claude/github × repo/monorepo.
+# Exit code 0 = all in sync, 1 = drift detected.
+
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel 2>/dev/null || dirname "$0"/..)"
+
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+NC='\033[0m'
+
+errors=0
+
+# --- Helper ---
+check_identical() {
+  local label="$1" base="$2" target="$3"
+  if [[ ! -f "$base" ]]; then
+    printf "${RED}MISSING${NC} %s (base)\n" "$base"
+    ((errors++))
+    return
+  fi
+  if [[ ! -f "$target" ]]; then
+    printf "${RED}MISSING${NC} %s\n" "$target"
+    ((errors++))
+    return
+  fi
+  if diff -q "$base" "$target" >/dev/null 2>&1; then
+    printf "${GREEN}  OK${NC}  %s\n" "$label"
+  else
+    printf "${RED}DRIFT${NC} %s\n" "$label"
+    diff --unified=1 "$base" "$target" | head -20
+    echo "  ..."
+    ((errors++))
+  fi
+}
+
+check_section_match() {
+  local label="$1" base="$2" target="$3" section="$4"
+  if [[ ! -f "$base" || ! -f "$target" ]]; then
+    printf "${YELLOW}SKIP${NC}  %s (file missing)\n" "$label"
+    return
+  fi
+  local base_section target_section
+  base_section=$(sed -n "/^## ${section}/,/^## /p" "$base" | head -n -1)
+  target_section=$(sed -n "/^## ${section}/,/^## /p" "$target" | head -n -1)
+  if [[ "$base_section" == "$target_section" ]]; then
+    printf "${GREEN}  OK${NC}  %s [%s]\n" "$label" "$section"
+  else
+    printf "${RED}DRIFT${NC} %s [%s]\n" "$label" "$section"
+    diff <(echo "$base_section") <(echo "$target_section") | head -15
+    echo "  ..."
+    ((errors++))
+  fi
+}
+
+echo "=== Assign-Tasks Parity ==="
+echo ""
+
+# Cursor repo is the canonical source for cursor/claude variants
+BASE_AT="src/repo/.cursor/commands/assign-tasks.md"
+
+check_identical "repo: cursor ↔ claude" \
+  "$BASE_AT" "src/repo/.claude/commands/assign-tasks.md"
+
+check_identical "repo ↔ monorepo: cursor" \
+  "$BASE_AT" "src/monorepo/.cursor/commands/assign-tasks.md"
+
+check_identical "repo ↔ monorepo: claude" \
+  "$BASE_AT" "src/monorepo/.claude/commands/assign-tasks.md"
+
+# GitHub prompt variants share PM sections but differ in formatting
+BASE_GH="src/repo/.github/prompts/assign-tasks.prompt.md"
+
+check_identical "repo ↔ monorepo: github prompt" \
+  "$BASE_GH" "src/monorepo/.github/prompts/assign-tasks.prompt.md"
+
+# Cross-format: check shared sections between cursor and github prompt
+check_section_match "cursor ↔ github prompt" \
+  "$BASE_AT" "$BASE_GH" "Issue Tracker Tool Access"
+
+check_section_match "cursor ↔ github prompt" \
+  "$BASE_AT" "$BASE_GH" "API Rate Limiting"
+
+echo ""
+echo "=== Skills Parity ==="
+echo ""
+
+for skill in issue-tracker jira-cli gh-cli linear-cli; do
+  check_identical "skill: $skill repo ↔ monorepo" \
+    "src/repo/.agents/skills/$skill/SKILL.md" \
+    "src/monorepo/.agents/skills/$skill/SKILL.md"
+done
+
+echo ""
+echo "=== AGENTS.md PM Section Parity ==="
+echo ""
+
+check_section_match "AGENTS.md repo ↔ monorepo" \
+  "src/repo/AGENTS.md" "src/monorepo/AGENTS.md" "Project Management"
+
+echo ""
+echo "=== Orphaned References ==="
+echo ""
+
+orphans=0
+for pattern in "TRACKER_SKILL_REPO" "TRACKER_SKILL_NAME" 'npx -y skills find'; do
+  hits=$(grep -rl "$pattern" src/ 2>/dev/null || true)
+  if [[ -n "$hits" ]]; then
+    printf "${RED}FOUND${NC} orphaned '%s' in:\n" "$pattern"
+    echo "$hits" | sed 's/^/  /'
+    ((orphans++))
+  fi
+done
+
+if [[ "$orphans" -eq 0 ]]; then
+  printf "${GREEN}  OK${NC}  No orphaned references found\n"
+fi
+
+echo ""
+if [[ "$errors" -eq 0 && "$orphans" -eq 0 ]]; then
+  printf "${GREEN}All checks passed.${NC}\n"
+  exit 0
+else
+  printf "${RED}%d issue(s) detected.${NC}\n" "$((errors + orphans))"
+  exit 1
+fi
