@@ -52,11 +52,11 @@ mcp_linear_searchIssues({
 
 When MCP tools are unavailable, use the CLI skill matching your tracker:
 
-| Tracker           | CLI Skill     | CLI Tool                                                    |
-| ----------------- | ------------- | ----------------------------------------------------------- |
-| **Jira**          | `jira-cli`    | [`jira`](https://github.com/ankitpokhrel/jira-cli)         |
-| **GitHub Issues** | `gh-cli`      | [`gh`](https://cli.github.com/)                             |
-| **Linear**        | `linear-cli`  | [`linear`](https://github.com/schpet/linear-cli)           |
+| Tracker           | CLI Skill    | CLI Tool                                           |
+| ----------------- | ------------ | -------------------------------------------------- |
+| **Jira**          | `jira-cli`   | [`jira`](https://github.com/ankitpokhrel/jira-cli) |
+| **GitHub Issues** | `gh-cli`     | [`gh`](https://cli.github.com/)                    |
+| **Linear**        | `linear-cli` | [`linear`](https://github.com/schpet/linear-cli)   |
 
 > See `.agents/skills/{jira-cli,gh-cli,linear-cli}/SKILL.md` for detailed CLI commands and workflows.
 

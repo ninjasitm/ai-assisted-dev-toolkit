@@ -220,18 +220,17 @@ Present the replacements and confirm before applying.
 
    This template bundles issue tracker skills in `.agents/skills/`. Verify the correct skills are present:
 
-   | Detected Tracker | Required Skills                          | Expected Files                                                                |
-   | ---------------- | ---------------------------------------- | ----------------------------------------------------------------------------- |
-   | Jira             | `issue-tracker` + `jira-cli`             | `.agents/skills/issue-tracker/SKILL.md`, `.agents/skills/jira-cli/SKILL.md`   |
-   | GitHub Issues    | `issue-tracker` + `gh-cli`               | `.agents/skills/issue-tracker/SKILL.md`, `.agents/skills/gh-cli/SKILL.md`     |
-   | Linear           | `issue-tracker` + `linear-cli`           | `.agents/skills/issue-tracker/SKILL.md`, `.agents/skills/linear-cli/SKILL.md` |
+   | Detected Tracker | Required Skills                | Expected Files                                                                |
+   | ---------------- | ------------------------------ | ----------------------------------------------------------------------------- |
+   | Jira             | `issue-tracker` + `jira-cli`   | `.agents/skills/issue-tracker/SKILL.md`, `.agents/skills/jira-cli/SKILL.md`   |
+   | GitHub Issues    | `issue-tracker` + `gh-cli`     | `.agents/skills/issue-tracker/SKILL.md`, `.agents/skills/gh-cli/SKILL.md`     |
+   | Linear           | `issue-tracker` + `linear-cli` | `.agents/skills/issue-tracker/SKILL.md`, `.agents/skills/linear-cli/SKILL.md` |
 
    **Health check steps:**
-
    1. **Map tracker → expected CLI skill:**
       - Jira → `jira-cli`, GitHub Issues → `gh-cli`, Linear → `linear-cli`
    2. **Verify presence:** Check `.agents/skills/issue-tracker/SKILL.md` and `.agents/skills/{expected-cli}/SKILL.md` exist
-   3. **Warn on mismatch:** If a *different* CLI skill is present (e.g., `jira-cli` installed but tracker is Linear), warn the user:
+   3. **Warn on mismatch:** If a _different_ CLI skill is present (e.g., `jira-cli` installed but tracker is Linear), warn the user:
       ```
       ⚠️ Mismatched issue tracker skill detected:
       - Configured tracker: Linear

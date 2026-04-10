@@ -232,25 +232,25 @@ for id in 10 11 12; do gh issue edit "$id" --add-label "backlog"; done
 
 ## Common Flags
 
-| Flag | Description |
-| ---- | ----------- |
-| `--json` | JSON output with field selection |
-| `--jq` | Filter JSON output with jq expressions |
-| `--web` | Open in browser |
-| `--limit` | Max results to return |
-| `--search` | Search query with GitHub qualifiers |
-| `--state` | Filter by state (open, closed, all) |
-| `--label` | Filter by label |
-| `--assignee` | Filter by assignee |
-| `--milestone` | Filter by milestone |
+| Flag          | Description                            |
+| ------------- | -------------------------------------- |
+| `--json`      | JSON output with field selection       |
+| `--jq`        | Filter JSON output with jq expressions |
+| `--web`       | Open in browser                        |
+| `--limit`     | Max results to return                  |
+| `--search`    | Search query with GitHub qualifiers    |
+| `--state`     | Filter by state (open, closed, all)    |
+| `--label`     | Filter by label                        |
+| `--assignee`  | Filter by assignee                     |
+| `--milestone` | Filter by milestone                    |
 
 ## Output Formatting
 
-| Command | Use Case |
-| ------- | -------- |
-| `gh issue list --json number,title` | JSON for scripting |
+| Command                                              | Use Case                |
+| ---------------------------------------------------- | ----------------------- |
+| `gh issue list --json number,title`                  | JSON for scripting      |
 | `gh issue list --json number,title --jq '.[].title'` | Extract specific fields |
-| `gh issue view 123 --json body --jq '.body'` | Get issue body only |
+| `gh issue view 123 --json body --jq '.body'`         | Get issue body only     |
 
 ## Limitations
 

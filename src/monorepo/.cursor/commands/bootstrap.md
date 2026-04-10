@@ -207,31 +207,31 @@ npx -y skills add <detected-agents> trailofbits/skills --skill '*' --agent githu
 
 **Issue Tracker Skills Health Check (if {{ISSUE_TRACKER}} is configured):**
 
-   This template bundles issue tracker skills in `.agents/skills/`. Verify the correct skills are present:
+This template bundles issue tracker skills in `.agents/skills/`. Verify the correct skills are present:
 
-   | Detected Tracker | Required Skills                          | Expected Files                                                                |
-   | ---------------- | ---------------------------------------- | ----------------------------------------------------------------------------- |
-   | Jira             | `issue-tracker` + `jira-cli`             | `.agents/skills/issue-tracker/SKILL.md`, `.agents/skills/jira-cli/SKILL.md`   |
-   | GitHub Issues    | `issue-tracker` + `gh-cli`               | `.agents/skills/issue-tracker/SKILL.md`, `.agents/skills/gh-cli/SKILL.md`     |
-   | Linear           | `issue-tracker` + `linear-cli`           | `.agents/skills/issue-tracker/SKILL.md`, `.agents/skills/linear-cli/SKILL.md` |
+| Detected Tracker | Required Skills                | Expected Files                                                                |
+| ---------------- | ------------------------------ | ----------------------------------------------------------------------------- |
+| Jira             | `issue-tracker` + `jira-cli`   | `.agents/skills/issue-tracker/SKILL.md`, `.agents/skills/jira-cli/SKILL.md`   |
+| GitHub Issues    | `issue-tracker` + `gh-cli`     | `.agents/skills/issue-tracker/SKILL.md`, `.agents/skills/gh-cli/SKILL.md`     |
+| Linear           | `issue-tracker` + `linear-cli` | `.agents/skills/issue-tracker/SKILL.md`, `.agents/skills/linear-cli/SKILL.md` |
 
-   **Health check steps:**
+**Health check steps:**
 
-   1. **Map tracker → expected CLI skill:**
-      - Jira → `jira-cli`, GitHub Issues → `gh-cli`, Linear → `linear-cli`
-   2. **Verify presence:** Check `.agents/skills/issue-tracker/SKILL.md` and `.agents/skills/{expected-cli}/SKILL.md` exist
-   3. **Warn on mismatch:** If a *different* CLI skill is present (e.g., `jira-cli` installed but tracker is Linear), warn the user:
-      ```
-      ⚠️ Mismatched issue tracker skill detected:
-      - Configured tracker: Linear
-      - Found skill: jira-cli (not matching)
-      - Expected skill: linear-cli
-      Remove jira-cli and keep linear-cli? (Y/n)
-      ```
-   4. **Prune unused CLI skills:** On confirmation, delete the mismatched skill directory and update AGENTS.md Skills table
-   5. **If missing:** Warn that the expected CLI skill is not present and offer to copy it from the template bundle
+1.  **Map tracker → expected CLI skill:**
+    - Jira → `jira-cli`, GitHub Issues → `gh-cli`, Linear → `linear-cli`
+2.  **Verify presence:** Check `.agents/skills/issue-tracker/SKILL.md` and `.agents/skills/{expected-cli}/SKILL.md` exist
+3.  **Warn on mismatch:** If a _different_ CLI skill is present (e.g., `jira-cli` installed but tracker is Linear), warn the user:
+    ```
+    ⚠️ Mismatched issue tracker skill detected:
+    - Configured tracker: Linear
+    - Found skill: jira-cli (not matching)
+    - Expected skill: linear-cli
+    Remove jira-cli and keep linear-cli? (Y/n)
+    ```
+4.  **Prune unused CLI skills:** On confirmation, delete the mismatched skill directory and update AGENTS.md Skills table
+5.  **If missing:** Warn that the expected CLI skill is not present and offer to copy it from the template bundle
 
-   **Framework-Specific Skills:**
+**Framework-Specific Skills:**
 
 When recommending framework-specific skills, include the detected agent flags. Examples:
 

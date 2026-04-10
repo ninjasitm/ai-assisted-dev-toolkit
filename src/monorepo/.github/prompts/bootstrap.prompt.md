@@ -447,17 +447,17 @@ Based on detected ecosystem and frameworks, recommend relevant skills from [skil
 
 This template bundles issue tracker skills in `.agents/skills/`. Verify the correct skills are present:
 
-| Detected Tracker | Required Skills                          | Expected Files                                                                |
-| ---------------- | ---------------------------------------- | ----------------------------------------------------------------------------- |
-| Jira             | `issue-tracker` + `jira-cli`             | `.agents/skills/issue-tracker/SKILL.md`, `.agents/skills/jira-cli/SKILL.md`   |
-| GitHub Issues    | `issue-tracker` + `gh-cli`               | `.agents/skills/issue-tracker/SKILL.md`, `.agents/skills/gh-cli/SKILL.md`     |
-| Linear           | `issue-tracker` + `linear-cli`           | `.agents/skills/issue-tracker/SKILL.md`, `.agents/skills/linear-cli/SKILL.md` |
+| Detected Tracker | Required Skills                | Expected Files                                                                |
+| ---------------- | ------------------------------ | ----------------------------------------------------------------------------- |
+| Jira             | `issue-tracker` + `jira-cli`   | `.agents/skills/issue-tracker/SKILL.md`, `.agents/skills/jira-cli/SKILL.md`   |
+| GitHub Issues    | `issue-tracker` + `gh-cli`     | `.agents/skills/issue-tracker/SKILL.md`, `.agents/skills/gh-cli/SKILL.md`     |
+| Linear           | `issue-tracker` + `linear-cli` | `.agents/skills/issue-tracker/SKILL.md`, `.agents/skills/linear-cli/SKILL.md` |
 
 **Health check steps:**
 
 1. **Map tracker → expected CLI skill:** Jira → `jira-cli`, GitHub Issues → `gh-cli`, Linear → `linear-cli`
 2. **Verify presence:** Check `.agents/skills/issue-tracker/SKILL.md` and `.agents/skills/{expected-cli}/SKILL.md` exist
-3. **Warn on mismatch:** If a *different* CLI skill is present, warn the user and offer to prune
+3. **Warn on mismatch:** If a _different_ CLI skill is present, warn the user and offer to prune
 4. **Prune unused CLI skills:** On confirmation, delete mismatched skill directory and update AGENTS.md Skills table
 5. **If missing:** Warn and offer to copy from the template bundle
 

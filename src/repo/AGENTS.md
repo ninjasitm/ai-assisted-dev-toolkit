@@ -89,28 +89,28 @@ Detailed standards are split into focused instruction files in `.github/instruct
 
 For detailed standards on specific topics, refer to these skills in `.agents/skills/`:
 
-| Skill               | File                                      | Purpose                                                 |
-| ------------------- | ----------------------------------------- | ------------------------------------------------------- |
-| **TDD**             | `test-driven-development/SKILL.md`        | Test-driven development with red-green-refactor         |
-| **Debugging**       | `systematic-debugging/SKILL.md`           | Structured debugging methodology                        |
-| **Verification**    | `verification-before-completion/SKILL.md` | Quality checks before claiming work done                |
-| **Writing Plans**   | `writing-plans/SKILL.md`                  | Feature planning and specifications                     |
-| **Executing Plans** | `executing-plans/SKILL.md`                | Following through on implementation plans               |
-| **Code Review**     | `requesting-code-review/SKILL.md`         | Review process and checklists                           |
-| **Review Feedback** | `receiving-code-review/SKILL.md`          | Responding constructively to review feedback            |
-| **Brainstorming**   | `brainstorming/SKILL.md`                  | Structured ideation sessions                            |
-| **Writing Skills**  | `writing-skills/SKILL.md`                 | Creating effective SKILL.md files                       |
-| **Superpowers**     | `using-superpowers/SKILL.md`              | Leveraging the full skill system                        |
-| **Git Worktrees**   | `using-git-worktrees/SKILL.md`            | Parallel development branches                           |
-| **Parallel Agents** | `dispatching-parallel-agents/SKILL.md`    | Coordinating multiple AI agents                         |
-| **Subagent Dev**    | `subagent-driven-development/SKILL.md`    | Breaking tasks into subagent chunks                     |
-| **Branch Finish**   | `finishing-a-development-branch/SKILL.md` | Completing and merging branches                         |
-| **Logging**         | `logging/SKILL.md`                        | Structured logging standards, log levels, observability |
-| **Documentation**   | `project-documentation/SKILL.md`          | README, comments, ADRs, changelogs                      |
+| Skill               | File                                      | Purpose                                                    |
+| ------------------- | ----------------------------------------- | ---------------------------------------------------------- |
+| **TDD**             | `test-driven-development/SKILL.md`        | Test-driven development with red-green-refactor            |
+| **Debugging**       | `systematic-debugging/SKILL.md`           | Structured debugging methodology                           |
+| **Verification**    | `verification-before-completion/SKILL.md` | Quality checks before claiming work done                   |
+| **Writing Plans**   | `writing-plans/SKILL.md`                  | Feature planning and specifications                        |
+| **Executing Plans** | `executing-plans/SKILL.md`                | Following through on implementation plans                  |
+| **Code Review**     | `requesting-code-review/SKILL.md`         | Review process and checklists                              |
+| **Review Feedback** | `receiving-code-review/SKILL.md`          | Responding constructively to review feedback               |
+| **Brainstorming**   | `brainstorming/SKILL.md`                  | Structured ideation sessions                               |
+| **Writing Skills**  | `writing-skills/SKILL.md`                 | Creating effective SKILL.md files                          |
+| **Superpowers**     | `using-superpowers/SKILL.md`              | Leveraging the full skill system                           |
+| **Git Worktrees**   | `using-git-worktrees/SKILL.md`            | Parallel development branches                              |
+| **Parallel Agents** | `dispatching-parallel-agents/SKILL.md`    | Coordinating multiple AI agents                            |
+| **Subagent Dev**    | `subagent-driven-development/SKILL.md`    | Breaking tasks into subagent chunks                        |
+| **Branch Finish**   | `finishing-a-development-branch/SKILL.md` | Completing and merging branches                            |
+| **Logging**         | `logging/SKILL.md`                        | Structured logging standards, log levels, observability    |
+| **Documentation**   | `project-documentation/SKILL.md`          | README, comments, ADRs, changelogs                         |
 | **Issue Tracker**   | `issue-tracker/SKILL.md`                  | MCP tools reference, CLI fallback strategy, epic discovery |
-| **Jira CLI**        | `jira-cli/SKILL.md`                       | Jira CLI command reference                              |
-| **GitHub CLI**      | `gh-cli/SKILL.md`                         | GitHub Issues CLI command reference                     |
-| **Linear CLI**      | `linear-cli/SKILL.md`                     | Linear CLI command reference                            |
+| **Jira CLI**        | `jira-cli/SKILL.md`                       | Jira CLI command reference                                 |
+| **GitHub CLI**      | `gh-cli/SKILL.md`                         | GitHub Issues CLI command reference                        |
+| **Linear CLI**      | `linear-cli/SKILL.md`                     | Linear CLI command reference                               |
 
 ## ⚠️ CRITICAL: Orchestration Checkpoint (READ FIRST)
 
