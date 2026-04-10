@@ -64,9 +64,9 @@ You are helping to bootstrap AI instructions for this project by analyzing the c
    | `{{TEST_FRAMEWORK}}`      | Test framework                                                         |
    | `{{DEPLOY_PLATFORM}}`     | Deployment config files                                                |
    | `{{RUNTIME_VERSION}}`     | Runtime version from config                                            |
-   | `{{PM_TOOL}}`             | Detected project management tool (GitHub, Jira, Azure, Linear, GitLab) |
+   | `{{ISSUE_TRACKER}}`       | Detected project management tool (GitHub, Jira, Azure, Linear, GitLab) |
    | `{{PM_URL}}`              | Project management URL (if applicable)                                 |
-   | `{{PM_PROJECT_ID}}`       | Project/workspace ID (if applicable)                                   |
+   | `{{PROJECT_KEY}}`         | Project/workspace ID (if applicable)                                   |
    | `{{PM_ISSUE_KEY}}`        | Issue key format (e.g., PROJ-###, #42)                                 |
    | `{{LANGUAGE}}`            | Detected ecosystem (TypeScript, PHP, C#, Python, Ruby, Go, Rust, Java) |
    | `{{FRAMEWORK}}`           | Detected framework with version                                        |
@@ -216,27 +216,46 @@ Present the replacements and confirm before applying.
    npx -y skills add <detected-agents> trailofbits/skills --skill '*' --agent github-copilot cursor
    ```
 
+   **Issue Tracker Skills Health Check (if {{ISSUE_TRACKER}} is configured):**
+
+   This template bundles issue tracker skills in `.agents/skills/`. Verify the correct skills are present:
+
+   | Detected Tracker | Required Skills                | Expected Files                                                                |
+   | ---------------- | ------------------------------ | ----------------------------------------------------------------------------- |
+   | Jira             | `issue-tracker` + `jira-cli`   | `.agents/skills/issue-tracker/SKILL.md`, `.agents/skills/jira-cli/SKILL.md`   |
+   | GitHub Issues    | `issue-tracker` + `gh-cli`     | `.agents/skills/issue-tracker/SKILL.md`, `.agents/skills/gh-cli/SKILL.md`     |
+   | Linear           | `issue-tracker` + `linear-cli` | `.agents/skills/issue-tracker/SKILL.md`, `.agents/skills/linear-cli/SKILL.md` |
+
+   **Health check steps:**
+   1. **Map tracker → expected CLI skill:**
+      - Jira → `jira-cli`, GitHub Issues → `gh-cli`, Linear → `linear-cli`
+   2. **Verify presence:** Check `.agents/skills/issue-tracker/SKILL.md` and `.agents/skills/{expected-cli}/SKILL.md` exist
+   3. **Warn on mismatch:** If a _different_ CLI skill is present (e.g., `jira-cli` installed but tracker is Linear), warn the user:
+      ```
+      ⚠️ Mismatched issue tracker skill detected:
+      - Configured tracker: Linear
+      - Found skill: jira-cli (not matching)
+      - Expected skill: linear-cli
+      Remove jira-cli and keep linear-cli? (Y/n)
+      ```
+   4. **Prune unused CLI skills:** On confirmation, delete the mismatched skill directory and update AGENTS.md Skills table
+   5. **If missing:** Warn that the expected CLI skill is not present and offer to copy it from the template bundle
+
    **Framework-Specific Skills:**
-
-   When recommending framework-specific skills, include the detected agent flags. Examples:
-
-   | Detected          | Skill Repository                      | Install Command                                                                                                     |
-   | ----------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-   | React/Next.js     | `vercel-labs/agent-skills`            | `npx -y skills add <detected-agents> vercel-labs/agent-skills --skill '*' --agent github-copilot cursor`            |
-   | Vue/Nuxt          | `onmax/nuxt-skills`                   | `npx -y skills add <detected-agents> onmax/nuxt-skills --skill '*' --agent github-copilot cursor`                   |
-   | Expo/React Native | `expo/skills`                         | `npx -y skills add <detected-agents> expo/skills --skill '*' --agent github-copilot cursor`                         |
-   | Better-Auth       | `better-auth/skills`                  | `npx -y skills add <detected-agents> better-auth/skills --skill '*' --agent github-copilot cursor`                  |
-   | NestJS            | `Kadajett/agent-nestjs-skills`        | `npx -y skills add <detected-agents> Kadajett/agent-nestjs-skills --skill '*' --agent github-copilot cursor`        |
-   | Remotion          | `remotion-dev/skills`                 | `npx -y skills add <detected-agents> remotion-dev/skills --skill '*' --agent github-copilot cursor`                 |
-   | Elysia.js         | `elysiajs/skills`                     | `npx -y skills add <detected-agents> elysiajs/skills --skill '*' --agent github-copilot cursor`                     |
-   | Three.js          | `CloudAI-X/threejs-skills`            | `npx -y skills add <detected-agents> CloudAI-X/threejs-skills --skill '*' --agent github-copilot cursor`            |
-   | Convex            | `waynesutton/convexskills`            | `npx -y skills add <detected-agents> waynesutton/convexskills --skill '*' --agent github-copilot cursor`            |
-   | TanStack Query    | `jezweb/claude-skills`                | `npx -y skills add <detected-agents> jezweb/claude-skills --skill '*' --agent github-copilot cursor`                |
-   | TailwindCSS       | `expo/skills`                         | `npx -y skills add <detected-agents> expo/skills --skill '*' --agent github-copilot cursor`                         |
-   | shadcn/ui         | `giuseppe-trisciuoglio/developer-kit` | `npx -y skills add <detected-agents> giuseppe-trisciuoglio/developer-kit --skill '*' --agent github-copilot cursor` |
-   | Stripe            | `anthropics/claude-plugins-official`  | `npx -y skills add <detected-agents> anthropics/claude-plugins-official --skill '*' --agent github-copilot cursor`  |
-   | SwiftUI/iOS       | `Dimillian/Skills`                    | `npx -y skills add <detected-agents> Dimillian/Skills --skill '*' --agent github-copilot cursor`                    |
-   | Obsidian          | `kepano/obsidian-skills`              | `npx -y skills add <detected-agents> kepano/obsidian-skills --skill '*' --agent github-copilot cursor`              |
+   | Vue/Nuxt | `onmax/nuxt-skills` | `npx -y skills add <detected-agents> onmax/nuxt-skills --skill '*' --agent github-copilot cursor` |
+   | Expo/React Native | `expo/skills` | `npx -y skills add <detected-agents> expo/skills --skill '*' --agent github-copilot cursor` |
+   | Better-Auth | `better-auth/skills` | `npx -y skills add <detected-agents> better-auth/skills --skill '*' --agent github-copilot cursor` |
+   | NestJS | `Kadajett/agent-nestjs-skills` | `npx -y skills add <detected-agents> Kadajett/agent-nestjs-skills --skill '*' --agent github-copilot cursor` |
+   | Remotion | `remotion-dev/skills` | `npx -y skills add <detected-agents> remotion-dev/skills --skill '*' --agent github-copilot cursor` |
+   | Elysia.js | `elysiajs/skills` | `npx -y skills add <detected-agents> elysiajs/skills --skill '*' --agent github-copilot cursor` |
+   | Three.js | `CloudAI-X/threejs-skills` | `npx -y skills add <detected-agents> CloudAI-X/threejs-skills --skill '*' --agent github-copilot cursor` |
+   | Convex | `waynesutton/convexskills` | `npx -y skills add <detected-agents> waynesutton/convexskills --skill '*' --agent github-copilot cursor` |
+   | TanStack Query | `jezweb/claude-skills` | `npx -y skills add <detected-agents> jezweb/claude-skills --skill '*' --agent github-copilot cursor` |
+   | TailwindCSS | `expo/skills` | `npx -y skills add <detected-agents> expo/skills --skill '*' --agent github-copilot cursor` |
+   | shadcn/ui | `giuseppe-trisciuoglio/developer-kit` | `npx -y skills add <detected-agents> giuseppe-trisciuoglio/developer-kit --skill '*' --agent github-copilot cursor` |
+   | Stripe | `anthropics/claude-plugins-official` | `npx -y skills add <detected-agents> anthropics/claude-plugins-official --skill '*' --agent github-copilot cursor` |
+   | SwiftUI/iOS | `Dimillian/Skills` | `npx -y skills add <detected-agents> Dimillian/Skills --skill '*' --agent github-copilot cursor` |
+   | Obsidian | `kepano/obsidian-skills` | `npx -y skills add <detected-agents> kepano/obsidian-skills --skill '*' --agent github-copilot cursor` |
 
    **Language-Specific Skills:**
 
@@ -274,6 +293,11 @@ Present the replacements and confirm before applying.
    - npx -y skills add {{AGENT_FLAGS}} obra/superpowers --skill '*' --agent github-copilot cursor
    - npx -y skills add {{AGENT_FLAGS}} trailofbits/skills --skill '*' --agent github-copilot cursor
    - npx -y skills add {{AGENT_FLAGS}} softaworks/agent-toolkit --skill '*' --agent github-copilot cursor
+
+   📋 Issue Tracker Skills (bundled — {{ISSUE_TRACKER}}):
+   - ✅ .agents/skills/issue-tracker/SKILL.md (shared strategy)
+   - ✅ Matching CLI reference: .agents/skills/jira-cli/SKILL.md, .agents/skills/gh-cli/SKILL.md, or .agents/skills/linear-cli/SKILL.md
+   - ⚠️ Prune any issue-tracker CLI skills that do not match {{ISSUE_TRACKER}} (if any)
 
    🔧 Framework-Specific Skills:
    - npx -y skills add {{AGENT_FLAGS}} {{FRAMEWORK_SKILL_REPO}} --skill '*' --agent github-copilot cursor

@@ -21,14 +21,12 @@ You are helping to bootstrap AI instructions for this monorepo by analyzing the 
    | **Java**                  | `pom.xml` / `build.gradle` | Maven modules, Gradle multi-project                 |
 
    **Detect Build System:**
-
    - JavaScript: Turborepo (`turbo.json`), Nx (`nx.json`), Lerna (`lerna.json`)
    - .NET: Solution files, MSBuild
    - Java: Maven, Gradle
    - Other: Makefiles, Bazel, etc.
 
    **Scan Workspace:**
-
    - Scan `apps/` or similar directories for applications
    - Scan `packages/`, `libs/`, `modules/` for shared code
    - For each app/package, analyze their config files
@@ -44,9 +42,9 @@ You are helping to bootstrap AI instructions for this monorepo by analyzing the 
    | `{{BUILD_SYSTEM}}`        | Build tool (Turborepo, Nx, MSBuild, Maven, etc.)   |
    | `{{DEFAULT_BRANCH}}`      | Git config or assume "main"                        |
    | `{{TEST_FRAMEWORK}}`      | Common test framework across packages              |
-   | `{{PM_TOOL}}`             | Detected project management tool                   |
+   | `{{ISSUE_TRACKER}}`       | Detected project management tool                   |
    | `{{PM_URL}}`              | Project management URL (if applicable)             |
-   | `{{PM_PROJECT_ID}}`       | Project/workspace ID (if applicable)               |
+   | `{{PROJECT_KEY}}`         | Project/workspace ID (if applicable)               |
    | `{{PM_ISSUE_KEY}}`        | Issue key format (e.g., PROJ-###, #42)             |
 
 3. **Analyze Apps**:
@@ -119,7 +117,6 @@ You are helping to bootstrap AI instructions for this monorepo by analyzing the 
 6. **Prompt for Missing Values**:
 
    Ask specific questions for values that couldn't be inferred:
-
    - "What is the main purpose of this monorepo?"
    - "Confirm detected project management tool or specify different one (GitHub Issues, Jira, Azure DevOps, Linear, GitLab)?"
    - "Provide project management URL if applicable?"
@@ -129,7 +126,6 @@ You are helping to bootstrap AI instructions for this monorepo by analyzing the 
 7. **Update Template Files**:
 
    **Root Level:**
-
    - `AGENTS.md` (include project management section)
    - `.github/copilot-instructions.md` (include PM context)
    - `.github/instructions/*.instructions.md`
@@ -141,12 +137,10 @@ You are helping to bootstrap AI instructions for this monorepo by analyzing the 
    - `CLAUDE.md` (if it contains placeholders)
 
    **Per App** (copy from `apps/app-template/` if needed):
-
    - `apps/{app}/AGENTS.md`
    - `apps/{app}/README.md`
 
    **Per Package:**
-
    - `packages/{package}/README.md`
 
 7.5. **Update Claude Code Rule Scoping**:
@@ -190,7 +184,6 @@ After replacing placeholders, update the `paths:` frontmatter in `.claude/rules/
 8. **Generate App-Specific AGENTS.md**:
 
    For each detected app, create a customized `AGENTS.md` with:
-
    - Framework-specific patterns
    - Directory structure
    - Component/route conventions
@@ -230,7 +223,6 @@ Present the replacements and confirm before applying.
    **Note:** `.claude/` directory indicates Claude Code is installed. Add `-a claude-code` to agent flags.
 
    **Build the agent flags string:**
-
    - For each detected agent, add `-a <agent>` to the command
    - Example: If `.cursor/`, `.claude/`, and `.github/` exist → use `-a cursor -a claude-code -a github-copilot`
    - If no agents detected, omit `-a` flags (CLI will prompt)
@@ -255,6 +247,32 @@ Based on detected ecosystem and frameworks, recommend relevant skills from [skil
 npx -y skills add <detected-agents> obra/superpowers --skill '*' --agent github-copilot cursor
 npx -y skills add <detected-agents> trailofbits/skills --skill '*' --agent github-copilot cursor
 ```
+
+**Issue Tracker Skills Health Check (if {{ISSUE_TRACKER}} is configured):**
+
+This template bundles issue tracker skills in `.agents/skills/`. Verify the correct skills are present:
+
+| Detected Tracker | Required Skills                | Expected Files                                                                |
+| ---------------- | ------------------------------ | ----------------------------------------------------------------------------- |
+| Jira             | `issue-tracker` + `jira-cli`   | `.agents/skills/issue-tracker/SKILL.md`, `.agents/skills/jira-cli/SKILL.md`   |
+| GitHub Issues    | `issue-tracker` + `gh-cli`     | `.agents/skills/issue-tracker/SKILL.md`, `.agents/skills/gh-cli/SKILL.md`     |
+| Linear           | `issue-tracker` + `linear-cli` | `.agents/skills/issue-tracker/SKILL.md`, `.agents/skills/linear-cli/SKILL.md` |
+
+**Health check steps:**
+
+1.  **Map tracker → expected CLI skill:**
+    - Jira → `jira-cli`, GitHub Issues → `gh-cli`, Linear → `linear-cli`
+2.  **Verify presence:** Check `.agents/skills/issue-tracker/SKILL.md` and `.agents/skills/{expected-cli}/SKILL.md` exist
+3.  **Warn on mismatch:** If a _different_ CLI skill is present (e.g., `jira-cli` installed but tracker is Linear), warn the user:
+    ```
+    ⚠️ Mismatched issue tracker skill detected:
+    - Configured tracker: Linear
+    - Found skill: jira-cli (not matching)
+    - Expected skill: linear-cli
+    Remove jira-cli and keep linear-cli? (Y/n)
+    ```
+4.  **Prune unused CLI skills:** On confirmation, delete the mismatched skill directory and update AGENTS.md Skills table
+5.  **If missing:** Warn that the expected CLI skill is not present and offer to copy it from the template bundle
 
 **Framework-Specific Skills:**
 
@@ -321,6 +339,11 @@ npx -y skills add {{AGENT_FLAGS}} obra/superpowers --skill '*' --agent github-co
 npx -y skills add {{AGENT_FLAGS}} trailofbits/skills --skill '*' --agent github-copilot cursor
 npx -y skills add {{AGENT_FLAGS}} softaworks/agent-toolkit --skill '*' --agent github-copilot cursor
 
+Issue Tracker Skills (bundled — {{ISSUE_TRACKER}}):
+✅ .agents/skills/issue-tracker/SKILL.md (shared strategy)
+✅ Matching CLI reference: .agents/skills/jira-cli/SKILL.md, .agents/skills/gh-cli/SKILL.md, or .agents/skills/linear-cli/SKILL.md
+⚠️ Prune any issue-tracker CLI skills that do not match {{ISSUE_TRACKER}} (if any)
+
 Framework-Specific Skills:
 - web (Next.js): npx -y skills add {{AGENT_FLAGS}} vercel-labs/agent-skills --skill '*' --agent github-copilot cursor
 - api (Hono): npx -y skills add {{AGENT_FLAGS}} elysiajs/skills --skill '*' --agent github-copilot cursor
@@ -379,7 +402,6 @@ Next Steps:
 9. **Review Installed Skills**:
 
    After completion, audit all installed skills:
-
    - Scan `.github/skills/` and `.cursor/skills/` directories
    - Compare each skill against detected ecosystems and frameworks
    - Flag skills that don't match any app's tech stack
@@ -404,7 +426,6 @@ Next Steps:
    ```
 
    **On Confirmation:**
-
    - Remove unnecessary skill directories
    - Update root AGENTS.md to remove references
    - Report cleanup results
@@ -433,7 +454,6 @@ Next Steps:
     ```
 
     **On Confirmation:**
-
     - Generate instruction files with appropriate templates
     - Include app-specific scoping (applyTo paths)
     - Include framework-specific patterns from skills

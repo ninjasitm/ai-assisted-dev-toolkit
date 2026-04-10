@@ -40,6 +40,18 @@
 | `{{PACKAGE_SCOPE}}/{{PACKAGE_NAME_2}}` | {{PACKAGE_2_DESCRIPTION}} |
 | `{{PACKAGE_SCOPE}}/config`             | Shared configuration      |
 
+## Project Management
+
+**Tracker:** {{ISSUE_TRACKER}}
+**URL:** {{PM_URL}}
+**Project Key:** {{PROJECT_KEY}}
+**Issue Key Format:** `{{PM_ISSUE_KEY}}`
+
+### Tool Access
+
+See the `issue-tracker` skill (`.agents/skills/issue-tracker/SKILL.md`) for MCP tool prefixes, CLI fallback strategy, tracker configuration, and epic discovery workflow.
+For CLI command reference, see the matching skill: `.agents/skills/{jira-cli,gh-cli,linear-cli}/SKILL.md`.
+
 ## Agent Conduct & Interaction Rules
 
 ### Clarification & Assumption Handling
@@ -107,15 +119,19 @@ Detailed standards are split into focused instruction files in `.github/instruct
 
 For detailed standards on specific topics, refer to these skills in `.agents/skills/`:
 
-| Skill             | File                               | Purpose                                                 |
-| ----------------- | ---------------------------------- | ------------------------------------------------------- |
-| **Logging**       | `logging/SKILL.md`                 | Structured logging standards, log levels, observability |
-| **Documentation** | `project-documentation/SKILL.md`   | README, comments, ADRs, changelogs                      |
-| **Writing Plans** | `writing-plans/SKILL.md`           | Feature planning and specifications                     |
-| **Code Review**   | `requesting-code-review/SKILL.md`  | Review process and checklists                           |
-| **Debugging**     | `systematic-debugging/SKILL.md`    | Debugging workflows                                     |
-| **TDD**           | `test-driven-development/SKILL.md` | Test-driven development                                 |
-| **Git Worktrees** | `using-git-worktrees/SKILL.md`     | Parallel development branches                           |
+| Skill             | File                               | Purpose                                                    |
+| ----------------- | ---------------------------------- | ---------------------------------------------------------- |
+| **Logging**       | `logging/SKILL.md`                 | Structured logging standards, log levels, observability    |
+| **Documentation** | `project-documentation/SKILL.md`   | README, comments, ADRs, changelogs                         |
+| **Writing Plans** | `writing-plans/SKILL.md`           | Feature planning and specifications                        |
+| **Code Review**   | `requesting-code-review/SKILL.md`  | Review process and checklists                              |
+| **Debugging**     | `systematic-debugging/SKILL.md`    | Debugging workflows                                        |
+| **TDD**           | `test-driven-development/SKILL.md` | Test-driven development                                    |
+| **Git Worktrees** | `using-git-worktrees/SKILL.md`     | Parallel development branches                              |
+| **Issue Tracker** | `issue-tracker/SKILL.md`           | MCP tools reference, CLI fallback strategy, epic discovery |
+| **Jira CLI**      | `jira-cli/SKILL.md`                | Jira CLI command reference                                 |
+| **GitHub CLI**    | `gh-cli/SKILL.md`                  | GitHub Issues CLI command reference                        |
+| **Linear CLI**    | `linear-cli/SKILL.md`              | Linear CLI command reference                               |
 
 ## ⚠️ CRITICAL: Orchestration Checkpoint (READ FIRST)
 

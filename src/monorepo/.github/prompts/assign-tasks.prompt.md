@@ -42,53 +42,12 @@ Before creating each ticket, ask:
 - **Collapse small items**: < 2 SP should be subtasks or merged
 - **Limit hierarchy**: Prefer Epic → Story → Task (minimize Subtasks)
 
-## Epic Discovery (Parent Task Assignment)
+## Issue Tracker Tool Access
 
-All stories and tasks MUST belong to an Epic. Before creating tickets:
+> **Full details:** See the `issue-tracker` skill in `.agents/skills/issue-tracker/SKILL.md` for MCP tools reference, CLI fallback strategy, tracker configuration, and epic discovery workflow.
+> For CLI-specific commands, see the matching skill: `.agents/skills/{jira-cli,gh-cli,linear-cli}/SKILL.md`.
 
-### 1. Check for Explicit Parent
-
-- If the requirement doc specifies an Epic, use it
-- If linked from an existing Epic, use that Epic
-
-### 2. Search for Matching Epic
-
-If no parent is specified, use MCP/{{ISSUE_TRACKER}} tools to find a suitable Epic:
-
-```
-# Search for open Epics in the project
-- List all Epics with status: Open, In Progress
-- Filter by labels/components matching the feature domain
-- Check Epic descriptions for related keywords
-```
-
-**Matching Criteria** (in priority order):
-
-1. **Domain match**: Epic covers same feature area (e.g., "Authentication", "Payments")
-2. **Component match**: Epic targets same system component
-3. **Sprint/Release match**: Epic is in current or upcoming sprint
-4. **Keyword match**: Epic title/description contains related terms
-
-### 3. Fallback to Maintenance Epic
-
-If no appropriate Epic exists:
-
-- Search for existing "Maintenance" or "Tech Debt" Epic
-- If none exists, create one:
-  ```
-  Epic: Maintenance & Improvements - {{QUARTER}}
-  Description: Technical improvements, bug fixes, and maintenance work
-  Labels: maintenance, tech-debt
-  ```
-
-### 4. Report Parent Assignment
-
-In the ticket creation report, always include:
-
-```
-Parent Epic: [EPIC-123] Epic Title
-Assignment Reason: Domain match (Authentication) | Maintenance fallback
-```
+When interacting with {{ISSUE_TRACKER}}, use MCP tools first (see the `issue-tracker` skill for the tools table). If MCP is unavailable, fall back to the CLI skill matching your tracker.
 
 ## Process
 
