@@ -182,10 +182,10 @@ gh label delete "old-label" --yes
 
 ```bash
 # List milestones
-gh api repos/{owner}/{repo}/milestones --jq '.[].title'
+gh api repos/{{REPO_OWNER}}/{{PROJECT_NAME}}/milestones --jq '.[].title'
 
 # Create milestone
-gh api repos/{owner}/{repo}/milestones -f title="v1.0" -f description="First release" -f due_on="2025-06-01T00:00:00Z"
+gh api repos/{{REPO_OWNER}}/{{PROJECT_NAME}}/milestones -f title="v1.0" -f description="First release" -f due_on="2025-06-01T00:00:00Z"
 ```
 
 ## Common Workflows
@@ -207,7 +207,13 @@ gh issue edit 123 --add-label "bug,priority:high" --add-assignee @me
 gh issue list --label "epic" --state open
 
 # Create epic
-gh issue create --title "Epic: User Authentication" --label "epic" --body "## Scope\n- Login\n- Registration\n- Password reset"
+cat > /tmp/epic-body.md <<'EOF'
+## Scope
+- Login
+- Registration
+- Password reset
+EOF
+gh issue create --title "Epic: User Authentication" --label "epic" --body-file /tmp/epic-body.md
 
 # Find stories for an epic (by reference in body)
 gh issue list --search "is:open label:story \"Authentication\""
@@ -232,25 +238,25 @@ for id in 10 11 12; do gh issue edit "$id" --add-label "backlog"; done
 
 ## Common Flags
 
-| Flag | Description |
-| ---- | ----------- |
-| `--json` | JSON output with field selection |
-| `--jq` | Filter JSON output with jq expressions |
-| `--web` | Open in browser |
-| `--limit` | Max results to return |
-| `--search` | Search query with GitHub qualifiers |
-| `--state` | Filter by state (open, closed, all) |
-| `--label` | Filter by label |
-| `--assignee` | Filter by assignee |
-| `--milestone` | Filter by milestone |
+| Flag          | Description                            |
+| ------------- | -------------------------------------- |
+| `--json`      | JSON output with field selection       |
+| `--jq`        | Filter JSON output with jq expressions |
+| `--web`       | Open in browser                        |
+| `--limit`     | Max results to return                  |
+| `--search`    | Search query with GitHub qualifiers    |
+| `--state`     | Filter by state (open, closed, all)    |
+| `--label`     | Filter by label                        |
+| `--assignee`  | Filter by assignee                     |
+| `--milestone` | Filter by milestone                    |
 
 ## Output Formatting
 
-| Command | Use Case |
-| ------- | -------- |
-| `gh issue list --json number,title` | JSON for scripting |
+| Command                                              | Use Case                |
+| ---------------------------------------------------- | ----------------------- |
+| `gh issue list --json number,title`                  | JSON for scripting      |
 | `gh issue list --json number,title --jq '.[].title'` | Extract specific fields |
-| `gh issue view 123 --json body --jq '.body'` | Get issue body only |
+| `gh issue view 123 --json body --jq '.body'`         | Get issue body only     |
 
 ## Limitations
 

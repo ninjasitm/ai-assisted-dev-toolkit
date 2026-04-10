@@ -236,7 +236,7 @@ Use the first available method when interacting with the issue tracker:
 1. **MCP server** (preferred): `mcp_linear_*` tools (configured in `.mcp.json`)
 2. **CLI fallback**: [`linear`](https://github.com/linear/linear-cli) — `linear auth` or set `LINEAR_API_KEY`
 
-See the assign-tasks command for detailed examples.
+See the `issue-tracker` and relevant CLI skills for detailed setup and usage examples.
 
 ### Conventions
 
@@ -475,8 +475,8 @@ npx -y skills add {{AGENT_FLAGS}} softaworks/agent-toolkit --skill '*' --agent g
 
 ```
 ✅ .agents/skills/issue-tracker/SKILL.md (shared strategy)
-✅ .agents/skills/{{EXPECTED_CLI_SKILL}}/SKILL.md (CLI reference)
-⚠️ Mismatched skills to prune: {{MISMATCHED_SKILLS}} (if any)
+✅ Matching CLI reference: .agents/skills/jira-cli/SKILL.md, .agents/skills/gh-cli/SKILL.md, or .agents/skills/linear-cli/SKILL.md
+⚠️ Prune any issue-tracker CLI skills that do not match {{ISSUE_TRACKER}} (if any)
 ```
 
 ````

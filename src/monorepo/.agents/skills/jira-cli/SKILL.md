@@ -228,25 +228,25 @@ jira completion bash  # or zsh, fish, powershell
 
 ## Common Flags
 
-| Flag | Description |
-| ---- | ----------- |
-| `--plain` | Plain text output (no interactive UI) |
-| `--raw` | Raw JSON output |
-| `--csv` | CSV output |
-| `--no-input` | Skip interactive prompts |
-| `-t, --type` | Issue type (Bug, Story, Task, Epic) |
-| `-s, --summary` | Issue summary/title |
-| `-b, --body` | Issue description |
-| `-y, --priority` | Priority (Highest, High, Medium, Low, Lowest) |
-| `-l, --label` | Labels (repeatable) |
-| `-a, --assignee` | Assignee username |
-| `-r, --reporter` | Reporter username |
-| `-C, --component` | Component name |
-| `-P, --parent` | Parent issue/epic key |
-| `-q, --jql` | Raw JQL query |
-| `--created` | Filter by creation date (-7d, week, month) |
-| `--order-by` | Sort field |
-| `--reverse` | Reverse sort order |
+| Flag              | Description                                   |
+| ----------------- | --------------------------------------------- |
+| `--plain`         | Plain text output (no interactive UI)         |
+| `--raw`           | Raw JSON output                               |
+| `--csv`           | CSV output                                    |
+| `--no-input`      | Skip interactive prompts                      |
+| `-t, --type`      | Issue type (Bug, Story, Task, Epic)           |
+| `-s, --summary`   | Issue summary/title                           |
+| `-b, --body`      | Issue description                             |
+| `-y, --priority`  | Priority (Highest, High, Medium, Low, Lowest) |
+| `-l, --label`     | Labels (repeatable)                           |
+| `-a, --assignee`  | Assignee username                             |
+| `-r, --reporter`  | Reporter username                             |
+| `-C, --component` | Component name                                |
+| `-P, --parent`    | Parent issue/epic key                         |
+| `-q, --jql`       | Raw JQL query                                 |
+| `--created`       | Filter by creation date (-7d, week, month)    |
+| `--order-by`      | Sort field                                    |
+| `--reverse`       | Reverse sort order                            |
 
 ## Common Workflows
 
@@ -285,11 +285,11 @@ jira issue move BUG-123 "In Progress"
 
 ## Output Examples
 
-| Command | Use Case |
-| ------- | -------- |
+| Command                   | Use Case               |
+| ------------------------- | ---------------------- |
 | `jira issue list --plain` | Script-friendly output |
-| `jira issue list --raw` | JSON for parsing |
-| `jira issue list --csv` | Export to spreadsheet |
+| `jira issue list --raw`   | JSON for parsing       |
+| `jira issue list --csv`   | Export to spreadsheet  |
 
 ## Limitations
 

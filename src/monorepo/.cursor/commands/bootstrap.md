@@ -298,8 +298,8 @@ npx -y skills add {{AGENT_FLAGS}} softaworks/agent-toolkit --skill '*' --agent g
 
 Issue Tracker Skills (bundled — {{ISSUE_TRACKER}}):
 ✅ .agents/skills/issue-tracker/SKILL.md (shared strategy)
-✅ .agents/skills/{{EXPECTED_CLI_SKILL}}/SKILL.md (CLI reference)
-⚠️ Mismatched skills to prune: {{MISMATCHED_SKILLS}} (if any)
+✅ Matching CLI reference: .agents/skills/jira-cli/SKILL.md, .agents/skills/gh-cli/SKILL.md, or .agents/skills/linear-cli/SKILL.md
+⚠️ Prune any issue-tracker CLI skills that do not match {{ISSUE_TRACKER}} (if any)
 
 Framework-Specific Skills:
 - web (Next.js): npx -y skills add {{AGENT_FLAGS}} vercel-labs/agent-skills --skill '*' --agent github-copilot cursor

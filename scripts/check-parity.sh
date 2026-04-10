@@ -4,7 +4,7 @@
 # Exit code 0 = all in sync, 1 = drift detected.
 
 set -euo pipefail
-cd "$(git rev-parse --show-toplevel 2>/dev/null || dirname "$0"/..)"
+cd "$(git rev-parse --show-toplevel 2>/dev/null || { cd "$(dirname "$0")/.." && pwd; })"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -18,22 +18,38 @@ check_identical() {
   local label="$1" base="$2" target="$3"
   if [[ ! -f "$base" ]]; then
     printf "${RED}MISSING${NC} %s (base)\n" "$base"
-    ((errors++))
+    ((errors += 1))
     return
   fi
   if [[ ! -f "$target" ]]; then
     printf "${RED}MISSING${NC} %s\n" "$target"
-    ((errors++))
+    ((errors += 1))
     return
   fi
   if diff -q "$base" "$target" >/dev/null 2>&1; then
     printf "${GREEN}  OK${NC}  %s\n" "$label"
   else
     printf "${RED}DRIFT${NC} %s\n" "$label"
-    diff --unified=1 "$base" "$target" | head -20
+    diff --unified=1 "$base" "$target" | head -20 || true
     echo "  ..."
-    ((errors++))
+    ((errors += 1))
   fi
+}
+
+extract_section() {
+  local file="$1" section="$2"
+  awk -v header="## ${section}" '
+    $0 == header {
+      in_section = 1
+    }
+    in_section {
+      if (seen_header && $0 ~ /^## / && $0 != header) {
+        exit
+      }
+      print
+      seen_header = 1
+    }
+  ' "$file"
 }
 
 check_section_match() {
@@ -43,15 +59,15 @@ check_section_match() {
     return
   fi
   local base_section target_section
-  base_section=$(sed -n "/^## ${section}/,/^## /p" "$base" | head -n -1)
-  target_section=$(sed -n "/^## ${section}/,/^## /p" "$target" | head -n -1)
+  base_section=$(extract_section "$base" "$section")
+  target_section=$(extract_section "$target" "$section")
   if [[ "$base_section" == "$target_section" ]]; then
     printf "${GREEN}  OK${NC}  %s [%s]\n" "$label" "$section"
   else
     printf "${RED}DRIFT${NC} %s [%s]\n" "$label" "$section"
-    diff <(echo "$base_section") <(echo "$target_section") | head -15
+    diff <(printf '%s\n' "$base_section") <(printf '%s\n' "$target_section") | head -15 || true
     echo "  ..."
-    ((errors++))
+    ((errors += 1))
   fi
 }
 
@@ -110,7 +126,7 @@ for pattern in "TRACKER_SKILL_REPO" "TRACKER_SKILL_NAME" 'npx -y skills find'; d
   if [[ -n "$hits" ]]; then
     printf "${RED}FOUND${NC} orphaned '%s' in:\n" "$pattern"
     echo "$hits" | sed 's/^/  /'
-    ((orphans++))
+    ((orphans += 1))
   fi
 done
 

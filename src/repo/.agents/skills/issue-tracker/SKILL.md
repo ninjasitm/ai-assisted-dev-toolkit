@@ -104,7 +104,7 @@ If no appropriate Epic exists:
 - Search for existing "Maintenance" or "Tech Debt" Epic
 - If none exists, create one:
   ```
-  Epic: Maintenance & Improvements - {{QUARTER}}
+  Epic: Maintenance & Improvements - <current quarter>
   Description: Technical improvements, bug fixes, and maintenance work
   Labels: maintenance, tech-debt
   ```
