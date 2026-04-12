@@ -73,7 +73,7 @@ These values come from `AGENTS.md`:
 
 ## CLI Initial Setup
 
-- **Jira**: `acli jira auth login --web` or `acli jira auth login --site "{{PM_URL}}" --email "USER@example.com" --token < token.txt`
+- **Jira**: `acli jira auth login --web` or `acli jira auth login --site "{{PM_URL}}" --email "user@example.com" --token < token.txt` (replace with your Atlassian email)
 - **GitHub**: `gh auth login` (auto-detects repo)
 - **Linear**: `linear auth` or set `LINEAR_API_KEY` environment variable
 

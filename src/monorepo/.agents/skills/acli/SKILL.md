@@ -321,28 +321,32 @@ acli jira project update --key "PROJ" --name "Updated Name"
 
 ## Common Flags
 
-| Flag                 | Description                                              |
-| -------------------- | -------------------------------------------------------- |
-| `--json`             | JSON output                                              |
-| `--csv`              | CSV output                                               |
-| `--web` / `-w`       | Open in browser                                          |
-| `--yes` / `-y`       | Skip confirmation prompts                                |
-| `--ignore-errors`    | Continue on errors (batch operations)                    |
-| `-t, --type`         | Work item type (Bug, Story, Task, Epic)                  |
-| `-s, --summary`      | Work item summary/title                                  |
-| `-d, --description`  | Work item description (plain text or ADF)                |
-| `-l, --label`        | Labels (comma-separated)                                 |
-| `-a, --assignee`     | Assignee email, `@me`, or `default`                      |
-| `-k, --key`          | Work item key(s) (comma-separated)                       |
-| `-p, --project`      | Project key                                              |
-| `-j, --jql`          | JQL query                                                |
-| `-f, --fields`       | Comma-separated fields to display                        |
-| `-l, --limit`        | Max results to return                                    |
-| `--paginate`         | Fetch all pages of results                               |
-| `--parent`           | Parent work item ID                                      |
-| `--from-json`        | Read input from a JSON file                              |
-| `--generate-json`    | Generate a template JSON file                            |
-| `-e, --editor`       | Open text editor for input                               |
+These flags are reused across multiple commands:
+
+| Flag              | Description                           |
+| ----------------- | ------------------------------------- |
+| `--json`          | JSON output                           |
+| `--csv`           | CSV output                            |
+| `--web` / `-w`    | Open in browser                       |
+| `--yes` / `-y`    | Skip confirmation prompts             |
+| `--ignore-errors` | Continue on errors for batch actions  |
+| `-k, --key`       | Work item key(s) (comma-separated)    |
+| `-j, --jql`       | JQL query                             |
+| `-p, --project`   | Project key                           |
+| `-a, --assignee`  | Assignee email, `@me`, or `default`   |
+| `-s, --summary`   | Work item summary/title               |
+| `-d, --description` | Work item description (plain text or ADF) |
+| `-t, --type`      | Work item type (Bug, Story, Task, Epic) |
+
+### Command-Specific Flags
+
+Use the command docs above for the full option set. The most common command-specific flags are:
+
+| Command | Flags |
+| ------- | ----- |
+| `workitem create` | `-l, --label`, `--parent`, `-e, --editor`, `--from-json`, `--generate-json` |
+| `workitem edit` | `-l, --labels`, `--remove-labels`, `--from-json`, `--generate-json` |
+| `workitem search` | `-f, --fields`, `-l, --limit`, `--paginate`, `--count` |
 
 ## Common Workflows
 
