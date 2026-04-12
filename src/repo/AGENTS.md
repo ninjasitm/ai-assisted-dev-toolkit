@@ -33,7 +33,7 @@
 ### Tool Access
 
 See the `issue-tracker` skill (`.agents/skills/issue-tracker/SKILL.md`) for MCP tool prefixes, CLI fallback strategy, tracker configuration, and epic discovery workflow.
-For CLI command reference, see the matching skill: `.agents/skills/{jira-cli,gh-cli,linear-cli}/SKILL.md`.
+For CLI command reference, see the matching skill: `.agents/skills/{acli,gh-cli,linear-cli}/SKILL.md`.
 
 ## Agent Conduct & Interaction Rules
 
@@ -108,7 +108,7 @@ For detailed standards on specific topics, refer to these skills in `.agents/ski
 | **Logging**         | `logging/SKILL.md`                        | Structured logging standards, log levels, observability    |
 | **Documentation**   | `project-documentation/SKILL.md`          | README, comments, ADRs, changelogs                         |
 | **Issue Tracker**   | `issue-tracker/SKILL.md`                  | MCP tools reference, CLI fallback strategy, epic discovery |
-| **Jira CLI**        | `jira-cli/SKILL.md`                       | Jira CLI command reference                                 |
+| **Atlassian CLI** | `acli/SKILL.md`                           | Atlassian CLI (ACLI) command reference                     |
 | **GitHub CLI**      | `gh-cli/SKILL.md`                         | GitHub Issues CLI command reference                        |
 | **Linear CLI**      | `linear-cli/SKILL.md`                     | Linear CLI command reference                               |
 

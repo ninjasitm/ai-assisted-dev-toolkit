@@ -265,21 +265,21 @@ Present the replacements and confirm before applying.
 
    | Detected Tracker | Required Skills                | Expected Files                                                                |
    | ---------------- | ------------------------------ | ----------------------------------------------------------------------------- |
-   | Jira             | `issue-tracker` + `jira-cli`   | `.agents/skills/issue-tracker/SKILL.md`, `.agents/skills/jira-cli/SKILL.md`   |
+   | Jira             | `issue-tracker` + `acli`   | `.agents/skills/issue-tracker/SKILL.md`, `.agents/skills/acli/SKILL.md`   |
    | GitHub Issues    | `issue-tracker` + `gh-cli`     | `.agents/skills/issue-tracker/SKILL.md`, `.agents/skills/gh-cli/SKILL.md`     |
    | Linear           | `issue-tracker` + `linear-cli` | `.agents/skills/issue-tracker/SKILL.md`, `.agents/skills/linear-cli/SKILL.md` |
 
    **Health check steps:**
    1. **Map tracker → expected CLI skill:**
-      - Jira → `jira-cli`, GitHub Issues → `gh-cli`, Linear → `linear-cli`
+      - Jira → `acli`, GitHub Issues → `gh-cli`, Linear → `linear-cli`
    2. **Verify presence:** Check `.agents/skills/issue-tracker/SKILL.md` and `.agents/skills/{expected-cli}/SKILL.md` exist
-   3. **Warn on mismatch:** If a _different_ CLI skill is present (e.g., `jira-cli` installed but tracker is Linear), warn the user:
+   3. **Warn on mismatch:** If a _different_ CLI skill is present (e.g., `acli` installed but tracker is Linear), warn the user:
       ```
       ⚠️ Mismatched issue tracker skill detected:
       - Configured tracker: Linear
-      - Found skill: jira-cli (not matching)
+      - Found skill: acli (not matching)
       - Expected skill: linear-cli
-      Remove jira-cli and keep linear-cli? (Y/n)
+      Remove acli and keep linear-cli? (Y/n)
       ```
    4. **Prune unused CLI skills:** On confirmation, delete the mismatched skill directory and update AGENTS.md Skills table
    5. **If missing:** Warn that the expected CLI skill is not present and offer to copy it from the template bundle
@@ -339,7 +339,7 @@ Present the replacements and confirm before applying.
 
    📋 Issue Tracker Skills (bundled — {{ISSUE_TRACKER}}):
    - ✅ .agents/skills/issue-tracker/SKILL.md (shared strategy)
-   - ✅ Matching CLI reference: .agents/skills/jira-cli/SKILL.md, .agents/skills/gh-cli/SKILL.md, or .agents/skills/linear-cli/SKILL.md
+   - ✅ Matching CLI reference: .agents/skills/acli/SKILL.md, .agents/skills/gh-cli/SKILL.md, or .agents/skills/linear-cli/SKILL.md
    - ⚠️ Prune any issue-tracker CLI skills that do not match {{ISSUE_TRACKER}} (if any)
 
    🔧 Framework-Specific Skills:

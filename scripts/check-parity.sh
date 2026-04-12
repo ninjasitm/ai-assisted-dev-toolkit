@@ -103,7 +103,7 @@ echo ""
 echo "=== Skills Parity ==="
 echo ""
 
-for skill in issue-tracker jira-cli gh-cli linear-cli; do
+for skill in issue-tracker acli gh-cli linear-cli; do
   check_identical "skill: $skill repo ↔ monorepo" \
     "src/repo/.agents/skills/$skill/SKILL.md" \
     "src/monorepo/.agents/skills/$skill/SKILL.md"
