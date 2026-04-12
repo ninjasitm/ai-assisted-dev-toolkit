@@ -1,6 +1,6 @@
 ---
 name: issue-tracker
-description: Strategy and tool resolution for interacting with issue trackers (Jira, GitHub Issues, Linear). Defines the MCP-first, CLI-fallback approach and provides the MCP tools reference. For CLI-specific commands, see the dedicated tracker skill (jira-cli, gh-cli, or linear-cli).
+description: Strategy and tool resolution for interacting with issue trackers (Jira, GitHub Issues, Linear). Defines the MCP-first, CLI-fallback approach and provides the MCP tools reference. For CLI-specific commands, see the dedicated tracker skill (acli, gh-cli, or linear-cli).
 ---
 
 # Issue Tracker Integration
@@ -54,11 +54,11 @@ When MCP tools are unavailable, use the CLI skill matching your tracker:
 
 | Tracker           | CLI Skill    | CLI Tool                                           |
 | ----------------- | ------------ | -------------------------------------------------- |
-| **Jira**          | `jira-cli`   | [`jira`](https://github.com/ankitpokhrel/jira-cli) |
+| **Jira**          | `acli`   | [`acli`](https://developer.atlassian.com/cloud/acli/reference/commands/) |
 | **GitHub Issues** | `gh-cli`     | [`gh`](https://cli.github.com/)                    |
 | **Linear**        | `linear-cli` | [`linear`](https://github.com/schpet/linear-cli)   |
 
-> See `.agents/skills/{jira-cli,gh-cli,linear-cli}/SKILL.md` for detailed CLI commands and workflows.
+> See `.agents/skills/{acli,gh-cli,linear-cli}/SKILL.md` for detailed CLI commands and workflows.
 
 ## Tracker Configuration
 
@@ -73,7 +73,7 @@ These values come from `AGENTS.md`:
 
 ## CLI Initial Setup
 
-- **Jira**: `jira init --server {{PM_URL}} --project {{PROJECT_KEY}}`
+- **Jira**: `acli jira auth login --web` or `acli jira auth login --site "{{PM_URL}}" --email "user@example.com" --token < token.txt` (replace with your Atlassian email)
 - **GitHub**: `gh auth login` (auto-detects repo)
 - **Linear**: `linear auth` or set `LINEAR_API_KEY` environment variable
 

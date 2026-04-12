@@ -45,7 +45,7 @@ Before creating each ticket, ask:
 ## Issue Tracker Tool Access
 
 > **Full details:** See the `issue-tracker` skill in `.agents/skills/issue-tracker/SKILL.md` for MCP tools reference, CLI fallback strategy, tracker configuration, and epic discovery workflow.
-> For CLI-specific commands, see the matching skill: `.agents/skills/{jira-cli,gh-cli,linear-cli}/SKILL.md`.
+> For CLI-specific commands, see the matching skill: `.agents/skills/{acli,gh-cli,linear-cli}/SKILL.md`.
 
 When interacting with {{ISSUE_TRACKER}}, use MCP tools first (see the `issue-tracker` skill for the tools table). If MCP is unavailable, fall back to the CLI skill matching your tracker.
 
