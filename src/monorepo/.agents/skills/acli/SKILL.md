@@ -40,6 +40,24 @@ acli jira auth switch
 acli jira auth logout
 ```
 
+## Switching Between Sites and Accounts
+
+If acli is not currently using the site or account declared by the project or specified by the user, use the acli command to switch:
+
+```bash
+# Interactive mode
+acli jira auth switch
+
+# Switch to a specific site
+acli jira auth switch --site "mysite.atlassian.net"
+
+# Switch to a specific email
+acli jira auth switch --email "user@example.com"
+
+# Switch to a specific site and email
+acli jira auth switch --site "mysite.atlassian.net" --email "user@example.com"
+```
+
 ## Work Item Commands
 
 ### Search Work Items

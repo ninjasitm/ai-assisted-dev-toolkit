@@ -40,9 +40,9 @@ acli jira auth switch
 acli jira auth logout
 ```
 
-## Switching between sites
+## Switching Between Sites and Accounts
 
-If acli is not currently using the site declared by the project or specified by the user, use the acli commands to switch sites:
+If acli is not currently using the site or account declared by the project or specified by the user, use the acli commands to switch sites and accounts:
 
 ```bash
 # Interactive mode
