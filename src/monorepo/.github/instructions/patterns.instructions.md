@@ -55,6 +55,14 @@ import { utils } from "~/utils";
 {{PACKAGE_MANAGER}} build --filter={{APP_NAME_1}}...
 ```
 
+## SRP and reuse-first principle
+
+- **Before implementing new functionality, review existing patterns** in shared packages (`{{UTILS_PATH}}`, `{{HELPERS_PATH}}`, `{{COMPOSABLES_PATH}}`) for capabilities that already solve the problem.
+- **Prefer extending existing utilities** over creating new ones or duplicating logic inline — a new solution is only warranted when the existing one genuinely cannot accommodate the use case.
+- **Never duplicate state or behavior** that an existing utility already manages (e.g., loading flags, error state, async wrappers). Inline duplication violates SRP and makes behavior inconsistent across the monorepo.
+- When in doubt, extend the existing pattern and keep consumers (components, controllers, handlers) thin.
+- Reusable logic belongs in a shared `packages/` module, not copied across apps.
+
 ## Shared Configuration
 
 ### ESLint

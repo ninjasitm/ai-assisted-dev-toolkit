@@ -8,5 +8,6 @@ alwaysApply: agent
 - No global CSS outside {{STYLING}} configuration.
 - No direct DOM manipulation; use framework reactivity.
 - No custom solutions for problems solved by core libraries.
+- No duplicating logic that an existing utility, composable, helper, or service already handles — extend it instead.
 - No inconsistent naming for events or handlers.
 - No mixing server and client code inappropriately.
