@@ -48,10 +48,10 @@ This is a **meta-repository** containing templates for AI development instructio
 ├── .cursor/            # This repo's Cursor config
 ├── .github/            # This repo's GitHub config
 ├── .claude/            # This repo's Claude Code config
-│   ├── commands/       # Claude Code commands
+│   ├── commands/       # Thin wrappers → prompt-snippets
 │   ├── rules/          # Thin wrappers → rules-snippets
 │   ├── rules-snippets/ # Rules-specific content fragments
-│   └── prompt-snippets/ # Shared content fragments
+│   └── prompt-snippets/ # Shared content fragments (source of truth)
 ├── .opencode/          # This repo's OpenCode config
 │   ├── agents/         # Agent definitions
 │   ├── command/        # Custom commands
