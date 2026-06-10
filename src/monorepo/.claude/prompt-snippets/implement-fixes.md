@@ -1,7 +1,3 @@
----
-description: Implement bug fixes with proper tracking and validation
----
-
 # Implement Fixes
 
 Implement bug fixes and corrections with proper validation and documentation.

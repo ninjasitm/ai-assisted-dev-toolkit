@@ -1,7 +1,3 @@
----
-description: Bootstrap AI instructions by analyzing project and customizing templates
----
-
 # Bootstrap AI Instructions
 
 Analyze the project structure and customize AI instruction templates for this codebase.

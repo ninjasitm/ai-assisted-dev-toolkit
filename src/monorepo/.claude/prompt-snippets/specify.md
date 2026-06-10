@@ -1,7 +1,3 @@
----
-description: Create a feature specification from a natural language description
----
-
 You are helping to create a feature specification based on the user's description.
 
 ## Your Task

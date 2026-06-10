@@ -1,8 +1,3 @@
----
-applyTo: "**/*"
-description: "API route patterns, input validation, and response formats."
----
-
 # API Server
 
 - {{API_ROUTE_PATTERN}}

@@ -1,7 +1,3 @@
----
-description: Break down a plan into executable tasks
----
-
 # Generate Task Breakdown
 
 Break down the implementation plan into executable tasks. This is the third step in the development lifecycle.

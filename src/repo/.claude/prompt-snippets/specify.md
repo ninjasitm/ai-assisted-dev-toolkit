@@ -1,7 +1,3 @@
----
-description: Create a feature specification from a description
----
-
 # Create Feature Specification
 
 Start a new feature by creating a specification. This is the first step in the development lifecycle.

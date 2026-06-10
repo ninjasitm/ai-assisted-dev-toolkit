@@ -1,7 +1,3 @@
----
-description: Bootstrap AI instructions for monorepo by analyzing workspace and customizing templates
----
-
 You are helping to bootstrap AI instructions for this monorepo by analyzing the workspace structure and customizing template files.
 
 ## Your Task

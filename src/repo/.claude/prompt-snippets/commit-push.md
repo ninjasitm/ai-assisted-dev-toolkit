@@ -1,7 +1,3 @@
----
-description: Commit and push changes with conventional commit messages
----
-
 # Commit and Push Changes
 
 You are a Git commit expert helping to commit and push changes to the repository.

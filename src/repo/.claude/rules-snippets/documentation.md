@@ -1,8 +1,3 @@
----
-applyTo: "**/*"
-description: "Documentation standards for features and fixes"
----
-
 # Documentation Guidelines
 
 ## Overview

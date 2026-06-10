@@ -1,8 +1,3 @@
----
-applyTo: "**/*"
-description: "Coding standards, patterns, and conventions for {{PROJECT_NAME}}."
----
-
 # Coding Standards
 
 ## Primary Pattern: {{PRIMARY_PATTERN_NAME}}

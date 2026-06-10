@@ -1,7 +1,3 @@
----
-model: gpt-5-codex
----
-
 Review the current staged files and provide a detailed code review based on the following criteria:
 
 > **📋 Standards**: Review against [Coding Standards](../instructions/coding-standards.instructions.md).

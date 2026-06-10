@@ -1,8 +1,3 @@
----
-applyTo: "**/*"
-description: "Core library usage and utility patterns."
----
-
 # Core Libraries
 
 - Use {{UTILITY_LIBRARY}} for common utilities.

@@ -1,7 +1,3 @@
----
-description: Create an implementation plan from a feature specification or requirement
----
-
 You are helping to create an implementation plan for a feature or requirement.
 
 ## Orchestrator Checkpoint

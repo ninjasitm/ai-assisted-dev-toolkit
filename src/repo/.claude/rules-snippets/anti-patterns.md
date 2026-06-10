@@ -1,8 +1,3 @@
----
-applyTo: "**/*"
-description: "Deprecated features and anti-patterns to avoid."
----
-
 # Anti-Patterns (What to Avoid)
 
 - No deprecated {{FRAMEWORK}} features.

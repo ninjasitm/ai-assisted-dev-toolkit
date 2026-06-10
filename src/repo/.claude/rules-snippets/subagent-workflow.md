@@ -1,8 +1,3 @@
----
-applyTo: "**/*"
-description: "Subagent workflow patterns and orchestrator-first approach. Loaded when working with multi-step tasks, feature development, or agent delegation."
----
-
 # Subagent Workflow
 
 ## 🛑 BEFORE STARTING: Orchestration Checkpoint

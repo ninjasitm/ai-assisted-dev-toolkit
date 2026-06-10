@@ -1,7 +1,3 @@
----
-description: Generate release notes from git commits (web, git tag, or documentation)
----
-
 You are helping to generate professional release notes from git commits.
 
 ## Your Task

@@ -1,7 +1,3 @@
----
-description: Conduct code review for files or features
----
-
 # Code Review
 
 Comprehensive code review checklist for quality, security, and maintainability.

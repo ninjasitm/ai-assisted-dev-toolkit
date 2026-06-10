@@ -1,8 +1,3 @@
----
-applyTo: "**/*"
-description: "Version control conventions and commit message format."
----
-
 # Version Control
 
 - Use conventional commit format: `<type>(<scope>): <description>`.

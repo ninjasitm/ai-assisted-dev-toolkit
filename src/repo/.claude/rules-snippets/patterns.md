@@ -1,8 +1,3 @@
----
-applyTo: "**/*"
-description: "Project-specific coding patterns and shared utilities for {{PROJECT_NAME}}."
----
-
 # Patterns and conventions
 
 ## State management

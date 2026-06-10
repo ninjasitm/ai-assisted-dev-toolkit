@@ -1,8 +1,3 @@
----
-applyTo: "**/*"
-description: "Testing standards and conventions for {{PROJECT_NAME}}."
----
-
 # Testing Standards
 
 ## Commands

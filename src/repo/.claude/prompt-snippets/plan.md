@@ -1,7 +1,3 @@
----
-description: Create an implementation plan for a feature
----
-
 # Plan Feature Implementation
 
 Plan how to implement the specified feature. This is the second step in the development lifecycle.

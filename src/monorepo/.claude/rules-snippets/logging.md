@@ -1,10 +1,3 @@
----
-paths:
-  - "src/**"
-  - "apps/**"
-  - "packages/**"
----
-
 # Monorepo Logging Standards
 
 ## Format

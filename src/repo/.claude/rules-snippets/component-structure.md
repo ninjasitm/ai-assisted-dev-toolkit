@@ -1,8 +1,3 @@
----
-applyTo: "**/*"
-description: "Component structure patterns and naming conventions."
----
-
 # Component Structure
 
 - {{COMPONENT_STRUCTURE_RULE}}

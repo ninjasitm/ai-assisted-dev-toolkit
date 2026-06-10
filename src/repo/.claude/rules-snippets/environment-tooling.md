@@ -1,8 +1,3 @@
----
-applyTo: "**/*"
-description: "Environment and tooling configuration rules."
----
-
 # Environment & Tooling
 
 - Tailor commands to the user's OS and shell.

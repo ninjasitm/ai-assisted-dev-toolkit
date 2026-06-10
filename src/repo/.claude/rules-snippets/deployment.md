@@ -1,8 +1,3 @@
----
-applyTo: "**/*"
-description: "Deployment configuration and commands for {{PROJECT_NAME}}."
----
-
 # Deployment
 
 ## Target Platform

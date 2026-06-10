@@ -1,7 +1,3 @@
----
-description: Generate release notes from git commits (web, git tag, or documentation)
----
-
 # Generate Release Notes
 
 Generate professional release notes from git commits. Supports three output formats: **web** (customer-facing), **git tag** (concise), and **documentation** (detailed technical).

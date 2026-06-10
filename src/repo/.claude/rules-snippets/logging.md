@@ -1,8 +1,3 @@
----
-applyTo: "**/*"
-description: "Logging standards and best practices for {{PROJECT_NAME}}"
----
-
 # Logging Standards
 
 ## Overview

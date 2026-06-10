@@ -1,8 +1,3 @@
----
-applyTo: "**/*"
-description: "Server/client boundary enforcement and data fetching patterns."
----
-
 # Server-Client Separation
 
 - Never import server-only code in client components.

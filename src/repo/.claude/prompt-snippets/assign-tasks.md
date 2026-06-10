@@ -1,7 +1,3 @@
----
-description: Create {{ISSUE_TRACKER}} tickets from requirements or task files
----
-
 # Create Tickets from Requirements
 
 Parse requirement documents or task breakdown files and create structured tickets in {{ISSUE_TRACKER}}.

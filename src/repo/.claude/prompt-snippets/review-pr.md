@@ -1,7 +1,3 @@
----
-description: Conduct comprehensive pull request code review
----
-
 # Review Pull Request
 
 Conduct comprehensive code review for pull requests with structured fix tracking.

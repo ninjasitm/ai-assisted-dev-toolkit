@@ -1,8 +1,3 @@
----
-applyTo: "**/*"
-description: "Developer workflows and environment settings for {{PROJECT_NAME}}."
----
-
 # Workflows
 
 ## Development

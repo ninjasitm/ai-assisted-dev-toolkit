@@ -1,7 +1,3 @@
----
-description: Create or update the project constitution defining core principles and guidelines
----
-
 You are helping to create or update the project constitution at `docs/constitution.md`.
 
 ## Your Task

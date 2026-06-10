@@ -1,7 +1,3 @@
----
-description: Patch AI instructions by fetching updates from the toolkit repo and applying new/updated/missing guidance
----
-
 You are helping to patch AI instructions in this project by comparing against the latest templates from the ai-assisted-dev-toolkit repository and applying any updates.
 
 ## Orchestrator Checkpoint
@@ -15,7 +11,6 @@ You are helping to patch AI instructions in this project by comparing against th
 ```
 /bootstrap-patch
 /bootstrap-patch --dry-run
-/bootstrap-patch --migrate
 /bootstrap-patch --category rules
 /bootstrap-patch --category commands,prompts
 ```
@@ -43,14 +38,13 @@ You are helping to patch AI instructions in this project by comparing against th
 
     Check for a `.toolkit-version` file in the project root:
     - If exists: Read the version string (e.g., `2.0.10`, `3.0.0`)
-    - If missing: Assume legacy version (pre-3.0.0) — triggers migration logic
+    - If missing: Assume legacy version (pre-3.0.0)
 
     Read the toolkit's version from `$TOOLKIT_TEMP/.toolkit-version` to compare.
 
     **Version Comparison:**
-    - **Same version**: No structural changes expected, skip migration checks
+    - **Same version**: No structural changes expected
     - **Newer version**: Check for structural changes (new directories, renamed files, format changes)
-    - **Legacy (no version file)**: Run full migration detection (see Migration Logic section)
 
 2. **Inventory Current State**:
 
@@ -183,58 +177,6 @@ When a file has been bootstrapped (placeholders replaced with real values), the 
 - **Modified instructions** (changed wording in existing sections): Replace template text, re-apply value map
 - **Removed sections**: Flag for user review — project may depend on removed guidance
 - **Structural reorganization**: Replace entire file, re-apply value map, flag for review
-
-## Migration Logic (Legacy → v3.0+)
-
-When the project has no `.toolkit-version` file, detect and handle structural migrations:
-
-### Detect Migration Needed
-
-Check if the project uses the **old inline pattern** (pre-3.0) or the **new snippet pattern** (3.0+):
-
-| Indicator | Old Pattern (pre-3.0) | New Pattern (3.0+) |
-|-----------|----------------------|---------------------|
-| `.claude/rules-snippets/` | ❌ Does not exist | ✅ Exists |
-| `.claude/rules/*.md` | Full inline content (>30 lines) | Thin wrapper (<20 lines) |
-| `.opencode/` | ❌ Does not exist | ✅ Exists |
-| `.toolkit-version` | ❌ Does not exist | ✅ Contains version string |
-
-### Migration Steps
-
-If migration is needed (old → new):
-
-1. **Create snippet directories**:
-   - `.claude/rules-snippets/` — extract content from `.claude/rules/*.md`
-   - `.claude/prompt-snippets/` — extract content from `.claude/commands/*.md`
-   - `.claude/agents-snippets/` — extract content from `.claude/agents/*.agent.md` or `.github/agents/*.agent.md`
-
-2. **Extract content to snippets**:
-   - For each rule file: copy the full content (after frontmatter) to `rules-snippets/<name>.md`
-   - For each command file: copy the full content to `prompt-snippets/<name>.md`
-   - For each agent file: copy the body content (after frontmatter) to `agents-snippets/<name>.md`
-
-3. **Convert originals to thin wrappers**:
-   - Replace the original file content with a thin wrapper referencing the snippet
-   - Preserve all frontmatter (paths, applyTo, description, tools, etc.)
-   - Add the reference line: `Follow the rules defined in [path](relative-path).`
-
-4. **Create `.opencode/` directory** (if missing):
-   - Copy `opencode.json` from toolkit template
-   - Create command, rule, and agent wrappers using `@` import syntax
-
-5. **Create `.toolkit-version` file**:
-   - Write the current toolkit version string
-
-6. **Update CLAUDE.md**:
-   - Add multi-tool sections (GitHub Copilot, Cursor IDE, OpenCode) if missing
-   - Add Apps and Packages sections if missing
-
-### Conflict Resolution During Migration
-
-- **Preserve all `{{PLACEHOLDER}}` replacements** that the project has already made
-- **Preserve project-specific customizations** in rule/command/agent content
-- **Flag files with heavy customization** for manual review
-- **Auto-merge**: New snippet directories, new .opencode/ files
 
 ## Guidelines
 

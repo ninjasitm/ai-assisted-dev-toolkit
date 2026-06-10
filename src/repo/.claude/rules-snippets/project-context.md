@@ -1,8 +1,3 @@
----
-applyTo: "**/*"
-description: "Project architecture and data flow for {{PROJECT_NAME}}."
----
-
 # {{PROJECT_NAME}} architecture
 
 - **Framework:** {{FRAMEWORK}}

@@ -1,8 +1,3 @@
----
-applyTo: "**/*"
-description: "Database migration and schema management rules."
----
-
 # Database Migrations
 
 - {{DATABASE_SYNC_RULE}}

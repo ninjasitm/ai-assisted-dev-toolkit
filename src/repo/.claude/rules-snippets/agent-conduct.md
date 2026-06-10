@@ -1,8 +1,3 @@
----
-applyTo: "**/*"
-description: "Agent conduct rules, clarification protocols, and assumption handling."
----
-
 # Agent Conduct & Interaction Rules
 
 ## ⚠️ CRITICAL: Orchestration Checkpoint First

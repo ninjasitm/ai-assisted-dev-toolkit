@@ -1,8 +1,3 @@
----
-applyTo: "**/*"
-description: "UI accessibility standards and responsive design patterns."
----
-
 # UI & Accessibility
 
 - Develop with a mobile-first approach.

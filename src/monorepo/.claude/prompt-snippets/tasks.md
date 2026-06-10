@@ -1,7 +1,3 @@
----
-description: Generate an actionable task list from a specification or plan
----
-
 You are helping to break down a feature into actionable tasks.
 
 ## Your Task
