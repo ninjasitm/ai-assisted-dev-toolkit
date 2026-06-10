@@ -1,5 +1,7 @@
 ---
 description: Conduct comprehensive pull request code review
+argument-hints:
+  - pr_number_or_url: "The pull request number or full URL to review"
 ---
 
 # Review Pull Request
@@ -12,6 +14,21 @@ Conduct comprehensive code review for pull requests with structured fix tracking
 /review-pr 42
 /review-pr https://github.com/{{REPO_OWNER}}/{{PROJECT_NAME}}/pull/42
 ```
+
+## Rules
+
+[Coding Standards](../../.claude/rules-snippets/patterns.md)
+
+## Orchestrator Checkpoint
+
+> **🛑 For large PRs** (10+ files or 3+ domains): Dispatch specialist reviewers in parallel:
+>
+> - **Backend Architect** → architecture, API design, database
+> - **Frontend Developer** → UI, components, accessibility
+> - **Reviewer** → code quality, SOLID, DRY
+> - **Documenter** → documentation completeness
+>   Each reviewer returns findings independently; the orchestrator merges results.
+>   See `.github/instructions/subagent-workflow.instructions.md` for patterns.
 
 ## Process
 
@@ -115,9 +132,9 @@ Conduct comprehensive code review for pull requests with structured fix tracking
    - Add all identified issues to todo list
 
 6. **Review Decision**:
-   - **Approve**: All criteria met, ready for merge
-   - **Request Changes**: Blocking issues found
-   - **Comment**: Non-blocking suggestions only
+   - **✅ Approve**: All criteria met, ready for merge
+   - **❌ Request Changes**: Blocking issues found
+   - **💬 Comment**: Non-blocking suggestions only
 
 7. **Provide Actionable Improvements**:
    - For each suggestion:
@@ -125,14 +142,120 @@ Conduct comprehensive code review for pull requests with structured fix tracking
      - Include specific code examples or patterns
      - Reference best practices or conventions
 
-8. **Fix Tracking**:
-   - Create todo list of ALL fixes
-   - Mark ONE todo as in-progress before starting
-   - Complete the specific fix
-   - Mark todo as completed immediately after finishing
-   - Never batch completions
+8. **Output Format**:
 
-9. **Resolve PR Comment Threads**:
-   - After each fix is pushed, resolve the comment thread
-   - If a comment could NOT be addressed, explain why
-   - Verify resolution after pushing
+   ```markdown
+   ## Review Summary
+
+   **Decision**: [✅ Approve | ❌ Request Changes | 💬 Comment]
+
+   [Concise 2-3 sentence summary of review findings]
+
+   ## PR Comments & Resolution Plan
+
+   | Severity | Reviewer | Comment   | Resolution Plan | Confidence |
+   | -------- | -------- | --------- | --------------- | ---------- |
+   | Critical | @user    | [Summary] | [Plan]          | 99.9%      |
+   | High     | @user    | [Summary] | [Plan]          | 99.9%      |
+   | Medium   | @user    | [Summary] | [Plan]          | 99.9%      |
+
+   ## Code Quality Findings
+
+   ### Critical Issues
+
+   - **[File:Line]**: [Issue description]
+     - **Impact**: [Why this matters]
+     - **Fix**: [Specific actionable suggestion]
+
+   ### High Priority
+
+   - **[File:Line]**: [Issue description]
+     - **Impact**: [Why this matters]
+     - **Fix**: [Specific actionable suggestion]
+
+   ### Medium Priority (Suggestions)
+
+   - **[File:Line]**: [Improvement suggestion]
+     - **Rationale**: [Explanation]
+     - **Example**: [Code snippet if applicable]
+
+   ## Potential Issues
+
+   ### Bugs & Edge Cases (If Applicable)
+
+   - [Description of potential bug]
+   - [Edge case not handled]
+
+   ### Security Concerns (If Applicable)
+
+   - [Security vulnerability or concern]
+
+   ### Performance Bottlenecks (If Applicable)
+
+   - [Performance issue identified]
+
+   ## Testing Notes (If Applicable)
+
+   - [Verification performed or needed]
+   - [Test coverage assessment]
+
+   ## Action Items Checklist
+
+   - [ ] Fix: [Critical issue 1]
+   - [ ] Fix: [Critical issue 2]
+   - [ ] Address: [High priority comment]
+   - [ ] Improve: [Medium priority suggestion]
+
+   ## Fixes Applied
+
+   _After fixes are implemented, populate this table with every change made:_
+
+   | File              | Issue                           | Fix                              |
+   | ----------------- | ------------------------------- | -------------------------------- |
+   | `ExampleFile.php` | Missing import → fatal error    | Added `use Namespace\ClassName;` |
+   | `ExampleFile.php` | Unreachable code after `return` | Removed dead `break` statements  |
+   | `AnotherFile.php` | Field missing from `$casts`     | Added `'field' => 'datetime'`    |
+
+   Every fix must appear in this table — one row per file+issue pair.
+   ```
+
+9. **Report Review Status**:
+   - Review decision with clear justification
+   - Summary of key findings by severity
+   - Inline comments for specific code locations
+   - Todo list status showing progress
+   - Next steps if changes requested
+
+10. **Confirm Execution Plan**
+    - If there are changes, ask the user to confirm the execution plan with a (Y/n)
+
+11. **If the plan is confirmed, proceed with fix Tracking with Internal Todo List**:
+    - **Before Starting Work**:
+      - Use `manage_todo_list` to create comprehensive list of ALL fixes:
+        - PR comments requiring fixes (by severity)
+        - Code quality issues
+        - Potential bugs or security concerns
+        - Performance improvements
+    - **During Implementation**:
+      - Mark ONE todo as `in-progress` before starting
+      - Complete the specific fix
+      - Test the fix (if applicable)
+      - Mark todo as `completed` IMMEDIATELY after finishing
+      - Move to next todo and repeat
+    - **Never batch completions** - mark each done immediately
+
+12. **Resolve PR Comment Threads After Fixing**:
+    - **CRITICAL**: After each comment is addressed and the fix is pushed:
+      1. **Resolve the comment thread** via GitHub MCP tools or API:
+         - Use `mcp_github_github_pull_request_review_write` to submit a review resolving threads
+         - Or reply to each resolved thread with a brief summary of what was fixed
+         - Or use `gh api` to resolve conversation threads:
+           ```bash
+           # Reply to a review comment indicating resolution
+           gh api repos/{owner}/{repo}/pulls/comments/{comment_id}/replies \
+             -f body="Fixed: [brief description of the fix applied]"
+           ```
+      2. **If a comment could NOT be addressed**:
+         - Reply to the thread explaining why (e.g., out of scope, needs more context, trade-off decision)
+         - Ask the user whether to leave it open or resolve with an explanation
+      3. **Verify resolution** — after pushing, confirm the comment threads show as resolved in the PR
