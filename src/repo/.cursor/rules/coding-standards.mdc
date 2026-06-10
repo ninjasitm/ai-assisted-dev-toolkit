@@ -9,3 +9,4 @@ alwaysApply: agent
 - Follow {{FRAMEWORK}}'s recommended folder and naming conventions.
 - Keep functions focused and manageable (under 50-75 lines).
 - Use try-catch for async operations; leverage {{FRAMEWORK}} error utilities.
+- **Reuse before creating**: check `{{UTILS_PATH}}`, `{{HELPERS_PATH}}`, and `{{COMPOSABLES_PATH}}` before implementing new functionality. Extend existing utilities rather than duplicating logic.
