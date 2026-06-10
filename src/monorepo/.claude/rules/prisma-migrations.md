@@ -3,11 +3,14 @@ paths:
   - "prisma/**"
   - "**/migrations/**"
   - "**/*.prisma"
+description: "Database migration and schema management rules."
 ---
 
-- {{DATABASE_SYNC_RULE}}
+# Prisma Migrations
+
+Follow the rules defined in [.claude/rules-snippets/prisma-migrations.md](../rules-snippets/prisma-migrations.md).
+
+Key points:
 - Create migrations with descriptive names.
 - Apply migrations to development database before committing.
-- Maintain corresponding model definitions for database entities.
-- Update affected services after schema changes.
-- Run tests after schema modifications.
+- Update affected services and run tests after schema changes.

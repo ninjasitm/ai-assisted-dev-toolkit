@@ -204,6 +204,26 @@ Replace placeholders in all template files:
 - `.github/prompts/*.prompt.md` - Reusable prompts
 - `.cursor/rules/*.mdc` - Cursor IDE rules
 - `.cursor/commands/*.md` - Custom commands
+- `.claude/rules/*.md` - Claude Code rules (thin wrappers)
+- `.claude/commands/*.md` - Claude Code commands (thin wrappers)
+- `.claude/rules-snippets/*.md` - Rules content (source of truth)
+- `.claude/prompt-snippets/*.md` - Prompt content (source of truth)
+- `.claude/agents-snippets/*.md` - Agent definitions (source of truth)
+- `.opencode/opencode.json` - OpenCode configuration
+- `.opencode/commands/*.md` - OpenCode commands
+- `.opencode/rules/*.md` - OpenCode rules
+- `.opencode/agents/*.md` - OpenCode agents
+- `.toolkit-version` - Toolkit version tracking
+
+**Create Toolkit Version File:**
+
+Create a `.toolkit-version` file in the project root with the current toolkit version:
+
+```
+3.0.0
+```
+
+This file enables `bootstrap-patch` to detect version changes and apply migrations automatically.
 
 **Project Management Section (added to AGENTS.md):**
 
@@ -521,6 +541,15 @@ Would you like to install these skills now? (Y/n)
 - [x] .cursor/rules/\*.mdc
 - [x] .cursor/commands/\*.md
 - [x] .github/prompts/\*.prompt.md
+- [x] .claude/rules/\*.md (thin wrappers)
+- [x] .claude/rules-snippets/\*.md (rules content)
+- [x] .claude/prompt-snippets/\*.md (prompt content)
+- [x] .claude/agents-snippets/\*.md (agent content)
+- [x] .opencode/opencode.json
+- [x] .opencode/commands/\*.md
+- [x] .opencode/rules/\*.md
+- [x] .opencode/agents/\*.md
+- [x] .toolkit-version
 
 ### Installed Skills
 
@@ -657,6 +686,14 @@ Verify that all necessary instruction files exist and are properly configured:
 | nextjs.instructions.md        | Next.js patterns | Project uses Next.js 15      |
 | testing.instructions.md       | Test conventions | Multiple test files detected |
 | api-standards.instructions.md | API conventions  | REST API detected in project |
+
+**Snippet Directories:**
+
+| Directory | Purpose | Status |
+|-----------|---------|--------|
+| `.claude/rules-snippets/` | Rules content (source of truth) | ✓ |
+| `.claude/prompt-snippets/` | Prompt content (source of truth) | ✓ |
+| `.claude/agents-snippets/` | Agent definitions (source of truth) | ✓ |
 
 ### 📝 Create Missing Instruction Files?
 
@@ -842,6 +879,10 @@ All instruction files are automatically loaded by GitHub Copilot when editing ma
 - [x] AGENTS.md configured
 - [x] Instruction files cover all frameworks
 - [x] Skills align with tech stack
+- [x] Snippet directories created
+- [x] Thin wrappers reference correct snippets
+- [x] .opencode/ directory configured
+- [x] .toolkit-version file created
 
 ### Your Project is Ready! 🎉
 

@@ -3,8 +3,9 @@ description: Rules for separating server and client code
 globs:
 alwaysApply: agent
 ---
-- Never import server-only code in client components.
-- Use API endpoints to expose server functionality to clients.
-- Create shared types for cross-boundary use.
-- Use appropriate data fetching patterns for the framework.
-- Mark server-only modules clearly (e.g., `.server.{{LANGUAGE_EXTENSION}}`).
+
+# Server-Client Separation
+
+Never import server-only code in client components; use API endpoints for cross-boundary access.
+
+📋 **Full definition:** [.claude/rules-snippets/server-client-separation.md](../../.claude/rules-snippets/server-client-separation.md)

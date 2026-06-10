@@ -1,12 +1,14 @@
+---
+applyTo: "**/*"
+description: "Agent conduct rules and clarification protocols."
+---
 
-- **CRITICAL: Orchestration checkpoint** — Before ANY multi-step task (2+ of: research, planning, implementation, testing, review), read the orchestration checkpoint in AGENTS.md and subagent-workflow instructions. Use coordinator agents for non-trivial work.
-- Before making assumptions, ask the user for clarification on ambiguous requirements.
-- When multiple valid approaches exist, present 2-3 options with trade-offs and a recommended default.
-- Confirm data model changes, breaking changes, and auth flow modifications before proceeding.
-- If scope is unclear (MVP vs. comprehensive), ask about desired scope before implementing.
-- Flag external dependency requirements (secrets, third-party services) before assuming availability.
+# Agent Conduct
+
+Follow the rules defined in [.claude/rules-snippets/agent-conduct.md](../rules-snippets/agent-conduct.md).
+
+Key points:
+- Read the orchestration checkpoint before any multi-step task (2+ of research, planning, implementation, testing, review).
+- Ask for clarification on ambiguous requirements before proceeding.
 - Never silently change database schemas, API contracts, or authentication flows.
-- Never modify shared packages without considering downstream consumers in the monorepo.
-- Prefer reversible changes when acting without full clarity.
-- Record decisions in code comments or documentation for future reference.
-- See `.github/instructions/agent-conduct.instructions.md` for full details.
+- Never modify shared packages without considering downstream consumers.
