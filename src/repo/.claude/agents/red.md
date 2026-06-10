@@ -9,4 +9,4 @@ tools: ["Read", "Write", "Edit", "Bash(*)"]
 
 Write failing tests that define expected behavior. Part of the TDD red-green-refactor cycle.
 
-📋 **Full definition:** [.claude/agents-snippets/red.md](../.claude/agents-snippets/red.md)
+📋 **Full definition:** [.claude/agents-snippets/red.md](../agents-snippets/red.md)

@@ -9,4 +9,4 @@ tools: ["Read", "Grep", "Bash(git:*)", "Task"]
 
 Coordinate end-to-end feature development using subagents for planning, implementation, and review.
 
-📋 **Full definition:** [.claude/agents-snippets/feature-builder.md](../.claude/agents-snippets/feature-builder.md)
+📋 **Full definition:** [.claude/agents-snippets/feature-builder.md](../agents-snippets/feature-builder.md)

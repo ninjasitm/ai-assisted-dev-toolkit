@@ -9,4 +9,4 @@ tools: ["Read", "Write", "Edit", "Bash(*)"]
 
 Build user interfaces, implement components, handle state management, and optimize frontend performance.
 
-📋 **Full definition:** [.claude/agents-snippets/frontend-developer.md](../.claude/agents-snippets/frontend-developer.md)
+📋 **Full definition:** [.claude/agents-snippets/frontend-developer.md](../agents-snippets/frontend-developer.md)

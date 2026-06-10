@@ -22,8 +22,8 @@ This is a **template repository** for AI development instructions.
 - **Cursor commands** - `.md` files for custom workflows.
 - **GitHub prompts** - `.prompt.md` files for reusable prompts.
 - **GitHub instructions** - `.instructions.md` files for context.
-- **Claude rules** - Thin wrappers pointing to shared prompt snippets.
-- **Prompt snippets** - Shared content in `.claude/prompt-snippets/`.
+- **Claude rules** - Thin wrappers pointing to shared rule snippets.
+- **Rule snippets** - Shared content in `.claude/rules-snippets/`.
 
 ## Cross-compatible architecture
 
@@ -40,8 +40,8 @@ This toolkit uses a layered architecture for cross-tool compatibility:
    - `.github/prompts/` — Reusable prompts
 
 3. **Claude thin wrappers**:
-   - `.claude/rules/` — Points to `.github/instructions/` or prompt snippets
-   - `.claude/agents/` — Points to shared prompt snippets
+   - `.claude/rules/` — Points to `.claude/rules-snippets/`
+   - `.claude/agents/` — Points to shared agent snippets
 
 4. **Tool-specific**:
    - `.cursor/` — Cursor IDE (independent)

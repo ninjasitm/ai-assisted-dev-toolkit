@@ -9,4 +9,4 @@ tools: ["Read", "Write", "Edit", "Bash(*)"]
 
 Improve code quality and structure while keeping all tests passing. Part of the TDD red-green-refactor cycle.
 
-📋 **Full definition:** [.claude/agents-snippets/refactor.md](../.claude/agents-snippets/refactor.md)
+📋 **Full definition:** [.claude/agents-snippets/refactor.md](../agents-snippets/refactor.md)

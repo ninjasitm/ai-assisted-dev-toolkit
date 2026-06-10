@@ -9,4 +9,4 @@ tools: ["Read", "Write", "Edit", "Bash(*)"]
 
 Build administrator portals with RBAC, system dashboards, reporting, analytics, and operational tooling.
 
-📋 **Full definition:** [.claude/agents-snippets/admin-portal.md](../.claude/agents-snippets/admin-portal.md)
+📋 **Full definition:** [.claude/agents-snippets/admin-portal.md](../agents-snippets/admin-portal.md)

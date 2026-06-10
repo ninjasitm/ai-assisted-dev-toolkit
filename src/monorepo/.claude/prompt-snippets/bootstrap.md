@@ -130,6 +130,7 @@ You are helping to bootstrap AI instructions for this monorepo by analyzing the 
    - `.cursor/commands/*.md`
    - `.claude/rules/*.md` (thin wrappers)
    - `.claude/commands/*.md` (thin wrappers)
+   - `.claude/agents/*.agent.md` (thin wrappers)
    - `.claude/rules-snippets/*.md` (rules content — source of truth)
    - `.claude/prompt-snippets/*.md` (prompt content — source of truth)
    - `.claude/agents-snippets/*.md` (agent definitions — source of truth)
@@ -392,6 +393,8 @@ Root Files Updated:
 - .cursor/rules/*.mdc
 - .cursor/commands/*.md
 - .claude/rules/*.md (thin wrappers)
+- .claude/commands/*.md (thin wrappers)
+- .claude/agents/*.agent.md (thin wrappers)
 - .claude/rules-snippets/*.md (rules content)
 - .claude/prompt-snippets/*.md (prompt content)
 - .claude/agents-snippets/*.md (agent content)

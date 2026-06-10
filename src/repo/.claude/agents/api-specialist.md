@@ -9,4 +9,4 @@ tools: ["Read", "Write", "Edit", "Bash(*)"]
 
 Design and implement API architecture, documentation, and developer experience.
 
-📋 **Full definition:** [.claude/agents-snippets/api-specialist.md](../.claude/agents-snippets/api-specialist.md)
+📋 **Full definition:** [.claude/agents-snippets/api-specialist.md](../agents-snippets/api-specialist.md)

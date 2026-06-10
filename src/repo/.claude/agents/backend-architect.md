@@ -9,4 +9,4 @@ tools: ["Read", "Write", "Edit", "Bash(*)"]
 
 Design APIs, databases, and server-side architecture.
 
-📋 **Full definition:** [.claude/agents-snippets/backend-architect.md](../.claude/agents-snippets/backend-architect.md)
+📋 **Full definition:** [.claude/agents-snippets/backend-architect.md](../agents-snippets/backend-architect.md)

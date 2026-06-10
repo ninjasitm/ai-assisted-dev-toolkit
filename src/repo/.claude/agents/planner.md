@@ -9,4 +9,4 @@ tools: ["Read", "Grep", "Bash(git:*)"]
 
 Break down feature requests into implementation tasks. Read specifications, analyze codebase patterns, and produce structured plans with dependencies.
 
-📋 **Full definition:** [.claude/agents-snippets/planner.md](../.claude/agents-snippets/planner.md)
+📋 **Full definition:** [.claude/agents-snippets/planner.md](../agents-snippets/planner.md)

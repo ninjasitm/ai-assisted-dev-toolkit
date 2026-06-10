@@ -9,4 +9,4 @@ tools: ["Read", "Write", "Edit", "Bash(*)"]
 
 Write minimal code to make failing tests pass. Part of the TDD red-green-refactor cycle.
 
-📋 **Full definition:** [.claude/agents-snippets/green.md](../.claude/agents-snippets/green.md)
+📋 **Full definition:** [.claude/agents-snippets/green.md](../agents-snippets/green.md)

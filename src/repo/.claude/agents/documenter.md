@@ -9,4 +9,4 @@ tools: ["Read", "Grep"]
 
 Analyze codebases and create comprehensive documentation.
 
-📋 **Full definition:** [.claude/agents-snippets/documenter.md](../.claude/agents-snippets/documenter.md)
+📋 **Full definition:** [.claude/agents-snippets/documenter.md](../agents-snippets/documenter.md)

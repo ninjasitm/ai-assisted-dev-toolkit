@@ -23,9 +23,12 @@ This is a **meta-repository** containing templates for AI development instructio
 │   │   │   ├── instructions/ # Context instructions (source of truth)
 │   │   │   └── prompts/ # Reusable prompts
 │   │   ├── .claude/    # Claude Code config templates
-│   │   │   ├── agents/ # Agent definitions (full content)
-│   │   │   ├── rules/  # Rules (full content)
-│   │   │   ├── commands/ # Claude Code commands
+│   │   │   ├── agents/ # Agent definitions (thin wrappers)
+│   │   │   ├── agents-snippets/ # Agent definitions (source of truth)
+│   │   │   ├── rules/  # Rules (thin wrappers)
+│   │   │   ├── rules-snippets/ # Rules content (source of truth)
+│   │   │   ├── prompt-snippets/ # Prompt content (source of truth)
+│   │   │   ├── commands/ # Claude Code commands (thin wrappers)
 │   │   │   └── skills/ # Skill definitions
 │   │   ├── .agents/    # Pre-installed universal skills
 │   │   │   └── skills/ # Bundled skills (TDD, debugging, etc.)
