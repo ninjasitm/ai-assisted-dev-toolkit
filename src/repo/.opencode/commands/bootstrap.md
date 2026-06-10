@@ -5,4 +5,8 @@ agent: build
 
 # Bootstrap AI Instructions
 
+## Arguments
+
+$ARGUMENTS
+
 @.claude/prompt-snippets/bootstrap.md

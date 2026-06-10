@@ -5,6 +5,10 @@ agent: build
 
 You are helping to create or update the project constitution at `docs/constitution.md`.
 
+## Arguments
+
+$ARGUMENTS
+
 ## Your Task
 
 1. **Load existing constitution** (if it exists) at `docs/constitution.md`.

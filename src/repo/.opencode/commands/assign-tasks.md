@@ -5,4 +5,8 @@ agent: build
 
 # Assign Tasks
 
+## Arguments
+
+$ARGUMENTS
+
 @.claude/prompt-snippets/assign-tasks.md

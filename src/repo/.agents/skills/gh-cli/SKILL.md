@@ -1,9 +1,9 @@
 ---
 name: gh-cli
-description: Manage GitHub Issues from the command line using the gh CLI. Use when the user asks about GitHub issues, labels, milestones, or needs to manage project work items via the command line.
+description: Manage GitHub Issues and Pull Request review threads from the command line using the gh CLI. Use when the user asks about GitHub issues, labels, milestones, PR review comments, resolving review threads, or needs to manage project work items via the command line.
 ---
 
-# GitHub Issues CLI
+# GitHub Issues & PR Review CLI
 
 Interact with GitHub Issues from the command line using [gh](https://cli.github.com/).
 
@@ -12,6 +12,8 @@ Interact with GitHub Issues from the command line using [gh](https://cli.github.
 - User asks to create, view, edit, or search GitHub Issues
 - User needs to manage labels, milestones, or assignees
 - User wants to close, reopen, or comment on issues
+- User needs to resolve or reply to PR review comments/threads
+- User needs to submit a PR review (approve, request changes, comment)
 - MCP tools (`mcp_github_*`) are unavailable or failing
 - User needs scripted/batch issue operations
 
@@ -258,6 +260,125 @@ for id in 10 11 12; do gh issue edit "$id" --add-label "backlog"; done
 | `gh issue list --json number,title --jq '.[].title'` | Extract specific fields |
 | `gh issue view 123 --json body --jq '.body'`         | Get issue body only     |
 
+## Pull Request Review Threads
+
+Manage PR review comments and resolve threads.
+
+### List Review Threads
+
+```bash
+# List unresolved review threads via GraphQL
+gh api graphql -f query='
+{
+  repository(owner: "OWNER", name: "REPO") {
+    pullRequest(number: 123) {
+      reviewThreads(first: 50) {
+        nodes {
+          id
+          isResolved
+          comments(first: 1) {
+            nodes {
+              id
+              body
+              path
+              line
+            }
+          }
+        }
+      }
+    }
+  }
+}'
+
+# Filter to unresolved only with jq
+gh api graphql -f query='...' --jq '.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false) | {id, file: .comments.nodes[0].path, body: .comments.nodes[0].body}'
+```
+
+### Reply to a Review Comment
+
+```bash
+# Reply to a specific comment thread (REST API — requires PR number)
+gh api repos/OWNER/REPO/pulls/PR_NUMBER/comments/COMMENT_ID/replies -X POST -f body="Fixed in commit abc123."
+```
+
+### Resolve a Review Thread
+
+Threads are resolved via the GraphQL API. You need the thread node ID (starts with `PRRT_`).
+
+```bash
+# Resolve a single thread
+gh api graphql -f query='
+mutation {
+  resolveReviewThread(input: {threadId: "PRRT_kwDOQlyQTc6IWPxG"}) {
+    thread { id isResolved }
+  }
+}'
+
+# Resolve multiple threads
+for thread_id in PRRT_xxx PRRT_yyy PRRT_zzz; do
+  gh api graphql -f query="mutation { resolveReviewThread(input: {threadId: \"$thread_id\"}) { thread { id isResolved } } }"
+done
+```
+
+### Unresolve a Review Thread
+
+```bash
+gh api graphql -f query='
+mutation {
+  unresolveReviewThread(input: {threadId: "PRRT_kwDOQlyQTc6IWPxG"}) {
+    thread { id isResolved }
+  }
+}'
+```
+
+### Submit a PR Review
+
+```bash
+# Comment review (no approval/request changes)
+gh api repos/OWNER/REPO/pulls/123/reviews -X POST \
+  -f body="All comments addressed in commit abc123." \
+  -f event="COMMENT"
+
+# Approve
+gh api repos/OWNER/REPO/pulls/123/reviews -X POST \
+  -f body="LGTM" \
+  -f event="APPROVE"
+
+# Request changes
+gh api repos/OWNER/REPO/pulls/123/reviews -X POST \
+  -f body="Needs fixes" \
+  -f event="REQUEST_CHANGES"
+```
+
+### Full Workflow: Fix Comments and Resolve Threads
+
+```bash
+# 1. List unresolved threads
+gh api graphql -f query='{
+  repository(owner: "OWNER", name: "REPO") {
+    pullRequest(number: 123) {
+      reviewThreads(first: 50) {
+        nodes { id isResolved comments(first: 1) { nodes { body path } } }
+      }
+    }
+  }
+}' --jq '.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false) | {thread_id: .id, file: .comments.nodes[0].path}'
+
+# 2. Make fixes, commit, push
+git add -A && git commit -m "fix: address review comments" && git push
+
+# 3. Reply to each comment
+gh api repos/OWNER/REPO/pulls/PR_NUMBER/comments/COMMENT_ID/replies -X POST -f body="Fixed in commit abc123."
+
+# 4. Resolve each thread
+gh api graphql -f query='mutation { resolveReviewThread(input: {threadId: "THREAD_ID"}) { thread { id isResolved } } }'
+
+# 5. Post review confirming all addressed
+gh api repos/OWNER/REPO/pulls/123/reviews -X POST \
+  -f body="All review comments addressed." \
+  -f event="COMMENT"
+```
+
 ## Limitations
 
 - Requires `gh auth login` before first use
@@ -265,3 +386,5 @@ for id in 10 11 12; do gh issue edit "$id" --add-label "backlog"; done
 - Rate limits: 5000 requests/hour for authenticated users
 - Sub-issues require GitHub's sub-issues feature (beta)
 - Epic patterns rely on label conventions, not native epics
+- PR thread resolution requires the GraphQL API (REST does not support it)
+- Thread node IDs start with `PRRT_`, comment IDs start with `PRRC_`

@@ -5,4 +5,8 @@ agent: build
 
 # Implement Fixes
 
+## Arguments
+
+$ARGUMENTS
+
 @.claude/prompt-snippets/implement-fixes.md

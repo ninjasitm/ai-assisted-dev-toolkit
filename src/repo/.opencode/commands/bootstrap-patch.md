@@ -5,4 +5,8 @@ agent: build
 
 # Patch AI Instructions
 
+## Arguments
+
+$ARGUMENTS
+
 @.claude/prompt-snippets/bootstrap-patch.md

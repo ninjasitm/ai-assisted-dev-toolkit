@@ -134,12 +134,20 @@ You are helping to bootstrap AI instructions for this monorepo by analyzing the 
    - `.claude/rules-snippets/*.md` (rules content — source of truth)
    - `.claude/prompt-snippets/*.md` (prompt content — source of truth)
    - `.claude/agents-snippets/*.md` (agent definitions — source of truth)
-   - `.opencode/opencode.json` (OpenCode configuration)
+   - `.opencode/opencode.json` (OpenCode configuration — ⚠️ see schema validation below)
    - `.opencode/commands/*.md` (OpenCode commands)
    - `.opencode/rules/*.md` (OpenCode rules)
    - `.opencode/agents/*.md` (OpenCode agents)
    - `.toolkit-version` (version tracking)
    - `CLAUDE.md` (if it contains placeholders)
+
+   **⚠️ OpenCode `opencode.json` Schema Validation:**
+
+   When creating or modifying `.opencode/opencode.json`, **only use supported top-level keys**. The schema is defined at `https://opencode.ai/config.json`. Adding unsupported keys will cause validation errors.
+
+   **Supported top-level keys:** `$schema`, `instructions`, `skills`, `agent`, `default_agent`, `model`, `small_model`, `provider`, `mcp`, `tools`, `permission`, `lsp`, `formatter`, `server`, `shell`, `command`, `plugin`, `watcher`, `snapshot`, `share`, `autoupdate`, `compaction`, `attachment`, `logLevel`, `disabled_providers`, `enabled_providers`, `tool_output`, `enterprise`, `experimental`
+
+   **Do NOT add keys not listed above** (e.g., `rules`, `agents`, `commands`, `prompts` as top-level keys — these are configured via `instructions`, `skills`, and the `.opencode/` directory structure instead).
 
    **Create Toolkit Version File:**
 

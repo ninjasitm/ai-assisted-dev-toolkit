@@ -5,4 +5,8 @@ agent: build
 
 # Execute Implementation Tasks
 
+## Arguments
+
+$ARGUMENTS
+
 @.claude/prompt-snippets/implement.md

@@ -147,15 +147,28 @@ For `.cursor/rules/*.mdc`: preserve the original frontmatter exactly (it may use
 
 ### 7. Create `.opencode/` Directory
 
-1. **Create `.opencode/opencode.json`**:
+1. **Create `.opencode/opencode.json`** using only supported schema keys:
+
    ```json
    {
-     "$schema": "https://opencode.ai/schema.json",
-     "rules": [".opencode/rules/*.md"],
-     "commands": [".opencode/commands/*.md"],
-     "agents": [".opencode/agents/*.md"]
+     "$schema": "https://opencode.ai/config.json",
+     "instructions": [
+       "AGENTS.md",
+       ".opencode/rules/*.md"
+     ],
+     "skills": {
+       "paths": [
+         ".agents/skills/**/*.md",
+         ".claude/skills/**/*.md"
+       ]
+     },
+     "lsp": true
    }
    ```
+
+   **⚠️ Schema Validation:** Only use supported top-level keys from `https://opencode.ai/config.json`. Do NOT add unsupported keys like `rules`, `commands`, or `agents` as top-level entries — OpenCode discovers these via the `.opencode/` directory structure and the `instructions`/`skills` config arrays.
+
+   **Supported top-level keys:** `$schema`, `instructions`, `skills`, `agent`, `default_agent`, `model`, `small_model`, `provider`, `mcp`, `tools`, `permission`, `lsp`, `formatter`, `server`, `shell`, `command`, `plugin`, `watcher`, `snapshot`, `share`, `autoupdate`, `compaction`, `attachment`, `logLevel`, `disabled_providers`, `enabled_providers`, `tool_output`, `enterprise`, `experimental`
 
 2. **Create wrappers using `@` import syntax** — one file per snippet:
 

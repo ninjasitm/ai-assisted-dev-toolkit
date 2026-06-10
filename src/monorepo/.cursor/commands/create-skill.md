@@ -1,5 +1,6 @@
 ---
 description: Create a new agent skill following VS Code and agentskills.io specifications
+argument-hint: "skill name and requirements"
 tags: [skill-creation, agent-skills, documentation, automation]
 version: 1.0.0
 ---

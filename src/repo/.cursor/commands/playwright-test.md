@@ -1,5 +1,6 @@
 ---
 description: Run or create E2E tests using Playwright
+argument-hint: "test file or test description"
 ---
 
 # Playwright Test
