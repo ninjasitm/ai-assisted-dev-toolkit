@@ -226,7 +226,7 @@ Follow the rules defined in [.claude/rules-snippets/{{name}}.md](../../.claude/r
 
 ### Step 7: Create .opencode/ Directory
 
-1. Create `.opencode/opencode.json`:
+1. Create `.opencode/opencode.json` using only supported schema keys:
 
    ```json
    {
@@ -244,6 +244,10 @@ Follow the rules defined in [.claude/rules-snippets/{{name}}.md](../../.claude/r
      "lsp": true
    }
    ```
+
+   **⚠️ Schema Validation:** Only use supported top-level keys from `https://opencode.ai/config.json`. Do NOT add unsupported keys like `rules`, `commands`, or `agents` as top-level entries — OpenCode discovers these via the `.opencode/` directory structure and the `instructions`/`skills` config arrays.
+
+   **Supported top-level keys:** `$schema`, `instructions`, `skills`, `agent`, `default_agent`, `model`, `small_model`, `provider`, `mcp`, `tools`, `permission`, `lsp`, `formatter`, `server`, `shell`, `command`, `plugin`, `watcher`, `snapshot`, `share`, `autoupdate`, `compaction`, `attachment`, `logLevel`, `disabled_providers`, `enabled_providers`, `tool_output`, `enterprise`, `experimental`
 
 2. Create `.opencode/commands/*.md` — one thin wrapper per `.claude/commands/*.md`:
 
