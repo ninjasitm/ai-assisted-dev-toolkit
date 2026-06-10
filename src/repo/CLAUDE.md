@@ -19,9 +19,31 @@
 
 ## Claude Code
 
-- Detailed rules are in `.claude/rules/` — they load automatically each session.
-- Subagent definitions are in `.claude/agents/`.
+- Rules are in `.claude/rules/` — they load automatically each session.
+- Detailed standards are in `.github/instructions/`.
+- Agent definitions are in `.github/agents/` (shared with Copilot).
 - Custom commands are in `.claude/commands/`.
-- Skills are in `.claude/skills/` and `.agents/skills/`.
+- Skills are in `.agents/skills/`.
 - See `AGENTS.md` for full project context, orchestration checkpoint, and agent hierarchy.
 - See `.github/instructions/` for detailed standards (coding, testing, deployment, logging, etc.).
+
+## GitHub Copilot
+
+- Instructions are in `.github/instructions/` — they power completions and chat.
+- Agents are in `.github/agents/`.
+- Prompts are in `.github/prompts/`.
+- MCP config is in `.vscode/mcp.json`.
+
+## Cursor IDE
+
+- Rules are in `.cursor/rules/` (.mdc format).
+- Agents are in `.cursor/agents/`.
+- Commands are in `.cursor/commands/`.
+- MCP config is in `.cursor/mcp.json`.
+
+## OpenCode
+
+- Config is in `.opencode/opencode.json`.
+- Commands are in `.opencode/command/`.
+- Instructions are loaded from `AGENTS.md`, `.github/instructions/`, and `.claude/rules/`.
+- Skills are loaded from `.agents/skills/` and `.claude/skills/`.

@@ -3,9 +3,9 @@ description: Database schema management and migrations
 globs:
 alwaysApply: agent
 ---
-- {{DATABASE_SYNC_RULE}}
-- Create migrations with descriptive names.
-- Apply migrations to development database before committing.
-- Maintain corresponding model definitions for database entities.
-- Update affected services after schema changes.
-- Run tests after schema modifications.
+
+# Prisma Migrations
+
+Database schema sync, migration naming, and post-migration validation.
+
+📋 **Full definition:** [.claude/rules-snippets/prisma-migrations.md](../../.claude/rules-snippets/prisma-migrations.md)

@@ -4,9 +4,8 @@ globs:
 alwaysApply: agent
 ---
 
-- Review project documentation before generating code or suggestions.
-- Check `docs/` directory for architecture and design decisions.
-- Update documentation for new features or architectural changes.
-- Reference AGENTS.md for project overview, agent conduct rules, and skills.
-- Reference `.github/instructions/` for detailed standards (coding, testing, deployment, logging, etc.).
-- Follow agent conduct rules: ask for clarification on ambiguous requirements before proceeding.
+# Project Context
+
+Review project documentation and context before generating code.
+
+📋 **Full definition:** [.claude/rules-snippets/project-context.md](../../.claude/rules-snippets/project-context.md)

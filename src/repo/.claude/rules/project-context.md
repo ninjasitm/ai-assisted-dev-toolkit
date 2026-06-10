@@ -1,7 +1,13 @@
+---
+applyTo: "**/*"
+description: "Project context and documentation references."
+---
 
+# Project Context
+
+Follow the rules defined in [.claude/rules-snippets/project-context.md](../rules-snippets/project-context.md).
+
+Key points:
 - Review project documentation before generating code or suggestions.
-- Check `docs/` directory for architecture and design decisions.
-- Update documentation for new features or architectural changes.
 - Reference AGENTS.md for project overview, agent conduct rules, and skills.
-- Reference `.github/instructions/` for detailed standards (coding, testing, deployment, logging, etc.).
-- Follow agent conduct rules: ask for clarification on ambiguous requirements before proceeding.
+- Reference `.claude/rules-snippets/` for detailed standards (coding, testing, deployment, logging, etc.).

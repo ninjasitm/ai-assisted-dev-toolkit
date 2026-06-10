@@ -4,9 +4,8 @@ globs:
 alwaysApply: agent
 ---
 
-- {{COMPONENT_STRUCTURE_RULE}}
-- Follow the {{COMPONENT_PATTERN}} pattern for all components.
-- Use clear and descriptive naming for props, events, and methods.
-- Keep logic within components focused and manageable; delegate reusable behavior to existing composables, utilities, or helpers in `{{COMPOSABLES_PATH}}` / `{{UTILS_PATH}}`.
-- Add code comments for complex logic or non-obvious implementations.
-- Use bracketed identifiers for logs: `[ComponentName]: message`.
+# Component Structure
+
+Component structure, naming conventions, and organization patterns across apps and packages.
+
+📋 **Full definition:** [.claude/rules-snippets/composition-api-component-structure.md](../../.claude/rules-snippets/composition-api-component-structure.md)

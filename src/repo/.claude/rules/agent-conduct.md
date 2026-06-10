@@ -1,11 +1,13 @@
+---
+applyTo: "**/*"
+description: "Agent conduct and clarification rules for ambiguous requirements."
+---
 
-- **CRITICAL: Orchestration checkpoint** — Before ANY multi-step task (2+ of: research, planning, implementation, testing, review), read the orchestration checkpoint in AGENTS.md and subagent-workflow instructions. Use coordinator agents for non-trivial work.
-- Before making assumptions, ask the user for clarification on ambiguous requirements.
-- When multiple valid approaches exist, present 2-3 options with trade-offs and a recommended default.
-- Confirm data model changes, breaking changes, and auth flow modifications before proceeding.
-- If scope is unclear (MVP vs. comprehensive), ask about desired scope before implementing.
-- Flag external dependency requirements (secrets, third-party services) before assuming availability.
+# Agent Conduct
+
+Follow the rules defined in [.claude/rules-snippets/agent-conduct.md](../rules-snippets/agent-conduct.md).
+
+Key points:
+- Use coordinator agents for non-trivial multi-step tasks (orchestration checkpoint).
+- Ask for clarification on ambiguous requirements before making assumptions.
 - Never silently change database schemas, API contracts, or authentication flows.
-- Prefer reversible changes when acting without full clarity.
-- Record decisions in code comments or documentation for future reference.
-- See `.github/instructions/agent-conduct.instructions.md` for full details.

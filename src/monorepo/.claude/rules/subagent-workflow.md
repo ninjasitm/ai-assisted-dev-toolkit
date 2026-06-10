@@ -1,45 +1,14 @@
+---
+applyTo: "**/*"
+description: "Subagent workflow and orchestration patterns."
+---
 
-- **🛑 Orchestration checkpoint**: If task involves 2+ of (research, planning, implementation, testing, review), MUST use orchestrator-first flow. Single-agent work wastes tokens and loses domain routing benefits.
-- **Default to orchestrator + subagents** for non-trivial work (features, refactors, multi-file fixes).
-- Use a **coordinator agent** (Feature Builder or TDD) as the entry point — they delegate to specialists.
-- Only fall back to a single global agent for simple, single-file tasks.
-- **Recommended flow**: brainstorming → writing-plans → subagent-driven-development → requesting-code-review → verification-before-completion.
+# Subagent Workflow
 
-## Agent Hierarchy
+Follow the rules defined in [.claude/rules-snippets/subagent-workflow.md](../rules-snippets/subagent-workflow.md).
 
-**Coordinators** (entry points):
-
-- Feature Builder — end-to-end feature orchestration
-- TDD — red-green-refactor cycle
-
-**Domain Specialists** (route by task domain):
-
-- Backend Architect — API design, databases, system architecture
-- Frontend Developer — UI, components, state management, responsive design
-- API Specialist — API contracts, docs, versioning, integration
-- Admin Portal — RBAC, dashboards, reporting, analytics, monitoring
-- Documenter — README, AGENTS.md, API docs, ADRs
-- Reviewer — multi-perspective code review
-
-**Process Workers** (subagent-only):
-
-- Planner, Implementer, Researcher, Red, Green, Refactor
-
-## Dispatch Rules
-
+Key points:
+- Use orchestrator-first flow for tasks involving 2+ of research, planning, implementation, testing, or review.
+- Default to coordinator agents (Feature Builder or TDD) as entry points for non-trivial work.
 - Match task domain to the right specialist before defaulting to Implementer.
-- One subagent per independent task — don't overload a single agent.
-- For parallel-safe tasks (different files, no shared state), dispatch domain specialists concurrently.
 - Always run Reviewer after implementation, before marking work complete.
-- See `.github/instructions/subagent-workflow.instructions.md` for full patterns.
-
-## Parallelization Analysis (REQUIRED)
-
-Before executing tasks, build a dependency graph and apply:
-1. Scan for `[P]` markers in task list
-2. If no `[P]` markers exist, do **not** assume sequential-only work; treat all tasks as candidates and infer parallel-safe groups via dependency analysis
-3. Tasks writing to **different files** with **no shared state** → parallel-safe
-4. Tasks sharing writable files or with data dependencies → sequential
-5. **3+ independent tasks** → `dispatching-parallel-agents` skill, one agent per task
-6. **Mixed** → parallel group first, then sequential chain
-7. Route each task to the right domain specialist

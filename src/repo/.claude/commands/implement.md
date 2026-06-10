@@ -1,5 +1,6 @@
 ---
 description: Execute implementation tasks from a task list or specification
+allowed-tools: "Read, Write, Edit, Bash(*)"
 ---
 
 You are helping to implement features based on a task list or specification.

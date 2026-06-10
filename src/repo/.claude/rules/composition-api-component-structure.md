@@ -1,12 +1,15 @@
 ---
-paths:
+applyTo:
   - "src/components/**"
   - "**/*.{vue,tsx,jsx}"
+description: "Component structure and composition patterns."
 ---
 
-- {{COMPONENT_STRUCTURE_RULE}}
+# Component Structure
+
+Follow the rules defined in [.claude/rules-snippets/component-structure.md](../rules-snippets/component-structure.md).
+
+Key points:
 - Follow the {{COMPONENT_PATTERN}} pattern for all components.
 - Use clear and descriptive naming for props, events, and methods.
-- Keep logic within components focused and manageable.
-- Add code comments for complex logic or non-obvious implementations.
 - Use bracketed identifiers for logs: `[ComponentName]: message`.

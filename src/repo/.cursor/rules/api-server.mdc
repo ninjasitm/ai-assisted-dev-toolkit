@@ -4,8 +4,8 @@ globs:
 alwaysApply: agent
 ---
 
-- {{API_ROUTE_PATTERN}}
-- Validate all input data before processing.
-- Return consistent response formats.
-- Use proper HTTP status codes.
-- Document API endpoints in {{API_DOCS_LOCATION}}.
+# API Server
+
+Follow API development and server-side implementation guidelines.
+
+📋 **Full definition:** [.claude/rules-snippets/api-server.md](../../.claude/rules-snippets/api-server.md)
