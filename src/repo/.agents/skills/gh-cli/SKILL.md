@@ -3,7 +3,7 @@ name: gh-cli
 description: Manage GitHub Issues and Pull Request review threads from the command line using the gh CLI. Use when the user asks about GitHub issues, labels, milestones, PR review comments, resolving review threads, or needs to manage project work items via the command line.
 ---
 
-# GitHub Issues CLI
+# GitHub Issues & PR Review CLI
 
 Interact with GitHub Issues from the command line using [gh](https://cli.github.com/).
 
@@ -297,8 +297,8 @@ gh api graphql -f query='...' --jq '.data.repository.pullRequest.reviewThreads.n
 ### Reply to a Review Comment
 
 ```bash
-# Reply to a specific comment thread (REST API)
-gh api repos/OWNER/REPO/pulls/comments/COMMENT_ID/replies -X POST -f body="Fixed in commit abc123."
+# Reply to a specific comment thread (REST API — requires PR number)
+gh api repos/OWNER/REPO/pulls/PR_NUMBER/comments/COMMENT_ID/replies -X POST -f body="Fixed in commit abc123."
 ```
 
 ### Resolve a Review Thread
@@ -368,7 +368,7 @@ gh api graphql -f query='{
 git add -A && git commit -m "fix: address review comments" && git push
 
 # 3. Reply to each comment
-gh api repos/OWNER/REPO/pulls/COMMENT_ID/replies -X POST -f body="Fixed in commit abc123."
+gh api repos/OWNER/REPO/pulls/PR_NUMBER/comments/COMMENT_ID/replies -X POST -f body="Fixed in commit abc123."
 
 # 4. Resolve each thread
 gh api graphql -f query='mutation { resolveReviewThread(input: {threadId: "THREAD_ID"}) { thread { id isResolved } } }'
