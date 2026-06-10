@@ -5,39 +5,9 @@ description: "Testing standards and conventions for {{PROJECT_NAME}}."
 
 # Testing Standards
 
-## Commands
+Follow the rules defined in [.claude/rules-snippets/testing.md](../../.claude/rules-snippets/testing.md).
 
-```bash
-# Run all tests
-{{TEST_COMMAND}}
-
-# Run tests with coverage
-{{TEST_COVERAGE_COMMAND}}
-
-# Run E2E tests
-{{E2E_TEST_COMMAND}}
-```
-
-## Test Structure
-
-```{{FILE_EXTENSION}}
-{{TEST_EXAMPLE}}
-```
-
-## Test File Naming
-
-- Unit tests: `{{TEST_FILE_PATTERN}}`
-- Integration tests: `{{INTEGRATION_TEST_PATTERN}}`
-- E2E tests: `{{E2E_TEST_PATTERN}}`
-
-## Test Location
-
-- Unit tests live alongside source files or in `{{TEST_DIR}}/`
-- Integration tests in `{{INTEGRATION_TEST_DIR}}/`
-- E2E tests in `{{E2E_TEST_DIR}}/`
-
-## Coverage Requirements
-
-- Minimum coverage: {{COVERAGE_THRESHOLD}}
-- Critical paths must have integration or E2E coverage
-- New features require tests before merging
+Key points:
+- Run tests with `{{TEST_COMMAND}}`, coverage with `{{TEST_COVERAGE_COMMAND}}`, and E2E with `{{E2E_TEST_COMMAND}}`.
+- Unit tests: `{{TEST_FILE_PATTERN}}`, integration: `{{INTEGRATION_TEST_PATTERN}}`, E2E: `{{E2E_TEST_PATTERN}}`.
+- Minimum coverage {{COVERAGE_THRESHOLD}}; critical paths need integration/E2E coverage; new features require tests before merging.

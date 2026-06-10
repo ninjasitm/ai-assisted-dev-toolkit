@@ -20,35 +20,128 @@ This is a **meta-repository** containing templates for AI development instructio
 │   │   │   └── commands/ # Custom commands
 │   │   ├── .github/    # GitHub Copilot templates
 │   │   │   ├── agents/ # Custom agent templates (subagents)
-│   │   │   ├── instructions/ # Context instructions
+│   │   │   ├── instructions/ # Context instructions (source of truth)
 │   │   │   └── prompts/ # Reusable prompts
+│   │   ├── .claude/    # Claude Code config templates
+│   │   │   ├── agents/ # Agent definitions (full content)
+│   │   │   ├── rules/  # Rules (full content)
+│   │   │   ├── commands/ # Claude Code commands
+│   │   │   └── skills/ # Skill definitions
 │   │   ├── .agents/    # Pre-installed universal skills
 │   │   │   └── skills/ # Bundled skills (TDD, debugging, etc.)
 │   │   ├── docs/       # Documentation structure templates
 │   │   ├── templates/  # Document templates
-│   │   └── AGENTS.md   # Agent context template
+│   │   ├── CLAUDE.md   # Redirect → AGENTS.md
+│   │   └── AGENTS.md   # Agent context (source of truth)
 │   │
 │   └── monorepo/       # Monorepo templates
 │       ├── .cursor/    # Root Cursor config
-│       │   ├── agents/ # Custom agent templates (subagents)
-│       │   ├── rules/  # IDE behavior rules
-│       │   └── commands/ # Custom commands
 │       ├── .github/    # Root GitHub config
-│       │   ├── agents/ # Custom agent templates (subagents)
-│       │   ├── instructions/ # Context instructions
-│       │   └── prompts/ # Reusable prompts
+│       ├── .claude/    # Root Claude Code config
 │       ├── .agents/    # Pre-installed universal skills
-│       │   └── skills/ # Bundled skills (TDD, debugging, etc.)
 │       ├── apps/       # App-specific templates
-│       ├── packages/   # Package templates
-│       ├── docs/       # Documentation structure templates
-│       ├── templates/  # Document templates
-│       └── AGENTS.md   # Monorepo agent context template
+│       └── packages/   # Package templates
 │
 ├── .cursor/            # This repo's Cursor config
 ├── .github/            # This repo's GitHub config
-└── AGENTS.md           # This file
+├── .claude/            # This repo's Claude Code config
+│   ├── commands/       # Claude Code commands
+│   ├── rules/          # Thin wrappers → rules-snippets
+│   ├── rules-snippets/ # Rules-specific content fragments
+│   └── prompt-snippets/ # Shared content fragments
+├── .opencode/          # This repo's OpenCode config
+│   ├── agents/         # Agent definitions
+│   ├── command/        # Custom commands
+│   └── opencode.json   # OpenCode configuration
+├── .vscode/            # VS Code / GitHub Copilot config
+│   └── mcp.json        # Copilot MCP config
+├── CLAUDE.md           # Redirect → AGENTS.md
+└── AGENTS.md           # This file (source of truth)
 ```
+
+## Cross-Compatible Architecture
+
+This toolkit uses a layered architecture for cross-tool compatibility (Claude Code + GitHub Copilot + Cursor):
+
+### Shared layer (both Claude Code and Copilot read)
+
+- **`AGENTS.md`** — Single main agent context file (industry standard)
+- **`CLAUDE.md`** — Thin redirect to AGENTS.md with @import syntax for prompt snippets
+- **`.claude/prompt-snippets/`** — Shared content fragments referenced by both tools
+
+### Copilot source of truth
+
+- **`.github/instructions/`** — Full detailed rules (also powers VS Code non-agent features)
+- **`.github/prompts/`** — Reusable prompts
+
+### Claude thin wrappers
+
+- **`.claude/rules/`** — Thin wrappers pointing to `.claude/rules-snippets/`
+
+### Tool-specific
+
+- **`.cursor/`** — Cursor IDE (independent, .mdc format)
+- **`.opencode/`** — OpenCode (agents, commands, opencode.json)
+- **`.vscode/mcp.json`** — GitHub Copilot MCP config (`"servers"` key)
+
+### Dual reference syntax in CLAUDE.md
+
+CLAUDE.md uses two reference syntaxes so both tools can resolve them:
+
+```markdown
+@.claude/prompt-snippets/patterns.md ← Claude picks up @import
+[Patterns](./.claude/prompt-snippets/patterns.md) ← Copilot resolves markdown link
+```
+
+## Sub-Agent Patterns
+
+Use the appropriate sub-agents when the task benefits from specialized expertise or parallel execution.
+
+### When to use sub-agents
+
+| Context                                  | Recommended Agent                                            | Why                                   |
+| ---------------------------------------- | ------------------------------------------------------------ | ------------------------------------- |
+| Orchestration and coordination           | `orchestrator` or `coordinator` or `delegator` or equivalent | Strategic planning and task breakdown |
+| Code base exploration and analysis       | `explorer` or equivalent                                     | Focused on understanding codebases    |
+| Codebase understanding and documentation | `documenter` or equivalent                                   | Focused on generating documentation   |
+| Reviewing templates for quality          | `reviewer` or equivalent                                     | Read-only, focused on standards       |
+| Implementing template changes            | `developer` or `fixer` or equivalent                         | Needs write access, follows workflows |
+| Planning architecture decisions          | `planner` or `consul` or equivalent                          | Read-only, strategic thinking         |
+| PR code review                           | `reviewer` or equivalent                                     | Structured review process             |
+| Commit and push                          | `build` or `deployer` or equivalent                          | Execution-focused                     |
+| UI design and prototyping                | `designer` or equivalent                                     | Visual and UX expertise               |
+
+### Sub-agent invocation patterns
+
+**Claude Code** (via `.claude/agents/` or plugins in target projects):
+
+```
+@reviewer Review the coding standards template
+@developer Implement the new placeholder syntax
+@planner Design the monorepo structure
+```
+
+**GitHub Copilot** (via `.github/agents/` or plugins in target projects):
+
+```
+@reviewer Review the coding standards template
+@developer Implement the new placeholder syntax
+```
+
+**OpenCode** (via `.opencode/agents/` or plugins in target projects):
+
+```
+@reviewer Review the coding standards template
+@developer Implement the new placeholder syntax
+@planner Design the monorepo structure
+```
+
+### Sub-agent guidelines
+
+1. **Choose the right agent** — Match the agent's role to the task
+2. **Provide context** — Reference the relevant rules-snippets or prompt-snippets
+3. **Set constraints** — Use tool restrictions for read-only agents (reviewer, planner)
+4. **Chain when needed** — Planner → Developer → Reviewer for complex changes
 
 ## Template Conventions
 
@@ -74,7 +167,7 @@ All templates use `{{PLACEHOLDER}}` syntax for customizable values:
 
 ## Bundled Skills
 
-The toolkit includes 16 pre-installed universal skills in `.agents/skills/`:
+The toolkit includes 16 pre-installed universal skills in `src/repo/.agents/skills/` and `src/monorepo/.agents/skills/`:
 
 | Skill                            | Purpose                                  |
 | -------------------------------- | ---------------------------------------- |

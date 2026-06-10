@@ -5,39 +5,9 @@ description: "Deployment configuration and commands for {{PROJECT_NAME}}."
 
 # Deployment
 
-## Target Platform
+Follow the rules defined in [.claude/rules-snippets/deployment.md](../../.claude/rules-snippets/deployment.md).
 
-- **Platform:** {{DEPLOY_PLATFORM}}
-- **Environment:** {{ENVIRONMENT}}
-
-## Deploy Commands
-
-```bash
-# Deploy to {{DEPLOY_PLATFORM}}
-{{DEPLOY_COMMAND}}
-
-# Build for production
-{{BUILD_COMMAND}}
-```
-
-## Environment Variables
-
-| Variable        | Description        | Required |
-| --------------- | ------------------ | -------- |
-| `{{ENV_VAR_1}}` | {{ENV_VAR_1_DESC}} | Yes      |
-| `{{ENV_VAR_2}}` | {{ENV_VAR_2_DESC}} | No       |
-
-## CI/CD
-
-```yaml
-# .github/workflows/deploy.yml (or equivalent)
-{ { CI_WORKFLOW_EXAMPLE } }
-```
-
-## Pre-Deployment Checklist
-
-- [ ] All tests pass
-- [ ] Linting passes
-- [ ] Build completes without errors
-- [ ] Environment variables configured
-- [ ] Database migrations applied (if applicable)
+Key points:
+- Deploy to {{DEPLOY_PLATFORM}} using `{{DEPLOY_COMMAND}}`; build for production with `{{BUILD_COMMAND}}`.
+- Configure required environment variables ({{ENV_VAR_1}}, {{ENV_VAR_2}}) before deployment.
+- Pre-deployment: all tests pass, linting passes, build completes without errors, and database migrations applied.

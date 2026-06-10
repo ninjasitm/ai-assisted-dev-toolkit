@@ -209,13 +209,63 @@ Use custom agents when you want explicit coordinator and worker roles. Use workf
 - "Use the Backend Architect to design the database schema" → Domain specialist works directly
 - "Review my recent changes" → Reviewer works directly on git diff
 
+## Sub-Agent Patterns
+
+Use the appropriate sub-agents when the task benefits from specialized expertise or parallel execution.
+
+### When to use sub-agents
+
+| Context                                  | Recommended Agent                                            | Why                                   |
+| ---------------------------------------- | ------------------------------------------------------------ | ------------------------------------- |
+| Orchestration and coordination           | `orchestrator` or `coordinator` or `delegator` or equivalent | Strategic planning and task breakdown |
+| Code base exploration and analysis       | `explorer` or equivalent                                     | Focused on understanding codebases    |
+| Codebase understanding and documentation | `documenter` or equivalent                                   | Focused on generating documentation   |
+| Reviewing templates for quality          | `reviewer` or equivalent                                     | Read-only, focused on standards       |
+| Implementing template changes            | `developer` or `fixer` or equivalent                         | Needs write access, follows workflows |
+| Planning architecture decisions          | `planner` or `consul` or equivalent                          | Read-only, strategic thinking         |
+| PR code review                           | `reviewer` or equivalent                                     | Structured review process             |
+| Commit and push                          | `build` or `deployer` or equivalent                          | Execution-focused                     |
+| UI design and prototyping                | `designer` or equivalent                                     | Visual and UX expertise               |
+
+### Sub-agent invocation patterns
+
+**Claude Code** (via `.claude/agents/` or plugins in target projects):
+
+```
+@reviewer Review the coding standards template
+@developer Implement the new placeholder syntax
+@planner Design the monorepo structure
+```
+
+**GitHub Copilot** (via `.github/agents/` or plugins in target projects):
+
+```
+@reviewer Review the coding standards template
+@developer Implement the new placeholder syntax
+```
+
+**OpenCode** (via `.opencode/agents/` or plugins in target projects):
+
+```
+@reviewer Review the coding standards template
+@developer Implement the new placeholder syntax
+@planner Design the monorepo structure
+```
+
+### Sub-agent guidelines
+
+1. **Choose the right agent** — Match the agent's role to the task
+2. **Provide context** — Reference the relevant rules-snippets or prompt-snippets
+3. **Set constraints** — Use tool restrictions for read-only agents (reviewer, planner)
+4. **Chain when needed** — Planner → Developer → Reviewer for complex changes
+
 ## Custom Agents (Subagents)
 
 Custom agents enable **context-isolated delegation** — a coordinator agent breaks complex tasks into subtasks and dispatches specialized subagents, each with their own tools and focus.
 
 ### Available Agents
 
-Agent definitions live in `.github/agents/` (GitHub Copilot) and `.cursor/agents/` (Cursor):
+Agent definitions live in `.github/agents/` (GitHub Copilot), `.cursor/agents/` (Cursor), and `.opencode/` (OpenCode):
 
 #### Coordinators
 
@@ -299,7 +349,18 @@ Documentation updates are **mandatory before committing** any feature or fix. Se
 
 - [README.md](README.md) - Project overview
 - [docs/](docs/) - Detailed documentation
-- [.cursor/rules/](.cursor/rules/) - Cursor IDE rules
-- [.cursor/agents/](.cursor/agents/) - Cursor custom agents
-- [.github/instructions/](.github/instructions/) - Copilot instruction files
-- [.github/agents/](.github/agents/) - Copilot custom agents
+- [.claude/rules/](.claude/rules/) - Claude Code rules (thin wrappers → rules-snippets)
+- [.claude/commands/](.claude/commands/) - Claude Code commands (thin wrappers → prompt-snippets)
+- [.claude/rules-snippets/](.claude/rules-snippets/) - Rules content (source of truth)
+- [.claude/prompt-snippets/](.claude/prompt-snippets/) - Prompt content (source of truth)
+- [.claude/agents-snippets/](.claude/agents-snippets/) - Agent definitions (source of truth)
+- [.github/instructions/](.github/instructions/) - Copilot instructions (thin wrappers → rules-snippets)
+- [.github/prompts/](.github/prompts/) - Copilot prompts (thin wrappers → prompt-snippets)
+- [.github/agents/](.github/agents/) - Copilot agents (thin wrappers → agents-snippets)
+- [.cursor/rules/](.cursor/rules/) - Cursor IDE rules (thin wrappers → rules-snippets)
+- [.cursor/commands/](.cursor/commands/) - Cursor commands (thin wrappers → prompt-snippets)
+- [.cursor/agents/](.cursor/agents/) - Cursor agents (thin wrappers → agents-snippets)
+- [.opencode/rules/](.opencode/rules/) - OpenCode rules (thin wrappers → rules-snippets)
+- [.opencode/commands/](.opencode/commands/) - OpenCode commands (thin wrappers → prompt-snippets)
+- [.opencode/agents/](.opencode/agents/) - OpenCode agents (thin wrappers → agents-snippets)
+- [.opencode/opencode.json](.opencode/opencode.json) - OpenCode configuration
