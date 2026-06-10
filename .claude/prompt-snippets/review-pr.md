@@ -1,9 +1,3 @@
----
-description: Conduct comprehensive pull request code review
-argument-hints:
-  - pr_number_or_url: "The pull request number or full URL to review"
----
-
 # Review Pull Request
 
 Conduct comprehensive code review for pull requests with structured fix tracking.
@@ -14,10 +8,6 @@ Conduct comprehensive code review for pull requests with structured fix tracking
 /review-pr 42
 /review-pr https://github.com/{{REPO_OWNER}}/{{PROJECT_NAME}}/pull/42
 ```
-
-## Rules
-
-[Coding Standards](../../.claude/rules-snippets/patterns.md)
 
 ## Orchestrator Checkpoint
 
