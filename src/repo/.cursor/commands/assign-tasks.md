@@ -1,5 +1,6 @@
 ---
 description: Create {{ISSUE_TRACKER}} tickets from requirements or task files
+argument-hint: "requirements or task file path"
 ---
 
 # Assign Tasks

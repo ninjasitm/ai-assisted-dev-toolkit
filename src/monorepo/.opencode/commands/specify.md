@@ -5,4 +5,8 @@ agent: build
 
 # Create Feature Specification
 
+## Arguments
+
+$ARGUMENTS
+
 @.claude/prompt-snippets/specify.md

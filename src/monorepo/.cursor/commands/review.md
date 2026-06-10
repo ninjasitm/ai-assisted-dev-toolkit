@@ -1,5 +1,6 @@
 ---
 description: Conduct code review for files or features
+argument-hint: "file path or feature description"
 ---
 
 # Review

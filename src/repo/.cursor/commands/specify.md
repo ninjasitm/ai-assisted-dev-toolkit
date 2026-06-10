@@ -1,5 +1,6 @@
 ---
 description: Create a feature specification from a natural language description
+argument-hint: "feature description"
 ---
 
 # Specify

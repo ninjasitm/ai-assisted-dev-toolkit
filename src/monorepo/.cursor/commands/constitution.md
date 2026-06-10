@@ -1,5 +1,6 @@
 ---
 description: Create or update the project constitution defining core principles and guidelines
+argument-hint: "no arguments required"
 ---
 
 # Constitution

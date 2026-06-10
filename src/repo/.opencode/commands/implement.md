@@ -5,6 +5,10 @@ agent: build
 
 You are helping to implement features based on a task list or specification.
 
+## Arguments
+
+$ARGUMENTS
+
 ## Orchestrator Checkpoint
 
 > **🛑 Before starting**: If the task list contains 2+ tasks across different domains or files,

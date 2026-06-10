@@ -5,4 +5,8 @@ agent: build
 
 # Project Constitution
 
+## Arguments
+
+$ARGUMENTS
+
 @.claude/prompt-snippets/constitution.md

@@ -1,5 +1,6 @@
 ---
 description: Execute implementation tasks from a task list or specification
+argument-hint: "task list or specification"
 ---
 
 # Implement

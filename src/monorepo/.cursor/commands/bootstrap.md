@@ -1,5 +1,6 @@
 ---
 description: Bootstrap AI instructions for monorepo by analyzing workspace and customizing templates
+argument-hint: "optional bootstrap options"
 ---
 
 # Bootstrap

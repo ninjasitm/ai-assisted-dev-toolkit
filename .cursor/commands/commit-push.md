@@ -1,5 +1,6 @@
 ---
 description: Commit and push template changes with proper conventional commit messages
+argument-hint: "optional commit message or options"
 ---
 
 You are helping to commit and push changes to the AI-Assisted Development Toolkit repository.

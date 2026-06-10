@@ -5,4 +5,8 @@ agent: build
 
 # Generate Task List
 
+## Arguments
+
+$ARGUMENTS
+
 @.claude/prompt-snippets/tasks.md

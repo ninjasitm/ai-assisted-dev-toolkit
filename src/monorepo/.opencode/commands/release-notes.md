@@ -5,4 +5,8 @@ agent: build
 
 # Generate Release Notes
 
+## Arguments
+
+$ARGUMENTS
+
 @.claude/prompt-snippets/release-notes.md

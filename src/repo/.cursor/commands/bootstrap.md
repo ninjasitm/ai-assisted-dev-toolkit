@@ -1,5 +1,6 @@
 ---
 description: Bootstrap AI instructions by inferring project details and customizing templates
+argument-hint: "optional bootstrap options"
 ---
 
 # Bootstrap

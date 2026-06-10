@@ -5,4 +5,8 @@ agent: build
 
 # Implement Feature
 
+## Arguments
+
+$ARGUMENTS
+
 @.claude/prompt-snippets/implement-feature.md
