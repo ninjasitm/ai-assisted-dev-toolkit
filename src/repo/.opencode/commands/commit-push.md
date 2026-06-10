@@ -8,3 +8,5 @@ agent: build
 Commit and push changes using conventional commit format.
 
 @.claude/prompt-snippets/commit-push.md
+
+$ARGUMENTS

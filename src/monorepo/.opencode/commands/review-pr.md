@@ -7,3 +7,5 @@ description: "Conduct comprehensive pull request code review"
 Conduct comprehensive code review for pull requests.
 
 @.claude/prompt-snippets/review-pr.md
+
+$ARGUMENTS
