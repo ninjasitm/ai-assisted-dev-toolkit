@@ -9,6 +9,10 @@ Review template files in the AI-Assisted Development Toolkit for quality and con
 /review [template-folder]    # src/repo or src/monorepo
 ```
 
+## Rules
+
+[Coding Standards](../rules-snippets/patterns.md)
+
 ## Process
 
 1. **Identify Scope**: Determine what is being reviewed:

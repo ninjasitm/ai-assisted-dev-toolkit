@@ -9,6 +9,10 @@ Conduct comprehensive code review for pull requests with structured fix tracking
 /review-pr https://github.com/{{REPO_OWNER}}/{{PROJECT_NAME}}/pull/42
 ```
 
+## Rules
+
+[Coding Standards](../rules-snippets/patterns.md)
+
 ## Orchestrator Checkpoint
 
 > **🛑 For large PRs** (10+ files or 3+ domains): Dispatch specialist reviewers in parallel:

@@ -33,7 +33,7 @@ You are a Git commit expert helping to commit and push changes to the AI-Assiste
 If the fixset was part of an active pull request
 
 - Identify any resolved comments that can be marked as resolved
-- Use `resolve_pr_comments` or the `gh` cli, referncing gh skills in the proejct, tool to mark those comments as resolved and post a short description of the fix that addresses the comment
+- Use `resolve_pr_comments` or the `gh` cli, referencing gh skills in the project, tool to mark those comments as resolved and post a short description of the fix that addresses the comment
 - If there are still unaddressed comments
 - Identify why they weren't resolved (e.g., they were about a different issue, or they require further changes)
 - OR fix them if they are legitimate issues that were missed in the commit
