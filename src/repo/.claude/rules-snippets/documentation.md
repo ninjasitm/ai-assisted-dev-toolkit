@@ -8,7 +8,7 @@ All project changes must be documented following these standards to maintain cle
 
 All documentation lives in the `docs/` folder at the project root:
 
-- **Features** → `docs/features/{{ISSUE_ID}}-FEATURE-NAME/` (spec + plan)
+- **Features** → `docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/` (spec + plan)
 - **Fixes** → `docs/fixes/` (tiered structure - see below)
 - **Architecture** → `docs/architecture/` (ADRs, system design)
 - **API** → `docs/api/` (API specifications)
@@ -30,12 +30,12 @@ Create feature documentation for:
 
 ### Feature Documentation Structure
 
-**Location:** `docs/features/{{ISSUE_ID}}-FEATURE-NAME/`
+**Location:** `docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/`
 
 **Required Files:**
 
 ```
-{{ISSUE_ID}}-FEATURE-NAME/
+{{ISSUE_ID}}-{{FEATURE_NAME}}/
 ├── spec.md       # Functional specification
 ├── plan.md       # Implementation plan
 └── [optional]    # Code examples, diagrams, etc.
@@ -43,14 +43,14 @@ Create feature documentation for:
 
 ### Creating Feature Documentation
 
-1. **Use the spec workflow**: Run `/specify` command to generate `spec.md` in `docs/features/{{ISSUE_ID}}-FEATURE-NAME/`
+1. **Use the spec workflow**: Run `/specify` command to generate `spec.md` in `docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/`
 2. **Create implementation plan**: Run `/plan` command to generate `plan.md` in the same feature folder
 3. **Keep it updated**: Update during implementation if scope changes
 4. **Link from commits**: Reference folder in commit messages
 
 ### Feature Spec Template (spec.md)
 
-**Location:** `docs/features/{{ISSUE_ID}}-FEATURE-NAME/spec.md`
+**Location:** `docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/spec.md`
 
 ```markdown
 # {{ISSUE_ID}}: {{FEATURE_NAME}}
@@ -127,7 +127,7 @@ Brief description of the feature and its purpose.
 
 ### Feature Plan Template (plan.md)
 
-**Location:** `docs/features/{{ISSUE_ID}}-FEATURE-NAME/plan.md`
+**Location:** `docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/plan.md`
 
 ```markdown
 # Implementation Plan: {{ISSUE_ID}}
@@ -365,7 +365,7 @@ Follow [Keep a Changelog](https://keepachangelog.com/) format:
 
 ### Added
 
-- New feature X ([{{ISSUE_ID}}](docs/features/{{ISSUE_ID}}-FEATURE-NAME/))
+- New feature X ([{{ISSUE_ID}}](docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/))
 - New API endpoint Y
 
 ### Changed
@@ -506,8 +506,8 @@ Before running `git commit`, verify ALL items that apply to your change:
 
 **All changes:**
 
-- [ ] **Features**: `docs/features/{{ISSUE_ID}}-FEATURE-NAME/spec.md` exists and reflects the current implementation
-- [ ] **Features**: `docs/features/{{ISSUE_ID}}-FEATURE-NAME/plan.md` is updated if scope changed
+- [ ] **Features**: `docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/spec.md` exists and reflects the current implementation
+- [ ] **Features**: `docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/plan.md` is updated if scope changed
 - [ ] **Fixes**: Entry added to `docs/fixes/{YYYY-MM}.md` (or complex fix folder created)
 - [ ] **Breaking changes**: `CHANGELOG.md` updated
 - [ ] **Architectural decisions**: ADR created in `docs/architecture/` if a significant choice was made
@@ -555,7 +555,7 @@ Reference documentation in commits:
 ```
 feat({{FEATURE}}): implement new feature X
 
-See docs/features/{{ISSUE_ID}}-FEATURE-NAME/ for details
+See docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/ for details
 
 Closes {{ISSUE_ID}}
 ```

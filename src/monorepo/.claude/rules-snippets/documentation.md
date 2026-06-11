@@ -8,12 +8,12 @@ This monorepo uses a **distributed documentation strategy** where app-specific d
 
 **App-specific documentation** must live in respective app folders:
 
-- **{{APP_1}} Features** → `apps/{{APP_1}}/docs/features/{{ISSUE_ID}}-FEATURE-NAME/`
-- **{{APP_2}} Features** → `apps/{{APP_2}}/docs/features/{{ISSUE_ID}}-FEATURE-NAME/`
+- **{{APP_1}} Features** → `apps/{{APP_1}}/docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/`
+- **{{APP_2}} Features** → `apps/{{APP_2}}/docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/`
 - **{{APP_1}} Fixes** → `apps/{{APP_1}}/docs/fixes/`
 - **{{APP_2}} Fixes** → `apps/{{APP_2}}/docs/fixes/`
-- **Shared Package Features** → `packages/{{PACKAGE}}/docs/features/`
-- **Shared Package Fixes** → `packages/{{PACKAGE}}/docs/fixes/`
+- **Shared Package Features** → `packages/{{PACKAGE_NAME}}/docs/features/`
+- **Shared Package Fixes** → `packages/{{PACKAGE_NAME}}/docs/fixes/`
 
 **Root `docs/` folder** is ONLY for monorepo-wide documentation:
 
@@ -81,12 +81,12 @@ If the monorepo includes a documentation app (e.g., Docus, Nuxt Content, Docusau
 
 Each app maintains its own feature documentation:
 
-**Location:** `apps/{{APP_NAME}}/docs/features/{{ISSUE_ID}}-FEATURE-NAME/`
+**Location:** `apps/{{APP_NAME}}/docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/`
 
 **Required Files:**
 
 ```
-apps/{{APP_1}}/docs/features/{{ISSUE_ID}}-FEATURE-NAME/
+apps/{{APP_1}}/docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/
 ├── spec.md       # Functional specification
 ├── plan.md       # Implementation plan
 └── [optional]    # Code examples, component diagrams
@@ -102,7 +102,7 @@ apps/{{APP_1}}/docs/features/{{ISSUE_ID}}-FEATURE-NAME/
 
 1. **Is this a complex fix?** (multi-file, architectural changes, affects multiple features)
    - ✅ YES → Create folder `apps/{{APP_NAME}}/docs/fixes/{{ISSUE_ID}}-FIX-NAME/` with `spec.md` + `plan.md`
-   - ❌ NO → Add entry to `apps/{{APP_NAME}}/docs/fixes/{YYYY-MM}.md` (monthly log)
+   - ❌ NO → Add entry to `apps/{{APP_NAME}}/docs/fixes/{{YYYY-MM}}.md` (monthly log)
 
 2. **Does the monthly log for this month exist?**
    - ❌ NO → Create it first using the template below
@@ -160,8 +160,8 @@ Before running `git commit`, verify ALL items that apply to your change:
 
 **All changes:**
 
-- [ ] **Features**: `docs/features/{{ISSUE_ID}}-FEATURE-NAME/spec.md` exists and reflects the current implementation
-- [ ] **Features**: `docs/features/{{ISSUE_ID}}-FEATURE-NAME/plan.md` is updated if scope changed
+- [ ] **Features**: `docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/spec.md` exists and reflects the current implementation
+- [ ] **Features**: `docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/plan.md` is updated if scope changed
 - [ ] **Fixes**: Entry added to `apps/{{APP_NAME}}/docs/fixes/{{YYYY-MM}}.md` (or complex fix folder created)
 - [ ] **Breaking changes**: `CHANGELOG.md` updated
 - [ ] **Architectural decisions**: ADR created in `docs/architecture/` if a significant choice was made
