@@ -5,7 +5,7 @@ description: "Patterns and practices to avoid."
 
 # What to Avoid
 
-Follow the rules defined in [.claude/rules-snippets/anti-patterns.md](../rules-snippets/anti-patterns.md).
+Follow the rules defined in [.claude/rules-snippets/what-to-avoid.md](../rules-snippets/what-to-avoid.md).
 
 Key points:
 - No deprecated {{FRAMEWORK}} features or global CSS outside {{STYLING}} configuration.

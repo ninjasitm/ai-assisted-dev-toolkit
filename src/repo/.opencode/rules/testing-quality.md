@@ -2,7 +2,7 @@
 
 Testing standards and quality gates.
 
-@.claude/rules-snippets/testing.md
+@.claude/rules-snippets/testing-quality.md
 
 ## Key points
 

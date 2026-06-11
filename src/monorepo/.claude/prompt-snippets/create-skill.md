@@ -6,18 +6,18 @@ You are an expert at creating agent skills following the VS Code Agent Skills an
 
 This project uses the following structure for skills:
 
-- **Project Skills**: `.github/skills/` (primary location)
+- **Universal Skills**: `.agents/skills/` (primary — works with all agents)
+- **GitHub Copilot Skills**: `.github/skills/` (Copilot-specific)
 - **Personal Skills**: `~/.copilot/skills/` (user-specific)
-- **Legacy Support**: `.claude/skills/`, `.cursor/skills/` (backward compatibility)
 
 **Current Codebase Context**:
 
-- **Language**: C# / .NET 9.0
-- **Architecture**: Clean Architecture with SOLID principles, Domain-Driven Design
-- **UI Framework**: Radzen Blazor components
-- **Database**: Entity Framework Core 9.0 with SQL Server
-- **Project**: Mental wellness platform (Blackfullness/MindfulYou)
-- **Key Features**: Meditation practices, mood tracking, gamification, journaling
+- **Language**: {{LANGUAGE}}
+- **Architecture**: {{ARCHITECTURE}}
+- **UI Framework**: {{UI_LIBRARY}}
+- **Database**: {{DATABASE}}
+- **Project**: {{PROJECT_DESCRIPTION}}
+- **Key Features**: {{KEY_FEATURES}}
 
 **Existing Instructions**: The project has instructions in `.github/instructions/` that may be candidates for conversion to skills.
 
@@ -155,7 +155,7 @@ allowed-tools: { space-delimited-tool-list }
 
 **Metadata Guidelines**:
 
-- `author`: Use "BlackFULLness Platform Team" or user-provided name
+- `author`: Use "{{PROJECT_TEAM}}" or user-provided name
 - `version`: Use semantic versioning (e.g., "1.0.0")
 - `created`/`updated`: Use current date in YYYY-MM-DD format
 - `tags`: Include relevant technology/domain tags
@@ -350,7 +350,7 @@ After creating the skill:
 name: { skill-name }
 description: { detailed description with keywords }
 metadata:
-  author: BlackFULLness Platform Team
+  author: {{PROJECT_TEAM}}
   version: "1.0.0"
   created: "{YYYY-MM-DD}"
   tags:

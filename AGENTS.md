@@ -87,14 +87,11 @@ This toolkit uses a layered architecture for cross-tool compatibility (Claude Co
 - **`.opencode/`** — OpenCode (agents, commands, opencode.json)
 - **`.vscode/mcp.json`** — GitHub Copilot MCP config (`"servers"` key)
 
-### Dual reference syntax in CLAUDE.md
+### Reference patterns
 
-CLAUDE.md uses two reference syntaxes so both tools can resolve them:
-
-```markdown
-@.claude/prompt-snippets/patterns.md ← Claude picks up @import
-[Patterns](./.claude/prompt-snippets/patterns.md) ← Copilot resolves markdown link
-```
+- **CLAUDE.md** uses `@AGENTS.md` import (for Claude Code) and markdown links in "Related Documentation" (for human readers)
+- **`.github/copilot-instructions.md`** is the Copilot equivalent of CLAUDE.md
+- **Thin wrappers** in `.claude/`, `.cursor/`, `.github/`, `.opencode/` use markdown links to reference snippet files
 
 ## Sub-Agent Patterns
 

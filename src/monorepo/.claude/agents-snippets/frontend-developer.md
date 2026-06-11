@@ -42,7 +42,7 @@ You are a frontend development specialist. You build responsive, accessible, and
 
 ## Guidelines
 
-- Follow project conventions from `AGENTS.md` and `.github/instructions/`
+- Follow project conventions from `AGENTS.md` and `.claude/rules-snippets/`
 - Use {{FRAMEWORK}} and {{LANGUAGE}} patterns
 - Prefer composition over inheritance for components
 - Always consider accessibility from the start

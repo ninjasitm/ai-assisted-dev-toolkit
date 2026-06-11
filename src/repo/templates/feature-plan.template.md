@@ -31,8 +31,8 @@ Before starting implementation:
 
 | Component       | Change Type  | Description       |
 | --------------- | ------------ | ----------------- |
-| {{component_1}} | New/Modified | Brief description |
-| {{component_2}} | New/Modified | Brief description |
+| {{COMPONENT_1}} | New/Modified | Brief description |
+| {{COMPONENT_2}} | New/Modified | Brief description |
 
 ## Implementation Steps
 
@@ -40,7 +40,7 @@ Before starting implementation:
 
 **Estimated Time:** X hours/days
 
-#### Step 1.1: {{Step Title}}
+#### Step 1.1: {{STEP_TITLE}}
 
 **Files:**
 
@@ -56,7 +56,7 @@ Before starting implementation:
 **Notes:**
 Implementation details or considerations.
 
-#### Step 1.2: {{Step Title}}
+#### Step 1.2: {{STEP_TITLE}}
 
 **Files:**
 
@@ -71,7 +71,7 @@ Implementation details or considerations.
 
 **Estimated Time:** X hours/days
 
-#### Step 2.1: {{Step Title}}
+#### Step 2.1: {{STEP_TITLE}}
 
 **Files:**
 

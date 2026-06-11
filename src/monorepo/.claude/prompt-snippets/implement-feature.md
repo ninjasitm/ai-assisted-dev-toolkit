@@ -7,7 +7,7 @@ Implement a feature by completing tasks sequentially with proper tracking.
 ```
 
 /implement-feature {{ISSUE_KEY}}-123
-/implement-feature docs/tasks/feature-name.md
+/implement-feature apps/{{APP_NAME}}/docs/features/{{FEATURE_NAME}}/tasks.md
 
 ````
 
@@ -16,14 +16,14 @@ Implement a feature by completing tasks sequentially with proper tracking.
 > **🛑 Before starting**: This command involves planning, implementation, testing, and review.
 > Use the **orchestrator-first** flow. Delegate to the **Feature Builder** coordinator or use
 > the `subagent-driven-development` skill to dispatch a fresh subagent per task.
-> See `.github/instructions/subagent-workflow.instructions.md` for full patterns.
+> See `.claude/rules-snippets/subagent-workflow.md` for full patterns.
 
 ## Process
 
 1. **Load Feature Context**:
-   - Read specification from `docs/specs/{{FEATURE_NAME}}.md`
-   - Read implementation plan from `docs/plans/{{FEATURE_NAME}}.md`
-   - Read task list from `docs/tasks/{{FEATURE_NAME}}.md`
+   - Read specification from `apps/{{APP_NAME}}/docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/spec.md`
+   - Read implementation plan from `apps/{{APP_NAME}}/docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/plan.md`
+   - Read task list from `apps/{{APP_NAME}}/docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/tasks.md`
    - Review `AGENTS.md` for project patterns
 
 2. **Parallelization Analysis**:
