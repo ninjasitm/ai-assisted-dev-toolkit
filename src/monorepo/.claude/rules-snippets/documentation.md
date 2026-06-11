@@ -101,7 +101,7 @@ apps/{{APP_1}}/docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/
 **Before creating any fix documentation, ask:**
 
 1. **Is this a complex fix?** (multi-file, architectural changes, affects multiple features)
-   - ✅ YES → Create folder `apps/{{APP_NAME}}/docs/fixes/{{ISSUE_ID}}-FIX-NAME/` with `spec.md` + `plan.md`
+   - ✅ YES → Create folder `apps/{{APP_NAME}}/docs/fixes/{{ISSUE_ID}}-{{FIX_NAME}}/` with `spec.md` + `plan.md`
    - ❌ NO → Add entry to `apps/{{APP_NAME}}/docs/fixes/{{YYYY-MM}}.md` (monthly log)
 
 2. **Does the monthly log for this month exist?**

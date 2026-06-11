@@ -6,7 +6,7 @@ Implement a feature by completing tasks sequentially with proper tracking.
 
 ```
 /implement-feature {{ISSUE_KEY}}-123
-/implement-feature docs/features/feature-name/tasks.md
+/implement-feature docs/features/{{FEATURE_NAME}}/tasks.md
 ```
 
 ## Orchestrator Checkpoint

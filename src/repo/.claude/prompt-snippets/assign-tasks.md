@@ -6,7 +6,7 @@ Parse requirement documents or task breakdown files and create structured ticket
 
 ```
 /assign-tasks docs/features/requirements.md
-/assign-tasks docs/features/feature-name/tasks.md
+/assign-tasks docs/features/{{FEATURE_NAME}}/tasks.md
 ```
 
 ## Task Consolidation Rules (CRITICAL)

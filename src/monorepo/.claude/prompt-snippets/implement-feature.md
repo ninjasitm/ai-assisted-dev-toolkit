@@ -7,7 +7,7 @@ Implement a feature by completing tasks sequentially with proper tracking.
 ```
 
 /implement-feature {{ISSUE_KEY}}-123
-/implement-feature apps/{{APP_NAME}}/docs/features/feature-name/tasks.md
+/implement-feature apps/{{APP_NAME}}/docs/features/{{FEATURE_NAME}}/tasks.md
 
 ````
 
