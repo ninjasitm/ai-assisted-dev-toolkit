@@ -1,6 +1,5 @@
 ---
 description: "Implement bug fixes with proper tracking and validation"
-agent: build
 ---
 
 # Implement Fixes
