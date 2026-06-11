@@ -1,6 +1,5 @@
 ---
 description: "Commit and push changes with conventional commit messages"
-agent: build
 ---
 
 # Commit & Push

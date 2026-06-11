@@ -1,6 +1,5 @@
 ---
 description: "Commit and push template changes"
-agent: build
 temperature: 0.3
 ---
 
