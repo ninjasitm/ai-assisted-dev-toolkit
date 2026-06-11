@@ -379,6 +379,77 @@ gh api repos/OWNER/REPO/pulls/123/reviews -X POST \
   -f event="COMMENT"
 ```
 
+## Troubleshooting
+
+### Permission Errors (FORBIDDEN)
+
+**Symptom:** `does not have the correct permissions to execute ResolveReviewThread`
+
+**Cause:** Multiple GitHub accounts configured; the active account lacks write access.
+
+**Diagnosis:**
+```bash
+# Check which accounts are configured
+gh auth status
+
+# Check which account is active (Active account: true)
+gh auth status 2>&1 | grep -A2 "Active account: true"
+```
+
+**Fix — switch to the correct account:**
+```bash
+# Switch active account
+gh auth switch
+
+# Or set the active account explicitly
+gh auth switch -u <CORRECT_ACCOUNT>
+
+# Verify the switch
+gh auth status
+```
+
+**Fix — if the active account genuinely lacks permissions:**
+```bash
+# Check repo access
+gh api repos/OWNER/REPO --jq '.permissions'
+
+# Required scopes for thread resolution: repo, read:org
+gh auth refresh -s repo,read:org
+```
+
+**Prevention:** Always verify `gh auth status` shows the correct active account before batch operations. The `resolveReviewThread` GraphQL mutation requires write access to the repository.
+
+### Thread Resolution Fails Silently
+
+**Symptom:** `resolveReviewThread` returns `{"data":{"resolveReviewThread":null}}` with no error.
+
+**Cause:** Thread ID is invalid or already resolved.
+
+**Fix:**
+```bash
+# Re-list threads to confirm IDs
+gh api graphql -f query='...' --jq '.data.repository.pullRequest.reviewThreads.nodes[] | {id, isResolved}'
+
+# Thread IDs start with PRRT_ — verify format
+echo "$THREAD_ID" | grep -q "^PRRT_" || echo "Invalid thread ID format"
+```
+
+### Rate Limiting on Batch Operations
+
+**Symptom:** `403 rate limit exceeded` or `429` errors during bulk thread resolution.
+
+**Fix:**
+```bash
+# Check remaining rate limit
+gh api rate_limit --jq '.rate.remaining'
+
+# Add delays between batch operations
+for thread_id in $(thread_ids); do
+  gh api graphql -f query="mutation { resolveReviewThread(input: {threadId: \"$thread_id\"}) { thread { id isResolved } } }"
+  sleep 0.5  # 500ms between calls
+done
+```
+
 ## Limitations
 
 - Requires `gh auth login` before first use
