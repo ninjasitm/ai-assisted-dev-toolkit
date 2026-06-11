@@ -85,12 +85,12 @@ See [documentation.instructions.md](../.github/instructions/documentation.instru
 
 - `{{APP_NAME}}` - App name (e.g., web, server)
 - `{{FRAMEWORK}}` - Framework (e.g., Nuxt, Hono)
-- `{{Month}}` - Full month name (e.g., January)
-- `{{Year}}` - Four-digit year (e.g., 2026)
+- `{{MONTH_NAME}}` - Full month name (e.g., January)
+- `{{YEAR}}` - Four-digit year (e.g., 2026)
 - `{{YYYY-MM-DD}}` - ISO date format
 - `{{ISSUE_ID}}` - Issue tracker ID
-- `{{FEATURE-NAME}}` - Kebab-case feature name
-- `{{FIX-NAME}}` - Kebab-case fix name
+- `{{FEATURE_NAME}}` - Feature name
+- `{{FIX_NAME}}` - Fix name
 
 ### Monorepo-Specific
 

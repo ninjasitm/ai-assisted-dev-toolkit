@@ -2,7 +2,7 @@
 
 Database migration and schema management.
 
-@.claude/rules-snippets/database-migrations.md
+@.claude/rules-snippets/prisma-migrations.md
 
 ## Key points
 

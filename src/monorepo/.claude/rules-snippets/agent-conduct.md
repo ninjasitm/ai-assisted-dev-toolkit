@@ -9,4 +9,4 @@
 - Never modify shared packages without considering downstream consumers in the monorepo.
 - Prefer reversible changes when acting without full clarity.
 - Record decisions in code comments or documentation for future reference.
-- See `.github/instructions/agent-conduct.instructions.md` for full details.
+- See `.claude/rules-snippets/agent-conduct.md` for full details.

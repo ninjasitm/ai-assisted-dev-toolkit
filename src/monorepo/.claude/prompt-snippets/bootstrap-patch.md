@@ -4,7 +4,7 @@ You are helping to patch AI instructions in this project by comparing against th
 
 > **🛑 Before starting**: This command involves fetching, diffing, and applying changes across many files.
 > Dispatch parallel subagents for independent file groups (rules, commands, prompts, instructions, skills, agents).
-> See `.github/instructions/subagent-workflow.instructions.md` for patterns.
+> See `.claude/rules-snippets/subagent-workflow.md` for patterns.
 
 ## Usage
 

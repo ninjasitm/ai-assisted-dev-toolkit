@@ -337,7 +337,8 @@ Documentation updates are **mandatory before committing** any feature or fix. Se
 
 - Create or update `docs/features/{{ISSUE_ID}}-FEATURE-NAME/` (spec + plan) for every feature
 - Add fixes to the monthly log in `docs/fixes/{YYYY-MM}.md` (or a dedicated folder for complex fixes)
-- Update `docs/api/`, `README.md`, and `CHANGELOG.md` when applicable
+- Update `docs/api/`, `docs/integration/`, `docs/guides/`, `README.md`, and `CHANGELOG.md` when applicable
+- Reference `docs/constitution.md` for project principles and governance
 - Include all doc changes in the same commit/PR as the code
 
 ## Contributing

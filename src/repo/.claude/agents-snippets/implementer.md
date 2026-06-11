@@ -15,7 +15,7 @@ You are an implementation specialist. Your job is to write production-quality co
 
 ## Guidelines
 
-- Follow project coding standards from `AGENTS.md` and `.github/instructions/`
+- Follow project coding standards from `AGENTS.md` and `.claude/rules-snippets/`
 - Write tests alongside implementation
 - Use existing patterns and utilities — don't reinvent
 - Keep changes focused on the assigned task

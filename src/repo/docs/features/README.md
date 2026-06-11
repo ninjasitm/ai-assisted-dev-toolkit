@@ -75,8 +75,8 @@ Keep documentation updated as:
 
 ### Deprecated Features
 
-- [{{ISSUE_ID}}-DEPRECATED-FEATURE]({{ISSUE_ID}}-DEPRECATED-FEATURE/) - Deprecated on {{Date}}
+- [{{ISSUE_ID}}-DEPRECATED-FEATURE]({{ISSUE_ID}}-DEPRECATED-FEATURE/) - Deprecated on {{DATE}}
 
 ---
 
-**Last Updated**: {{Date}}
+**Last Updated**: {{DATE}}

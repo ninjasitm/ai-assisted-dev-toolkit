@@ -8,10 +8,13 @@ All project changes must be documented following these standards to maintain cle
 
 All documentation lives in the `docs/` folder at the project root:
 
-- **Features** → `docs/features/{{ISSUE_ID}}-FEATURE-NAME/`
+- **Features** → `docs/features/{{ISSUE_ID}}-FEATURE-NAME/` (spec + plan)
 - **Fixes** → `docs/fixes/` (tiered structure - see below)
 - **Architecture** → `docs/architecture/` (ADRs, system design)
 - **API** → `docs/api/` (API specifications)
+- **Integration** → `docs/integration/` (cross-system integration guides)
+- **Guides** → `docs/guides/` (developer onboarding, tutorials)
+- **Constitution** → `docs/constitution.md` (project principles and governance)
 
 ## Feature Documentation
 
@@ -40,18 +43,20 @@ Create feature documentation for:
 
 ### Creating Feature Documentation
 
-1. **Use the spec workflow**: Run `/spec` command to generate `spec.md`
-2. **Create implementation plan**: Run `/plan` command to generate `plan.md`
+1. **Use the spec workflow**: Run `/specify` command to generate `spec.md` in `docs/features/{{ISSUE_ID}}-FEATURE-NAME/`
+2. **Create implementation plan**: Run `/plan` command to generate `plan.md` in the same feature folder
 3. **Keep it updated**: Update during implementation if scope changes
 4. **Link from commits**: Reference folder in commit messages
 
 ### Feature Spec Template (spec.md)
 
+**Location:** `docs/features/{{ISSUE_ID}}-FEATURE-NAME/spec.md`
+
 ```markdown
-# {{ISSUE_ID}}: {{Feature Name}}
+# {{ISSUE_ID}}: {{FEATURE_NAME}}
 
 **Status**: Draft | In Progress | Completed
-**Created**: {{Date}}
+**Created**: {{DATE}}
 **Issue**: [{{ISSUE_ID}}]({{ISSUE_TRACKER_URL}})
 
 ## Overview
@@ -117,17 +122,19 @@ Brief description of the feature and its purpose.
 
 ---
 
-**Last Updated**: {{Date}}
+**Last Updated**: {{DATE}}
 ```
 
 ### Feature Plan Template (plan.md)
 
+**Location:** `docs/features/{{ISSUE_ID}}-FEATURE-NAME/plan.md`
+
 ```markdown
 # Implementation Plan: {{ISSUE_ID}}
 
-**Feature**: {{Feature Name}}
-**Estimated Effort**: {{Hours/Days}}
-**Dependencies**: {{List dependencies}}
+**Feature**: {{FEATURE_NAME}}
+**Estimated Effort**: {{HOURS_OR_DAYS}}
+**Dependencies**: {{LIST_DEPENDENCIES}}
 
 ## Implementation Strategy
 
@@ -189,7 +196,7 @@ Brief description of the feature and its purpose.
 
 ---
 
-**Last Updated**: {{Date}}
+**Last Updated**: {{DATE}}
 ```
 
 ## Fix & Bug Documentation
@@ -262,10 +269,10 @@ Brief description of the feature and its purpose.
 ### Monthly Log Template
 
 ```markdown
-# {{Month}} {{Year}} - Fixes & Improvements
+# {{MONTH_NAME}} {{YEAR}} - Fixes & Improvements
 
 **Format**: [Keep a Changelog](https://keepachangelog.com/)
-**Period**: {{Month}} 1-{{Last Day}}, {{Year}}
+**Period**: {{MONTH_NAME}} 1-{{LAST_DAY}}, {{YEAR}}
 
 ## Summary
 
@@ -285,7 +292,7 @@ Brief overview of the month's focus areas and key achievements.
 
 ---
 
-## [{{YYYY-MM-DD}}] - {{Fix Title}}
+## [{{YYYY-MM-DD}}] - {{FIX_TITLE}}
 
 ### Fixed/Changed/Added
 
@@ -309,7 +316,7 @@ Brief overview of the month's focus areas and key achievements.
 
 ---
 
-## [{{YYYY-MM-DD}}] - {{Another Fix Title}}
+## [{{YYYY-MM-DD}}] - {{ANOTHER_FIX_TITLE}}
 
 [Repeat structure for each fix]
 
@@ -334,8 +341,8 @@ Brief overview of the month's focus areas and key achievements.
 
 ---
 
-**Last Updated**: {{Date}}
-**Next Review**: {{Next Month End}}
+**Last Updated**: {{DATE}}
+**Next Review**: {{NEXT_MONTH_END}}
 ```
 
 ## Changelog Management
@@ -397,12 +404,12 @@ Document significant architectural decisions:
 
 ### ADR Structure
 
-**Location:** `docs/architecture/{{NNNN}}-{{decision-title}}.md`
+**Location:** `docs/architecture/{{NNNN}}-{{DECISION_TITLE}}.md`
 
 **Template:**
 
 ```markdown
-# ADR {{NNNN}}: {{Decision Title}}
+# ADR {{NNNN}}: {{DECISION_TITLE}}
 
 **Status**: Proposed | Accepted | Deprecated | Superseded
 **Date**: {{YYYY-MM-DD}}
@@ -434,13 +441,13 @@ What is the change we're proposing and/or doing?
 
 ## Alternatives Considered
 
-### Alternative 1: {{Name}}
+### Alternative 1: {{NAME}}
 
 - Pros: [list]
 - Cons: [list]
 - Why rejected: [reason]
 
-### Alternative 2: {{Name}}
+### Alternative 2: {{NAME}}
 
 - Pros: [list]
 - Cons: [list]
@@ -460,7 +467,7 @@ What is the change we're proposing and/or doing?
 
 ---
 
-**Last Updated**: {{Date}}
+**Last Updated**: {{DATE}}
 ```
 
 ## Documentation Maintenance
@@ -610,5 +617,5 @@ PR descriptions should:
 
 ---
 
-**Last Updated**: {{Date}}
+**Last Updated**: {{DATE}}
 **Template Version**: 3.0.0

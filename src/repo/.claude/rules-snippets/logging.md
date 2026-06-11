@@ -222,8 +222,6 @@ logError("UserService", "createUser", error, { userId, email });
 
 ## Framework-Specific Guidelines
 
-{{#if (eq FRAMEWORK "Next.js")}}
-
 ### Next.js
 
 ```typescript
@@ -246,10 +244,6 @@ export async function POST(request: Request) {
 }
 ```
 
-{{/if}}
-
-{{#if (eq FRAMEWORK "Django")}}
-
 ### Django
 
 ```python
@@ -265,10 +259,6 @@ class UserView(View):
         except Exception as e:
             logger.error(f'[UserView] [get]: Failed | error={str(e)}', exc_info=True)
 ```
-
-{{/if}}
-
-{{#if (eq FRAMEWORK "Laravel")}}
 
 ### Laravel
 
@@ -292,8 +282,6 @@ class UserController extends Controller
     }
 }
 ```
-
-{{/if}}
 
 ## Production Logging
 
@@ -361,4 +349,4 @@ test("logs error on failure", async () => {
 
 ---
 
-**Last Updated**: {{Date}}
+**Last Updated**: {{DATE}}

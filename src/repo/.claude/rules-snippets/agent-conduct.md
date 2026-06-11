@@ -4,7 +4,7 @@
 
 **BEFORE responding to ANY request with multiple steps (research + planning + implementation + testing + review):**
 
-- Read the orchestration checkpoint in [AGENTS.md](../../AGENTS.md#-critical-orchestration-checkpoint-read-first) and [subagent-workflow.instructions.md](./subagent-workflow.instructions.md#-before-starting-orchestration-checkpoint)
+- Read the orchestration checkpoint in [AGENTS.md](../../AGENTS.md#-critical-orchestration-checkpoint-read-first) and [subagent-workflow.md](./subagent-workflow.md#-before-starting-orchestration-checkpoint)
 - Determine if this task requires a coordinator agent (Feature Builder, TDD) or can be single-agent work
 - If multi-step work, document why you're using orchestrator-first in your response before proceeding
 

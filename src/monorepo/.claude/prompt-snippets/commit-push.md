@@ -63,7 +63,7 @@ feat(api): add user input validation
 If the fixset was part of an active pull request
 
 - Identify any resolved comments that can be marked as resolved
-- Use `resolve_pr_comments` or the `gh` cli, referencing gh skills in the project, tool to mark those comments as resolved and post a short description of the fix that addresses the comment
+- Use the issue tracker's tools to mark those comments as resolved and post a short description of the fix that addresses the comment — see the `issue-tracker` skill for your tracker's CLI/API commands
 - If there are still unaddressed comments
 - Identify why they weren't resolved (e.g., they were about a different issue, or they require further changes)
 - OR fix them if they are legitimate issues that were missed in the commit

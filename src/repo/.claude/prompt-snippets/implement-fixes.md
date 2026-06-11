@@ -14,7 +14,7 @@ Implement bug fixes and corrections with proper validation and documentation.
 > **🛑 For multiple independent fixes**: If fixing 2+ unrelated bugs, use `dispatching-parallel-agents`
 > to dispatch one subagent per bug (different root causes, different files = parallel-safe).
 > For a single focused fix, proceed directly — single-agent is appropriate.
-> See `.github/instructions/subagent-workflow.instructions.md` for patterns.
+> See `.claude/rules-snippets/subagent-workflow.md` for patterns.
 
 ## Workflow Modes
 
@@ -23,7 +23,7 @@ Implement bug fixes and corrections with proper validation and documentation.
 
 ## Process
 
-> **📋 Standards**: Follow [Coding Standards](../instructions/coding-standards.instructions.md) and [Documentation](../instructions/documentation.instructions.md).
+> **📋 Standards**: Follow [Coding Standards](../rules-snippets/coding-standards.md) and [Documentation](../rules-snippets/documentation.md).
 
 1. **Load Fix Context**:
    - Retrieve issue details if applicable

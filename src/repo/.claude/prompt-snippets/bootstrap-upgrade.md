@@ -18,7 +18,7 @@ One-time migration from pre-3.0 inline pattern to 3.0+ snippet-based architectur
 
 > **🛑 Before starting**: This command modifies files across 5+ directory trees (`.claude/`, `.github/`, `.cursor/`, `.opencode/`, `.agents/`).
 > Steps 3–6 are **parallelizable** — dispatch one subagent per directory tree (rules, commands, agents, instructions, prompts).
-> See `.github/instructions/subagent-workflow.instructions.md` for patterns.
+> See `.claude/rules-snippets/subagent-workflow.md` for patterns.
 
 ## Process
 

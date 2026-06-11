@@ -9,11 +9,12 @@ You are helping to create a feature specification based on the user's descriptio
 
 2. **Load context**:
    - Read `AGENTS.md` for project architecture
-   - Review existing features in `docs/specs/` for format consistency
+   - Review existing features in `apps/*/docs/features/` for format consistency
    - Check related code for context
 
 3. **Create the specification**:
-   - Create `docs/specs/{{FEATURE_NAME}}.md`
+   - Determine the target app directory (e.g., `apps/{{APP_NAME}}/`)
+   - Create `apps/{{APP_NAME}}/docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/spec.md`
    - Use the template structure below
    - Be specific and actionable
 

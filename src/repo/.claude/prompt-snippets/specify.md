@@ -11,7 +11,7 @@ Start a new feature by creating a specification. This is the first step in the d
 
 ## Process
 
-> **📋 Context**: Reference [Project Context](../instructions/project-context.instructions.md) for architecture and patterns.
+> **📋 Context**: Reference [Project Context](../rules-snippets/project-context.md) for architecture and patterns.
 
 1. **Parse Feature Description**:
    - Extract core functionality
@@ -20,17 +20,17 @@ Start a new feature by creating a specification. This is the first step in the d
 
 2. **Determine Context**:
    - Check `AGENTS.md` for project architecture
-   - Review existing features in `docs/specs/`
+   - Review existing features in `docs/features/`
    - Understand tech stack and patterns
 
 3. **Create Feature Directory**:
    ```
-   docs/features/{{FEATURE_NAME}}/
+   docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/
    ```
 
 4. **Generate Specification**:
 
-   Create `docs/specs/{{FEATURE_NAME}}.md` using template:
+   Create `docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/spec.md` using template:
 
    ```markdown
    # Feature: {{FEATURE_NAME}}
