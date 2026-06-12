@@ -37,28 +37,32 @@ For CLI command reference, see the matching skill: `.agents/skills/{acli,gh-cli,
 
 ## Agent Conduct & Interaction Rules
 
-### Clarification & Assumption Handling
+### Clarification & Alignment Guidelines
 
-**CRITICAL**: Before making assumptions or proceeding with ambiguous requirements, agents MUST proactively ask the user for clarification. This applies to:
+#### 1. Proactive Clarification
 
-- **Ambiguous requirements**: If a task description is vague, incomplete, or could be interpreted multiple ways, ask the user to clarify before proceeding.
-- **Architecture decisions**: When multiple valid approaches exist (e.g., adding a new service vs. extending an existing one), present options and ask for the user's preference.
-- **Data model changes**: Before adding/modifying database columns, relationships, or entities, confirm the intended schema with the user.
-- **Breaking changes**: If an implementation could break existing functionality, API contracts, or database compatibility, flag it and ask before proceeding.
-- **Scope uncertainty**: If unsure whether a feature should be minimal (MVP) or comprehensive, ask about the desired scope.
-- **External dependencies**: When a task requires secrets, third-party services, or infrastructure not yet configured, ask the user before assuming.
-- **Domain-specific decisions**: Sensitive UX choices or domain-specific behavior should be confirmed with the user first.
+- **Identify Ambiguity**: Stop and ask if a task lacks clear acceptance criteria, inputs, or expected outputs.
+- **Resolve Conflicts**: Flag conflicting instructions between the user prompt, existing code, and documentation before writing code.
+- **Expose Assumptions**: State your assumptions clearly and ask for validation before proceeding with high-impact changes.
 
-### How to Ask for Clarification
+#### 2. Technical Validation & Alternatives
 
-- Be specific about what is unclear and why it matters
-- Offer 2-3 concrete options when possible (with a recommended default)
-- Explain the trade-offs of each option briefly
-- If there is a clearly best practice, recommend it but still confirm
+- **Propose Better Paths**: Suggest a simpler, more performant, or more idiomatic alternative if you see a better way to solve the problem.
+- **Flag Code Smells**: Alert the team if the requested changes introduce technical debt, anti-patterns, or break existing architectural rules.
+- **Check Dependencies**: Ask for verification if a task requires adding new third-party libraries or upgrading existing versions.
 
-**Example:**
+#### 3. Scope & Edge Case Management
 
-> "This endpoint could return paginated results or the full list. Given the expected data volume, I'd recommend pagination with a default page size of 20. Should I proceed with that approach, or do you prefer returning all results?"
+- **Surface Edge Cases**: List potential failures, null states, or security risks you discover, and ask how to handle them.
+- **Prevent Scope Creep**: Ask for permission before modifying files or logic outside the explicit scope of the assigned task.
+- **Clarify Breakages**: Warn the user immediately if a requested change will intentionally break backward compatibility or existing APIs.
+
+#### 4. How to Ask Questions (Response Formatting)
+
+When stopping to ask a question, do not just post an open-ended block of text. Format your query using one of these two structures:
+
+- **Structured Multiple-Choice**: For architectural, design, or logic choices, provide a numbered list of distinct options. Include a brief pro/con or trade-off for each path so the user can quickly respond with just a number (e.g., "Go with Option 2").
+- **Targeted Text Input**: For missing data, API endpoints, or environment variables, provide a clear, pre-formatted Markdown template or fill-in-the-blank block. The user should be able to copy, fill out, and return it with minimal friction.
 
 ### Guardrails
 

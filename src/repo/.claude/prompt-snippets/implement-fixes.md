@@ -37,26 +37,32 @@ Implement bug fixes and corrections with proper validation and documentation.
    git checkout -b fix/{{FIX_DESCRIPTION}}
    ```
 
-3. **Implement Fix**:
+3. **Reproduce & Test (TDD required)**:
    - Identify root cause
-   - Make minimal, focused changes
+   - **Write a failing test that reproduces the bug** — this proves you understand the issue
+   - **Verify it fails** — watch it fail for the right reason
+   - See `test-driven-development/SKILL.md` for the bug fix workflow
+
+4. **Implement Fix**:
+   - Write minimal code to make the failing test pass
    - Fix only the reported issue
    - Maintain backward compatibility
+   - **Verify all tests pass** — run the full suite, no regressions
 
-4. **Validate Fix**:
+5. **Validate Fix**:
    - Run type checking: `{{PACKAGE_MANAGER}} run check-types`
    - Run tests: `{{PACKAGE_MANAGER}} run test`
    - Build: `{{PACKAGE_MANAGER}} run build`
    - Verify fix resolves the issue
    - Check for regressions
 
-5. **Commit and Push**:
+6. **Commit and Push**:
    ```bash
    git commit -m "fix({{SCOPE}}): {{FIX_DESCRIPTION}}"
    git push -u origin fix/{{FIX_DESCRIPTION}}
    ```
 
-6. **Create Pull Request**:
+7. **Create Pull Request**:
    - Target: `{{DEFAULT_BRANCH}}`
    - Include:
      - Root cause explanation
@@ -64,7 +70,7 @@ Implement bug fixes and corrections with proper validation and documentation.
      - Testing performed
      - Potential impacts
 
-7. **Report Status**:
+8. **Report Status**:
    - Bug fixed and root cause
    - Validation completed
    - PR ready for review
@@ -93,7 +99,7 @@ Implement bug fixes and corrections with proper validation and documentation.
 - **Minimal Scope**: Fix only the reported issue
 - **No Refactoring**: Avoid unrelated code changes
 - **Backward Compatible**: Don't break existing functionality
-- **Test Focus**: Add tests for the specific bug
+- **Test First**: Write a failing test reproducing the bug before writing the fix — no exceptions
 - **Document**: Record the fix in changelog if significant
 
 ## Documentation

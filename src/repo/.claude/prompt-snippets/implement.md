@@ -28,7 +28,7 @@ You are helping to implement features based on a task list or specification.
 
    - For sequential tasks: implement in dependency order
    - For parallel `[P]` tasks: dispatch domain specialist subagents concurrently
-   - Follow TDD approach when appropriate
+   - **Follow TDD**: Write failing tests before implementation (red-green-refactor). See `test-driven-development/SKILL.md`.
    - Follow project coding standards
    - Add appropriate comments and documentation
 
