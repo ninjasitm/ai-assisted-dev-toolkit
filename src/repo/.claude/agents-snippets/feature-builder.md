@@ -14,8 +14,8 @@ For each feature request:
    - **API Specialist** for API contracts, documentation, or integration patterns
    - **Admin Portal** for admin dashboards, RBAC, reporting, analytics, or operational tooling
    - **Implementer** for general implementation tasks
-   - Every specialist must: write failing test → verify fail → write minimal code → verify pass → refactor
-   - Reference `test-driven-development/SKILL.md` when dispatching
+
+   Every specialist must: write failing test -> verify fail -> write minimal code -> verify pass -> refactor. Reference test-driven-development/SKILL.md when dispatching.
 4. **Review** — After each implementation, use the Reviewer agent to check quality
 5. **Iterate** — If the reviewer identifies issues, dispatch the original specialist to fix them
 6. **Document** — Use the Documenter agent to update project documentation
