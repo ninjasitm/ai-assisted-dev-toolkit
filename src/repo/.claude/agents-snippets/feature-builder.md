@@ -8,12 +8,14 @@ For each feature request:
 
 1. **Research** — Use the Researcher agent to analyze codebase context and existing patterns
 2. **Plan** — Use the Planner agent to break down the feature into tasks
-3. **Implement** — For each task, dispatch the appropriate specialist:
+3. **Implement (TDD required)** — For each task, dispatch the appropriate specialist. All specialists must follow TDD:
    - **Backend Architect** for API design, database changes, or system architecture
    - **Frontend Developer** for UI components, state management, or responsive design
    - **API Specialist** for API contracts, documentation, or integration patterns
    - **Admin Portal** for admin dashboards, RBAC, reporting, analytics, or operational tooling
    - **Implementer** for general implementation tasks
+   - Every specialist must: write failing test → verify fail → write minimal code → verify pass → refactor
+   - Reference `test-driven-development/SKILL.md` when dispatching
 4. **Review** — After each implementation, use the Reviewer agent to check quality
 5. **Iterate** — If the reviewer identifies issues, dispatch the original specialist to fix them
 6. **Document** — Use the Documenter agent to update project documentation

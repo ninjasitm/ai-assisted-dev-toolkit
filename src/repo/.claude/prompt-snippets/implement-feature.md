@@ -54,11 +54,16 @@ Implement a feature by completing tasks sequentially with proper tracking.
    - Review referenced files
    - Understand dependencies
 
-   c. **Implement**:
+   c. **Implement (TDD required)**:
    - Follow acceptance criteria exactly
    - Use patterns from `AGENTS.md`
-   - Write tests alongside implementation
+   - **Write a failing test first** — one behavior per test, clear name, real code
+   - **Verify it fails** — watch it fail for the right reason (feature missing, not error)
+   - **Write minimal code to pass** — simplest implementation, no over-engineering
+   - **Verify it passes** — all tests green, no regressions
+   - **Refactor** — clean up only after green (remove duplication, improve names)
    - Ensure type safety
+   - See `test-driven-development/SKILL.md` for the full cycle
 
    d. **Validate**:
    - Run type checking: `{{PACKAGE_MANAGER}} run check-types`
@@ -115,5 +120,5 @@ Implement a feature by completing tasks sequentially with proper tracking.
 
 - **No Placeholders**: Never implement "Coming Soon" or placeholder functionality
 - **Complete Features**: Each task should result in working functionality
-- **Test-Driven**: Write tests before or alongside implementation
+- **Test-Driven (mandatory)**: Write failing tests before implementation. Follow red-green-refactor. No production code without a failing test first.
 - **Atomic Commits**: One logical change per commit

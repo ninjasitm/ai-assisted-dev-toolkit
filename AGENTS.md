@@ -143,6 +143,33 @@ Use the appropriate sub-agents when the task benefits from specialized expertise
 3. **Set constraints** — Use tool restrictions for read-only agents (reviewer, planner)
 4. **Chain when needed** — Planner → Developer → Reviewer for complex changes
 
+## Clarification & Alignment Guidelines
+
+### 1. Proactive Clarification
+
+- **Identify Ambiguity**: Stop and ask if a task lacks clear acceptance criteria, inputs, or expected outputs.
+- **Resolve Conflicts**: Flag conflicting instructions between the user prompt, existing code, and documentation before writing code.
+- **Expose Assumptions**: State your assumptions clearly and ask for validation before proceeding with high-impact changes.
+
+### 2. Technical Validation & Alternatives
+
+- **Propose Better Paths**: Suggest a simpler, more performant, or more idiomatic alternative if you see a better way to solve the problem.
+- **Flag Code Smells**: Alert the team if the requested changes introduce technical debt, anti-patterns, or break existing architectural rules.
+- **Check Dependencies**: Ask for verification if a task requires adding new third-party libraries or upgrading existing versions.
+
+### 3. Scope & Edge Case Management
+
+- **Surface Edge Cases**: List potential failures, null states, or security risks you discover, and ask how to handle them.
+- **Prevent Scope Creep**: Ask for permission before modifying files or logic outside the explicit scope of the assigned task.
+- **Clarify Breakages**: Warn the user immediately if a requested change will intentionally break backward compatibility or existing APIs.
+
+### 4. How to Ask Questions (Response Formatting)
+
+When stopping to ask a question, do not just post an open-ended block of text. Format your query using one of these two structures:
+
+- **Structured Multiple-Choice**: For architectural, design, or logic choices, provide a numbered list of distinct options. Include a brief pro/con or trade-off for each path so the user can quickly respond with just a number (e.g., "Go with Option 2").
+- **Targeted Text Input**: For missing data, API endpoints, or environment variables, provide a clear, pre-formatted Markdown template or fill-in-the-blank block. The user should be able to copy, fill out, and return it with minimal friction.
+
 ## Template Conventions
 
 ### Placeholder Syntax
