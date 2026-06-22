@@ -6,7 +6,7 @@ Migrate this monorepo's AI instruction files from the pre-3.0 inline pattern to 
 
 > **🛑 Before starting**: This command involves reading, extracting, and rewriting many files across multiple directories.
 > Dispatch parallel subagents for independent file groups (`.claude/`, `.github/`, `.cursor/`, `.opencode/`).
-> Steps 3-6 can run in parallel per directory. Steps 7-14 are sequential.
+> Steps 3-6 can run in parallel per directory. Steps 7-15 are sequential.
 
 ## Usage
 
@@ -286,13 +286,32 @@ Follow the rules defined in [.claude/rules-snippets/{{name}}.md](../../.claude/r
    @.claude/agents-snippets/{{name}}.md
    ```
 
-### Step 8: Install Project Hooks
+### Step 8: Install Pre-Commit Hook
+
+Install the CHANGELOG/secrets enforcement hook to run before every commit:
+
+1. Copy `scripts/pre-commit-check.sh` from the template to the target project's `scripts/` directory
+2. Install as a git hook:
+
+   ```bash
+   cp scripts/pre-commit-check.sh .git/hooks/pre-commit
+   chmod +x .git/hooks/pre-commit
+   ```
+
+This enforces:
+- **CHANGELOG.md** — [Unreleased] must have content when non-trivial files are staged
+- **Zone.Identifier** — `*:Zone.Identifier` files are blocked from commit
+- **Secrets** — `.env`, `.env.*`, `*.key`, `*.pem` files are blocked from commit
+
+Use `git commit --no-verify` to bypass.
+
+### Step 9: Install Project Hooks
 
 1. Create `hooks/` directory in the target project
 2. Copy all files from the template's `hooks/*` directory (preserve sub-structure)
 3. Make `.js` files executable on Unix: `chmod +x hooks/*.js`
 
-### Step 9: Clean Up Duplicate Skills
+### Step 10: Clean Up Duplicate Skills
 
 - Copy `.agents/rules/*.md` from the template
 
@@ -301,7 +320,7 @@ Follow the rules defined in [.claude/rules-snippets/{{name}}.md](../../.claude/r
    - If directory exists, remove all subdirectories except `README.md`
 3. Remove any nested duplicates: `subagent-driven-development/subagent-driven-development/`
 
-### Step 10: Update CLAUDE.md
+### Step 11: Update CLAUDE.md
 
 Read the existing `CLAUDE.md` and add missing sections:
 
@@ -333,11 +352,11 @@ Read the existing `CLAUDE.md` and add missing sections:
    - `.opencode/{commands,rules,agents}/*.md` → `@.claude/{snippet-type}/`
    ```
 
-### Step 11: Create .toolkit-version File
+### Step 12: Create .toolkit-version File
 
 Write `3.0.0` to `.toolkit-version`.
 
-### Step 12: Validation
+### Step 13: Validation
 
 Run these checks (parallelizable):
 
@@ -349,7 +368,7 @@ Run these checks (parallelizable):
 
 If `--verbose`: log each check result.
 
-### Step 13: Generate Upgrade Report
+### Step 14: Generate Upgrade Report
 
 ```markdown
 ## ✅ Monorepo Upgrade Complete: v3.0.0 (Snippet Architecture)
@@ -411,7 +430,7 @@ If `--verbose`: log each check result.
 4. Commit the migration
 ```
 
-### Step 14: Git Commit
+### Step 15: Git Commit
 
 ```bash
 git add -A
