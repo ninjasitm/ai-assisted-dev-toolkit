@@ -640,7 +640,7 @@ This toolkit includes **23 pre-installed universal skills** in the `.agents/skil
 
 **These skills are ready to use immediately after copying the templates.** No `npx -y skills add -a <agent> <owner/repo> --skill '*' --agent github-copilot cursor` commands needed.
 
-The **ponytail** skill bundle is an integrated optional skill set from [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) that adds YAGNI/stdlib/native/one-line/minimum discipline to your AI agents. It includes 6 skills, 6 commands, an OpenCode plugin, 8 activation hooks, and ambient agent rules — all pre-configured and ready to use.
+The **ponytail** skill bundle is an integrated optional skill set from [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) that adds YAGNI/stdlib/native/one-line/minimum discipline to your AI agents. It includes 6 skills, 6 commands, an OpenCode plugin, 7 activation hooks, and ambient agent rules — all pre-configured and ready to use.
 
 ### Additional Recommended Skills
 

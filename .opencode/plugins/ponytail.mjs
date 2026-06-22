@@ -36,8 +36,13 @@ function readMode() {
 }
 
 function writeMode(mode) {
-  fs.mkdirSync(path.dirname(statePath), { recursive: true });
-  fs.writeFileSync(statePath, mode);
+  try {
+    fs.mkdirSync(path.dirname(statePath), { recursive: true });
+    fs.writeFileSync(statePath, mode);
+  } catch (e) {
+    // Fail silently — an unwritable state dir should not crash the plugin.
+    // The transform falls back to readMode's default on the next read.
+  }
 }
 
 export default async ({ client } = {}) => {

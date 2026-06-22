@@ -26,13 +26,16 @@ Level sticks until changed or session end.
 | Skill | Trigger | What it does |
 |-------|---------|--------------|
 | **ponytail** | `/ponytail` | Lazy mode itself. Simplest solution that works. |
+| **ponytail-audit** | `/ponytail-audit` | Whole-repo over-engineering audit. |
+| **ponytail-debt** | `/ponytail-debt` | Harvest `ponytail:` comments into a tracked ledger. |
 | **ponytail-review** | `/ponytail-review` | Over-engineering review: `L42: yagni: factory, one product. Inline.` |
 | **ponytail-gain** | `/ponytail-gain` | Measured-impact scoreboard: less code, less cost, more speed. |
 | **ponytail-help** | `/ponytail-help` | This card. |
 
 Codex uses `@ponytail`, `@ponytail-review`, and `@ponytail-help`; Claude Code
-and OpenCode use the slash-command forms above (OpenCode ships `/ponytail` and
-`/ponytail-review`).
+and OpenCode use the slash-command forms above. OpenCode ships all six slash
+commands (`/ponytail`, `/ponytail-audit`, `/ponytail-debt`, `/ponytail-review`,
+`/ponytail-gain`, `/ponytail-help`).
 
 ## Deactivate
 
@@ -60,9 +63,11 @@ Resolution: env var > config file > `full`.
 
 ## Update
 
-Enable auto-update once: open `/plugin`, go to Marketplaces, pick ponytail, Enable auto-update. Claude Code then pulls new versions at startup (run `/reload-plugins` when it prompts). Manual refresh: `/plugin marketplace update ponytail` then `/reload-plugins`.
-
-If `/plugin` is not recognized, your Claude Code is out of date. Update it (`npm install -g @anthropic-ai/claude-code@latest`, or `brew upgrade claude-code`) and restart. Other hosts use their own update flow.
+This toolkit ships ponytail as templates, so updating is the same as updating the
+ai-assisted-dev-toolkit: pull the latest version of this repo. If you installed
+ponytail separately as a Claude Code plugin, use `/plugin marketplace update
+ponytail` then `/reload-plugins`. Other hosts use their own update flow — see
+the host's documentation.
 
 ## More
 

@@ -48,6 +48,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed project-specific Nuxt/Vue/Pinia code from AGENTS.md files
 - Synchronized structure diagrams between README.md and AGENTS.md
 - Added missing templates referenced in templates/README.md
+- `scripts/pre-commit-check.sh` — early-exit when no files are staged so the CHANGELOG check no longer fires on empty commits (PR #20 review)
+- `scripts/check-parity.sh` — removed duplicate `check_body_match` call for the cursor ↔ github prompt body (PR #20 review)
+- `.opencode/plugins/ponytail.mjs` — wrapped `writeMode` in a try/catch so an unwritable state directory no longer crashes the plugin (PR #20 review)
+- `ponytail-help` SKILL.md and prompt snippet — added missing `ponytail-audit`, `ponytail-debt`, and `/ponytail-gain` entries; corrected OpenCode slash-command count to six; rewrote the Claude-Code-specific Update section to describe the template update flow (PR #20 review)
+- `ponytail-gain` SKILL.md and prompt snippet (repo, monorepo, root) — replaced the phantom `benchmarks/` source reference with the upstream `DietrichGebert/ponytail` repo link (PR #20 review)
+- `README.md` — corrected "8 activation hooks" to "7 activation hooks" to match CHANGELOG and the actual hook count (PR #20 review)
 
 ## [0.1.0] - 2026-01-26
 

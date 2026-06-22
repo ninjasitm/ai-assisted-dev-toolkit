@@ -130,9 +130,6 @@ check_identical "repo ↔ monorepo: github prompt" \
 check_body_match "cursor ↔ github prompt (body)" \
   "$BASE_AT" "$BASE_GH"
 
-check_body_match "cursor ↔ github prompt (body)" \
-  "$BASE_AT" "$BASE_GH"
-
 echo ""
 echo "=== Skills Parity ==="
 echo ""
