@@ -7,6 +7,10 @@
 - **Apps:** `apps/{{APP_NAME_1}}/`, `apps/{{APP_NAME_2}}/`
 - **Packages:** `packages/{{PACKAGE_NAME_1}}/`, `packages/{{PACKAGE_NAME_2}}/`, `packages/config/`
 
+## Orientation to recent work
+
+The [orient-to-recent-work](../.agents/skills/orient-to-recent-work/SKILL.md) skill (auto-loaded) orients you to recent project activity before any non-trivial task: CHANGELOG Unreleased, recent commits, recent decisions. Skip for trivial fixes: typos, version bumps, isolated docs updates, mechanical refactors with a known target.
+
 ## Instruction Sources
 
 Detailed standards are organized into focused instruction files. Copilot will automatically load these based on the `applyTo` patterns:

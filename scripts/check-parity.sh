@@ -227,6 +227,18 @@ check_identical "opencode.json repo ↔ monorepo" \
   "src/monorepo/.opencode/opencode.json"
 
 echo ""
+echo "=== orient-to-recent-work Parity ==="
+echo ""
+
+check_identical "skill: orient-to-recent-work repo ↔ monorepo" \
+  "src/repo/.agents/skills/orient-to-recent-work/SKILL.md" \
+  "src/monorepo/.agents/skills/orient-to-recent-work/SKILL.md"
+
+check_identical "cursor-rule: orient-to-recent-work repo ↔ monorepo" \
+  "src/repo/.cursor/rules/orient-to-recent-work.mdc" \
+  "src/monorepo/.cursor/rules/orient-to-recent-work.mdc"
+
+echo ""
 echo "=== AGENTS.md PM Section Parity ==="
 echo ""
 

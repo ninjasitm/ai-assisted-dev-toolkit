@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Ponytail rule in `.agents/rules/` and `.cursor/rules/` for ambient agent context
 - 6 ponytail commands (`ponytail`, `ponytail-audit`, `ponytail-debt`, `ponytail-gain`, `ponytail-help`, `ponytail-review`) with thin-wrapper sources in `.claude/prompt-snippets/`
 - `check-parity.sh` extended with a Ponytail Parity block
+- `orient-to-recent-work` skill — auto-loaded at session start, orients agents to recent activity (CHANGELOG Unreleased, recent commits) before any non-trivial task
 
 ### Changed
 

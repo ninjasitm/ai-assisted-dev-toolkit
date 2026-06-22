@@ -9,6 +9,10 @@
 
 {{PROJECT_DESCRIPTION}}
 
+## Orientation to recent work
+
+The [orient-to-recent-work](../.agents/skills/orient-to-recent-work/SKILL.md) skill (auto-loaded) orients you to recent project activity before any non-trivial task: CHANGELOG Unreleased, recent commits, recent decisions. Skip for trivial fixes: typos, version bumps, isolated docs updates, mechanical refactors with a known target.
+
 ## Structure
 
 ```
