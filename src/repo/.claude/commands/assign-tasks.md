@@ -6,4 +6,4 @@ argument-hint: "requirements or task file path"
 
 # Create Tickets from Requirements
 
-Follow the prompt defined in [.claude/prompt-snippets/assign-tasks.md](../prompt-snippets/assign-tasks.md).
+📋 **Full definition:** [.claude/prompt-snippets/assign-tasks.md](../prompt-snippets/assign-tasks.md)

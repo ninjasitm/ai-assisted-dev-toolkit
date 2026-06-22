@@ -31,6 +31,7 @@ This repository serves as a **template source** for AI development instructions 
 │   │   │   ├── prompts/ # Reusable prompts
 │   │   │   └── skills/ # Additional skills (README placeholder)
 │   │   ├── .agents/    # Pre-installed universal skills
+│   │   │   ├── rules/  # Agent behavior rules (ponytail, etc.)
 │   │   │   └── skills/ # Bundled skills (TDD, debugging, etc.)
 │   │   ├── .claude/    # Claude Code configuration
 │   │   │   ├── agents/ # Custom agent templates (subagents)
@@ -56,6 +57,7 @@ This repository serves as a **template source** for AI development instructions 
 │       │   ├── prompts/ # Reusable prompts
 │       │   └── skills/ # Additional skills (README placeholder)
 │       ├── .agents/    # Pre-installed universal skills
+│       │   ├── rules/  # Agent behavior rules (ponytail, etc.)
 │       │   └── skills/ # Bundled skills (TDD, debugging, etc.)
 │       ├── .claude/    # Claude Code configuration
 │       │   ├── agents/ # Custom agent templates (subagents)
@@ -71,6 +73,9 @@ This repository serves as a **template source** for AI development instructions 
 │
 ├── .cursor/            # This toolkit's own Cursor config
 ├── .github/            # This toolkit's own GitHub config
+├── .opencode/          # This toolkit's own OpenCode config
+│   └── plugins/        # OpenCode plugins (ponytail mode manager, etc.)
+├── hooks/              # Claude Code / Copilot activation hooks (ponytail, etc.)
 └── AGENTS.md           # This toolkit's agent context
 ```
 
@@ -646,7 +651,7 @@ Skills are installed to `{.cursor|.agents|.github}/skills/` and automatically av
 
 ### Bundled Universal Skills
 
-This toolkit includes **16 pre-installed universal skills** in the `.agents/skills/` folder. These skills are copied automatically when you set up your project and require **no additional installation**.
+This toolkit includes **23 pre-installed universal skills** in the `.agents/skills/` folder. These skills are copied automatically when you set up your project and require **no additional installation**.
 
 | Skill                              | Description                                                                                          |
 | ---------------------------------- | ---------------------------------------------------------------------------------------------------- |
@@ -666,8 +671,17 @@ This toolkit includes **16 pre-installed universal skills** in the `.agents/skil
 | **finishing-a-development-branch** | Completing and merging development branches cleanly.                                                 |
 | **logging**                        | Structured logging standards, log levels, and observability patterns.                                |
 | **project-documentation**          | README files, code comments, ADRs, and changelog best practices.                                     |
+| **ponytail**                       | Forces the laziest solution that actually works — YAGNI, stdlib, native, one-line, minimum.          |
+| **ponytail-audit**                 | Whole-repo audit for over-engineering. Scans entire codebase for what to delete, simplify, replace.  |
+| **ponytail-debt**                  | Harvests `ponytail:` comments into a tracked debt ledger so shortcuts don't rot into neglect.        |
+| **ponytail-gain**                  | Displays ponytail's benchmarked impact scoreboard: less code, less cost, more speed.                 |
+| **ponytail-help**                  | Quick-reference card for all ponytail modes, skills, commands, and deactivation.                     |
+| **ponytail-review**                | Code review focused exclusively on over-engineering: finds what to delete in a diff.                 |
+| **orient-to-recent-work**          | Build a compact mental model of recent project activity (CHANGELOG, recent commits) before any non-trivial task. Auto-loaded at session start. |
 
 **These skills are ready to use immediately after copying the templates.** No `npx -y skills add -a <agent> <owner/repo> --skill '*' --agent github-copilot cursor` commands needed.
+
+The **ponytail** skill bundle is an integrated optional skill set from [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) that adds YAGNI/stdlib/native/one-line/minimum discipline to your AI agents. It includes 6 skills, 6 commands, an OpenCode plugin, 7 activation hooks, and ambient agent rules — all pre-configured and ready to use.
 
 ### Additional Recommended Skills
 
@@ -828,7 +842,7 @@ After copying templates and installing additional skills, your project will have
     │   └── SKILL.md
     ├── verification-before-completion/
     │   └── SKILL.md
-    └── ... (16 skills total)
+    └── ... (23 skills total)
 
 .cursor/                  # or .github/ for GitHub Copilot
 ├── rules/                # IDE behavior rules (from this toolkit)
