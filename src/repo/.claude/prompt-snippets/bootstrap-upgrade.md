@@ -170,7 +170,10 @@ For `.cursor/rules/*.mdc`: preserve the original frontmatter exactly (it may use
 
    **Supported top-level keys:** `$schema`, `instructions`, `skills`, `agent`, `default_agent`, `model`, `small_model`, `provider`, `mcp`, `tools`, `permission`, `lsp`, `formatter`, `server`, `shell`, `command`, `plugin`, `watcher`, `snapshot`, `share`, `autoupdate`, `compaction`, `attachment`, `logLevel`, `disabled_providers`, `enabled_providers`, `tool_output`, `enterprise`, `experimental`
 
-2. **Create wrappers using `@` import syntax** — one file per snippet:
+2. **Copy OpenCode plugins**:
+   - Copy any `.opencode/plugins/*.mjs` files from the template
+
+3. **Create wrappers using `@` import syntax** — one file per snippet:
 
    | Directory | Source Snippets | Wrapper Body |
    |-----------|-----------------|--------------|
@@ -189,7 +192,15 @@ For `.cursor/rules/*.mdc`: preserve the original frontmatter exactly (it may use
    @.claude/<snippet-type>/<name>.md
    ```
 
-### 8. Clean Up Duplicate Skills
+### 8. Install Project Hooks
+
+1. Create `hooks/` directory in the target project
+2. Copy all files from the template's `hooks/*` directory (preserve sub-structure)
+3. Make `.js` files executable on Unix: `chmod +x hooks/*.js`
+
+### 9. Clean Up Duplicate Skills
+
+- Copy `.agents/rules/*.md` from the template
 
 **Source of truth**: `.agents/skills/` — all other skill directories are duplicates.
 **Parallelizable with Steps 3–6**: Skill cleanup is independent of file conversion.
@@ -204,7 +215,7 @@ find .github/skills -mindepth 1 -maxdepth 1 -type d -exec rm -rf {} +
 rm -rf .agents/skills/subagent-driven-development/subagent-driven-development/
 ```
 
-### 9. Update `CLAUDE.md`
+### 10. Update `CLAUDE.md`
 
 If `CLAUDE.md` is a thin redirect to `AGENTS.md`, add these sections if missing:
 
@@ -214,13 +225,13 @@ If `CLAUDE.md` is a thin redirect to `AGENTS.md`, add these sections if missing:
 
 See existing `CLAUDE.md` in the toolkit template (`src/repo/CLAUDE.md`) for the exact format.
 
-### 10. Create `.toolkit-version` File
+### 11. Create `.toolkit-version` File
 
 ```bash
 echo "3.0.0" > .toolkit-version
 ```
 
-### 11. Validation
+### 12. Validation
 
 Run all checks after writing files:
 
@@ -235,7 +246,7 @@ Run all checks after writing files:
 
 If `--verbose`: log each check result with file paths.
 
-### 12. Generate Upgrade Report
+### 13. Generate Upgrade Report
 
 Output the report to stdout (and optionally to `docs/upgrade-report-v3.md`):
 
@@ -284,7 +295,7 @@ Output the report to stdout (and optionally to `docs/upgrade-report-v3.md`):
 
 If `--verbose`: include a file-by-file log of every operation.
 
-### 13. Git Commit
+### 14. Git Commit
 
 If not `--dry-run`, stage and commit all changes:
 
@@ -305,9 +316,9 @@ Steps that can run in parallel (dispatch subagents):
 | 4 | rules wrappers ‖ commands wrappers ‖ agents wrappers |
 | 5 | instructions wrappers ‖ prompts wrappers ‖ agents wrappers |
 | 6 | rules wrappers ‖ commands wrappers ‖ agents wrappers |
-| 8 | Independent of 3–6 — can run in parallel with file conversion |
+| 9 | Independent of 3–6 — can run in parallel with file conversion |
 
-Steps that must be sequential: 1 → 2 → (3‖4‖5‖6‖8) → 7 → 9 → 10 → 11 → 12 → 13.
+Steps that must be sequential: 1 → 2 → (3‖4‖5‖6‖9) → 7 → 8 → 10 → 11 → 12 → 13 → 14.
 
 ## Error Handling
 

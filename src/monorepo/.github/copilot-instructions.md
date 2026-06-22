@@ -30,6 +30,10 @@ Detailed standards are organized into focused instruction files. Copilot will au
 - [apps/{{APP_NAME_1}}/AGENTS.md](../apps/{{APP_NAME_1}}/AGENTS.md) - App-specific patterns
 - [apps/{{APP_NAME_2}}/AGENTS.md](../apps/{{APP_NAME_2}}/AGENTS.md) - App-specific patterns
 
+## Ponytail, lazy senior dev mode
+
+See [.claude/rules-snippets/ponytail.md](../../.claude/rules-snippets/ponytail.md) for the full rule content.
+
 ## Preferred Workflow: Orchestrator + Subagents
 
 **Default to using a coordinator agent for non-trivial work.** For details, see `subagent-workflow.instructions.md`.

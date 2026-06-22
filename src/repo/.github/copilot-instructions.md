@@ -30,6 +30,10 @@ Detailed standards are organized into focused instruction files. Copilot will au
 - [README.md](../README.md) - Project documentation
 - [.cursor/rules/](../.cursor/rules/) - Cursor IDE rules
 
+## Ponytail, lazy senior dev mode
+
+See [.claude/rules-snippets/ponytail.md](../../.claude/rules-snippets/ponytail.md) for the full rule content.
+
 ## Preferred Workflow: Orchestrator + Subagents
 
 **Default to using a coordinator agent for non-trivial work.** For details, see `subagent-workflow.instructions.md`.

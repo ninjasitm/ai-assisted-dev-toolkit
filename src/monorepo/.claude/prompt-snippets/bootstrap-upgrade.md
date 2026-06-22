@@ -6,7 +6,7 @@ Migrate this monorepo's AI instruction files from the pre-3.0 inline pattern to 
 
 > **🛑 Before starting**: This command involves reading, extracting, and rewriting many files across multiple directories.
 > Dispatch parallel subagents for independent file groups (`.claude/`, `.github/`, `.cursor/`, `.opencode/`).
-> Steps 3-6 can run in parallel per directory. Steps 7-8 are sequential.
+> Steps 3-6 can run in parallel per directory. Steps 7-14 are sequential.
 
 ## Usage
 
@@ -29,7 +29,7 @@ Migrate this monorepo's AI instruction files from the pre-3.0 inline pattern to 
    - If version is `>= 3.0.0` and snippet directories exist → **abort**: "Already on v3.0+. No migration needed."
    - If version is `< 3.0.0` or missing → proceed.
 
-3. **Detect build system** (for CLAUDE.md update in Step 9):
+3. **Detect build system** (for CLAUDE.md update in Step 10):
    - `turbo.json` → Turborepo
    - `nx.json` → Nx
    - `lerna.json` → Lerna
@@ -249,7 +249,10 @@ Follow the rules defined in [.claude/rules-snippets/{{name}}.md](../../.claude/r
 
    **Supported top-level keys:** `$schema`, `instructions`, `skills`, `agent`, `default_agent`, `model`, `small_model`, `provider`, `mcp`, `tools`, `permission`, `lsp`, `formatter`, `server`, `shell`, `command`, `plugin`, `watcher`, `snapshot`, `share`, `autoupdate`, `compaction`, `attachment`, `logLevel`, `disabled_providers`, `enabled_providers`, `tool_output`, `enterprise`, `experimental`
 
-2. Create `.opencode/commands/*.md` — one thin wrapper per `.claude/commands/*.md`:
+2. **Copy OpenCode plugins**:
+   - Copy any `.opencode/plugins/*.mjs` files from the template
+
+3. Create `.opencode/commands/*.md` — one thin wrapper per `.claude/commands/*.md`:
 
    ```markdown
    ---
@@ -262,7 +265,7 @@ Follow the rules defined in [.claude/rules-snippets/{{name}}.md](../../.claude/r
    @.claude/prompt-snippets/{{name}}.md
    ```
 
-3. Create `.opencode/rules/*.md` — one thin wrapper per `.claude/rules/*.md`:
+4. Create `.opencode/rules/*.md` — one thin wrapper per `.claude/rules/*.md`:
 
    ```markdown
    # {{TITLE}}
@@ -270,7 +273,7 @@ Follow the rules defined in [.claude/rules-snippets/{{name}}.md](../../.claude/r
    @.claude/rules-snippets/{{name}}.md
    ```
 
-4. Create `.opencode/agents/*.md` — one thin wrapper per `.claude/agents/*.agent.md`:
+5. Create `.opencode/agents/*.md` — one thin wrapper per `.claude/agents/*.agent.md`:
 
    ```markdown
    ---
@@ -283,14 +286,22 @@ Follow the rules defined in [.claude/rules-snippets/{{name}}.md](../../.claude/r
    @.claude/agents-snippets/{{name}}.md
    ```
 
-### Step 8: Clean Up Duplicate Skills
+### Step 8: Install Project Hooks
+
+1. Create `hooks/` directory in the target project
+2. Copy all files from the template's `hooks/*` directory (preserve sub-structure)
+3. Make `.js` files executable on Unix: `chmod +x hooks/*.js`
+
+### Step 9: Clean Up Duplicate Skills
+
+- Copy `.agents/rules/*.md` from the template
 
 1. Keep `.agents/skills/` as the source of truth
 2. For each of `.claude/skills/`, `.cursor/skills/`, `.github/skills/`:
    - If directory exists, remove all subdirectories except `README.md`
 3. Remove any nested duplicates: `subagent-driven-development/subagent-driven-development/`
 
-### Step 9: Update CLAUDE.md
+### Step 10: Update CLAUDE.md
 
 Read the existing `CLAUDE.md` and add missing sections:
 
@@ -322,11 +333,11 @@ Read the existing `CLAUDE.md` and add missing sections:
    - `.opencode/{commands,rules,agents}/*.md` → `@.claude/{snippet-type}/`
    ```
 
-### Step 10: Create .toolkit-version File
+### Step 11: Create .toolkit-version File
 
 Write `3.0.0` to `.toolkit-version`.
 
-### Step 11: Validation
+### Step 12: Validation
 
 Run these checks (parallelizable):
 
@@ -338,7 +349,7 @@ Run these checks (parallelizable):
 
 If `--verbose`: log each check result.
 
-### Step 12: Generate Upgrade Report
+### Step 13: Generate Upgrade Report
 
 ```markdown
 ## ✅ Monorepo Upgrade Complete: v3.0.0 (Snippet Architecture)
@@ -400,7 +411,7 @@ If `--verbose`: log each check result.
 4. Commit the migration
 ```
 
-### Step 13: Git Commit
+### Step 14: Git Commit
 
 ```bash
 git add -A

@@ -73,7 +73,10 @@ Fetch the latest AI instruction templates from the ai-assisted-dev-toolkit repos
      | **OpenCode Commands** | `.opencode/commands/*.md`                             | `src/{type}/.opencode/commands/*.md`         |
      | **OpenCode Rules** | `.opencode/rules/*.md`                                  | `src/{type}/.opencode/rules/*.md`            |
      | **OpenCode Agents** | `.opencode/agents/*.md`                                | `src/{type}/.opencode/agents/*.md`           |
-     | **Toolkit Version** | `.toolkit-version`                                     | `.toolkit-version` (root of toolkit)         |
+     | **OpenCode Plugins** | `.opencode/plugins/*.mjs`                            | `src/{type}/.opencode/plugins/*.mjs`         |
+     | **Hooks**           | `hooks/*.{js,sh,ps1}`                                   | `src/{type}/hooks/*.{js,sh,ps1}`              |
+     | **Agent Rules**     | `.agents/rules/*.md`                                    | `src/{type}/.agents/rules/*.md`               |
+      | **Toolkit Version** | `.toolkit-version`                                     | `.toolkit-version` (root of toolkit)         |
 
    **⚠️ OpenCode `opencode.json` Schema Validation:**
 
@@ -81,7 +84,9 @@ Fetch the latest AI instruction templates from the ai-assisted-dev-toolkit repos
 
    **Supported top-level keys:** `$schema`, `instructions`, `skills`, `agent`, `default_agent`, `model`, `small_model`, `provider`, `mcp`, `tools`, `permission`, `lsp`, `formatter`, `server`, `shell`, `command`, `plugin`, `watcher`, `snapshot`, `share`, `autoupdate`, `compaction`, `attachment`, `logLevel`, `disabled_providers`, `enabled_providers`, `tool_output`, `enterprise`, `experimental`
 
-   **Do NOT add** keys like `rules`, `agents`, `commands`, `prompts` as top-level keys — OpenCode uses the `.opencode/` directory structure and `instructions` array instead.
+       **Do NOT add** keys like `rules`, `agents`, `commands`, `prompts` as top-level keys — OpenCode uses the `.opencode/` directory structure and `instructions` array instead.
+
+   > **Watch out:** the ponytail template uses the `plugin` key (singular). If you see `plugins` (plural) in your `opencode.json`, that's a typo and the plugin won't load.
 
 3. **Diff Analysis** (parallelizable — dispatch one subagent per category):
 
