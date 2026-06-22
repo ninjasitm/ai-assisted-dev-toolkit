@@ -35,6 +35,11 @@ fail_msg() { printf "${RED}FAIL${NC}  %s\n" "$1"; echo "       $2"; ((failures++
 
 # ── Staged file list (Added / Copied / Modified / Renamed) ────────────────────
 staged=$(git diff --cached --name-only --diff-filter=ACMR 2>/dev/null || true)
+if [[ -z "$staged" ]]; then
+  printf "==> pre-commit checks (0 staged file(s))\n\n"
+  printf "${GREEN}OK${NC}  No files staged.\n"
+  exit 0
+fi
 printf "==> pre-commit checks (%s staged file(s))\n\n" "$(echo "$staged" | wc -l)"
 
 # ── Check 1: CHANGELOG hygiene ────────────────────────────────────────────────
