@@ -54,7 +54,7 @@ The [orient-to-recent-work](../.agents/skills/orient-to-recent-work/SKILL.md) sk
 ### Tool Access
 
 See the `issue-tracker` skill (`.agents/skills/issue-tracker/SKILL.md`) for MCP tool prefixes, CLI fallback strategy, tracker configuration, and epic discovery workflow.
-For CLI command reference, see the matching skill: `.agents/skills/{acli,gh-cli,linear-cli}/SKILL.md`.
+For CLI command reference, see the matching skill: `.agents/skills/{acli,gh-cli,glab-cli,bkt-cli,linear-cli}/SKILL.md`.
 
 ## Agent Conduct & Interaction Rules
 
@@ -122,19 +122,40 @@ Detailed standards are split into focused instruction files in `.github/instruct
 
 For detailed standards on specific topics, refer to these skills in `.agents/skills/`:
 
-| Skill             | File                               | Purpose                                                    |
-| ----------------- | ---------------------------------- | ---------------------------------------------------------- |
-| **Logging**       | `logging/SKILL.md`                 | Structured logging standards, log levels, observability    |
-| **Documentation** | `project-documentation/SKILL.md`   | README, comments, ADRs, changelogs                         |
-| **Writing Plans** | `writing-plans/SKILL.md`           | Feature planning and specifications                        |
-| **Code Review**   | `requesting-code-review/SKILL.md`  | Review process and checklists                              |
-| **Debugging**     | `systematic-debugging/SKILL.md`    | Debugging workflows                                        |
-| **TDD**           | `test-driven-development/SKILL.md` | Test-driven development                                    |
-| **Git Worktrees** | `using-git-worktrees/SKILL.md`     | Parallel development branches                              |
-| **Issue Tracker** | `issue-tracker/SKILL.md`           | MCP tools reference, CLI fallback strategy, epic discovery |
-| **Atlassian CLI** | `acli/SKILL.md`                | Atlassian CLI (ACLI) command reference                     |
-| **GitHub CLI**    | `gh-cli/SKILL.md`                  | GitHub Issues CLI command reference                        |
-| **Linear CLI**    | `linear-cli/SKILL.md`              | Linear CLI command reference                               |
+| Skill                             | File                                          | Purpose                                              |
+| --------------------------------- | --------------------------------------------- | ---------------------------------------------------- |
+| **Atlassian CLI**                 | `acli/SKILL.md`                               | Atlassian CLI (ACLI) command reference               |
+| **Bitbucket CLI**                 | `bkt-cli/SKILL.md`                            | Bitbucket PRs, issues, repos CLI reference           |
+| **Brainstorming**                 | `brainstorming/SKILL.md`                      | Structured ideation sessions                         |
+| **Code Simplifier**               | `code-simplifier/SKILL.md`                    | Simplifies code for clarity without behavior changes |
+| **Code Review**                   | `requesting-code-review/SKILL.md`             | Review process and checklists                        |
+| **Debugger**                      | `debugger/SKILL.md`                           | Structured debugging dispatch with root cause focus  |
+| **Debugging**                     | `systematic-debugging/SKILL.md`               | Debugging workflows                                  |
+| **Documentation**                 | `project-documentation/SKILL.md`              | README, comments, ADRs, changelogs                   |
+| **Executing Plans**               | `executing-plans/SKILL.md`                    | Following through on implementation plans            |
+| **Finishing Branches**            | `finishing-a-development-branch/SKILL.md`     | Completing and merging branches                      |
+| **GitHub CLI**                    | `gh-cli/SKILL.md`                             | GitHub Issues CLI command reference                  |
+| **GitLab CLI**                    | `glab-cli/SKILL.md`                           | GitLab MRs, issues, pipelines CLI reference          |
+| **Git Worktrees**                 | `using-git-worktrees/SKILL.md`                | Parallel development branches                        |
+| **Issue Tracker**                 | `issue-tracker/SKILL.md`                      | MCP tools, CLI fallback, epic discovery              |
+| **Linear CLI**                    | `linear-cli/SKILL.md`                         | Linear CLI command reference                         |
+| **Logging**                       | `logging/SKILL.md`                            | Structured logging standards, log levels             |
+| **Orient to Recent Work**         | `orient-to-recent-work/SKILL.md`              | Build context from recent project activity           |
+| **Parallel Agents**               | `dispatching-parallel-agents/SKILL.md`        | Coordinating multiple AI agents                      |
+| **Ponytail**                      | `ponytail/SKILL.md`                           | YAGNI/stdlib/native/minimum-discipline coding mode  |
+| **Ponytail Audit**                | `ponytail-audit/SKILL.md`                     | Whole-repo audit for over-engineering                |
+| **Ponytail Debt**                 | `ponytail-debt/SKILL.md`                      | Track ponytail shortcuts and deferrals               |
+| **Ponytail Gain**                 | `ponytail-gain/SKILL.md`                      | Show ponytail's measured impact                      |
+| **Ponytail Help**                 | `ponytail-help/SKILL.md`                      | Quick-reference for ponytail modes and commands      |
+| **Ponytail Review**               | `ponytail-review/SKILL.md`                    | Code review focused on over-engineering              |
+| **Receiving Reviews**             | `receiving-code-review/SKILL.md`              | Respond constructively to review feedback            |
+| **Security Review**               | `security-reviewer/SKILL.md`                  | Security-focused code review                         |
+| **Subagent Development**          | `subagent-driven-development/SKILL.md`        | Breaking tasks into subagent chunks                  |
+| **Superpowers**                   | `using-superpowers/SKILL.md`                  | Leveraging the full skill system                     |
+| **TDD**                           | `test-driven-development/SKILL.md`            | Test-driven development                              |
+| **Verification**                  | `verification-before-completion/SKILL.md`     | Quality checks before claiming work done             |
+| **Writing Plans**                 | `writing-plans/SKILL.md`                      | Creating implementation plans                        |
+| **Writing Skills**                | `writing-skills/SKILL.md`                     | Creating effective SKILL.md files                    |
 
 ## ⚠️ CRITICAL: Orchestration Checkpoint (READ FIRST)
 
