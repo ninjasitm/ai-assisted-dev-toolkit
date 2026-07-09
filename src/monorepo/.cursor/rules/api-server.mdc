@@ -8,4 +8,4 @@ alwaysApply: agent
 
 API route patterns, input validation, response formats, and documentation standards.
 
-📋 **Full definition:** [.claude/rules-snippets/api-server.md](../../.claude/rules-snippets/api-server.md)
+**CRITICAL: READ:** [.claude/rules-snippets/api-server.md](../../.claude/rules-snippets/api-server.md)

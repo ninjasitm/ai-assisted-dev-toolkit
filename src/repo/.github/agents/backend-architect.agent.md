@@ -8,4 +8,4 @@ tools: ["read", "search", "edit", "runInTerminal", "terminalLastCommand"]
 
 Design and implement scalable, secure, and maintainable server-side systems.
 
-📋 **Full definition:** [.claude/agents-snippets/backend-architect.md](../../.claude/agents-snippets/backend-architect.md)
+**CRITICAL: READ:** [.claude/agents-snippets/backend-architect.md](../../.claude/agents-snippets/backend-architect.md)

@@ -1,9 +1,14 @@
 ---
 description: Commit and push changes with conventional commit messages
-agent: "agent"
 tools: ["read", "search", "terminal"]
 argument-hint: "no arguments required"
 ---
+
+## Agent Dispatch
+
+> **Recommended agent:** `fixer`
+> Git operations, execution-focused
+
 
 # Commit and Push Changes
 

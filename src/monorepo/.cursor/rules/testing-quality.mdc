@@ -8,4 +8,4 @@ alwaysApply: agent
 
 Lint, test, and build must pass before committing; use appropriate test frameworks.
 
-📋 **Full definition:** [.claude/rules-snippets/testing-quality.md](../../.claude/rules-snippets/testing-quality.md)
+**CRITICAL: READ:** [.claude/rules-snippets/testing-quality.md](../../.claude/rules-snippets/testing-quality.md)

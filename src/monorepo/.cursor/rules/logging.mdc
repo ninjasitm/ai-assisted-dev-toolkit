@@ -7,4 +7,4 @@ description: Structured logging conventions across apps and packages
 
 Structured logging with app/package context, correlation IDs, and shared logger patterns.
 
-📋 **Full definition:** [.claude/rules-snippets/logging.md](../../.claude/rules-snippets/logging.md)
+**CRITICAL: READ:** [.claude/rules-snippets/logging.md](../../.claude/rules-snippets/logging.md)

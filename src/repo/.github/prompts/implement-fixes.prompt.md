@@ -1,9 +1,15 @@
 ---
 description: Implement bug fixes with proper tracking and validation
-agent: "agent"
 tools: ["read", "search", "edit", "terminal"]
 argument-hint: "issue key or fix description"
 ---
+
+## Agent Dispatch
+
+| Agent | When to use |
+|-------|-------------|
+| `fixer` | Bounded fixes — clear root cause, known scope |
+| `oracle` | Ambiguous fixes — root cause unclear, needs investigation first |
 
 # Implement Fixes
 

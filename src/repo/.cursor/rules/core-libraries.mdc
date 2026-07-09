@@ -8,4 +8,4 @@ alwaysApply: agent
 
 Use approved core libraries and frameworks for the project.
 
-📋 **Full definition:** [.claude/rules-snippets/core-libraries.md](../../.claude/rules-snippets/core-libraries.md)
+**CRITICAL: READ:** [.claude/rules-snippets/core-libraries.md](../../.claude/rules-snippets/core-libraries.md)

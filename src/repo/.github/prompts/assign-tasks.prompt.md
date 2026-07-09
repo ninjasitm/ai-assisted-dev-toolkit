@@ -1,10 +1,15 @@
 ---
 description: Create {{ISSUE_TRACKER}} tickets from requirements or task files
-agent: "agent"
 tools: ["read", "search", "edit"]
 argument-hint: "path to requirements or task file"
 ---
 
+## Agent Dispatch
+
+> **Recommended agent:** `fixer`
+> Task assignment and execution
+
+
 # Create Tickets from Requirements
 
-Follow the prompt defined in [.claude/prompt-snippets/assign-tasks.md](../../.claude/prompt-snippets/assign-tasks.md).
+**CRITICAL: READ:** [.claude/prompt-snippets/assign-tasks.md](../../.claude/prompt-snippets/assign-tasks.md)

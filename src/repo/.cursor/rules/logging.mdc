@@ -8,4 +8,4 @@ alwaysApply: agent
 
 Follow structured logging conventions and best practices.
 
-📋 **Full definition:** [.claude/rules-snippets/logging.md](../../.claude/rules-snippets/logging.md)
+**CRITICAL: READ:** [.claude/rules-snippets/logging.md](../../.claude/rules-snippets/logging.md)

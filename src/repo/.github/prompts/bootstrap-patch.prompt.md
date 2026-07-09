@@ -1,9 +1,15 @@
 ---
 description: Patch AI instructions by fetching updates from the toolkit repo and applying new/updated/missing guidance
-agent: "agent"
 tools: ["read", "search", "edit", "terminal"]
 argument-hint: "[--dry-run] [--category <category>]"
 ---
+
+## Agent Dispatch
+
+| Agent | When to use |
+|-------|-------------|
+| `fixer` | Standard patch — incremental changes to existing config |
+| `planner` | Complex patch — cross-cutting changes needing analysis first |
 
 # Bootstrap Patch
 
