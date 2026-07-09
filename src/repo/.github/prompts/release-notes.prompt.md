@@ -1,9 +1,14 @@
 ---
 description: Generate release notes from git commits (web, git tag, or documentation)
-agent: "agent"
 tools: ["read", "search", "edit"]
 argument-hint: "format: web, tag, or docs"
 ---
+
+## Agent Dispatch
+
+> **Recommended agent:** `fixer`
+> Release notes generation
+
 
 # Generate Release Notes
 
