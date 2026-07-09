@@ -118,17 +118,17 @@ Example: 5 tasks → T001 (setup) → T002 [P] (backend API) + T003 [P] (fronten
 
 These skills complement subagent workflows:
 
-| Skill                              | When to Use                                            |
-| ---------------------------------- | ------------------------------------------------------ |
-| `writing-plans`                    | Creating implementation plans before execution         |
-| `subagent-driven-development`      | Executing plans with fresh subagent per task           |
-| `executing-plans`                  | Following through on plans in a separate session       |
-| `dispatching-parallel-agents`      | Multiple independent problems to solve                 |
-| `requesting-code-review`           | Structured review between implementation stages        |
-| `receiving-code-review`            | Responding constructively to review feedback           |
-| `verification-before-completion`   | Quality checks before claiming work done               |
-| `finishing-a-development-branch`   | Completing work after all tasks pass review            |
-| `orient-to-recent-work`            | Build context from recent project activity             |
-| `brainstorming`                    | Structured ideation when scope is fuzzy                |
-| `systematic-debugging`             | Structured root cause investigation                    |
-| `using-superpowers`                | Leveraging the full skill system                       |
+| Skill                            | When to Use                                      |
+| -------------------------------- | ------------------------------------------------ |
+| `writing-plans`                  | Creating implementation plans before execution   |
+| `subagent-driven-development`    | Executing plans with fresh subagent per task     |
+| `executing-plans`                | Following through on plans in a separate session |
+| `dispatching-parallel-agents`    | Multiple independent problems to solve           |
+| `requesting-code-review`         | Structured review between implementation stages  |
+| `receiving-code-review`          | Responding constructively to review feedback     |
+| `verification-before-completion` | Quality checks before claiming work done         |
+| `finishing-a-development-branch` | Completing work after all tasks pass review      |
+| `orient-to-recent-work`          | Build context from recent project activity       |
+| `brainstorming`                  | Structured ideation when scope is fuzzy          |
+| `systematic-debugging`           | Structured root cause investigation              |
+| `using-superpowers`              | Leveraging the full skill system                 |
