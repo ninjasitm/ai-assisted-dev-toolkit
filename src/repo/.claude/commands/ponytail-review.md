@@ -1,15 +1,13 @@
 ---
-description: Review changes for over-engineering and identify what can be deleted
+description: Review changes for over-engineering — find what can be deleted
 allowed-tools: "Read, Grep"
 argument-hint: "no arguments required"
 ---
 
-## Agent Dispatch
+# Ponytail Review
 
+## Agent Dispatch
 > **Recommended agent:** `oracle`
 > Diff-level over-engineering review
 
-
-# Ponytail Review
-
-Follow the prompt defined in [.claude/prompt-snippets/ponytail-review.md](../prompt-snippets/ponytail-review.md).
+Follow the prompt defined in [../prompt-snippets/ponytail-review.md](../prompt-snippets/ponytail-review.md).

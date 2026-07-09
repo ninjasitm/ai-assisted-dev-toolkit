@@ -4,12 +4,10 @@ allowed-tools: "Read"
 argument-hint: "no arguments required"
 ---
 
-## Agent Dispatch
+# Ponytail Gain
 
+## Agent Dispatch
 > **Recommended agent:** `fixer`
 > Impact scoreboard display
 
-
-# Ponytail Gain
-
-Follow the prompt defined in [.claude/prompt-snippets/ponytail-gain.md](../prompt-snippets/ponytail-gain.md).
+Follow the prompt defined in [../prompt-snippets/ponytail-gain.md](../prompt-snippets/ponytail-gain.md).

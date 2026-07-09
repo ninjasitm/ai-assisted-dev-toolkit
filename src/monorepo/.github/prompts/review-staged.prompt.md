@@ -1,5 +1,5 @@
 ---
-description: Review currently staged files before committing
+description: Review staged files with detailed code review
 tools: ["read", "search"]
 argument-hint: "no arguments required"
 ---

@@ -1,7 +1,7 @@
 ---
 name: "Documenter"
 description: "Analyze codebases and create comprehensive documentation. Use for AGENTS.md, README files, API docs, architecture documentation, and onboarding guides."
-tools: ["Read", "Grep", "Write", "Edit", "Bash(*)"]
+tools: ["Read", "Grep", "Write"]
 user-invocable: true
 ---
 
