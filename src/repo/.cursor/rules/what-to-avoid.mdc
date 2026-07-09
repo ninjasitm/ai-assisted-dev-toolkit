@@ -8,4 +8,4 @@ alwaysApply: agent
 
 Avoid deprecated patterns and anti-practices.
 
-📋 **Full definition:** [.claude/rules-snippets/what-to-avoid.md](../../.claude/rules-snippets/what-to-avoid.md)
+**CRITICAL: READ:** [.claude/rules-snippets/what-to-avoid.md](../../.claude/rules-snippets/what-to-avoid.md)

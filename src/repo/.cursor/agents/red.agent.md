@@ -8,4 +8,4 @@ alwaysApply: agent
 
 Write tests that define the expected behavior for the given requirement. Tests MUST fail when first run.
 
-📋 **Full definition:** [.claude/agents-snippets/red.md](../../.claude/agents-snippets/red.md)
+**CRITICAL: READ:** [.claude/agents-snippets/red.md](../../.claude/agents-snippets/red.md)

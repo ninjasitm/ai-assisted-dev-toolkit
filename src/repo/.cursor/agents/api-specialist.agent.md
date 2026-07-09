@@ -8,4 +8,4 @@ alwaysApply: agent
 
 Design, document, and optimize APIs for internal and external consumption.
 
-📋 **Full definition:** [.claude/agents-snippets/api-specialist.md](../../.claude/agents-snippets/api-specialist.md)
+**CRITICAL: READ:** [.claude/agents-snippets/api-specialist.md](../../.claude/agents-snippets/api-specialist.md)

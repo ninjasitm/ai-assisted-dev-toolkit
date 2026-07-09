@@ -8,4 +8,4 @@ alwaysApply: agent
 
 Build secure, efficient admin interfaces for system operations, reporting, and user/role management.
 
-📋 **Full definition:** [.claude/agents-snippets/admin-portal.md](../../.claude/agents-snippets/admin-portal.md)
+**CRITICAL: READ:** [.claude/agents-snippets/admin-portal.md](../../.claude/agents-snippets/admin-portal.md)

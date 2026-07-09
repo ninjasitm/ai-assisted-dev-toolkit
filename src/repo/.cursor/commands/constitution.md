@@ -7,4 +7,4 @@ argument-hint: "no arguments required"
 
 Create or update the project constitution at `docs/constitution.md` with core principles and standards.
 
-📋 **Full definition:** [.claude/prompt-snippets/constitution.md](../../.claude/prompt-snippets/constitution.md)
+**CRITICAL: READ:** [.claude/prompt-snippets/constitution.md](../../.claude/prompt-snippets/constitution.md)
