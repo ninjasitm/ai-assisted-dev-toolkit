@@ -8,4 +8,4 @@ alwaysApply: agent
 
 Utility, state management, styling, and UI library conventions.
 
-📋 **Full definition:** [.claude/rules-snippets/core-libraries.md](../../.claude/rules-snippets/core-libraries.md)
+**CRITICAL: READ:** [.claude/rules-snippets/core-libraries.md](../../.claude/rules-snippets/core-libraries.md)

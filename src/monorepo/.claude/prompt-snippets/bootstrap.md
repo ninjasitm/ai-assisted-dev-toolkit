@@ -175,7 +175,7 @@ After replacing placeholders, update the `paths:` frontmatter in `.claude/rules/
 | Rule File                                | Default Paths                                                                                            | Adjust To Match                                |
 | ---------------------------------------- | -------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
 | `api-server.md`                          | `src/server/**`, `apps/**/server/**`, `**/*.server.*`                                                    | Your API app directories (e.g., `apps/api/**`) |
-| `composition-api-component-structure.md` | `src/components/**`, `apps/**/components/**`, `packages/**/components/**`, `**/*.{vue,tsx,jsx}`          | Your UI app and design system package paths    |
+| `component-structure.md`               | `src/components/**`, `apps/**/components/**`, `packages/**/components/**`, `**/*.{vue,tsx,jsx}`          | Your UI app and design system package paths    |
 | `core-libraries.md`                      | `src/**`, `apps/**`, `packages/**`                                                                       | Adjust if your workspace dirs differ           |
 | `logging.md`                             | `src/**`, `apps/**`, `packages/**`                                                                       | Adjust if your workspace dirs differ           |
 | `logging-comments.md`                    | `src/**`, `apps/**`, `packages/**`                                                                       | Adjust if your workspace dirs differ           |
@@ -202,7 +202,7 @@ After replacing placeholders, update the `paths:` frontmatter in `.claude/rules/
 - `subagent-workflow.md` — Always applies
 - `what-to-avoid.md` — Always applies
 
-**Remove rules that don't apply** to your monorepo (e.g., remove `prisma-migrations.md` if you don't use Prisma, remove `composition-api-component-structure.md` if you only have backend apps).
+**Remove rules that don't apply** to your monorepo (e.g., remove `prisma-migrations.md` if you don't use Prisma, remove `component-structure.md` if you only have backend apps).
 
 8. **Generate App-Specific AGENTS.md**:
 

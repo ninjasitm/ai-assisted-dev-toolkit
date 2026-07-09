@@ -2,7 +2,7 @@
 
 Component structure and composition patterns.
 
-@.claude/rules-snippets/composition-api-component-structure.md
+@.claude/rules-snippets/component-structure.md
 
 ## Key points
 

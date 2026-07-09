@@ -8,4 +8,4 @@ alwaysApply: agent
 
 Follow API development and server-side implementation guidelines.
 
-📋 **Full definition:** [.claude/rules-snippets/api-server.md](../../.claude/rules-snippets/api-server.md)
+**CRITICAL: READ:** [.claude/rules-snippets/api-server.md](../../.claude/rules-snippets/api-server.md)

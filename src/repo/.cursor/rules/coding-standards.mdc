@@ -8,4 +8,4 @@ alwaysApply: agent
 
 All code must follow project coding standards and patterns.
 
-📋 **Full definition:** [.claude/rules-snippets/coding-standards.md](../../.claude/rules-snippets/coding-standards.md)
+**CRITICAL: READ:** [.claude/rules-snippets/coding-standards.md](../../.claude/rules-snippets/coding-standards.md)

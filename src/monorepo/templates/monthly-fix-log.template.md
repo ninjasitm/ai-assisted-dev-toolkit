@@ -29,9 +29,7 @@ Brief overview of the month's focus areas for this app.
 - **Issue**: Brief description of the problem
   - **Root cause**: Why it happened
   - **Solution**: How it was fixed
-  - **Files modified**:
-    - `src/components/Component.vue`
-    - `src/composables/use-feature.ts`
+  - **Files modified**: `path/to/file1.ext`, `path/to/file2.ext`
   - **Status**: ✅ Fixed | ⏳ In Progress | 🔄 Under Review
 
 ### Impact

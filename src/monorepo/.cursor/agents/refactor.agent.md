@@ -8,4 +8,4 @@ alwaysApply: agent
 
 Improve code quality without changing behavior; all tests must remain green.
 
-📋 **Full definition:** [.claude/agents-snippets/refactor.md](../../.claude/agents-snippets/refactor.md)
+**CRITICAL: READ:** [.claude/agents-snippets/refactor.md](../../.claude/agents-snippets/refactor.md)

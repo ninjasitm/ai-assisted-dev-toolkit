@@ -8,4 +8,4 @@ alwaysApply: agent
 
 Follow testing and code quality guidelines.
 
-📋 **Full definition:** [.claude/rules-snippets/testing-quality.md](../../.claude/rules-snippets/testing-quality.md)
+**CRITICAL: READ:** [.claude/rules-snippets/testing-quality.md](../../.claude/rules-snippets/testing-quality.md)

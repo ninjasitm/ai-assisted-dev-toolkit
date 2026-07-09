@@ -8,4 +8,4 @@ alwaysApply: agent
 
 Conventional commit format with ticket references and PR template compliance.
 
-📋 **Full definition:** [.claude/rules-snippets/version-control.md](../../.claude/rules-snippets/version-control.md)
+**CRITICAL: READ:** [.claude/rules-snippets/version-control.md](../../.claude/rules-snippets/version-control.md)

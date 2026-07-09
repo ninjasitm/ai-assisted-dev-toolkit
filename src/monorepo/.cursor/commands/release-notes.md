@@ -7,4 +7,4 @@ argument-hint: "version or tag"
 
 Generate professional release notes from git commits in web, git tag, or documentation format.
 
-📋 **Full definition:** [.claude/prompt-snippets/release-notes.md](../../.claude/prompt-snippets/release-notes.md)
+**CRITICAL: READ:** [.claude/prompt-snippets/release-notes.md](../../.claude/prompt-snippets/release-notes.md)

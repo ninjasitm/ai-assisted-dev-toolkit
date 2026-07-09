@@ -8,4 +8,4 @@ alwaysApply: agent
 
 Follow rules for separating server and client code.
 
-📋 **Full definition:** [.claude/rules-snippets/server-client-separation.md](../../.claude/rules-snippets/server-client-separation.md)
+**CRITICAL: READ:** [.claude/rules-snippets/server-client-separation.md](../../.claude/rules-snippets/server-client-separation.md)

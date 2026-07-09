@@ -58,7 +58,7 @@ The [orient-to-recent-work](.agents/skills/orient-to-recent-work/SKILL.md) skill
 │   └── prompt-snippets/ # Shared content fragments (source of truth)
 ├── .opencode/          # This repo's OpenCode config
 │   ├── agents/         # Agent definitions
-│   ├── command/        # Custom commands
+│   ├── commands/       # Custom commands
 │   └── opencode.json   # OpenCode configuration
 ├── .vscode/            # VS Code / GitHub Copilot config
 │   └── mcp.json        # Copilot MCP config
@@ -198,26 +198,42 @@ All templates use `{{PLACEHOLDER}}` syntax for customizable values:
 
 ## Bundled Skills
 
-The toolkit includes 16 pre-installed universal skills in `src/repo/.agents/skills/` and `src/monorepo/.agents/skills/`:
+The toolkit includes 32 pre-installed universal skills in `src/repo/.agents/skills/` and `src/monorepo/.agents/skills/`:
 
 | Skill                            | Purpose                                  |
 | -------------------------------- | ---------------------------------------- |
-| `test-driven-development`        | TDD with red-green-refactor workflow     |
+| `acli`                           | AWS CLI helpers                          |
+| `bkt-cli`                        | Backup toolkit CLI wrappers              |
+| `brainstorming`                  | Structured ideation sessions             |
+| `code-simplifier`                | Simplify and clean up code               |
+| `debugger`                       | General-purpose debugger skill           |
+| `dispatching-parallel-agents`    | Coordinating multiple AI agents          |
+| `executing-plans`                | Following through on plans               |
+| `finishing-a-development-branch` | Completing and merging branches          |
+| `gh-cli`                         | GitHub CLI helpers                       |
+| `glab-cli`                       | GitLab CLI helpers                       |
+| `issue-tracker`                  | Issue tracking workflows                 |
+| `linear-cli`                     | Linear CLI helpers                       |
+| `logging`                        | Structured logging standards             |
+| `orient-to-recent-work`          | Orient to recent project activity        |
+| `ponytail`                       | Lazy senior dev mode                     |
+| `ponytail-audit`                 | Audit code for ponytail compliance       |
+| `ponytail-debt`                  | Track ponytail debt items                |
+| `ponytail-gain`                  | Track ponytail gains                     |
+| `ponytail-help`                  | Ponytail mode help                       |
+| `ponytail-review`                | Review code with ponytail standards      |
+| `project-documentation`          | README, comments, ADRs, changelogs       |
+| `receiving-code-review`          | Responding to review feedback            |
+| `requesting-code-review`         | Best practices for requesting reviews    |
+| `security-reviewer`              | Security-focused code review             |
+| `subagent-driven-development`    | Breaking tasks into subagent chunks      |
 | `systematic-debugging`           | Structured debugging methodology         |
+| `test-driven-development`        | TDD with red-green-refactor workflow     |
+| `using-git-worktrees`            | Git worktree workflows                   |
+| `using-superpowers`              | Leveraging the full skill system         |
 | `verification-before-completion` | Quality checks before claiming work done |
 | `writing-plans`                  | Creating implementation plans            |
-| `executing-plans`                | Following through on plans               |
-| `requesting-code-review`         | Best practices for requesting reviews    |
-| `receiving-code-review`          | Responding to review feedback            |
-| `brainstorming`                  | Structured ideation sessions             |
 | `writing-skills`                 | Creating effective SKILL.md files        |
-| `using-superpowers`              | Leveraging the full skill system         |
-| `using-git-worktrees`            | Git worktree workflows                   |
-| `dispatching-parallel-agents`    | Coordinating multiple AI agents          |
-| `subagent-driven-development`    | Breaking tasks into subagent chunks      |
-| `finishing-a-development-branch` | Completing and merging branches          |
-| `logging`                        | Structured logging standards             |
-| `project-documentation`          | README, comments, ADRs, changelogs       |
 
 ## Working on This Repository
 

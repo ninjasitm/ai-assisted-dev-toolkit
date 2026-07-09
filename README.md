@@ -610,7 +610,7 @@ Skills are installed to `{.cursor|.agents|.github}/skills/` and automatically av
 
 ### Bundled Universal Skills
 
-This toolkit includes **23 pre-installed universal skills** in the `.agents/skills/` folder. These skills are copied automatically when you set up your project and require **no additional installation**.
+This toolkit includes **32 pre-installed universal skills** in the `.agents/skills/` folder. These skills are copied automatically when you set up your project and require **no additional installation**.
 
 | Skill                              | Description                                                                                          |
 | ---------------------------------- | ---------------------------------------------------------------------------------------------------- |
@@ -637,6 +637,15 @@ This toolkit includes **23 pre-installed universal skills** in the `.agents/skil
 | **ponytail-help**                  | Quick-reference card for all ponytail modes, skills, commands, and deactivation.                     |
 | **ponytail-review**                | Code review focused exclusively on over-engineering: finds what to delete in a diff.                 |
 | **orient-to-recent-work**          | Build a compact mental model of recent project activity (CHANGELOG, recent commits) before any non-trivial task. Auto-loaded at session start. |
+| **acli**                           | Atlassian CLI wrapper for Jira and Confluence operations from the terminal.                                               |
+| **bkt-cli**                        | Bitbucket CLI reference for PRs, issues, repos, branches, and pipelines.                                                  |
+| **code-simplifier**                | Simplifies code for clarity without changing behavior. Use for readability and maintainability.                            |
+| **debugger**                       | Structured debugging methodology with systematic root cause analysis.                                                      |
+| **gh-cli**                         | GitHub CLI reference for issues, PRs, repos, and workflow management.                                                     |
+| **glab-cli**                       | GitLab CLI reference for MRs, issues, pipelines, releases, and labels.                                                    |
+| **issue-tracker**                  | Issue tracker integration patterns for Jira, Linear, and GitHub Issues.                                                   |
+| **linear-cli**                     | Linear CLI reference for issue management and project tracking.                                                           |
+| **security-reviewer**              | Security-focused code review patterns for finding vulnerabilities.                                                        |
 
 **These skills are ready to use immediately after copying the templates.** No `npx -y skills add -a <agent> <owner/repo> --skill '*' --agent github-copilot cursor` commands needed.
 
@@ -801,7 +810,7 @@ After copying templates and installing additional skills, your project will have
     │   └── SKILL.md
     ├── verification-before-completion/
     │   └── SKILL.md
-    └── ... (23 skills total)
+    └── ... (32 skills total)
 
 .cursor/                  # or .github/ for GitHub Copilot
 ├── rules/                # IDE behavior rules (from this toolkit)

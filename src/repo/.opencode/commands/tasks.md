@@ -2,10 +2,8 @@
 description: "Generate an actionable task list from a specification or plan"
 ---
 
-# Generate Task List
+## Agent Dispatch
 
-## Arguments
+> **Recommended agent:** `planner`
+> Task breakdown and management
 
-$ARGUMENTS
-
-@.claude/prompt-snippets/tasks.md

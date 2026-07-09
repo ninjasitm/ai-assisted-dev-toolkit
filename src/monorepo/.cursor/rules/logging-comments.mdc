@@ -8,4 +8,4 @@ alwaysApply: agent
 
 Comment conventions, log identifiers, log levels, and debug log cleanup.
 
-📋 **Full definition:** [.claude/rules-snippets/logging-comments.md](../../.claude/rules-snippets/logging-comments.md)
+**CRITICAL: READ:** [.claude/rules-snippets/logging-comments.md](../../.claude/rules-snippets/logging-comments.md)

@@ -9,4 +9,4 @@ user-invocable: false
 
 Improve code quality without changing behavior while keeping all tests passing.
 
-📋 **Full definition:** [.claude/agents-snippets/refactor.md](../agents-snippets/refactor.md)
+**CRITICAL: READ:** [.claude/agents-snippets/refactor.md](../agents-snippets/refactor.md)

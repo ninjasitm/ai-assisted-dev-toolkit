@@ -8,4 +8,4 @@ alwaysApply: agent
 
 Use orchestrator-first subagent workflow for multi-step development tasks.
 
-📋 **Full definition:** [.claude/rules-snippets/subagent-workflow.md](../../.claude/rules-snippets/subagent-workflow.md)
+**CRITICAL: READ:** [.claude/rules-snippets/subagent-workflow.md](../../.claude/rules-snippets/subagent-workflow.md)

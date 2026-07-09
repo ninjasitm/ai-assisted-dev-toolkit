@@ -1,1 +1,9 @@
-@.claude/prompt-snippets/ponytail-gain.md
+---
+
+---
+
+## Agent Dispatch
+
+> **Recommended agent:** `fixer`
+> Impact scoreboard display
+

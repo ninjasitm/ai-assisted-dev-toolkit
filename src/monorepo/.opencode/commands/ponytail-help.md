@@ -1,1 +1,9 @@
-@.claude/prompt-snippets/ponytail-help.md
+---
+
+---
+
+## Agent Dispatch
+
+> **Recommended agent:** `fixer`
+> Quick-reference display
+

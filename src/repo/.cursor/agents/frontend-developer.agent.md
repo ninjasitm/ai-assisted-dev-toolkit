@@ -8,4 +8,4 @@ alwaysApply: agent
 
 Build responsive, accessible, and performant user interfaces.
 
-📋 **Full definition:** [.claude/agents-snippets/frontend-developer.md](../../.claude/agents-snippets/frontend-developer.md)
+**CRITICAL: READ:** [.claude/agents-snippets/frontend-developer.md](../../.claude/agents-snippets/frontend-developer.md)

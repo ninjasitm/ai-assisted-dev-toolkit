@@ -4,6 +4,12 @@ allowed-tools: "Read, Write, Edit, Bash(*)"
 argument-hint: "requirements or task file path"
 ---
 
+## Agent Dispatch
+
+> **Recommended agent:** `fixer`
+> Task assignment and execution
+
+
 # Create Tickets from Requirements
 
-📋 **Full definition:** [.claude/prompt-snippets/assign-tasks.md](../prompt-snippets/assign-tasks.md)
+**CRITICAL: READ:** [.claude/prompt-snippets/assign-tasks.md](../prompt-snippets/assign-tasks.md)
