@@ -1,5 +1,5 @@
 ---
-description: "Harvest ponytail: comments into a tracked debt ledger"
+description: "Harvest ponytail comments into a tracked debt ledger"
 ---
 
 # Ponytail Debt
