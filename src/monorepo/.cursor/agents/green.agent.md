@@ -8,4 +8,4 @@ alwaysApply: agent
 
 Write the minimal production code needed to make failing tests pass.
 
-📋 **Full definition:** [.claude/agents-snippets/green.md](../../.claude/agents-snippets/green.md)
+**CRITICAL: READ:** [.claude/agents-snippets/green.md](../../.claude/agents-snippets/green.md)

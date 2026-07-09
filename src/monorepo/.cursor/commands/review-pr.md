@@ -7,4 +7,4 @@ argument-hint: "PR number or URL"
 
 Conduct comprehensive pull request code review with structured fix tracking.
 
-📋 **Full definition:** [.claude/prompt-snippets/review-pr.md](../../.claude/prompt-snippets/review-pr.md)
+**CRITICAL: READ:** [.claude/prompt-snippets/review-pr.md](../../.claude/prompt-snippets/review-pr.md)

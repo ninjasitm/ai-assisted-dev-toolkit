@@ -8,4 +8,4 @@ alwaysApply: agent
 
 No deprecated features, global CSS, direct DOM manipulation, or duplicated logic.
 
-📋 **Full definition:** [.claude/rules-snippets/what-to-avoid.md](../../.claude/rules-snippets/what-to-avoid.md)
+**CRITICAL: READ:** [.claude/rules-snippets/what-to-avoid.md](../../.claude/rules-snippets/what-to-avoid.md)

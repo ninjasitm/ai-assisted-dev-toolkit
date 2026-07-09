@@ -8,4 +8,4 @@ alwaysApply: agent
 
 Orchestrator-first flow for multi-step tasks with domain specialist routing and parallelization.
 
-📋 **Full definition:** [.claude/rules-snippets/subagent-workflow.md](../../.claude/rules-snippets/subagent-workflow.md)
+**CRITICAL: READ:** [.claude/rules-snippets/subagent-workflow.md](../../.claude/rules-snippets/subagent-workflow.md)

@@ -8,4 +8,4 @@ alwaysApply: agent
 
 Review code changes and provide constructive, actionable feedback with specific file and line references.
 
-📋 **Full definition:** [.claude/agents-snippets/reviewer.md](../../.claude/agents-snippets/reviewer.md)
+**CRITICAL: READ:** [.claude/agents-snippets/reviewer.md](../../.claude/agents-snippets/reviewer.md)

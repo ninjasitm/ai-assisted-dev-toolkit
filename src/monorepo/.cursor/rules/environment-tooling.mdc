@@ -8,4 +8,4 @@ alwaysApply: agent
 
 OS-aware commands, package manager usage, and tooling conventions.
 
-📋 **Full definition:** [.claude/rules-snippets/environment-tooling.md](../../.claude/rules-snippets/environment-tooling.md)
+**CRITICAL: READ:** [.claude/rules-snippets/environment-tooling.md](../../.claude/rules-snippets/environment-tooling.md)

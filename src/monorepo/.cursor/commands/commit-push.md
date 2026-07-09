@@ -7,4 +7,4 @@ argument-hint: "optional commit message or options"
 
 Commit and push changes using conventional commit format with proper scoping.
 
-📋 **Full definition:** [.claude/prompt-snippets/commit-push.md](../../.claude/prompt-snippets/commit-push.md)
+**CRITICAL: READ:** [.claude/prompt-snippets/commit-push.md](../../.claude/prompt-snippets/commit-push.md)
