@@ -17,14 +17,14 @@
 - ✅ Different domain areas (backend + frontend + docs)
 - ✅ Test coverage needed alongside changes
 - ✅ Architecture decisions before coding
+- ✅ Direct code review feedback (no implementation)
+- ✅ Research task (no code changes)
 
 ### Signs Single Agent Is OK
 
 - ✅ Single file edit
 - ✅ Quick typo/syntax fix
-- ✅ Research-only task (no code changes)
 - ✅ Small documentation update
-- ✅ Direct code review feedback (no implementation)
 
 **When in doubt, use orchestrator-first.** It is lower-cost than sequential agent work and provides better code review isolation.
 
