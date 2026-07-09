@@ -110,6 +110,7 @@ Example: 5 tasks → T001 (setup) → T002 [P] (backend API) + T003 [P] (fronten
 ## Quality Gates
 
 - Every implementation must pass **Reviewer** before proceeding
+- Every plan must pass **Reviewer** before final acceptance
 - Coordinators should not skip review even for "simple" changes
 - If a reviewer requests changes, the original specialist fixes them and re-review occurs
 
