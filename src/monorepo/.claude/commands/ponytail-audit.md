@@ -1,5 +1,5 @@
 ---
-description: Audit the whole repo for over-engineering, what can be deleted
+description: Audit the whole repo for over-engineering and identify what can be deleted
 allowed-tools: "Read, Grep, Bash"
 argument-hint: "no arguments required"
 ---

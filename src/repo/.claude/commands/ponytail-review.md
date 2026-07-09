@@ -12,4 +12,4 @@ argument-hint: "no arguments required"
 
 # Ponytail Review
 
-Follow the prompt defined in [../prompt-snippets/ponytail-review.md](../prompt-snippets/ponytail-review.md).
+Follow the prompt defined in [.claude/prompt-snippets/ponytail-review.md](../prompt-snippets/ponytail-review.md).

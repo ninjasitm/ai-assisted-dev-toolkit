@@ -12,4 +12,4 @@ argument-hint: "no arguments required"
 
 # Ponytail Gain
 
-Follow the prompt defined in [../prompt-snippets/ponytail-gain.md](../prompt-snippets/ponytail-gain.md).
+Follow the prompt defined in [.claude/prompt-snippets/ponytail-gain.md](../prompt-snippets/ponytail-gain.md).
