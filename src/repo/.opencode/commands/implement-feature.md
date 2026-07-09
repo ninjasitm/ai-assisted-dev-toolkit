@@ -1,8 +1,10 @@
 ---
 description: "Implement a feature by completing tasks sequentially"
-agent: build
 ---
 
-# Implement Feature
+## Agent Dispatch
 
-@.claude/prompt-snippets/implement-feature.md
+| Agent | When to use |
+|-------|-------------|
+| `fixer` | Bounded feature work — spec is clear, files are known |
+| `feature-builder` | Complex feature — needs research, planning, and coordination |

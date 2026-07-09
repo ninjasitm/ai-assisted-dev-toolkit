@@ -1,8 +1,9 @@
 ---
 description: "Create {{ISSUE_TRACKER}} tickets from requirements or task files"
-agent: build
 ---
 
-# Assign Tasks
+## Agent Dispatch
 
-@.claude/prompt-snippets/assign-tasks.md
+> **Recommended agent:** `fixer`
+> Task assignment and execution
+

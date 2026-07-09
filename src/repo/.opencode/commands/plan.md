@@ -1,8 +1,10 @@
 ---
 description: "Create an implementation plan from a feature specification or requirement"
-agent: build
 ---
 
-# Create Implementation Plan
+## Agent Dispatch
 
-@.claude/prompt-snippets/plan.md
+| Agent | When to use |
+|-------|-------------|
+| `planner` | Standard implementation plan — breaking work into tasks |
+| `oracle` | Architectural planning — trade-offs, system design, risk analysis |

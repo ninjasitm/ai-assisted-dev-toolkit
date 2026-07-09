@@ -1,10 +1,9 @@
 ---
 description: "Commit and push changes with conventional commit messages"
-agent: build
 ---
 
-# Commit & Push
+## Agent Dispatch
 
-Commit and push changes using conventional commit format.
+> **Recommended agent:** `fixer`
+> Git operations, execution-focused
 
-@.claude/prompt-snippets/commit-push.md

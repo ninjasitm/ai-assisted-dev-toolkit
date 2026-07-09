@@ -1,8 +1,10 @@
 ---
 description: "Create or update the project constitution defining core principles and guidelines"
-agent: build
 ---
 
-# Project Constitution
+## Agent Dispatch
 
-@.claude/prompt-snippets/constitution.md
+| Agent | When to use |
+|-------|-------------|
+| `oracle` | Project principles and governance — architectural decisions |
+| `planner` | Project conventions and standards — team norms and practices |

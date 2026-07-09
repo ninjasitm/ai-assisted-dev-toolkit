@@ -1,8 +1,10 @@
 ---
 description: "Bootstrap AI instructions for monorepo by analyzing workspace and customizing templates"
-agent: build
 ---
 
-# Bootstrap Monorepo AI Instructions
+## Agent Dispatch
 
-@.claude/prompt-snippets/bootstrap.md
+| Agent | When to use |
+|-------|-------------|
+| `fixer` | Standard bootstrap — project analysis and template customization |
+| `planner` | Complex bootstrap — needs requirements gathering and architecture decisions first |

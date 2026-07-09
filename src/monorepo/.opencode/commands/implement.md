@@ -1,8 +1,10 @@
 ---
 description: "Execute implementation tasks from a task list or specification"
-agent: build
 ---
 
-# Execute Implementation Tasks
+## Agent Dispatch
 
-@.claude/prompt-snippets/implement.md
+| Agent | When to use |
+|-------|-------------|
+| `fixer` | Bounded implementation — clear spec, known target |
+| `oracle` | Ambiguous implementation — needs architectural judgment first |

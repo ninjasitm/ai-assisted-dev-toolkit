@@ -1,8 +1,9 @@
 ---
 description: "Generate release notes from git commits (web, git tag, or documentation)"
-agent: build
 ---
 
-# Generate Release Notes
+## Agent Dispatch
 
-@.claude/prompt-snippets/release-notes.md
+> **Recommended agent:** `fixer`
+> Release notes generation
+
