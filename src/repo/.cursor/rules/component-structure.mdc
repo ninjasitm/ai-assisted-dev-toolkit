@@ -8,4 +8,4 @@ alwaysApply: agent
 
 Follow component structure and organization standards.
 
-📋 **Full definition:** [.claude/rules-snippets/composition-api-component-structure.md](../../.claude/rules-snippets/composition-api-component-structure.md)
+**CRITICAL: READ:** [.claude/rules-snippets/component-structure.md](../../.claude/rules-snippets/component-structure.md)
