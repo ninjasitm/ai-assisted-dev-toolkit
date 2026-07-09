@@ -1,6 +1,12 @@
 ---
-model: gpt-5-codex
 ---
+
+## Agent Dispatch
+
+| Agent | When to use |
+|-------|-------------|
+| `reviewer` | Standard staged review — correctness, style, patterns |
+| `oracle` | Complex staged review — architecture, security, cross-system impact |
 
 # Review Staged Files
 
