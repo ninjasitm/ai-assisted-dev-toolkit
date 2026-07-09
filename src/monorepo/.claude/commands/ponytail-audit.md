@@ -12,4 +12,4 @@ argument-hint: "no arguments required"
 
 # Ponytail Audit
 
-Follow the prompt defined in [../prompt-snippets/ponytail-audit.md](../prompt-snippets/ponytail-audit.md).
+Follow the prompt defined in [.claude/prompt-snippets/ponytail-audit.md](../prompt-snippets/ponytail-audit.md).
