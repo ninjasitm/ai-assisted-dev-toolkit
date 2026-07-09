@@ -21,4 +21,4 @@ agents:
 
 Coordinate end-to-end feature development by delegating to specialized subagents.
 
-📋 **Full definition:** [.claude/agents-snippets/feature-builder.md](../agents-snippets/feature-builder.md)
+**CRITICAL: READ:** [.claude/agents-snippets/feature-builder.md](../agents-snippets/feature-builder.md)
