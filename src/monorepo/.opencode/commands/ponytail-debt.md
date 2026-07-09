@@ -1,1 +1,9 @@
-@.claude/prompt-snippets/ponytail-debt.md
+---
+
+---
+
+## Agent Dispatch
+
+> **Recommended agent:** `fixer`
+> Debt ledger harvesting
+

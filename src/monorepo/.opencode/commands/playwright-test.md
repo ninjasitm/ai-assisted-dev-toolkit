@@ -2,10 +2,8 @@
 description: "Run or create E2E tests using Playwright"
 ---
 
-# Playwright E2E Tests
+## Agent Dispatch
 
-## Arguments
+> **Recommended agent:** `fixer`
+> Test generation and execution
 
-$ARGUMENTS
-
-@.claude/prompt-snippets/playwright-test.md
