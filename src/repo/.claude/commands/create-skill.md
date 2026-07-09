@@ -4,12 +4,10 @@ allowed-tools: "Read, Write, Edit, Bash(*)"
 argument-hint: "skill name and requirements"
 ---
 
-## Agent Dispatch
+# Create Agent Skill
 
+## Agent Dispatch
 > **Recommended agent:** `fixer`
 > Skill file creation
-
-
-# Create Agent Skill
 
 Follow the prompt defined in [.claude/prompt-snippets/create-skill.md](../prompt-snippets/create-skill.md).

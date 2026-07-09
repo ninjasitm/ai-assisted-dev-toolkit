@@ -1,7 +1,8 @@
 ---
 name: "Reviewer"
 description: "Review code changes for correctness, code quality, security, and adherence to project patterns. Provide actionable feedback with specific file and line references. Use immediately after writing or modifying code, or as a quality gate in orchestrated workflows."
-tools: ["Read", "Grep"]
+tools: ["Read", "Grep", "Write", "Bash(*)"]
+user-invocable: true
 ---
 
 # Reviewer Agent

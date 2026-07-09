@@ -4,13 +4,12 @@ allowed-tools: "Read, Write, Edit, Bash(*)"
 argument-hint: "optional patch options"
 ---
 
-## Agent Dispatch
+# Patch AI Instructions
 
+## Agent Dispatch
 | Agent | When to use |
 |-------|-------------|
 | `fixer` | Standard patch — incremental changes to existing config |
 | `planner` | Complex patch — cross-cutting changes needing analysis first |
-
-# Patch AI Instructions
 
 Follow the prompt defined in [.claude/prompt-snippets/bootstrap-patch.md](../prompt-snippets/bootstrap-patch.md).
