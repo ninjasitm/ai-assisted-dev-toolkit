@@ -8,4 +8,4 @@ tools: ["read", "search", "runInTerminal", "terminalLastCommand"]
 
 Review code changes for correctness, quality, security, and adherence to project patterns.
 
-📋 **Full definition:** [.claude/agents-snippets/reviewer.md](../agents-snippets/reviewer.md)
+**CRITICAL: READ:** [.claude/agents-snippets/reviewer.md](../agents-snippets/reviewer.md)

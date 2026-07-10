@@ -34,7 +34,7 @@ fixes/
 1. **Is this a complex fix?** (multi-file, architectural changes, affects multiple features)
 
    - ✅ YES → Create folder `{{ISSUE_ID}}-FIX-NAME/` with `spec.md` + `plan.md`
-   - ❌ NO → Add entry to `{YYYY-MM}.md` (monthly log)
+   - ❌ NO → Add entry to `{{YYYY-MM}}.md` (monthly log)
 
 2. **Does the monthly log for this month exist?**
    - ❌ NO → Create it using the template
@@ -114,4 +114,4 @@ Follow [Keep a Changelog](https://keepachangelog.com/) format for consistency.
 
 ---
 
-**Last Updated**: {{Date}}
+**Last Updated**: {{DATE}}

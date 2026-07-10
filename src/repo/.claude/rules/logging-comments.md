@@ -5,7 +5,7 @@ description: "Logging identifiers and code comment conventions."
 
 # Logging & Comments
 
-Follow the rules defined in [.claude/rules-snippets/logging.md](../rules-snippets/logging.md).
+Follow the rules defined in [.claude/rules-snippets/logging-comments.md](../rules-snippets/logging-comments.md).
 
 Key points:
 - Comment complex logic and non-obvious implementations.

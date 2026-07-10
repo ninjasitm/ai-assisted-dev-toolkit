@@ -18,7 +18,7 @@ One-time migration from pre-3.0 inline pattern to 3.0+ snippet-based architectur
 
 > **🛑 Before starting**: This command modifies files across 5+ directory trees (`.claude/`, `.github/`, `.cursor/`, `.opencode/`, `.agents/`).
 > Steps 3–6 are **parallelizable** — dispatch one subagent per directory tree (rules, commands, agents, instructions, prompts).
-> See `.github/instructions/subagent-workflow.instructions.md` for patterns.
+> See `.claude/rules-snippets/subagent-workflow.md` for patterns.
 
 ## Process
 
@@ -43,18 +43,20 @@ Run all checks before making any changes:
    **Project type**: repo | monorepo
    **Current version**: <version or "none (legacy)">
 
-   ### What will happen:
+    ### What will happen:
 
-   1. Create snippet directories: `.claude/rules-snippets/`, `.claude/prompt-snippets/`, `.claude/agents-snippets/`
-   2. Extract content from `.claude/` files → snippet files
-   3. Convert `.claude/` files to thin wrappers
-   4. Convert `.github/` files to thin wrappers
-   5. Convert `.cursor/` files to thin wrappers
-   6. Create `.opencode/` directory with config and wrappers
-   7. Clean up duplicate skill directories
-   8. Update `CLAUDE.md` with multi-tool sections
-   9. Create `.toolkit-version` with `3.0.0`
-   10. Commit all changes
+    1. Create snippet directories: `.claude/rules-snippets/`, `.claude/prompt-snippets/`, `.claude/agents-snippets/`
+    2. Extract content from `.claude/` files → snippet files
+    3. Convert `.claude/` files to thin wrappers
+    4. Convert `.github/` files to thin wrappers
+    5. Convert `.cursor/` files to thin wrappers
+    6. Create `.opencode/` directory with config and wrappers
+    7. Install pre-commit hook (CHANGELOG/Zone.Identifier/secrets enforcement)
+    8. Install project hooks (runtime hooks and ponytail support)
+    9. Clean up duplicate skill directories
+    10. Update `CLAUDE.md` with multi-tool sections
+    11. Create `.toolkit-version` with `3.0.0`
+    12. Commit all changes
 
    Proceed? (Y/n)
    ```
@@ -147,17 +149,33 @@ For `.cursor/rules/*.mdc`: preserve the original frontmatter exactly (it may use
 
 ### 7. Create `.opencode/` Directory
 
-1. **Create `.opencode/opencode.json`**:
+1. **Create `.opencode/opencode.json`** using only supported schema keys:
+
    ```json
    {
-     "$schema": "https://opencode.ai/schema.json",
-     "rules": [".opencode/rules/*.md"],
-     "commands": [".opencode/commands/*.md"],
-     "agents": [".opencode/agents/*.md"]
+     "$schema": "https://opencode.ai/config.json",
+     "instructions": [
+       "AGENTS.md",
+       ".opencode/rules/*.md"
+     ],
+     "skills": {
+       "paths": [
+         ".agents/skills/**/*.md",
+         ".claude/skills/**/*.md"
+       ]
+     },
+     "lsp": true
    }
    ```
 
-2. **Create wrappers using `@` import syntax** — one file per snippet:
+   **⚠️ Schema Validation:** Only use supported top-level keys from `https://opencode.ai/config.json`. Do NOT add unsupported keys like `rules`, `commands`, or `agents` as top-level entries — OpenCode discovers these via the `.opencode/` directory structure and the `instructions`/`skills` config arrays.
+
+   **Supported top-level keys:** `$schema`, `instructions`, `skills`, `agent`, `default_agent`, `model`, `small_model`, `provider`, `mcp`, `tools`, `permission`, `lsp`, `formatter`, `server`, `shell`, `command`, `plugin`, `watcher`, `snapshot`, `share`, `autoupdate`, `compaction`, `attachment`, `logLevel`, `disabled_providers`, `enabled_providers`, `tool_output`, `enterprise`, `experimental`
+
+2. **Copy OpenCode plugins**:
+   - Copy any `.opencode/plugins/*.mjs` files from the template
+
+3. **Create wrappers using `@` import syntax** — one file per snippet:
 
    | Directory | Source Snippets | Wrapper Body |
    |-----------|-----------------|--------------|
@@ -176,7 +194,34 @@ For `.cursor/rules/*.mdc`: preserve the original frontmatter exactly (it may use
    @.claude/<snippet-type>/<name>.md
    ```
 
-### 8. Clean Up Duplicate Skills
+### 8. Install Pre-Commit Hook
+
+Install the CHANGELOG/secrets enforcement hook to run before every commit:
+
+1. Copy `scripts/pre-commit-check.sh` from the template to the target project's `scripts/` directory
+2. Install as a git hook:
+
+   ```bash
+   cp scripts/pre-commit-check.sh .git/hooks/pre-commit
+   chmod +x .git/hooks/pre-commit
+   ```
+
+This enforces:
+- **CHANGELOG.md** — [Unreleased] must have content when non-trivial files are staged
+- **Zone.Identifier** — `*:Zone.Identifier` files are blocked from commit
+- **Secrets** — `.env`, `.env.*`, `*.key`, `*.pem` files are blocked from commit
+
+Use `git commit --no-verify` to bypass.
+
+### 9. Install Project Hooks
+
+1. Create `hooks/` directory in the target project
+2. Copy all files from the template's `hooks/*` directory (preserve sub-structure)
+3. Make `.js` files executable on Unix: `chmod +x hooks/*.js`
+
+### 10. Clean Up Duplicate Skills
+
+- Copy `.agents/rules/*.md` from the template
 
 **Source of truth**: `.agents/skills/` — all other skill directories are duplicates.
 **Parallelizable with Steps 3–6**: Skill cleanup is independent of file conversion.
@@ -191,7 +236,7 @@ find .github/skills -mindepth 1 -maxdepth 1 -type d -exec rm -rf {} +
 rm -rf .agents/skills/subagent-driven-development/subagent-driven-development/
 ```
 
-### 9. Update `CLAUDE.md`
+### 11. Update `CLAUDE.md`
 
 If `CLAUDE.md` is a thin redirect to `AGENTS.md`, add these sections if missing:
 
@@ -201,13 +246,13 @@ If `CLAUDE.md` is a thin redirect to `AGENTS.md`, add these sections if missing:
 
 See existing `CLAUDE.md` in the toolkit template (`src/repo/CLAUDE.md`) for the exact format.
 
-### 10. Create `.toolkit-version` File
+### 12. Create `.toolkit-version` File
 
 ```bash
 echo "3.0.0" > .toolkit-version
 ```
 
-### 11. Validation
+### 13. Validation
 
 Run all checks after writing files:
 
@@ -222,7 +267,7 @@ Run all checks after writing files:
 
 If `--verbose`: log each check result with file paths.
 
-### 12. Generate Upgrade Report
+### 14. Generate Upgrade Report
 
 Output the report to stdout (and optionally to `docs/upgrade-report-v3.md`):
 
@@ -271,7 +316,7 @@ Output the report to stdout (and optionally to `docs/upgrade-report-v3.md`):
 
 If `--verbose`: include a file-by-file log of every operation.
 
-### 13. Git Commit
+### 15. Git Commit
 
 If not `--dry-run`, stage and commit all changes:
 
@@ -292,9 +337,9 @@ Steps that can run in parallel (dispatch subagents):
 | 4 | rules wrappers ‖ commands wrappers ‖ agents wrappers |
 | 5 | instructions wrappers ‖ prompts wrappers ‖ agents wrappers |
 | 6 | rules wrappers ‖ commands wrappers ‖ agents wrappers |
-| 8 | Independent of 3–6 — can run in parallel with file conversion |
+| 10 | Independent of 3–6 — can run in parallel with file conversion |
 
-Steps that must be sequential: 1 → 2 → (3‖4‖5‖6‖8) → 7 → 9 → 10 → 11 → 12 → 13.
+Steps that must be sequential: 1 → 2 → (3‖4‖5‖6‖10) → 7 → 8 → 9 → 11 → 12 → 13 → 14 → 15.
 
 ## Error Handling
 

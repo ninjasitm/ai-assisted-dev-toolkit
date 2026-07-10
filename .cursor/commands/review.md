@@ -1,5 +1,6 @@
 ---
 description: Review template files for quality, consistency, and proper placeholder usage
+argument-hint: "file path or feature description"
 ---
 
 You are reviewing template files in the AI-Assisted Development Toolkit.

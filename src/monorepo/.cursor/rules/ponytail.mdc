@@ -1,0 +1,9 @@
+---
+description: Ponytail, lazy senior dev mode. Always pick the simplest solution that works.
+globs:
+alwaysApply: true
+---
+
+# Ponytail, lazy senior dev mode
+
+Always pick the simplest solution that works. Full rule content in [.claude/rules-snippets/ponytail.md](../../.claude/rules-snippets/ponytail.md).

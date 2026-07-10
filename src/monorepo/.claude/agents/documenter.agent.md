@@ -8,4 +8,4 @@ tools: ["read", "search", "edit", "runInTerminal", "terminalLastCommand"]
 
 Analyze codebases and produce clear, actionable documentation.
 
-📋 **Full definition:** [.claude/agents-snippets/documenter.md](../agents-snippets/documenter.md)
+**CRITICAL: READ:** [.claude/agents-snippets/documenter.md](../agents-snippets/documenter.md)

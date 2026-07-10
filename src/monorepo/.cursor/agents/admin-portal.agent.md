@@ -8,4 +8,4 @@ alwaysApply: agent
 
 Build secure admin interfaces with RBAC, dashboards, reporting, and monitoring integration.
 
-📋 **Full definition:** [.claude/agents-snippets/admin-portal.md](../../.claude/agents-snippets/admin-portal.md)
+**CRITICAL: READ:** [.claude/agents-snippets/admin-portal.md](../../.claude/agents-snippets/admin-portal.md)

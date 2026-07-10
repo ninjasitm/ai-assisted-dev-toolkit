@@ -8,4 +8,4 @@ tools: ["read", "search", "edit", "runInTerminal", "terminalLastCommand"]
 
 Design, document, and optimize APIs for internal and external consumption.
 
-📋 **Full definition:** [.claude/agents-snippets/api-specialist.md](../agents-snippets/api-specialist.md)
+**CRITICAL: READ:** [.claude/agents-snippets/api-specialist.md](../agents-snippets/api-specialist.md)

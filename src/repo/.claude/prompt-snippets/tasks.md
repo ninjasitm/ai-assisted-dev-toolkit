@@ -6,7 +6,7 @@ Break down the implementation plan into executable tasks. This is the third step
 
 ```
 /tasks {{ISSUE_KEY}}-123
-/tasks docs/plans/user-authentication.md
+/tasks docs/features/user-authentication/tasks.md
 ```
 
 ## Task Consolidation Rules (CRITICAL)
@@ -40,13 +40,13 @@ Before creating tasks, apply these consolidation principles:
 ## Process
 
 1. **Load Context**:
-   - Read specification from `docs/specs/{{FEATURE_NAME}}.md`
-   - Read plan from `docs/plans/{{FEATURE_NAME}}.md`
+   - Read specification from `docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/spec.md`
+   - Read plan from `docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/plan.md`
    - Review `AGENTS.md` for project patterns
 
 2. **Generate Consolidated Task Breakdown**:
 
-   Create `docs/tasks/{{FEATURE_NAME}}.md` with phases (combine where appropriate):
+   Create `docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/tasks.md` with phases (combine where appropriate):
 
    ### Phase 1: Foundation & Setup (combine into 1 task)
    - Database schema changes, migrations, seeders

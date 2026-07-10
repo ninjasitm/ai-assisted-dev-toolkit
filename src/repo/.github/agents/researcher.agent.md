@@ -9,4 +9,4 @@ user-invocable: true
 
 Gather and analyze information from the codebase without making any changes.
 
-📋 **Full definition:** [.claude/agents-snippets/researcher.md](../../.claude/agents-snippets/researcher.md)
+**CRITICAL: READ:** [.claude/agents-snippets/researcher.md](../../.claude/agents-snippets/researcher.md)

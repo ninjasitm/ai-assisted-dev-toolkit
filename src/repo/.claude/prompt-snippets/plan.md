@@ -6,7 +6,7 @@ Plan how to implement the specified feature. This is the second step in the deve
 
 ```
 /plan {{ISSUE_KEY}}-123
-/plan docs/specs/user-authentication.md
+/plan docs/features/user-authentication/spec.md
 ```
 
 ## Orchestrator Checkpoint
@@ -14,14 +14,14 @@ Plan how to implement the specified feature. This is the second step in the deve
 > **🛑 Before starting**: For complex features spanning multiple domains (backend + frontend + API + docs),
 > dispatch **Researcher** subagents in parallel to analyze each domain simultaneously.
 > Use the `writing-plans` skill for structured plan creation.
-> See `.github/instructions/subagent-workflow.instructions.md` for full patterns.
+> See `.claude/rules-snippets/subagent-workflow.md` for full patterns.
 
 ## Process
 
-> **📋 Standards**: Reference [Patterns](../instructions/patterns.instructions.md) for architecture patterns.
+> **📋 Standards**: Reference [Patterns](../rules-snippets/patterns.md) for architecture patterns.
 
 1. **Load Feature Context**:
-   - Read specification from `docs/specs/{{FEATURE_NAME}}.md`
+   - Read specification from `docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/spec.md`
    - Review `AGENTS.md` for architecture patterns
    - Check `docs/constitution.md` for project principles
 
@@ -33,7 +33,7 @@ Plan how to implement the specified feature. This is the second step in the deve
 
 3. **Generate Implementation Plan**:
 
-   Create `docs/plans/{{FEATURE_NAME}}.md` with:
+   Create `docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/plan.md` with:
 
    - **Architecture Overview**: Component structure, data flow
    - **Tech Stack**: Libraries and frameworks to use
@@ -45,10 +45,10 @@ Plan how to implement the specified feature. This is the second step in the deve
    - **Integration Points**: Dependencies on other features
    - **Parallelization Map**: Identify independent tasks that can be dispatched to parallel subagents during implementation (mark with `[P]`)
 
-4. **Generate Additional Artifacts** (if needed):
-   - `docs/research/{{FEATURE_NAME}}.md` - Technical research
-   - `docs/models/{{FEATURE_NAME}}.md` - Data model details
-   - `docs/contracts/{{FEATURE_NAME}}/` - API specifications
+4. **Generate Additional Artifacts** (if needed, place in the same feature folder):
+   - `docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/research.md` - Technical research
+   - `docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/data-model.md` - Data model details
+   - `docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/api-contract.md` - API specifications
 
 5. **Report Completion**:
    - Plan file path
