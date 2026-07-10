@@ -8,7 +8,7 @@ description: "Testing standards and quality gates."
 
 # Testing & Quality
 
-Follow the rules defined in [.claude/rules-snippets/testing.md](../rules-snippets/testing.md).
+Follow the rules defined in [.claude/rules-snippets/testing-quality.md](../rules-snippets/testing-quality.md).
 
 Key points:
 - Ensure lint, test, and build pass before committing.

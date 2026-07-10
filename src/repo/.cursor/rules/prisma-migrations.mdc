@@ -8,4 +8,4 @@ alwaysApply: agent
 
 Follow database schema management and migration standards.
 
-📋 **Full definition:** [.claude/rules-snippets/database-migrations.md](../../.claude/rules-snippets/database-migrations.md)
+📋 **Full definition:** [.claude/rules-snippets/prisma-migrations.md](../../.claude/rules-snippets/prisma-migrations.md)

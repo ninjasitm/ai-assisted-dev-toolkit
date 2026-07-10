@@ -1,5 +1,6 @@
 ---
 description: Implement bug fixes with proper tracking and validation
+argument-hint: "bug description or fix requirements"
 ---
 
 # Implement Fixes

@@ -6,7 +6,7 @@ Fetch the latest AI instruction templates from the ai-assisted-dev-toolkit repos
 
 > **🛑 Before starting**: This command involves fetching, diffing, and applying changes across many files.
 > Dispatch parallel subagents for independent file groups (rules, commands, prompts, instructions, skills, agents).
-> See `.github/instructions/subagent-workflow.instructions.md` for patterns.
+> See `.claude/rules-snippets/subagent-workflow.md` for patterns.
 
 ## Usage
 
@@ -69,11 +69,24 @@ Fetch the latest AI instruction templates from the ai-assisted-dev-toolkit repos
     | **Claude Rules Snippets** | `.claude/rules-snippets/*.md`                        | `src/{type}/.claude/rules-snippets/*.md`     |
     | **Claude Prompt Snippets** | `.claude/prompt-snippets/*.md`                     | `src/{type}/.claude/prompt-snippets/*.md`    |
     | **Claude Agent Snippets** | `.claude/agents-snippets/*.md`                      | `src/{type}/.claude/agents-snippets/*.md`    |
-    | **OpenCode Config** | `.opencode/opencode.json`                               | `src/{type}/.opencode/opencode.json`         |
-    | **OpenCode Commands** | `.opencode/commands/*.md`                             | `src/{type}/.opencode/commands/*.md`         |
-    | **OpenCode Rules** | `.opencode/rules/*.md`                                  | `src/{type}/.opencode/rules/*.md`            |
-    | **OpenCode Agents** | `.opencode/agents/*.md`                                | `src/{type}/.opencode/agents/*.md`           |
-    | **Toolkit Version** | `.toolkit-version`                                     | `.toolkit-version` (root of toolkit)         |
+     | **OpenCode Config** | `.opencode/opencode.json`                               | `src/{type}/.opencode/opencode.json`         |
+     | **OpenCode Commands** | `.opencode/commands/*.md`                             | `src/{type}/.opencode/commands/*.md`         |
+     | **OpenCode Rules** | `.opencode/rules/*.md`                                  | `src/{type}/.opencode/rules/*.md`            |
+     | **OpenCode Agents** | `.opencode/agents/*.md`                                | `src/{type}/.opencode/agents/*.md`           |
+     | **OpenCode Plugins** | `.opencode/plugins/*.mjs`                            | `src/{type}/.opencode/plugins/*.mjs`         |
+     | **Hooks**           | `hooks/*.{js,sh,ps1}`                                   | `src/{type}/hooks/*.{js,sh,ps1}`              |
+     | **Agent Rules**     | `.agents/rules/*.md`                                    | `src/{type}/.agents/rules/*.md`               |
+      | **Toolkit Version** | `.toolkit-version`                                     | `.toolkit-version` (root of toolkit)         |
+
+   **⚠️ OpenCode `opencode.json` Schema Validation:**
+
+   When patching `.opencode/opencode.json`, **only add or modify supported top-level keys**. The schema is defined at `https://opencode.ai/config.json`. Do NOT add unsupported keys.
+
+   **Supported top-level keys:** `$schema`, `instructions`, `skills`, `agent`, `default_agent`, `model`, `small_model`, `provider`, `mcp`, `tools`, `permission`, `lsp`, `formatter`, `server`, `shell`, `command`, `plugin`, `watcher`, `snapshot`, `share`, `autoupdate`, `compaction`, `attachment`, `logLevel`, `disabled_providers`, `enabled_providers`, `tool_output`, `enterprise`, `experimental`
+
+       **Do NOT add** keys like `rules`, `agents`, `commands`, `prompts` as top-level keys — OpenCode uses the `.opencode/` directory structure and `instructions` array instead.
+
+   > **Watch out:** the ponytail template uses the `plugin` key (singular). If you see `plugins` (plural) in your `opencode.json`, that's a typo and the plugin won't load.
 
 3. **Diff Analysis** (parallelizable — dispatch one subagent per category):
 

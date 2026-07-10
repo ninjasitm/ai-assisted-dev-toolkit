@@ -7,7 +7,7 @@ Implement a feature by completing tasks sequentially with proper tracking.
 ```
 
 /implement-feature {{ISSUE_KEY}}-123
-/implement-feature docs/tasks/feature-name.md
+/implement-feature apps/{{APP_NAME}}/docs/features/{{FEATURE_NAME}}/tasks.md
 
 ````
 
@@ -16,14 +16,14 @@ Implement a feature by completing tasks sequentially with proper tracking.
 > **🛑 Before starting**: This command involves planning, implementation, testing, and review.
 > Use the **orchestrator-first** flow. Delegate to the **Feature Builder** coordinator or use
 > the `subagent-driven-development` skill to dispatch a fresh subagent per task.
-> See `.github/instructions/subagent-workflow.instructions.md` for full patterns.
+> See `.claude/rules-snippets/subagent-workflow.md` for full patterns.
 
 ## Process
 
 1. **Load Feature Context**:
-   - Read specification from `docs/specs/{{FEATURE_NAME}}.md`
-   - Read implementation plan from `docs/plans/{{FEATURE_NAME}}.md`
-   - Read task list from `docs/tasks/{{FEATURE_NAME}}.md`
+   - Read specification from `apps/{{APP_NAME}}/docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/spec.md`
+   - Read implementation plan from `apps/{{APP_NAME}}/docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/plan.md`
+   - Read task list from `apps/{{APP_NAME}}/docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/tasks.md`
    - Review `AGENTS.md` for project patterns
 
 2. **Parallelization Analysis**:
@@ -54,12 +54,17 @@ Implement a feature by completing tasks sequentially with proper tracking.
    - Review referenced files
    - Understand dependencies
 
-   c. **Implement**:
+   c. **Implement (TDD required)**:
 
    - Follow acceptance criteria exactly
    - Use patterns from `AGENTS.md`
-   - Write tests alongside implementation
+   - **Write a failing test first** — one behavior per test, clear name, real code
+   - **Verify it fails** — watch it fail for the right reason (feature missing, not error)
+   - **Write minimal code to pass** — simplest implementation, no over-engineering
+   - **Verify it passes** — all tests green, no regressions
+   - **Refactor** — clean up only after green (remove duplication, improve names)
    - Ensure type safety
+   - See `test-driven-development/SKILL.md` for the full cycle
 
    d. **Validate**:
 
@@ -110,5 +115,5 @@ Implement a feature by completing tasks sequentially with proper tracking.
 
 - **No Placeholders**: Never implement "Coming Soon" or placeholder functionality
 - **Complete Features**: Each task should result in working functionality
-- **Test-Driven**: Write tests before or alongside implementation
+- **Test-Driven (mandatory)**: Write failing tests before implementation. Follow red-green-refactor. No production code without a failing test first.
 - **Atomic Commits**: One logical change per commit

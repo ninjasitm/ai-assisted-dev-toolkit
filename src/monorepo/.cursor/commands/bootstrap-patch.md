@@ -1,5 +1,6 @@
 ---
 description: Patch AI instructions by fetching updates from the toolkit repo and applying new/updated/missing guidance
+argument-hint: "optional patch options"
 ---
 
 # Bootstrap Patch

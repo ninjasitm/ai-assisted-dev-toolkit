@@ -20,8 +20,8 @@ This folder contains templates for project documentation. Copy these templates w
 cp templates/monthly-fix-log.template.md docs/fixes/2026-01.md
 
 # Edit the file and replace placeholders:
-# - {{Month}} → January
-# - {{Year}} → 2026
+# - {{MONTH_NAME}} → January
+# - {{YEAR}} → 2026
 # - {{YYYY-MM-DD}} → Actual dates
 ```
 
@@ -29,11 +29,11 @@ cp templates/monthly-fix-log.template.md docs/fixes/2026-01.md
 
 ```bash
 # Create feature folder
-mkdir -p docs/features/LEB-123-FEATURE-NAME
+mkdir -p docs/features/ISSUE-123-FEATURE-NAME
 
 # Copy templates
-cp templates/feature-spec.template.md docs/features/LEB-123-FEATURE-NAME/spec.md
-cp templates/feature-plan.template.md docs/features/LEB-123-FEATURE-NAME/plan.md
+cp templates/feature-spec.template.md docs/features/ISSUE-123-FEATURE-NAME/spec.md
+cp templates/feature-plan.template.md docs/features/ISSUE-123-FEATURE-NAME/plan.md
 
 # Edit files and replace placeholders
 ```
@@ -42,11 +42,11 @@ cp templates/feature-plan.template.md docs/features/LEB-123-FEATURE-NAME/plan.md
 
 ```bash
 # Create fix folder
-mkdir -p docs/fixes/LEB-456-COMPLEX-FIX
+mkdir -p docs/fixes/ISSUE-456-COMPLEX-FIX
 
 # Copy templates
-cp templates/complex-fix-spec.template.md docs/fixes/LEB-456-COMPLEX-FIX/spec.md
-cp templates/complex-fix-plan.template.md docs/fixes/LEB-456-COMPLEX-FIX/plan.md
+cp templates/complex-fix-spec.template.md docs/fixes/ISSUE-456-COMPLEX-FIX/spec.md
+cp templates/complex-fix-plan.template.md docs/fixes/ISSUE-456-COMPLEX-FIX/plan.md
 
 # Edit files and replace placeholders
 ```
@@ -64,14 +64,14 @@ cp templates/adr.template.md docs/architecture/0001-decision-title.md
 
 Common placeholders used in templates:
 
-- `{{Month}}` - Full month name (e.g., January, February)
-- `{{Year}}` - Four-digit year (e.g., 2026)
+- `{{MONTH_NAME}}` - Full month name (e.g., January, February)
+- `{{YEAR}}` - Four-digit year (e.g., 2026)
 - `{{YYYY-MM-DD}}` - ISO date format (e.g., 2026-01-21)
 - `{{YYYY-MM}}` - Year and month (e.g., 2026-01)
-- `{{ISSUE_ID}}` - Issue tracker ID (e.g., LEB-123, JIRA-456)
-- `{{FEATURE-NAME}}` - Kebab-case feature name
-- `{{FIX-NAME}}` - Kebab-case fix name
-- `{{Date}}` - Current date or last update date
+- `{{ISSUE_ID}}` - Issue tracker ID (e.g., ISSUE-123, JIRA-456)
+- `{{FEATURE_NAME}}` - Feature name
+- `{{FIX_NAME}}` - Fix name
+- `{{DATE}}` - Current date or last update date
 - `{{ISSUE_TRACKER}}` - Issue tracker name (e.g., Linear, Jira)
 - `{{ISSUE_TRACKER_URL}}` - Full URL to issue tracker ticket
 

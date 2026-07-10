@@ -1,5 +1,6 @@
 ---
 description: Create an implementation plan from a feature specification or requirement
+argument-hint: "feature specification or requirement"
 ---
 
 # Plan

@@ -1,0 +1,11 @@
+---
+description: Component structure and organization standards
+globs:
+alwaysApply: agent
+---
+
+# Component Structure
+
+Component structure, naming conventions, and organization patterns across apps and packages.
+
+**CRITICAL: READ:** [.claude/rules-snippets/component-structure.md](../../.claude/rules-snippets/component-structure.md)

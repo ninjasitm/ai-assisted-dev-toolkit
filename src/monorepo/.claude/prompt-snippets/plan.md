@@ -5,7 +5,7 @@ You are helping to create an implementation plan for a feature or requirement.
 > **🛑 Before starting**: For complex features spanning multiple domains (backend + frontend + API + docs),
 > dispatch **Researcher** subagents in parallel to analyze each domain simultaneously.
 > Use the `writing-plans` skill for structured plan creation.
-> See `.github/instructions/subagent-workflow.instructions.md` for full patterns.
+> See `.claude/rules-snippets/subagent-workflow.md` for full patterns.
 
 ## Your Task
 
@@ -13,6 +13,7 @@ You are helping to create an implementation plan for a feature or requirement.
 
    - Read `AGENTS.md` for project architecture and patterns
    - Review `docs/constitution.md` for project principles (if exists)
+   - Read the feature spec from `apps/{{APP_NAME}}/docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/spec.md`
    - Check relevant existing code for patterns to follow
 
 2. **Analyze the requirement**:
@@ -33,7 +34,8 @@ You are helping to create an implementation plan for a feature or requirement.
    - **Parallelization map**: Identify which tasks are independent and can be dispatched to parallel subagents during implementation (mark with `[P]`)
 
 4. **Output the plan**:
-   - Create `docs/plans/{{FEATURE_NAME}}.md` with the plan
+   - Determine the target app directory (e.g., `apps/{{APP_NAME}}/`)
+   - Create `apps/{{APP_NAME}}/docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/plan.md` with the plan
    - Include estimated complexity and effort
    - List any open questions or decisions needed
 

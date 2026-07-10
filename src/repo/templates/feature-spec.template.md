@@ -39,11 +39,11 @@ Who is affected and how will this improve their experience?
 
 ## User Stories
 
-### Story 1: {{User Role}}
+### Story 1: {{USER_ROLE}}
 
-**As a** {{user role}}
-**I want** {{goal}}
-**So that** {{benefit}}
+**As a** {{USER_ROLE}}
+**I want** {{GOAL}}
+**So that** {{BENEFIT}}
 
 **Acceptance Criteria:**
 
@@ -51,11 +51,11 @@ Who is affected and how will this improve their experience?
 - [ ] Criterion 2
 - [ ] Criterion 3
 
-### Story 2: {{User Role}}
+### Story 2: {{USER_ROLE}}
 
-**As a** {{user role}}
-**I want** {{goal}}
-**So that** {{benefit}}
+**As a** {{USER_ROLE}}
+**I want** {{GOAL}}
+**So that** {{BENEFIT}}
 
 **Acceptance Criteria:**
 
@@ -87,7 +87,7 @@ Response: { ... }
 Describe any database schema changes.
 
 ```
-Table: {{table_name}}
+Table: {{TABLE_NAME}}
 - column1: type (description)
 - column2: type (description)
 ```

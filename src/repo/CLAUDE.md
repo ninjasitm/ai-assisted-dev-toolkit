@@ -44,6 +44,8 @@
 ## OpenCode
 
 - Config is in `.opencode/opencode.json`.
-- Commands are in `.opencode/command/`.
+- Commands are in `.opencode/commands/`.
+- Rules are in `.opencode/rules/`.
+- Agents are in `.opencode/agents/`.
 - Instructions are loaded from `AGENTS.md`, `.github/instructions/`, and `.claude/rules/`.
 - Skills are loaded from `.agents/skills/` and `.claude/skills/`.

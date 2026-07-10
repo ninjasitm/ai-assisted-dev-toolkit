@@ -1,7 +1,7 @@
-# {{Month}} {{Year}} - Fixes & Improvements
+# {{MONTH_NAME}} {{YEAR}} - Fixes & Improvements
 
 **Format**: [Keep a Changelog](https://keepachangelog.com/)
-**Period**: {{Month}} 1-{{Last Day}}, {{Year}}
+**Period**: {{MONTH_NAME}} 1-{{LAST_DAY}}, {{YEAR}}
 
 ## Summary
 
@@ -21,7 +21,7 @@ Brief overview of the month's focus areas and key achievements.
 
 ---
 
-## [{{YYYY-MM-DD}}] - {{Fix Title}}
+## [{{YYYY-MM-DD}}] - {{FIX_TITLE}}
 
 ### Fixed/Changed/Added
 
@@ -45,7 +45,7 @@ Brief overview of the month's focus areas and key achievements.
 
 ---
 
-## [{{YYYY-MM-DD}}] - {{Another Fix Title}}
+## [{{YYYY-MM-DD}}] - {{ANOTHER_FIX_TITLE}}
 
 ### Fixed/Changed/Added
 
@@ -88,4 +88,4 @@ Brief overview of the month's focus areas and key achievements.
 ---
 
 **Last Updated**: {{YYYY-MM-DD}}
-**Next Review**: {{Next Month End}}
+**Next Review**: {{NEXT_MONTH_END}}

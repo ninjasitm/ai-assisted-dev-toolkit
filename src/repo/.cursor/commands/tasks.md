@@ -1,5 +1,6 @@
 ---
 description: Generate an actionable task list from a specification or plan
+argument-hint: "specification or plan file"
 ---
 
 # Tasks

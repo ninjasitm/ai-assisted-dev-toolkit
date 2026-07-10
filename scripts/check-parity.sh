@@ -71,20 +71,54 @@ check_section_match() {
   fi
 }
 
+# Compare body text of two files after stripping frontmatter and markdown link targets.
+# This allows tool-specific frontmatter and link paths to differ across tools.
+check_body_match() {
+  local label="$1" base="$2" target="$3"
+  if [[ ! -f "$base" ]]; then
+    printf "${RED}MISSING${NC} %s (base)\n" "$base"
+    ((errors += 1))
+    return
+  fi
+  if [[ ! -f "$target" ]]; then
+    printf "${RED}MISSING${NC} %s\n" "$target"
+    ((errors += 1))
+    return
+  fi
+  # Extract body (skip frontmatter between first two `---` lines)
+  # Then normalize: strip markdown link targets, trim trailing whitespace
+  local base_body target_body
+  base_body=$(awk 'BEGIN{c=0} /^---$/{c++; next} c>=2' "$base" \
+    | sed -E 's/\]\([^)]*\)/](#)/g' \
+    | sed -E 's/[[:space:]]+$//')
+  target_body=$(awk 'BEGIN{c=0} /^---$/{c++; next} c>=2' "$target" \
+    | sed -E 's/\]\([^)]*\)/](#)/g' \
+    | sed -E 's/[[:space:]]+$//')
+  if [[ "$base_body" == "$target_body" ]]; then
+    printf "${GREEN}  OK${NC}  %s\n" "$label"
+  else
+    printf "${RED}DRIFT${NC} %s\n" "$label"
+    diff <(printf '%s\n' "$base_body") <(printf '%s\n' "$target_body") | head -20 || true
+    echo "  ..."
+    ((errors += 1))
+  fi
+}
+
 echo "=== Assign-Tasks Parity ==="
 echo ""
 
 # Cursor repo is the canonical source for cursor/claude variants
 BASE_AT="src/repo/.cursor/commands/assign-tasks.md"
+BASE_AT_CLAUDE="src/repo/.claude/commands/assign-tasks.md"
 
-check_identical "repo: cursor ↔ claude" \
+check_body_match "repo: cursor ↔ claude (body)" \
   "$BASE_AT" "src/repo/.claude/commands/assign-tasks.md"
 
 check_identical "repo ↔ monorepo: cursor" \
   "$BASE_AT" "src/monorepo/.cursor/commands/assign-tasks.md"
 
 check_identical "repo ↔ monorepo: claude" \
-  "$BASE_AT" "src/monorepo/.claude/commands/assign-tasks.md"
+  "$BASE_AT_CLAUDE" "src/monorepo/.claude/commands/assign-tasks.md"
 
 # GitHub prompt variants share PM sections but differ in formatting
 BASE_GH="src/repo/.github/prompts/assign-tasks.prompt.md"
@@ -93,11 +127,8 @@ check_identical "repo ↔ monorepo: github prompt" \
   "$BASE_GH" "src/monorepo/.github/prompts/assign-tasks.prompt.md"
 
 # Cross-format: check shared sections between cursor and github prompt
-check_section_match "cursor ↔ github prompt" \
-  "$BASE_AT" "$BASE_GH" "Issue Tracker Tool Access"
-
-check_section_match "cursor ↔ github prompt" \
-  "$BASE_AT" "$BASE_GH" "API Rate Limiting"
+check_body_match "cursor ↔ github prompt (body)" \
+  "$BASE_AT" "$BASE_GH"
 
 echo ""
 echo "=== Skills Parity ==="
@@ -108,6 +139,101 @@ for skill in issue-tracker acli gh-cli linear-cli; do
     "src/repo/.agents/skills/$skill/SKILL.md" \
     "src/monorepo/.agents/skills/$skill/SKILL.md"
 done
+
+echo ""
+echo "=== Ponytail Parity ==="
+echo ""
+
+for skill in ponytail ponytail-audit ponytail-debt ponytail-gain ponytail-help ponytail-review; do
+  check_identical "skill: $skill repo ↔ monorepo" \
+    "src/repo/.agents/skills/$skill/SKILL.md" \
+    "src/monorepo/.agents/skills/$skill/SKILL.md"
+done
+
+for snippet in ponytail ponytail-audit ponytail-debt ponytail-gain ponytail-help ponytail-review; do
+  check_identical "prompt-snippet: $snippet repo ↔ monorepo" \
+    "src/repo/.claude/prompt-snippets/$snippet.md" \
+    "src/monorepo/.claude/prompt-snippets/$snippet.md"
+done
+
+for cmd in ponytail ponytail-audit ponytail-debt ponytail-gain ponytail-help ponytail-review; do
+  check_identical "opencode-command: $cmd repo ↔ monorepo" \
+    "src/repo/.opencode/commands/$cmd.md" \
+    "src/monorepo/.opencode/commands/$cmd.md"
+done
+
+# Note: only ponytail.mdc exists (not 6 variants) — the .cursor/commands/ directory
+# has the 6 command variants instead.
+check_identical "cursor-rule: ponytail repo ↔ monorepo" \
+  "src/repo/.cursor/rules/ponytail.mdc" \
+  "src/monorepo/.cursor/rules/ponytail.mdc"
+
+check_identical "plugin: ponytail repo ↔ monorepo" \
+  "src/repo/.opencode/plugins/ponytail.mjs" \
+  "src/monorepo/.opencode/plugins/ponytail.mjs"
+
+check_identical "agent-rule: ponytail repo ↔ monorepo" \
+  "src/repo/.agents/rules/ponytail.md" \
+  "src/monorepo/.agents/rules/ponytail.md"
+
+# .js files for the runtime hooks, .sh and .ps1 for statusline
+for hook in ponytail-activate.js ponytail-config.js ponytail-instructions.js ponytail-mode-tracker.js ponytail-runtime.js ponytail-statusline.sh ponytail-statusline.ps1; do
+  check_identical "hook: $hook repo ↔ monorepo" \
+    "src/repo/hooks/$hook" \
+    "src/monorepo/hooks/$hook"
+done
+
+echo ""
+echo "=== Ponytail Wrapper Parity ==="
+echo ""
+
+# Rules snippet
+check_identical "rules-snippet: ponytail repo ↔ monorepo" \
+  "src/repo/.claude/rules-snippets/ponytail.md" \
+  "src/monorepo/.claude/rules-snippets/ponytail.md"
+
+# OpenCode rules
+check_identical "opencode-rule: ponytail repo ↔ monorepo" \
+  "src/repo/.opencode/rules/ponytail.md" \
+  "src/monorepo/.opencode/rules/ponytail.md"
+
+# Claude commands
+for cmd in ponytail ponytail-audit ponytail-debt ponytail-gain ponytail-help ponytail-review; do
+  check_identical "claude-command: $cmd repo ↔ monorepo" \
+    "src/repo/.claude/commands/$cmd.md" \
+    "src/monorepo/.claude/commands/$cmd.md"
+done
+
+# Cursor commands
+for cmd in ponytail ponytail-audit ponytail-debt ponytail-gain ponytail-help ponytail-review; do
+  check_identical "cursor-command: $cmd repo ↔ monorepo" \
+    "src/repo/.cursor/commands/$cmd.md" \
+    "src/monorepo/.cursor/commands/$cmd.md"
+done
+
+# GitHub prompts
+for cmd in ponytail ponytail-audit ponytail-debt ponytail-gain ponytail-help ponytail-review; do
+  check_identical "github-prompt: $cmd repo ↔ monorepo" \
+    "src/repo/.github/prompts/$cmd.prompt.md" \
+    "src/monorepo/.github/prompts/$cmd.prompt.md"
+done
+
+# opencode.json
+check_identical "opencode.json repo ↔ monorepo" \
+  "src/repo/.opencode/opencode.json" \
+  "src/monorepo/.opencode/opencode.json"
+
+echo ""
+echo "=== orient-to-recent-work Parity ==="
+echo ""
+
+check_identical "skill: orient-to-recent-work repo ↔ monorepo" \
+  "src/repo/.agents/skills/orient-to-recent-work/SKILL.md" \
+  "src/monorepo/.agents/skills/orient-to-recent-work/SKILL.md"
+
+check_identical "cursor-rule: orient-to-recent-work repo ↔ monorepo" \
+  "src/repo/.cursor/rules/orient-to-recent-work.mdc" \
+  "src/monorepo/.cursor/rules/orient-to-recent-work.mdc"
 
 echo ""
 echo "=== AGENTS.md PM Section Parity ==="

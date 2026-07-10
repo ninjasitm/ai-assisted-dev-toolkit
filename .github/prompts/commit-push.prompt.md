@@ -1,11 +1,10 @@
 ---
-temperature: 0.3
+description: Commit and push template changes with proper conventional commit messages
+agent: "agent"
+tools: ["read", "search", "terminal"]
+argument-hint: "no arguments required"
 ---
 
-# Commit and Push Template Changes
+# Commit and Push Changes
 
-You are a Git commit expert helping to commit and push changes to the AI-Assisted Development Toolkit.
-
-## Rules
-
-[Workflows](../../.claude/rules-snippets/workflows.md)
+Follow the prompt defined in [.claude/prompt-snippets/commit-push.md](../../.claude/prompt-snippets/commit-push.md).

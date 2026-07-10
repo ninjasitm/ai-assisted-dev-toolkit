@@ -52,12 +52,12 @@ Keep documentation updated as:
 **Folder names** should follow this pattern:
 
 - `{{ISSUE_ID}}-FEATURE-NAME`
-- Issue ID from your issue tracker (e.g., `LEB-123`, `JIRA-456`)
+- Issue ID from your issue tracker (e.g., `ISSUE-123`, `JIRA-456`)
 - Feature name in kebab-case (e.g., `user-authentication`, `data-export`)
 
 **Examples:**
 
-- `LEB-123-user-authentication/`
+- `ISSUE-123-user-authentication/`
 - `JIRA-456-data-export-api/`
 - `GH-789-dark-mode-support/`
 
@@ -75,8 +75,8 @@ Keep documentation updated as:
 
 ### Deprecated Features
 
-- [{{ISSUE_ID}}-DEPRECATED-FEATURE]({{ISSUE_ID}}-DEPRECATED-FEATURE/) - Deprecated on {{Date}}
+- [{{ISSUE_ID}}-DEPRECATED-FEATURE]({{ISSUE_ID}}-DEPRECATED-FEATURE/) - Deprecated on {{DATE}}
 
 ---
 
-**Last Updated**: {{Date}}
+**Last Updated**: {{DATE}}
