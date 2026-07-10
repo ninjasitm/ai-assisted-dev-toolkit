@@ -13,4 +13,4 @@ argument-hint: "no arguments required"
 
 # Bootstrap AI Instructions
 
-Follow the prompt defined in [.claude/prompt-snippets/bootstrap.md](../../.claude/prompt-snippets/bootstrap.md).
+**CRITICAL: READ:** [.claude/prompt-snippets/bootstrap.md](../../.claude/prompt-snippets/bootstrap.md).

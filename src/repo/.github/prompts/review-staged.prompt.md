@@ -13,4 +13,4 @@ argument-hint: "no arguments required"
 
 # Review Staged Files
 
-Follow the prompt defined in [.claude/prompt-snippets/review-staged.md](../../.claude/prompt-snippets/review-staged.md).
+**CRITICAL: READ:** [.claude/prompt-snippets/review-staged.md](../../.claude/prompt-snippets/review-staged.md).

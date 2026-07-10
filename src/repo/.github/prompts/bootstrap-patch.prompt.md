@@ -13,4 +13,4 @@ argument-hint: "[--dry-run] [--category <category>]"
 
 # Bootstrap Patch
 
-Follow the prompt defined in [.claude/prompt-snippets/bootstrap-patch.md](../../.claude/prompt-snippets/bootstrap-patch.md).
+**CRITICAL: READ:** [.claude/prompt-snippets/bootstrap-patch.md](../../.claude/prompt-snippets/bootstrap-patch.md).

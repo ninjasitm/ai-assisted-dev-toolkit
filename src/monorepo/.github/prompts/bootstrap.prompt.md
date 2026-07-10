@@ -1,5 +1,6 @@
 ---
 description: Bootstrap AI instructions for monorepo
+argument-hint: "optional bootstrap options"
 ---
 
 ## Agent Dispatch
@@ -11,4 +12,4 @@ description: Bootstrap AI instructions for monorepo
 
 # Bootstrap Monorepo AI Instructions
 
-Follow the prompt defined in [.claude/prompt-snippets/bootstrap.md](../../.claude/prompt-snippets/bootstrap.md).
+**CRITICAL: READ:** [.claude/prompt-snippets/bootstrap.md](../../.claude/prompt-snippets/bootstrap.md).

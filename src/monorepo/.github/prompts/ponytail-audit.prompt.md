@@ -11,4 +11,4 @@ argument-hint: "no arguments required"
 
 # Ponytail Audit
 
-Follow the prompt defined in [.claude/prompt-snippets/ponytail-audit.md](../../.claude/prompt-snippets/ponytail-audit.md).
+**CRITICAL: READ:** [.claude/prompt-snippets/ponytail-audit.md](../../.claude/prompt-snippets/ponytail-audit.md).

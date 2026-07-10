@@ -12,4 +12,4 @@ argument-hint: "format: web, tag, or docs"
 
 # Generate Release Notes
 
-Follow the prompt defined in [.claude/prompt-snippets/release-notes.md](../../.claude/prompt-snippets/release-notes.md).
+**CRITICAL: READ:** [.claude/prompt-snippets/release-notes.md](../../.claude/prompt-snippets/release-notes.md).

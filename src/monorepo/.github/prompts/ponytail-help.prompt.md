@@ -11,4 +11,4 @@ argument-hint: "no arguments required"
 
 # Ponytail Help
 
-Follow the prompt defined in [.claude/prompt-snippets/ponytail-help.md](../../.claude/prompt-snippets/ponytail-help.md).
+**CRITICAL: READ:** [.claude/prompt-snippets/ponytail-help.md](../../.claude/prompt-snippets/ponytail-help.md).

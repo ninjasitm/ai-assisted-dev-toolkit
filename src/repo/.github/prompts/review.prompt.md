@@ -13,4 +13,4 @@ argument-hint: "file path or feature name"
 
 # Code Review
 
-Follow the prompt defined in [.claude/prompt-snippets/review.md](../../.claude/prompt-snippets/review.md).
+**CRITICAL: READ:** [.claude/prompt-snippets/review.md](../../.claude/prompt-snippets/review.md).

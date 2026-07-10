@@ -13,4 +13,4 @@ argument-hint: "PR number or URL"
 
 # Review Pull Request
 
-Follow the prompt defined in [.claude/prompt-snippets/review-pr.md](../../.claude/prompt-snippets/review-pr.md).
+**CRITICAL: READ:** [.claude/prompt-snippets/review-pr.md](../../.claude/prompt-snippets/review-pr.md).

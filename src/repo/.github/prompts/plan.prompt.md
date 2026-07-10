@@ -13,4 +13,4 @@ argument-hint: "issue key or spec file path"
 
 # Plan Feature Implementation
 
-Follow the prompt defined in [.claude/prompt-snippets/plan.md](../../.claude/prompt-snippets/plan.md).
+**CRITICAL: READ:** [.claude/prompt-snippets/plan.md](../../.claude/prompt-snippets/plan.md).

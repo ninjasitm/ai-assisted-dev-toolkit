@@ -11,4 +11,4 @@ argument-hint: "ponytail level (lite/full/ultra/off)"
 
 # Ponytail
 
-Follow the prompt defined in [.claude/prompt-snippets/ponytail.md](../../.claude/prompt-snippets/ponytail.md).
+**CRITICAL: READ:** [.claude/prompt-snippets/ponytail.md](../../.claude/prompt-snippets/ponytail.md).

@@ -12,4 +12,4 @@ argument-hint: "test scenario description or test file path"
 
 # Playwright E2E Testing
 
-Follow the prompt defined in [.claude/prompt-snippets/playwright-test.md](../../.claude/prompt-snippets/playwright-test.md).
+**CRITICAL: READ:** [.claude/prompt-snippets/playwright-test.md](../../.claude/prompt-snippets/playwright-test.md).

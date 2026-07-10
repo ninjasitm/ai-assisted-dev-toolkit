@@ -11,4 +11,4 @@ argument-hint: "no arguments required"
 
 # Ponytail Debt
 
-Follow the prompt defined in [.claude/prompt-snippets/ponytail-debt.md](../../.claude/prompt-snippets/ponytail-debt.md).
+**CRITICAL: READ:** [.claude/prompt-snippets/ponytail-debt.md](../../.claude/prompt-snippets/ponytail-debt.md).

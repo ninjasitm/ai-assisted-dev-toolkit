@@ -13,4 +13,4 @@ argument-hint: "issue key or fix description"
 
 # Implement Fixes
 
-Follow the prompt defined in [.claude/prompt-snippets/implement-fixes.md](../../.claude/prompt-snippets/implement-fixes.md).
+**CRITICAL: READ:** [.claude/prompt-snippets/implement-fixes.md](../../.claude/prompt-snippets/implement-fixes.md).

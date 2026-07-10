@@ -11,4 +11,4 @@ argument-hint: "no arguments required"
 
 # Ponytail Review
 
-Follow the prompt defined in [.claude/prompt-snippets/ponytail-review.md](../../.claude/prompt-snippets/ponytail-review.md).
+**CRITICAL: READ:** [.claude/prompt-snippets/ponytail-review.md](../../.claude/prompt-snippets/ponytail-review.md).

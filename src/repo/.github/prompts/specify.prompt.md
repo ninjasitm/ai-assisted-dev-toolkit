@@ -13,4 +13,4 @@ argument-hint: "feature description"
 
 # Create Feature Specification
 
-Follow the prompt defined in [.claude/prompt-snippets/specify.md](../../.claude/prompt-snippets/specify.md).
+**CRITICAL: READ:** [.claude/prompt-snippets/specify.md](../../.claude/prompt-snippets/specify.md).

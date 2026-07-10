@@ -1,4 +1,7 @@
 ---
+description: Review currently staged files before committing
+tools: ["read", "search"]
+argument-hint: "no arguments required"
 ---
 
 ## Agent Dispatch
@@ -10,4 +13,4 @@
 
 # Review Staged Files
 
-Follow the prompt defined in [.claude/prompt-snippets/review-staged.md](../../.claude/prompt-snippets/review-staged.md).
+**CRITICAL: READ:** [.claude/prompt-snippets/review-staged.md](../../.claude/prompt-snippets/review-staged.md)

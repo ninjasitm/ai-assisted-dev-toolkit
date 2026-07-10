@@ -1,5 +1,6 @@
 ---
 description: Create or update the project constitution
+argument-hint: "no arguments required"
 ---
 
 ## Agent Dispatch
@@ -11,4 +12,4 @@ description: Create or update the project constitution
 
 # Create or Update Project Constitution
 
-Follow the prompt defined in [.claude/prompt-snippets/constitution.md](../../.claude/prompt-snippets/constitution.md).
+**CRITICAL: READ:** [.claude/prompt-snippets/constitution.md](../../.claude/prompt-snippets/constitution.md).

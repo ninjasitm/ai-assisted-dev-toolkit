@@ -1,5 +1,7 @@
 ---
 description: Implement features based on a task list or specification
+tools: ["read", "search", "edit", "runInTerminal", "terminalLastCommand"]
+argument-hint: "task list or specification"
 ---
 
 ## Agent Dispatch
@@ -11,4 +13,4 @@ description: Implement features based on a task list or specification
 
 # Implement Features
 
-Follow the prompt defined in [.claude/prompt-snippets/implement.md](../../.claude/prompt-snippets/implement.md).
+**CRITICAL: READ:** [.claude/prompt-snippets/implement.md](../../.claude/prompt-snippets/implement.md).

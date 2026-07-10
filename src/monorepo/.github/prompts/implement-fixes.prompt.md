@@ -1,5 +1,6 @@
 ---
 description: Implement bug fixes with proper tracking and validation
+argument-hint: "bug description or fix requirements"
 ---
 
 ## Agent Dispatch
@@ -11,4 +12,4 @@ description: Implement bug fixes with proper tracking and validation
 
 # Implement Fixes
 
-Follow the prompt defined in [.claude/prompt-snippets/implement-fixes.md](../../.claude/prompt-snippets/implement-fixes.md).
+**CRITICAL: READ:** [.claude/prompt-snippets/implement-fixes.md](../../.claude/prompt-snippets/implement-fixes.md).

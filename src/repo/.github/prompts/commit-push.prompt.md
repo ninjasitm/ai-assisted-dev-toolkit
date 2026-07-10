@@ -12,4 +12,4 @@ argument-hint: "no arguments required"
 
 # Commit and Push Changes
 
-Follow the prompt defined in [.claude/prompt-snippets/commit-push.md](../../.claude/prompt-snippets/commit-push.md).
+**CRITICAL: READ:** [.claude/prompt-snippets/commit-push.md](../../.claude/prompt-snippets/commit-push.md).

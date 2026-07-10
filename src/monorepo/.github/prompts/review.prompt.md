@@ -1,5 +1,6 @@
 ---
 description: Conduct code review for files or features
+argument-hint: "file path or feature description"
 ---
 
 ## Agent Dispatch
@@ -11,4 +12,4 @@ description: Conduct code review for files or features
 
 # Code Review
 
-Follow the prompt defined in [.claude/prompt-snippets/review.md](../../.claude/prompt-snippets/review.md).
+**CRITICAL: READ:** [.claude/prompt-snippets/review.md](../../.claude/prompt-snippets/review.md).

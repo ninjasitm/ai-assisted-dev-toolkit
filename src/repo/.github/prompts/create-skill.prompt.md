@@ -14,4 +14,4 @@ argument-hint: "skill purpose or description"
 
 # Agent Skill Creation Wizard
 
-Follow the prompt defined in [.claude/prompt-snippets/create-skill.md](../../.claude/prompt-snippets/create-skill.md).
+**CRITICAL: READ:** [.claude/prompt-snippets/create-skill.md](../../.claude/prompt-snippets/create-skill.md).
