@@ -23,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Architecture Decision Record template (`adr.template.md`)
 - Documentation folders for architecture (`docs/architecture/`) and API (`docs/api/`)
 - README files for skills directories (`.cursor/skills/`, `.github/skills/`)
+- `bkt-cli` skill — Bitbucket CLI (`bkt`) command reference for repo and monorepo templates
+- `glab-cli` skill — GitLab CLI (`glab`) command reference for repo and monorepo templates
 
 ### Changed
 
