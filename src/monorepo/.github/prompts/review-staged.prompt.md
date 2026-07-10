@@ -4,6 +4,8 @@ tools: ["read", "search"]
 argument-hint: "no arguments required"
 ---
 
+# Review Staged Files
+
 ## Agent Dispatch
 
 | Agent | When to use |
@@ -11,6 +13,4 @@ argument-hint: "no arguments required"
 | `reviewer` | Standard staged review — correctness, style, patterns |
 | `oracle` | Complex staged review — architecture, security, cross-system impact |
 
-# Review Staged Files
-
-**CRITICAL: READ:** [.claude/prompt-snippets/review-staged.md](../../.claude/prompt-snippets/review-staged.md)
+**CRITICAL: READ:** [.claude/prompt-snippets/review-staged.md](../../.claude/prompt-snippets/review-staged.md).

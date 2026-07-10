@@ -4,12 +4,11 @@ tools: ["read", "search", "edit"]
 argument-hint: "format: web, tag, or docs"
 ---
 
+# Generate Release Notes
+
 ## Agent Dispatch
 
 > **Recommended agent:** `fixer`
 > Release notes generation
-
-
-# Generate Release Notes
 
 **CRITICAL: READ:** [.claude/prompt-snippets/release-notes.md](../../.claude/prompt-snippets/release-notes.md).
