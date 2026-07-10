@@ -1,45 +1,134 @@
+# Subagent Workflow
 
-- **🛑 Orchestration checkpoint**: If task involves 2+ of (research, planning, implementation, testing, review), MUST use orchestrator-first flow. Single-agent work wastes tokens and loses domain routing benefits.
-- **Default to orchestrator + subagents** for non-trivial work (features, refactors, multi-file fixes).
-- Use a **coordinator agent** (Feature Builder or TDD) as the entry point — they delegate to specialists.
-- Only fall back to a single global agent for simple, single-file tasks.
-- **Recommended flow**: brainstorming → writing-plans → subagent-driven-development → requesting-code-review → verification-before-completion.
+## 🛑 BEFORE STARTING: Orchestration Checkpoint
 
-## Agent Hierarchy
+**READ THIS SECTION FIRST if you are about to start work.** This instruction file is loaded automatically for multi-step tasks, meaning:
 
-**Coordinators** (entry points):
+1. **You are likely handling 2+ of:** research, planning, implementation, testing, review, validation
+2. **You MUST answer:** Does this task involve independent subtasks or multiple domains?
+3. **If YES:** Use a coordinator agent (Feature Builder, TDD, or other) instead of single-agent execution
+4. **If NO (single focused task):** Document why you're using a single agent, then proceed
 
-- Feature Builder — end-to-end feature orchestration
-- TDD — red-green-refactor cycle
+### Signs You Should Use Orchestrator-First
 
-**Domain Specialists** (route by task domain):
+- ✅ Multiple files across different directories
+- ✅ Planning phase + implementation phase
+- ✅ Multiple independent reviewable chunks
+- ✅ Different domain areas (backend + frontend + docs)
+- ✅ Test coverage needed alongside changes
+- ✅ Architecture decisions before coding
+- ✅ Direct code review feedback (no implementation)
+- ✅ Research task (no code changes)
 
-- Backend Architect — API design, databases, system architecture
-- Frontend Developer — UI, components, state management, responsive design
-- API Specialist — API contracts, docs, versioning, integration
-- Admin Portal — RBAC, dashboards, reporting, analytics, monitoring
-- Documenter — README, AGENTS.md, API docs, ADRs
-- Reviewer — multi-perspective code review
+### Signs Single Agent Is OK
 
-**Process Workers** (subagent-only):
+- ✅ Single file edit
+- ✅ Quick typo/syntax fix
+- ✅ Small documentation update
 
-- Planner, Implementer, Researcher, Red, Green, Refactor
+**When in doubt, use orchestrator-first.** It is lower-cost than sequential agent work and provides better code review isolation.
 
-## Dispatch Rules
+---
 
-- Match task domain to the right specialist before defaulting to Implementer.
-- One subagent per independent task — don't overload a single agent.
-- For parallel-safe tasks (different files, no shared state), dispatch domain specialists concurrently.
-- Always run Reviewer after implementation, before marking work complete.
-- See `.claude/rules-snippets/subagent-workflow.md` for full patterns.
+## Orchestrator-First Principle
 
-## Parallelization Analysis (REQUIRED)
+**Default to using a coordinator agent for non-trivial work.** Coordinators break complex tasks into focused subtasks and dispatch specialized subagents with context isolation.
 
-Before executing tasks, build a dependency graph and apply:
-1. Scan for `[P]` markers in task list
-2. If no `[P]` markers exist, do **not** assume sequential-only work; treat all tasks as candidates and infer parallel-safe groups via dependency analysis
-3. Tasks writing to **different files** with **no shared state** → parallel-safe
-4. Tasks sharing writable files or with data dependencies → sequential
-5. **3+ independent tasks** → `dispatching-parallel-agents` skill, one agent per task
-6. **Mixed** → parallel group first, then sequential chain
-7. Route each task to the right domain specialist
+## When to Use Orchestrator + Subagents
+
+- Features spanning multiple files or domains
+- Tasks requiring planning → implementation → review cycles
+- Work that benefits from domain specialization (backend, frontend, API)
+- Any task with 2+ independent subtasks
+
+## When to Use a Single Agent Directly
+
+- Quick one-file fixes or small edits
+- Research questions that don't require code changes
+- Ad-hoc code reviews (invoke Reviewer directly)
+- Simple documentation updates
+- Domain-specific advice without implementation
+
+## Available Coordinators
+
+| Coordinator         | Purpose                                      | Dispatches                                                                                                                  |
+| ------------------- | -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| **Feature Builder** | End-to-end feature development orchestration | Planner, Implementer, Reviewer, Researcher, Backend Architect, Frontend Developer, API Specialist, Admin Portal, Documenter |
+| **TDD**             | Red-green-refactor cycle coordination        | Red, Green, Refactor                                                                                                        |
+
+## Domain Specialist Selection
+
+When dispatching implementation tasks, match the specialist to the domain:
+
+| Domain                             | Specialist             |
+| ---------------------------------- | ---------------------- |
+| API design, databases, system arch | **Backend Architect**  |
+| UI components, state, responsive   | **Frontend Developer** |
+| API contracts, docs, versioning    | **API Specialist**     |
+| Admin dashboards, RBAC, reporting  | **Admin Portal**       |
+| Project documentation              | **Documenter**         |
+| General / cross-cutting            | **Implementer**        |
+
+## Orchestration Patterns
+
+### Sequential (default)
+
+Tasks with dependencies are implemented one at a time in dependency order. Each must pass review before the next begins.
+
+### Parallel
+
+Independent tasks can be dispatched to multiple specialist subagents simultaneously. Use when tasks don't share files or state.
+
+### Parallelization Analysis (REQUIRED before dispatching)
+
+Before executing any task list, the orchestrator MUST run this analysis:
+
+1. **Scan for `[P]` markers** in the task list — these are pre-identified parallel candidates
+   - If no `[P]` markers exist, do **not** assume sequential-only work. Treat all tasks as candidates and infer parallel-safe groups via the independence test.
+2. **Build a dependency graph**: For each task, list which files it reads and writes
+3. **Apply the independence test**:
+   - Tasks that write to **different files** with **no shared state** → parallel-safe
+   - Tasks that share any writable file → sequential (dependency edge)
+   - Tasks where one reads what another writes → sequential (data dependency)
+4. **Group by domain** for specialist routing:
+   - Backend tasks → Backend Architect
+   - Frontend tasks → Frontend Developer
+   - API contract tasks → API Specialist
+   - Documentation tasks → Documenter
+   - Cross-cutting → Implementer
+5. **Dispatch decision**:
+   - **3+ independent tasks** → Use `dispatching-parallel-agents` skill, one agent per task
+   - **2 independent tasks** → Parallel dispatch (simpler coordination)
+   - **All tasks dependent** → Sequential with `subagent-driven-development` skill
+   - **Mixed** → Dispatch independent group in parallel, then continue sequential chain
+
+```
+Example: 5 tasks → T001 (setup) → T002 [P] (backend API) + T003 [P] (frontend UI) + T004 [P] (docs) → T005 (integration tests)
+         Dispatch: T001 sequential → T002+T003+T004 parallel → T005 sequential
+```
+
+## Quality Gates
+
+- Every implementation must pass **Reviewer** before proceeding
+- Every plan must pass **Reviewer** before final acceptance during a commit or before implementation begins
+- Coordinators should not skip review even for "simple" changes
+- If a reviewer requests changes, the original specialist fixes them and re-review occurs
+
+## Skills Integration
+
+These skills complement subagent workflows:
+
+| Skill                            | When to Use                                      |
+| -------------------------------- | ------------------------------------------------ |
+| `writing-plans`                  | Creating implementation plans before execution   |
+| `subagent-driven-development`    | Executing plans with fresh subagent per task     |
+| `executing-plans`                | Following through on plans in a separate session |
+| `dispatching-parallel-agents`    | Multiple independent problems to solve           |
+| `requesting-code-review`         | Structured review between implementation stages  |
+| `receiving-code-review`          | Responding constructively to review feedback     |
+| `verification-before-completion` | Quality checks before claiming work done         |
+| `finishing-a-development-branch` | Completing work after all tasks pass review      |
+| `orient-to-recent-work`          | Build context from recent project activity       |
+| `brainstorming`                  | Structured ideation when scope is fuzzy          |
+| `systematic-debugging`           | Structured root cause investigation              |
+| `using-superpowers`              | Leveraging the full skill system                 |

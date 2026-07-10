@@ -1,5 +1,5 @@
 ---
-description: Review changes for over-engineering, what can be deleted
+description: Review changes for over-engineering and identify what can be deleted
 allowed-tools: "Read, Grep"
 argument-hint: "no arguments required"
 ---

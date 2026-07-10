@@ -7,7 +7,7 @@ description: "Component structure and composition patterns."
 
 # Component Structure
 
-Follow the rules defined in [.claude/rules-snippets/composition-api-component-structure.md](../rules-snippets/composition-api-component-structure.md).
+Follow the rules defined in [.claude/rules-snippets/component-structure.md](../rules-snippets/component-structure.md).
 
 Key points:
 - Follow the {{COMPONENT_PATTERN}} pattern for all components.

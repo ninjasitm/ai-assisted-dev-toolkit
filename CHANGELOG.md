@@ -63,6 +63,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `src/monorepo/templates/monthly-fix-log.template.md` — replaced Vue-specific `Component.vue` with generic file paths
 - Template READMEs and docs — replaced project-specific `LEB-123`/`LEB-456` with generic `ISSUE-123`/`ISSUE-456`
 - Renamed `composition-api-component-structure` rule to `component-structure` across repo and monorepo templates
+- Comprehensive template review fixes: corrected `CLAUDE.md` `@import` paths (`prompt-snippets` → `rules-snippets`); fixed broken `../.agents/` skill links in `src/repo/AGENTS.md` and `src/monorepo/AGENTS.md`; updated README bundled-skills count to 32 and added `bkt-cli`/`glab-cli` rows; synced truncated monorepo rules-snippets (`agent-conduct`, `subagent-workflow`, `coding-standards`, `core-libraries`) to repo; converted inlined Cursor commands (`review-pr`, `review`, `commit-push`) to thin wrappers; aligned monorepo agent `tools:` names to Claude Code standard; fixed root `.opencode/commands` snippet imports; added missing `testing.md` rule and `component-structure.md` snippet; removed remaining `composition-api-component-structure` stale files
 
 ## [0.1.0] - 2026-01-26
 

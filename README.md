@@ -245,7 +245,7 @@ Cursor IDE behavior rules:
 - `version-control.mdc` - Git and commit conventions
 - `what-to-avoid.mdc` - Anti-patterns and deprecated practices
 - `api-server.mdc` - API server patterns
-- `composition-api-component-structure.mdc` - Vue Composition API patterns
+- `component-structure.mdc` - Vue Composition API patterns
 - `core-libraries.mdc` - Core library usage
 - `environment-tooling.mdc` - Environment and tooling configuration
 - `logging.mdc` - Structured logging standards
@@ -610,7 +610,7 @@ Skills are installed to `{.cursor|.agents|.github}/skills/` and automatically av
 
 ### Bundled Universal Skills
 
-This toolkit includes **30 pre-installed universal skills** in the `.agents/skills/` folder. These skills are copied automatically when you set up your project and require **no additional installation**.
+This toolkit includes **32 pre-installed universal skills** in the `.agents/skills/` folder. These skills are copied automatically when you set up your project and require **no additional installation**.
 
 | Skill                              | Description                                                                                          |
 | ---------------------------------- | ---------------------------------------------------------------------------------------------------- |
@@ -644,6 +644,8 @@ This toolkit includes **30 pre-installed universal skills** in the `.agents/skil
 | **issue-tracker**                  | Issue tracker integration patterns for Jira, Linear, and GitHub Issues.                                                   |
 | **linear-cli**                     | Linear CLI reference for issue management and project tracking.                                                           |
 | **security-reviewer**              | Security-focused code review patterns for finding vulnerabilities.                                                        |
+| **bkt-cli**                        | Bitbucket CLI (`bkt`) command reference for repo and monorepo templates.                                                  |
+| **glab-cli**                       | GitLab CLI (`glab`) command reference for repo and monorepo templates.                                                    |
 
 **These skills are ready to use immediately after copying the templates.** No `npx -y skills add -a <agent> <owner/repo> --skill '*' --agent github-copilot cursor` commands needed.
 
@@ -808,7 +810,7 @@ After copying templates and installing additional skills, your project will have
     │   └── SKILL.md
     ├── verification-before-completion/
     │   └── SKILL.md
-    └── ... (30 skills total)
+    └── ... (32 skills total)
 
 .cursor/                  # or .github/ for GitHub Copilot
 ├── rules/                # IDE behavior rules (from this toolkit)
