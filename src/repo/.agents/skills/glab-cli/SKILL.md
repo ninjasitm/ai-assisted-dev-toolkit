@@ -337,13 +337,13 @@ glab pipeline cancel 123
 glab ci view
 
 # View a specific job's logs
-glab ci view 123
+glab ci trace 123
 
 # Retry a job
 glab ci retry 123
 
 # Download job artifacts
-glab ci artifacts 123
+glab ci artifact 123
 ```
 
 ### Validate CI Config
@@ -422,7 +422,7 @@ glab mr approve 42
 glab pipeline status
 
 # View failed job logs
-glab ci view <job-id>
+glab ci trace <job-id>
 
 # Retry failed job
 glab ci retry <job-id>
