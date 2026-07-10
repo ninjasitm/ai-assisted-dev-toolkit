@@ -1,8 +1,8 @@
-# {{Month}} {{Year}} - {{App Name}} App Fixes & Improvements
+# {{MONTH_NAME}} {{YEAR}} - {{APP_NAME}} App Fixes & Improvements
 
 **App**: {{APP_NAME}} ({{FRAMEWORK}})
 **Format**: [Keep a Changelog](https://keepachangelog.com/)
-**Period**: {{Month}} 1-{{Last Day}}, {{Year}}
+**Period**: {{MONTH_NAME}} 1-{{LAST_DAY}}, {{YEAR}}
 
 ## Summary
 
@@ -22,16 +22,14 @@ Brief overview of the month's focus areas for this app.
 
 ---
 
-## [{{YYYY-MM-DD}}] - {{Fix Title}}
+## [{{YYYY-MM-DD}}] - {{FIX_TITLE}}
 
 ### Fixed/Changed/Added
 
 - **Issue**: Brief description of the problem
   - **Root cause**: Why it happened
   - **Solution**: How it was fixed
-  - **Files modified**:
-    - `src/components/Component.vue`
-    - `src/composables/use-feature.ts`
+  - **Files modified**: `path/to/file1.ext`, `path/to/file2.ext`
   - **Status**: ✅ Fixed | ⏳ In Progress | 🔄 Under Review
 
 ### Impact
@@ -48,7 +46,7 @@ Brief overview of the month's focus areas for this app.
 
 ---
 
-## [{{YYYY-MM-DD}}] - {{Another Fix Title}}
+## [{{YYYY-MM-DD}}] - {{ANOTHER_FIX_TITLE}}
 
 ### Fixed/Changed/Added
 
@@ -91,4 +89,4 @@ Brief overview of the month's focus areas for this app.
 ---
 
 **Last Updated**: {{YYYY-MM-DD}}
-**Next Review**: {{Next Month End}}
+**Next Review**: {{NEXT_MONTH_END}}

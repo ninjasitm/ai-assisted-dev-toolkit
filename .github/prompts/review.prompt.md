@@ -1,19 +1,10 @@
 ---
-argument-hints:
-  - file_path: "The path to the template file or folder to review (e.g., src/repo/)"
+description: Conduct code review for files or features
+agent: "ask"
+tools: ["read", "search"]
+argument-hint: "file path or feature name"
 ---
 
-# Review Template Files
+# Code Review
 
-Review template files in the AI-Assisted Development Toolkit for quality and consistency.
-
-## Usage
-
-```
-/review [file-path]
-/review [template-folder]    # src/repo or src/monorepo
-```
-
-## Rules
-
-[Coding Standards](../../.claude/rules-snippets/patterns.md)
+Follow the prompt defined in [.claude/prompt-snippets/review.md](../../.claude/prompt-snippets/review.md).

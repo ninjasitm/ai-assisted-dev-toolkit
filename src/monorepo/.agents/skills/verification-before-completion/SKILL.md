@@ -105,6 +105,15 @@ Skip any step = lying, not verifying
 ❌ Trust agent report
 ```
 
+## Documentation Updates
+
+Documentation discipline has been a recurring issue — these checks are now an explicit verification step.
+
+- [ ] Did you update `CHANGELOG.md` with this change?
+- [ ] If this was a bug fix, did you add an entry to `docs/fixes/{YYYY-MM}.md`?
+
+Skipping documentation updates is treated like skipping any other verification step.
+
 ## Why This Matters
 
 From 24 failure memories:

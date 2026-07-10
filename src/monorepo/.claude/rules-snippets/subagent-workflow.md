@@ -31,7 +31,7 @@
 - One subagent per independent task — don't overload a single agent.
 - For parallel-safe tasks (different files, no shared state), dispatch domain specialists concurrently.
 - Always run Reviewer after implementation, before marking work complete.
-- See `.github/instructions/subagent-workflow.instructions.md` for full patterns.
+- See `.claude/rules-snippets/subagent-workflow.md` for full patterns.
 
 ## Parallelization Analysis (REQUIRED)
 

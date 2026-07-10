@@ -2,11 +2,13 @@
 
 Conduct comprehensive code review for pull requests with structured fix tracking.
 
+> **📋 Builds on [review.md](review.md)** — Uses the same review categories and report format. This prompt adds PR-specific workflows: comment retrieval, fix tracking, and thread resolution.
+
 ## Usage
 
 ```bash
 /review-pr 42
-/review-pr https://github.com/{{REPO_OWNER}}/{{PROJECT_NAME}}/pull/42
+/review-pr <PR-or-MR-url>
 ```
 
 ## Orchestrator Checkpoint
@@ -18,7 +20,7 @@ Conduct comprehensive code review for pull requests with structured fix tracking
 > - **Reviewer** → code quality, SOLID, DRY
 > - **Documenter** → documentation completeness
 >   Each reviewer returns findings independently; the orchestrator merges results.
->   See `.github/instructions/subagent-workflow.instructions.md` for patterns.
+>   See `.claude/rules-snippets/subagent-workflow.md` for patterns.
 
 ## Process
 
@@ -26,23 +28,15 @@ Conduct comprehensive code review for pull requests with structured fix tracking
    - Get PR details (title, description, changed files)
    - Extract issue reference if available
    - Get PR diff and file changes
-   - **CRITICAL — Comment Retrieval Strategy** (use this exact order):
-     1. **Use GitHub MCP tools** (preferred) to retrieve ALL comments:
-        - `mcp_github_github_pull_request_read` — get PR details and review comments
-        - `github-pull-request_activePullRequest` — get the active PR context
-        - Fetch **top-level PR comments** (issue-level comments on the PR conversation)
+   - **CRITICAL — Comment Retrieval Strategy**:
+     1. **Use issue tracker MCP tools** (preferred) to retrieve ALL comments:
+        - Get PR/MR details and review comments
+        - Get the active PR/MR context
+        - Fetch **top-level conversation comments** (often missed!)
         - Fetch **inline review comments** (comments on specific lines of code)
         - Fetch **pending review comments** (from in-progress reviews)
-     2. **If MCP tools fail or return no comments**, fall back to `gh` CLI:
-        ```bash
-        # Top-level conversation comments (often missed!)
-        gh api repos/{owner}/{repo}/issues/{pr_number}/comments
-        # Review comments (inline on code)
-        gh api repos/{owner}/{repo}/pulls/{pr_number}/comments
-        # Reviews themselves (contain top-level review bodies)
-        gh api repos/{owner}/{repo}/pulls/{pr_number}/reviews
-        ```
-     3. **Always check BOTH** top-level issue comments AND inline review comments — agents commonly miss top-level comments by only checking review comments
+     2. **If MCP tools fail or unavailable**, fall back to the CLI — see the `issue-tracker` skill (`.agents/skills/issue-tracker/SKILL.md`) for your tracker's API commands.
+     3. **Always check BOTH** top-level conversation comments AND inline review comments — agents commonly miss top-level comments by only checking inline review comments
    - Identify which comments are **unresolved/open** vs already resolved
 
 2. **Review PR Comments from ALL Reviewers**:
@@ -67,74 +61,24 @@ Conduct comprehensive code review for pull requests with structured fix tracking
    - Check task completion against acceptance criteria
    - Verify all requirements met
 
-4. **Code Quality & Best Practices**:
-
-   > **📋 Standards**: Review against [Coding Standards](../instructions/coding-standards.instructions.md) and [Testing](../instructions/testing.instructions.md).
-
-   ### Architecture & Patterns
-   - [ ] Follows project architecture from `AGENTS.md`
-   - [ ] Uses established patterns
-   - [ ] Proper separation of concerns
-   - [ ] Modularity and clear component boundaries
-   - [ ] No code duplication
-   - [ ] DRY (Don't Repeat Yourself) principles:
-     - [ ] Logic is not duplicated across multiple locations
-     - [ ] Shared functionality is extracted to reusable functions/modules
-     - [ ] Constants and configuration are centralized
-     - [ ] Similar patterns are abstracted appropriately
-   - [ ] SOLID principles adherence:
-     - [ ] Single Responsibility: Each class/module has one reason to change
-     - [ ] Open/Closed: Open for extension, closed for modification
-     - [ ] Liskov Substitution: Subtypes can replace base types without breaking
-     - [ ] Interface Segregation: No client depends on unused methods
-     - [ ] Dependency Inversion: Depend on abstractions, not concretions
-
-   ### Code Quality
-   - [ ] Adherence to {{LANGUAGE}}/{{FRAMEWORK}} coding conventions
-   - [ ] Clear and descriptive variable/function names
-   - [ ] Properly typed (no `any` in TypeScript)
-   - [ ] Consistent naming conventions
-   - [ ] Appropriate error handling
-   - [ ] No debug code or code smells (e.g., duplicate code, long methods)
-   - [ ] Comments for complex logic
-
-   ### Testing & Quality
-   - [ ] Unit tests for new functionality
-   - [ ] Integration tests updated
-   - [ ] E2E tests for user-facing features
-   - [ ] All tests passing
-   - [ ] Edge cases covered
-
-   ### Security & Performance
-   - [ ] Input validation implemented
-   - [ ] No security vulnerabilities identified
-   - [ ] Performance impact assessed
-   - [ ] Database queries optimized
-   - [ ] Performance bottlenecks addressed
-
-   ### Documentation
-   - [ ] Code documentation present
-   - [ ] README updated if needed
-   - [ ] API documentation current
-
-5. **Potential Issues Identification**:
-   - [ ] Potential bugs or edge cases identified
-   - [ ] Security vulnerabilities noted
-   - [ ] Performance bottlenecks flagged
+4. **Apply Review Checklist**:
+   - Apply all review categories from [review.md](review.md) (Architecture & Patterns, Functionality, Code Quality, Error Handling, Security, Performance, Testing, Documentation)
    - Add all identified issues to todo list
 
-6. **Review Decision**:
+5. **Review Decision**:
    - **✅ Approve**: All criteria met, ready for merge
    - **❌ Request Changes**: Blocking issues found
    - **💬 Comment**: Non-blocking suggestions only
 
-7. **Provide Actionable Improvements**:
+6. **Provide Actionable Improvements**:
    - For each suggestion:
      - Provide clear explanation of why improvement is needed
      - Include specific code examples or patterns
      - Reference best practices or conventions
 
-8. **Output Format**:
+7. **Output Format**:
+
+   Use the standard report format from [review.md](review.md), with these PR-specific additions:
 
    ```markdown
    ## Review Summary
@@ -153,43 +97,7 @@ Conduct comprehensive code review for pull requests with structured fix tracking
 
    ## Code Quality Findings
 
-   ### Critical Issues
-
-   - **[File:Line]**: [Issue description]
-     - **Impact**: [Why this matters]
-     - **Fix**: [Specific actionable suggestion]
-
-   ### High Priority
-
-   - **[File:Line]**: [Issue description]
-     - **Impact**: [Why this matters]
-     - **Fix**: [Specific actionable suggestion]
-
-   ### Medium Priority (Suggestions)
-
-   - **[File:Line]**: [Improvement suggestion]
-     - **Rationale**: [Explanation]
-     - **Example**: [Code snippet if applicable]
-
-   ## Potential Issues
-
-   ### Bugs & Edge Cases (If Applicable)
-
-   - [Description of potential bug]
-   - [Edge case not handled]
-
-   ### Security Concerns (If Applicable)
-
-   - [Security vulnerability or concern]
-
-   ### Performance Bottlenecks (If Applicable)
-
-   - [Performance issue identified]
-
-   ## Testing Notes (If Applicable)
-
-   - [Verification performed or needed]
-   - [Test coverage assessment]
+   [Use the standard categories from review.md: Architecture & Patterns, Functionality, Code Quality, Error Handling, Security, Performance, Testing, Documentation]
 
    ## Action Items Checklist
 
@@ -211,17 +119,17 @@ Conduct comprehensive code review for pull requests with structured fix tracking
    Every fix must appear in this table — one row per file+issue pair.
    ```
 
-9. **Report Review Status**:
+8. **Report Review Status**:
    - Review decision with clear justification
    - Summary of key findings by severity
    - Inline comments for specific code locations
    - Todo list status showing progress
    - Next steps if changes requested
 
-10. **Confirm Execution Plan**
-    - If there are changes, ask the user to confirm the execution plan with a (Y/n)
+9. **Confirm Execution Plan**
+   - If there are changes, ask the user to confirm the execution plan with a (Y/n)
 
-11. **If the plan is confirmed, proceed with fix Tracking with Internal Todo List**:
+10. **If the plan is confirmed, proceed with fix Tracking with Internal Todo List**:
     - **Before Starting Work**:
       - Use `manage_todo_list` to create comprehensive list of ALL fixes:
         - PR comments requiring fixes (by severity)
@@ -236,17 +144,12 @@ Conduct comprehensive code review for pull requests with structured fix tracking
       - Move to next todo and repeat
     - **Never batch completions** - mark each done immediately
 
-12. **Resolve PR Comment Threads After Fixing**:
+11. **Resolve PR Comment Threads After Fixing**:
     - **CRITICAL**: After each comment is addressed and the fix is pushed:
-      1. **Resolve the comment thread** via GitHub MCP tools or API:
-         - Use `mcp_github_github_pull_request_review_write` to submit a review resolving threads
+      1. **Resolve the comment thread** via your issue tracker's tools:
+         - Use the issue tracker MCP tools to submit a review resolving threads
          - Or reply to each resolved thread with a brief summary of what was fixed
-         - Or use `gh api` to resolve conversation threads:
-           ```bash
-           # Reply to a review comment indicating resolution
-           gh api repos/{owner}/{repo}/pulls/comments/{comment_id}/replies \
-             -f body="Fixed: [brief description of the fix applied]"
-           ```
+         - Or use the CLI — see the `issue-tracker` skill for your tracker's API commands
       2. **If a comment could NOT be addressed**:
          - Reply to the thread explaining why (e.g., out of scope, needs more context, trade-off decision)
          - Ask the user whether to leave it open or resolve with an explanation

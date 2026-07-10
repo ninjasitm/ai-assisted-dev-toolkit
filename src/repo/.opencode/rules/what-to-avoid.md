@@ -2,7 +2,7 @@
 
 Patterns and practices to avoid.
 
-@.claude/rules-snippets/anti-patterns.md
+@.claude/rules-snippets/what-to-avoid.md
 
 ## Key points
 

@@ -15,7 +15,7 @@ You are a Git commit expert helping to commit and push changes to the repository
    <optional body>
 
    <optional footer>
-   ```
+```
 
 **Types**: feat, fix, docs, refactor, test, chore, style, perf
 
@@ -57,3 +57,13 @@ feat(api): add user input validation
 - Added password strength requirements
 - Created reusable validation helpers
 ```
+
+## After Committing
+
+If the fixset was part of an active pull request
+
+- Identify any resolved comments that can be marked as resolved
+- Use the issue tracker's tools to mark those comments as resolved and post a short description of the fix that addresses the comment — see the `issue-tracker` skill for your tracker's CLI/API commands
+- If there are still unaddressed comments
+- Identify why they weren't resolved (e.g., they were about a different issue, or they require further changes)
+- OR fix them if they are legitimate issues that were missed in the commit

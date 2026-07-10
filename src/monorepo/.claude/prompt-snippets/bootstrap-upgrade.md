@@ -6,7 +6,7 @@ Migrate this monorepo's AI instruction files from the pre-3.0 inline pattern to 
 
 > **🛑 Before starting**: This command involves reading, extracting, and rewriting many files across multiple directories.
 > Dispatch parallel subagents for independent file groups (`.claude/`, `.github/`, `.cursor/`, `.opencode/`).
-> Steps 3-6 can run in parallel per directory. Steps 7-8 are sequential.
+> Steps 3-6 can run in parallel per directory. Steps 7-15 are sequential.
 
 ## Usage
 
@@ -29,7 +29,7 @@ Migrate this monorepo's AI instruction files from the pre-3.0 inline pattern to 
    - If version is `>= 3.0.0` and snippet directories exist → **abort**: "Already on v3.0+. No migration needed."
    - If version is `< 3.0.0` or missing → proceed.
 
-3. **Detect build system** (for CLAUDE.md update in Step 9):
+3. **Detect build system** (for CLAUDE.md update in Step 10):
    - `turbo.json` → Turborepo
    - `nx.json` → Nx
    - `lerna.json` → Lerna
@@ -226,7 +226,7 @@ Follow the rules defined in [.claude/rules-snippets/{{name}}.md](../../.claude/r
 
 ### Step 7: Create .opencode/ Directory
 
-1. Create `.opencode/opencode.json`:
+1. Create `.opencode/opencode.json` using only supported schema keys:
 
    ```json
    {
@@ -245,7 +245,14 @@ Follow the rules defined in [.claude/rules-snippets/{{name}}.md](../../.claude/r
    }
    ```
 
-2. Create `.opencode/commands/*.md` — one thin wrapper per `.claude/commands/*.md`:
+   **⚠️ Schema Validation:** Only use supported top-level keys from `https://opencode.ai/config.json`. Do NOT add unsupported keys like `rules`, `commands`, or `agents` as top-level entries — OpenCode discovers these via the `.opencode/` directory structure and the `instructions`/`skills` config arrays.
+
+   **Supported top-level keys:** `$schema`, `instructions`, `skills`, `agent`, `default_agent`, `model`, `small_model`, `provider`, `mcp`, `tools`, `permission`, `lsp`, `formatter`, `server`, `shell`, `command`, `plugin`, `watcher`, `snapshot`, `share`, `autoupdate`, `compaction`, `attachment`, `logLevel`, `disabled_providers`, `enabled_providers`, `tool_output`, `enterprise`, `experimental`
+
+2. **Copy OpenCode plugins**:
+   - Copy any `.opencode/plugins/*.mjs` files from the template
+
+3. Create `.opencode/commands/*.md` — one thin wrapper per `.claude/commands/*.md`:
 
    ```markdown
    ---
@@ -258,7 +265,7 @@ Follow the rules defined in [.claude/rules-snippets/{{name}}.md](../../.claude/r
    @.claude/prompt-snippets/{{name}}.md
    ```
 
-3. Create `.opencode/rules/*.md` — one thin wrapper per `.claude/rules/*.md`:
+4. Create `.opencode/rules/*.md` — one thin wrapper per `.claude/rules/*.md`:
 
    ```markdown
    # {{TITLE}}
@@ -266,7 +273,7 @@ Follow the rules defined in [.claude/rules-snippets/{{name}}.md](../../.claude/r
    @.claude/rules-snippets/{{name}}.md
    ```
 
-4. Create `.opencode/agents/*.md` — one thin wrapper per `.claude/agents/*.agent.md`:
+5. Create `.opencode/agents/*.md` — one thin wrapper per `.claude/agents/*.agent.md`:
 
    ```markdown
    ---
@@ -279,14 +286,41 @@ Follow the rules defined in [.claude/rules-snippets/{{name}}.md](../../.claude/r
    @.claude/agents-snippets/{{name}}.md
    ```
 
-### Step 8: Clean Up Duplicate Skills
+### Step 8: Install Pre-Commit Hook
+
+Install the CHANGELOG/secrets enforcement hook to run before every commit:
+
+1. Copy `scripts/pre-commit-check.sh` from the template to the target project's `scripts/` directory
+2. Install as a git hook:
+
+   ```bash
+   cp scripts/pre-commit-check.sh .git/hooks/pre-commit
+   chmod +x .git/hooks/pre-commit
+   ```
+
+This enforces:
+- **CHANGELOG.md** — [Unreleased] must have content when non-trivial files are staged
+- **Zone.Identifier** — `*:Zone.Identifier` files are blocked from commit
+- **Secrets** — `.env`, `.env.*`, `*.key`, `*.pem` files are blocked from commit
+
+Use `git commit --no-verify` to bypass.
+
+### Step 9: Install Project Hooks
+
+1. Create `hooks/` directory in the target project
+2. Copy all files from the template's `hooks/*` directory (preserve sub-structure)
+3. Make `.js` files executable on Unix: `chmod +x hooks/*.js`
+
+### Step 10: Clean Up Duplicate Skills
+
+- Copy `.agents/rules/*.md` from the template
 
 1. Keep `.agents/skills/` as the source of truth
 2. For each of `.claude/skills/`, `.cursor/skills/`, `.github/skills/`:
    - If directory exists, remove all subdirectories except `README.md`
 3. Remove any nested duplicates: `subagent-driven-development/subagent-driven-development/`
 
-### Step 9: Update CLAUDE.md
+### Step 11: Update CLAUDE.md
 
 Read the existing `CLAUDE.md` and add missing sections:
 
@@ -318,11 +352,11 @@ Read the existing `CLAUDE.md` and add missing sections:
    - `.opencode/{commands,rules,agents}/*.md` → `@.claude/{snippet-type}/`
    ```
 
-### Step 10: Create .toolkit-version File
+### Step 12: Create .toolkit-version File
 
 Write `3.0.0` to `.toolkit-version`.
 
-### Step 11: Validation
+### Step 13: Validation
 
 Run these checks (parallelizable):
 
@@ -334,7 +368,7 @@ Run these checks (parallelizable):
 
 If `--verbose`: log each check result.
 
-### Step 12: Generate Upgrade Report
+### Step 14: Generate Upgrade Report
 
 ```markdown
 ## ✅ Monorepo Upgrade Complete: v3.0.0 (Snippet Architecture)
@@ -396,7 +430,7 @@ If `--verbose`: log each check result.
 4. Commit the migration
 ```
 
-### Step 13: Git Commit
+### Step 15: Git Commit
 
 ```bash
 git add -A

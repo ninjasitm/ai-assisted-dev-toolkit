@@ -51,7 +51,7 @@ You are a technical documentation specialist. You analyze codebases and produce 
 
 ## Guidelines
 
-- Follow project conventions from `AGENTS.md` and `.github/instructions/`
+- Follow project conventions from `AGENTS.md` and `.claude/rules-snippets/`
 - Use existing documentation patterns in `docs/` and `templates/`
 - Reference specific file paths and line ranges
 - Distinguish between setup docs, reference docs, and guides

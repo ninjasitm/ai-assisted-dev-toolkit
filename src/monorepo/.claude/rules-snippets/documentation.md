@@ -8,26 +8,28 @@ This monorepo uses a **distributed documentation strategy** where app-specific d
 
 **App-specific documentation** must live in respective app folders:
 
-- **{{APP_1}} Features** → `apps/{{APP_1}}/docs/features/{{ISSUE_ID}}-FEATURE-NAME/`
-- **{{APP_2}} Features** → `apps/{{APP_2}}/docs/features/{{ISSUE_ID}}-FEATURE-NAME/`
+- **{{APP_1}} Features** → `apps/{{APP_1}}/docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/`
+- **{{APP_2}} Features** → `apps/{{APP_2}}/docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/`
 - **{{APP_1}} Fixes** → `apps/{{APP_1}}/docs/fixes/`
 - **{{APP_2}} Fixes** → `apps/{{APP_2}}/docs/fixes/`
-- **Shared Package Features** → `packages/{{PACKAGE}}/docs/features/`
-- **Shared Package Fixes** → `packages/{{PACKAGE}}/docs/fixes/`
+- **Shared Package Features** → `packages/{{PACKAGE_NAME}}/docs/features/`
+- **Shared Package Fixes** → `packages/{{PACKAGE_NAME}}/docs/fixes/`
 
 **Root `docs/` folder** is ONLY for monorepo-wide documentation:
 
-- Architecture decisions affecting multiple apps
+- Architecture decisions affecting multiple apps (`docs/architecture/`)
 - Deployment pipelines and infrastructure
-- Cross-app integration patterns
+- Cross-app integration patterns (`docs/integration/`)
 - General project overview and getting started
 - Monorepo-wide tooling and configuration
+- Developer guides and onboarding (`docs/guides/`)
+- Project constitution (`docs/constitution.md`)
 
 ### Decision Tree: Where to Document?
 
 ```
 Is this change specific to ONE app or package?
-├── YES → Document in `apps/{app}/docs/` or `packages/{package}/docs/`
+├── YES → Document in `apps/{{APP_NAME}}/docs/` or `packages/{package}/docs/`
 └── NO → Does it affect multiple apps or the monorepo structure?
     ├── YES → Document in root `docs/`
     └── NO → You might be documenting the wrong thing
@@ -79,12 +81,12 @@ If the monorepo includes a documentation app (e.g., Docus, Nuxt Content, Docusau
 
 Each app maintains its own feature documentation:
 
-**Location:** `apps/{app}/docs/features/{{ISSUE_ID}}-FEATURE-NAME/`
+**Location:** `apps/{{APP_NAME}}/docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/`
 
 **Required Files:**
 
 ```
-apps/{{APP_1}}/docs/features/{{ISSUE_ID}}-FEATURE-NAME/
+apps/{{APP_1}}/docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/
 ├── spec.md       # Functional specification
 ├── plan.md       # Implementation plan
 └── [optional]    # Code examples, component diagrams
@@ -99,8 +101,8 @@ apps/{{APP_1}}/docs/features/{{ISSUE_ID}}-FEATURE-NAME/
 **Before creating any fix documentation, ask:**
 
 1. **Is this a complex fix?** (multi-file, architectural changes, affects multiple features)
-   - ✅ YES → Create folder `apps/{app}/docs/fixes/{{ISSUE_ID}}-FIX-NAME/` with `spec.md` + `plan.md`
-   - ❌ NO → Add entry to `apps/{app}/docs/fixes/{YYYY-MM}.md` (monthly log)
+   - ✅ YES → Create folder `apps/{{APP_NAME}}/docs/fixes/{{ISSUE_ID}}-{{FIX_NAME}}/` with `spec.md` + `plan.md`
+   - ❌ NO → Add entry to `apps/{{APP_NAME}}/docs/fixes/{{YYYY-MM}}.md` (monthly log)
 
 2. **Does the monthly log for this month exist?**
    - ❌ NO → Create it first using the template below
@@ -123,7 +125,7 @@ Create root-level documentation for:
 
 ### Architecture Decision Records (ADRs)
 
-**Location:** `docs/architecture/{{NNNN}}-{{decision-title}}.md`
+**Location:** `docs/architecture/{{NNNN}}-{{DECISION_TITLE}}.md`
 
 **When to Create Root ADRs:**
 
@@ -140,7 +142,7 @@ Create root-level documentation for:
 
 Each app maintains its own `CHANGELOG.md`:
 
-**Location:** `apps/{app}/CHANGELOG.md`
+**Location:** `apps/{{APP_NAME}}/CHANGELOG.md`
 
 ### Root Changelog
 
@@ -158,9 +160,9 @@ Before running `git commit`, verify ALL items that apply to your change:
 
 **All changes:**
 
-- [ ] **Features**: `docs/features/{{ISSUE_ID}}-FEATURE-NAME/spec.md` exists and reflects the current implementation
-- [ ] **Features**: `docs/features/{{ISSUE_ID}}-FEATURE-NAME/plan.md` is updated if scope changed
-- [ ] **Fixes**: Entry added to `apps/{app}/docs/fixes/{{YYYY-MM}}.md` (or complex fix folder created)
+- [ ] **Features**: `docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/spec.md` exists and reflects the current implementation
+- [ ] **Features**: `docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/plan.md` is updated if scope changed
+- [ ] **Fixes**: Entry added to `apps/{{APP_NAME}}/docs/fixes/{{YYYY-MM}}.md` (or complex fix folder created)
 - [ ] **Breaking changes**: `CHANGELOG.md` updated
 - [ ] **Architectural decisions**: ADR created in `docs/architecture/` if a significant choice was made
 
