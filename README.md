@@ -263,7 +263,7 @@ Cursor IDE behavior rules:
 - `version-control.mdc` - Git and commit conventions
 - `what-to-avoid.mdc` - Anti-patterns and deprecated practices
 - `api-server.mdc` - API server patterns
-- `composition-api-component-structure.mdc` - Vue Composition API patterns
+- `component-structure.mdc` - Component structure patterns
 - `core-libraries.mdc` - Core library usage
 - `environment-tooling.mdc` - Environment and tooling configuration
 - `logging.mdc` - Structured logging standards

@@ -28,22 +28,22 @@ cp templates/monthly-fix-log.template.md apps/web/docs/fixes/2026-01.md
 
 ```bash
 # Create feature folder in web app
-mkdir -p apps/web/docs/features/LEB-123-FEATURE-NAME
+mkdir -p apps/web/docs/features/ISSUE-123-FEATURE-NAME
 
 # Copy templates
-cp templates/feature-spec.template.md apps/web/docs/features/LEB-123-FEATURE-NAME/spec.md
-cp templates/feature-plan.template.md apps/web/docs/features/LEB-123-FEATURE-NAME/plan.md
+cp templates/feature-spec.template.md apps/web/docs/features/ISSUE-123-FEATURE-NAME/spec.md
+cp templates/feature-plan.template.md apps/web/docs/features/ISSUE-123-FEATURE-NAME/plan.md
 ```
 
 **Complex Fix Documentation:**
 
 ```bash
 # Create fix folder in server app
-mkdir -p apps/server/docs/fixes/LEB-456-COMPLEX-FIX
+mkdir -p apps/server/docs/fixes/ISSUE-456-COMPLEX-FIX
 
 # Copy templates
-cp templates/complex-fix-spec.template.md apps/server/docs/fixes/LEB-456-COMPLEX-FIX/spec.md
-cp templates/complex-fix-plan.template.md apps/server/docs/fixes/LEB-456-COMPLEX-FIX/plan.md
+cp templates/complex-fix-spec.template.md apps/server/docs/fixes/ISSUE-456-COMPLEX-FIX/spec.md
+cp templates/complex-fix-plan.template.md apps/server/docs/fixes/ISSUE-456-COMPLEX-FIX/plan.md
 ```
 
 ### For Root Documentation
@@ -88,6 +88,7 @@ See [documentation.instructions.md](../.github/instructions/documentation.instru
 - `{{MONTH_NAME}}` - Full month name (e.g., January)
 - `{{YEAR}}` - Four-digit year (e.g., 2026)
 - `{{YYYY-MM-DD}}` - ISO date format
+- `{{LAST_DAY}}` - Last day of the month (e.g., 31)
 - `{{ISSUE_ID}}` - Issue tracker ID
 - `{{FEATURE_NAME}}` - Feature name
 - `{{FIX_NAME}}` - Fix name

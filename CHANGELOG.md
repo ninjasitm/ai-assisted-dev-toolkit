@@ -54,6 +54,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ponytail-help` SKILL.md and prompt snippet — added missing `ponytail-audit`, `ponytail-debt`, and `/ponytail-gain` entries; corrected OpenCode slash-command count to six; rewrote the Claude-Code-specific Update section to describe the template update flow (PR #20 review)
 - `ponytail-gain` SKILL.md and prompt snippet (repo, monorepo, root) — replaced the phantom `benchmarks/` source reference with the upstream `DietrichGebert/ponytail` repo link (PR #20 review)
 - `README.md` — corrected "8 activation hooks" to "7 activation hooks" to match CHANGELOG and the actual hook count (PR #20 review)
+- Root `AGENTS.md` — corrected skill count from 16 to 32 and completed the bundled skills table
+- `src/repo/AGENTS.md` and `src/monorepo/AGENTS.md` — completed skill tables with all 32 bundled skills
+- `src/repo/CLAUDE.md` — fixed `command/` → `commands/` typo and added missing OpenCode rules/agents references
+- Root `AGENTS.md` — fixed `command/` → `commands/` typo in directory structure diagram
+- `src/monorepo/templates/monthly-fix-log.template.md` — replaced Vue-specific `Component.vue` with generic file paths
+- Template READMEs and docs — replaced project-specific `LEB-123`/`LEB-456` with generic `ISSUE-123`/`ISSUE-456`
+- Renamed `composition-api-component-structure` rule to `component-structure` across repo and monorepo templates
 
 ## [0.1.0] - 2026-01-26
 
