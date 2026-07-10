@@ -8,3 +8,7 @@ description: "Review code for quality, consistency, and adherence to project pat
 |-------|-------------|
 | `reviewer` | Standard code review — correctness, style, patterns |
 | `oracle` | Complex architectural review — trade-offs, security, scalability |
+
+# Code Review
+
+@.claude/prompt-snippets/review.md

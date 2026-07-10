@@ -8,3 +8,7 @@ description: "Create or update the project constitution defining core principles
 |-------|-------------|
 | `oracle` | Project principles and governance — architectural decisions |
 | `planner` | Project conventions and standards — team norms and practices |
+
+# Project Constitution
+
+@.claude/prompt-snippets/constitution.md

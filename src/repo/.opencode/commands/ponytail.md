@@ -7,3 +7,6 @@ description: "Forces the laziest solution that actually works — YAGNI, stdlib,
 > **Recommended agent:** `fixer`
 > Apply YAGNI/stdlib discipline
 
+# Ponytail
+
+@.claude/prompt-snippets/ponytail.md

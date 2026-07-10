@@ -8,3 +8,7 @@ description: "Upgrade AI instructions from pre-3.0 inline pattern to 3.0+ snippe
 |-------|-------------|
 | `fixer` | Standard upgrade — version bump and migration |
 | `planner` | Complex upgrade — breaking changes needing dependency analysis |
+
+# Bootstrap Upgrade
+
+@.claude/prompt-snippets/bootstrap-upgrade.md

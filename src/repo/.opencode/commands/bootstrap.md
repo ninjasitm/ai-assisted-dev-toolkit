@@ -8,3 +8,7 @@ description: "Bootstrap AI instructions by inferring project details and customi
 |-------|-------------|
 | `fixer` | Standard bootstrap — project analysis and template customization |
 | `planner` | Complex bootstrap — needs requirements gathering and architecture decisions first |
+
+# Bootstrap AI Instructions
+
+@.claude/prompt-snippets/bootstrap.md

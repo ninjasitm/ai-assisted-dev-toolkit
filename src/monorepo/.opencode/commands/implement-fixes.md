@@ -13,4 +13,4 @@ argument-hint: "bug description or fix requirements"
 
 # Implement Fixes
 
-Follow the agent-dispatch guidance above.
+@.claude/prompt-snippets/implement-fixes.md

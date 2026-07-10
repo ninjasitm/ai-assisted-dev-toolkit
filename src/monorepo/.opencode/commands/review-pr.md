@@ -8,3 +8,7 @@ description: "Conduct comprehensive pull request code review"
 |-------|-------------|
 | `reviewer` | Standard PR review — correctness, test coverage, patterns |
 | `oracle` | Complex PR review — architecture, security, cross-system impact |
+
+# PR Review
+
+@.claude/prompt-snippets/review-pr.md

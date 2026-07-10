@@ -7,3 +7,6 @@ description: "Generate release notes from git commits (web, git tag, or document
 > **Recommended agent:** `fixer`
 > Release notes generation
 
+# Generate Release Notes
+
+@.claude/prompt-snippets/release-notes.md

@@ -8,3 +8,7 @@ description: "Create a feature specification from a natural language description
 |-------|-------------|
 | `planner` | Standard feature specification — requirements and acceptance criteria |
 | `oracle` | Complex specification — cross-system design, API contracts, security |
+
+# Create Feature Specification
+
+@.claude/prompt-snippets/specify.md

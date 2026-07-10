@@ -7,3 +7,6 @@ description: "Generate an actionable task list from a specification or plan"
 > **Recommended agent:** `planner`
 > Task breakdown and management
 
+# Generate Task List
+
+@.claude/prompt-snippets/tasks.md
