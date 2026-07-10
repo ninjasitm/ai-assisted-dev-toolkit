@@ -19,7 +19,7 @@ Interact with GitLab from the command line using [glab](https://gitlab.com/gitla
 
 ## Prerequisites
 
-1. Install glab: `brew install glab` (macOS) or see [install instructions](https://gitlab.com/gitlab-org/cli/-/blob/main/README.md安装)
+1. Install glab: `brew install glab` (macOS) or see [install instructions](https://gitlab.com/gitlab-org/cli/-/blob/main/README.md)
 2. Authenticate: `glab auth login`
 3. Verify: `glab auth status`
 
