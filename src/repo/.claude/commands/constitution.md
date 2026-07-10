@@ -6,4 +6,10 @@ argument-hint: "no arguments required"
 
 # Project Constitution
 
+## Agent Dispatch
+| Agent | When to use |
+|-------|-------------|
+| `oracle` | Project principles and governance — architectural decisions |
+| `planner` | Project conventions and standards — team norms and practices |
+
 Follow the prompt defined in [.claude/prompt-snippets/constitution.md](../prompt-snippets/constitution.md).

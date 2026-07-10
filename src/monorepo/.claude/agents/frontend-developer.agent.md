@@ -8,4 +8,4 @@ tools: ["read", "search", "edit", "runInTerminal", "terminalLastCommand"]
 
 Build responsive, accessible, and performant user interfaces.
 
-📋 **Full definition:** [.claude/agents-snippets/frontend-developer.md](../agents-snippets/frontend-developer.md)
+**CRITICAL: READ:** [.claude/agents-snippets/frontend-developer.md](../agents-snippets/frontend-developer.md)

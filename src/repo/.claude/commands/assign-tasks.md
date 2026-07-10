@@ -6,4 +6,8 @@ argument-hint: "requirements or task file path"
 
 # Create Tickets from Requirements
 
-📋 **Full definition:** [.claude/prompt-snippets/assign-tasks.md](../prompt-snippets/assign-tasks.md)
+## Agent Dispatch
+> **Recommended agent:** `fixer`
+> Task assignment and execution
+
+**CRITICAL: READ:** [.claude/prompt-snippets/assign-tasks.md](../prompt-snippets/assign-tasks.md)

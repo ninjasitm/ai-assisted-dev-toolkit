@@ -6,4 +6,10 @@ argument-hint: "task list or specification"
 
 # Execute Implementation Tasks
 
+## Agent Dispatch
+| Agent | When to use |
+|-------|-------------|
+| `fixer` | Bounded implementation — clear spec, known target |
+| `oracle` | Ambiguous implementation — needs architectural judgment first |
+
 Follow the prompt defined in [.claude/prompt-snippets/implement.md](../prompt-snippets/implement.md).
