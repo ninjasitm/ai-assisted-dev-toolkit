@@ -11,4 +11,8 @@ description: "Patch AI instructions by fetching updates from the toolkit repo an
 
 # Patch AI Instructions
 
+## Arguments
+
+$ARGUMENTS
+
 @.claude/prompt-snippets/bootstrap-patch.md

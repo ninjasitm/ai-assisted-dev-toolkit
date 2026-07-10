@@ -9,4 +9,8 @@ description: "Generate release notes from git commits (web, git tag, or document
 
 # Generate Release Notes
 
+## Arguments
+
+$ARGUMENTS
+
 @.claude/prompt-snippets/release-notes.md

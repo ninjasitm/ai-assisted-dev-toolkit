@@ -11,4 +11,8 @@ description: "Bootstrap AI instructions for monorepo by analyzing workspace and 
 
 # Bootstrap Monorepo AI Instructions
 
+## Arguments
+
+$ARGUMENTS
+
 @.claude/prompt-snippets/bootstrap.md

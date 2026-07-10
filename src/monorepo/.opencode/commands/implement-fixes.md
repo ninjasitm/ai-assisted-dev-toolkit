@@ -13,4 +13,8 @@ argument-hint: "bug description or fix requirements"
 
 # Implement Fixes
 
+## Arguments
+
+$ARGUMENTS
+
 @.claude/prompt-snippets/implement-fixes.md
