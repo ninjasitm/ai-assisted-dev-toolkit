@@ -1,7 +1,7 @@
 ---
 name: API Specialist
 description: "Design and implement API architecture, documentation, and developer experience. Use for REST design, GraphQL, OpenAPI specs, SDK generation, API versioning, and integration patterns."
-tools: ["read", "search", "edit", "runInTerminal", "terminalLastCommand"]
+tools: ["Read", "Grep", "Write", "Edit", "Bash(*)"]
 ---
 
 # API Specialist

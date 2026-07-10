@@ -13,6 +13,6 @@
 
 ## Shared Prompt Snippets
 
-@.claude/prompt-snippets/patterns.md
-@.claude/prompt-snippets/project-context.md
-@.claude/prompt-snippets/workflows.md
+@.claude/rules-snippets/patterns.md
+@.claude/rules-snippets/project-context.md
+@.claude/rules-snippets/workflows.md

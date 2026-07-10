@@ -1,8 +1,7 @@
 ---
 name: Feature Builder
 description: "Coordinate end-to-end feature development using subagents for planning, implementation, and review. Orchestrates the full development lifecycle."
-tools:
-  ["agent", "edit", "search", "read", "runInTerminal", "terminalLastCommand"]
+tools: ["Read", "Grep", "Write", "Edit", "Bash(*)", "agent"]
 agents:
   [
     "Planner",

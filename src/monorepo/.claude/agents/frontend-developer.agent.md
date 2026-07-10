@@ -1,7 +1,7 @@
 ---
 name: Frontend Developer
 description: "Build user interfaces, implement components, handle state management, and optimize frontend performance. Use for responsive, accessible, and performant web applications."
-tools: ["read", "search", "edit", "runInTerminal", "terminalLastCommand"]
+tools: ["Read", "Grep", "Write", "Edit", "Bash(*)"]
 ---
 
 # Frontend Developer

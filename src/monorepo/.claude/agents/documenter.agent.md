@@ -1,7 +1,7 @@
 ---
 name: Documenter
 description: "Analyze codebases and create comprehensive documentation. Use for AGENTS.md, README files, API docs, architecture documentation, and onboarding guides."
-tools: ["read", "search", "edit", "runInTerminal", "terminalLastCommand"]
+tools: ["Read", "Grep", "Write"]
 ---
 
 # Documenter

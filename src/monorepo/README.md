@@ -2,6 +2,35 @@
 
 {{PROJECT_DESCRIPTION}}
 
+## Common Placeholders
+
+Templates use `{{PLACEHOLDER}}` syntax (SCREAMING_SNAKE_CASE). The most common placeholders:
+
+| Placeholder | Description |
+| --- | --- |
+| `{{PROJECT_NAME}}` | Project name |
+| `{{FRAMEWORK}}` | Primary framework (Next.js, Nuxt, Laravel, Django, etc.) |
+| `{{LANGUAGE}}` | Programming language (TypeScript, PHP, Python, C#, etc.) |
+| `{{PACKAGE_MANAGER}}` | Package manager (npm, pnpm, composer, pip, etc.) |
+| `{{DEV_PORT}}` | Development server port |
+| `{{DEPLOY_PLATFORM}}` | Deployment target |
+| `{{ISSUE_TRACKER}}` | Issue tracker (Jira, Linear, GitHub Issues) |
+| `{{ISSUE_ID}}` | Issue or ticket identifier |
+| `{{FEATURE_NAME}}` | Feature name |
+| `{{PROJECT_DESCRIPTION}}` | Short project description |
+| `{{DEFAULT_BRANCH}}` | Default git branch (e.g., main) |
+| `{{REPO_URL}}` | Repository URL |
+| `{{SRC_DIR}}` | Source directory |
+| `{{TEST_DIR}}` | Test directory |
+| `{{FILE_EXTENSION}}` | Primary source file extension |
+| `{{APP_NAME_1}}` | First app name |
+| `{{APP_DIR}}` | App directory under apps/ |
+| `{{BUILD_SYSTEM}}` | Monorepo build system (Turborepo, Nx, etc.) |
+| `{{DOCS_APP}}` | Docs app name |
+| `{{PACKAGES_DIR}}` | Shared packages directory |
+
+Individual templates and skills may use additional placeholders; those are documented in the template's own header or README.
+
 ## Monorepo Structure
 
 This is a monorepo managed with {{BUILD_SYSTEM}}.

@@ -57,8 +57,9 @@ The [orient-to-recent-work](.agents/skills/orient-to-recent-work/SKILL.md) skill
 │   ├── rules-snippets/ # Rules-specific content fragments
 │   └── prompt-snippets/ # Shared content fragments (source of truth)
 ├── .opencode/          # This repo's OpenCode config
-│   ├── agents/         # Agent definitions
 │   ├── commands/       # Custom commands
+│   ├── plugins/        # Plugins
+│   ├── rules/          # Rules
 │   └── opencode.json   # OpenCode configuration
 ├── .vscode/            # VS Code / GitHub Copilot config
 │   └── mcp.json        # Copilot MCP config
