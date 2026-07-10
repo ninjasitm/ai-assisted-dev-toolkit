@@ -10,4 +10,4 @@ argument-hint: "no arguments required"
 > **Recommended agent:** `oracle`
 > Diff-level over-engineering review
 
-Follow the prompt defined in [../prompt-snippets/ponytail-review.md](../prompt-snippets/ponytail-review.md).
+Follow the prompt defined in [.claude/prompt-snippets/ponytail-review.md](../prompt-snippets/ponytail-review.md).

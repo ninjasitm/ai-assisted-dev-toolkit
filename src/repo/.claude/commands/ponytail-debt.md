@@ -10,4 +10,4 @@ argument-hint: "no arguments required"
 > **Recommended agent:** `fixer`
 > Debt ledger harvesting
 
-Follow the prompt defined in [../prompt-snippets/ponytail-debt.md](../prompt-snippets/ponytail-debt.md).
+Follow the prompt defined in [.claude/prompt-snippets/ponytail-debt.md](../prompt-snippets/ponytail-debt.md).

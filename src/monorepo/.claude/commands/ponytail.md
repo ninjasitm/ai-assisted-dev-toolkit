@@ -10,4 +10,4 @@ argument-hint: "optional level (lite/full/ultra/off)"
 > **Recommended agent:** `fixer`
 > Apply YAGNI/stdlib discipline
 
-Follow the prompt defined in [../prompt-snippets/ponytail.md](../prompt-snippets/ponytail.md).
+Follow the prompt defined in [.claude/prompt-snippets/ponytail.md](../prompt-snippets/ponytail.md).

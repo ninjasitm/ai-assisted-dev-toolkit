@@ -10,4 +10,4 @@ argument-hint: "no arguments required"
 > **Recommended agent:** `fixer`
 > Impact scoreboard display
 
-Follow the prompt defined in [../prompt-snippets/ponytail-gain.md](../prompt-snippets/ponytail-gain.md).
+Follow the prompt defined in [.claude/prompt-snippets/ponytail-gain.md](../prompt-snippets/ponytail-gain.md).

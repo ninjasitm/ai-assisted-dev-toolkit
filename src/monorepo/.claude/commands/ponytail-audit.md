@@ -10,4 +10,4 @@ argument-hint: "no arguments required"
 > **Recommended agent:** `oracle`
 > Whole-repo over-engineering analysis
 
-Follow the prompt defined in [../prompt-snippets/ponytail-audit.md](../prompt-snippets/ponytail-audit.md).
+Follow the prompt defined in [.claude/prompt-snippets/ponytail-audit.md](../prompt-snippets/ponytail-audit.md).

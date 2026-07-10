@@ -10,4 +10,4 @@ argument-hint: "no arguments required"
 > **Recommended agent:** `fixer`
 > Quick-reference display
 
-Follow the prompt defined in [../prompt-snippets/ponytail-help.md](../prompt-snippets/ponytail-help.md).
+Follow the prompt defined in [.claude/prompt-snippets/ponytail-help.md](../prompt-snippets/ponytail-help.md).
