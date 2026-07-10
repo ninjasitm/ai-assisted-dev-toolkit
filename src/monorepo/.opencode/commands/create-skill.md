@@ -4,6 +4,10 @@ description: "Create a new agent skill following VS Code and agentskills.io spec
 
 ## Agent Dispatch
 
+## Agent Dispatch
+
 > **Recommended agent:** `fixer`
 > Skill file creation
+
+## Arguments
 

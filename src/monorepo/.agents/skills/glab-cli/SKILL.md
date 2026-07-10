@@ -19,7 +19,7 @@ Interact with GitLab from the command line using [glab](https://gitlab.com/gitla
 
 ## Prerequisites
 
-1. Install glab: `brew install glab` (macOS) or see [install instructions](https://gitlab.com/gitlab-org/cli/-/blob/main/README.md安装)
+1. Install glab: `brew install glab` (macOS) or see [install instructions](https://gitlab.com/gitlab-org/cli/-/blob/main/README.md)
 2. Authenticate: `glab auth login`
 3. Verify: `glab auth status`
 
@@ -124,7 +124,7 @@ glab mr update 42 --title "Updated title"
 glab mr update 42 --label "priority:high"
 
 # Remove labels
-glab mr unlabel 42 "needs-review"
+glab mr update 42 --unlabel "needs-review"
 
 # Assign
 glab mr update 42 --assignee @me
@@ -174,8 +174,8 @@ glab mr view 42 --json approvals
 ### MR Review Threads
 
 ```bash
-# List discussion threads
-glab mr discussion list 42
+# List discussion threads (notes)
+glab mr note list 42
 
 # Add a note/comment
 glab mr note 42 --body "Looks good to me"
@@ -183,11 +183,11 @@ glab mr note 42 --body "Looks good to me"
 # Add note on specific line (requires diff refs)
 glab mr note 42 --body "Nice catch" --commit abc123 --filename src/main.ts --line 42
 
-# Resolve a discussion
-glab mr discussion resolve 42 <discussion-id>
+# Resolve a discussion (EXPERIMENTAL)
+glab mr note resolve 42 <discussion-id>
 
-# Reply to a discussion
-glab mr discussion reply 42 <discussion-id> --body "Fixed in commit def456"
+# Reply to a discussion (add a note)
+glab mr note 42 --body "Fixed in commit def456"
 ```
 
 ## Issue Commands
@@ -333,17 +333,24 @@ glab pipeline cancel 123
 ### Pipeline Jobs
 
 ```bash
-# List jobs in a pipeline
-glab ci lint
+# List jobs in the latest pipeline
+glab ci view
 
-# View job logs
-glab ci view 123
+# View a specific job's logs
+glab ci trace 123
 
 # Retry a job
 glab ci retry 123
 
 # Download job artifacts
-glab ci artifacts 123
+glab ci artifact 123
+```
+
+### Validate CI Config
+
+```bash
+# Validate .gitlab-ci.yml syntax
+glab ci lint
 ```
 
 ## Release Commands
@@ -388,8 +395,8 @@ glab label delete "old-label"
 ### Triage New Issues
 
 ```bash
-# List untriaged issues
-glab issue list --search "is:open no:label no:assignee"
+# List untriaged issues (no label, no assignee)
+glab issue list --label none --assignee none
 
 # Assign and label
 glab issue update 123 --add-label "bug,priority:high" --assignee @me
@@ -415,7 +422,7 @@ glab mr approve 42
 glab pipeline status
 
 # View failed job logs
-glab ci view <job-id>
+glab ci trace <job-id>
 
 # Retry failed job
 glab ci retry <job-id>

@@ -11,4 +11,9 @@ argument-hint: "no arguments required"
 
 # Ponytail Help
 
-Follow the prompt defined in [.claude/prompt-snippets/ponytail-help.md](../../.claude/prompt-snippets/ponytail-help.md).
+## Agent Dispatch
+
+> **Recommended agent:** `fixer`
+> Quick-reference display
+
+**CRITICAL: READ:** [.claude/prompt-snippets/ponytail-help.md](../../.claude/prompt-snippets/ponytail-help.md).

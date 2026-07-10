@@ -118,7 +118,7 @@ For each `.claude/agents/*.agent.md`:
 
 # {{TITLE}}
 
-Follow the rules defined in [.claude/rules-snippets/{{name}}.md](../rules-snippets/{{name}}.md).
+Follow the rules defined in [.claude/rules-snippets/{{NAME}}.md](../rules-snippets/{{NAME}}.md).
 ```
 
 **Commands** — Replace each `.claude/commands/*.md` body with:
@@ -130,7 +130,7 @@ Follow the rules defined in [.claude/rules-snippets/{{name}}.md](../rules-snippe
 
 # {{TITLE}}
 
-Follow the prompt defined in [.claude/prompt-snippets/{{name}}.md](../prompt-snippets/{{name}}.md).
+Follow the prompt defined in [.claude/prompt-snippets/{{NAME}}.md](../prompt-snippets/{{NAME}}.md).
 ```
 
 **Agents** — Replace each `.claude/agents/*.agent.md` body with:
@@ -142,7 +142,7 @@ Follow the prompt defined in [.claude/prompt-snippets/{{name}}.md](../prompt-sni
 
 # {{AGENT_NAME}}
 
-Follow the agent definition in [.claude/agents-snippets/{{name}}.md](../agents-snippets/{{name}}.md).
+Follow the agent definition in [.claude/agents-snippets/{{NAME}}.md](../agents-snippets/{{NAME}}.md).
 ```
 
 ### Step 5: Convert .github/ Files to Thin Wrappers
@@ -162,7 +162,7 @@ description: "{{ORIGINAL_DESCRIPTION}}"
 
 # {{TITLE}}
 
-Follow the rules defined in [.claude/rules-snippets/{{name}}.md](../../.claude/rules-snippets/{{name}}.md).
+Follow the rules defined in [.claude/rules-snippets/{{NAME}}.md](../../.claude/rules-snippets/{{NAME}}.md).
 ```
 
 **Prompts** — For each `.github/prompts/*.prompt.md`:
@@ -177,7 +177,7 @@ Follow the rules defined in [.claude/rules-snippets/{{name}}.md](../../.claude/r
 
 # {{TITLE}}
 
-Follow the prompt defined in [.claude/prompt-snippets/{{name}}.md](../../.claude/prompt-snippets/{{name}}.md).
+Follow the prompt defined in [.claude/prompt-snippets/{{NAME}}.md](../../.claude/prompt-snippets/{{NAME}}.md).
 ```
 
 **Agents** — For each `.github/agents/*.agent.md`:
@@ -192,7 +192,7 @@ Follow the prompt defined in [.claude/prompt-snippets/{{name}}.md](../../.claude
 
 # {{AGENT_NAME}}
 
-Follow the agent definition in [.claude/agents-snippets/{{name}}.md](../../.claude/agents-snippets/{{name}}.md).
+Follow the agent definition in [.claude/agents-snippets/{{NAME}}.md](../../.claude/agents-snippets/{{NAME}}.md).
 ```
 
 ### Step 6: Convert .cursor/ Files to Thin Wrappers
@@ -211,18 +211,18 @@ Follow the agent definition in [.claude/agents-snippets/{{name}}.md](../../.clau
 
 # {{TITLE}}
 
-Follow the rules defined in [.claude/rules-snippets/{{name}}.md](../../.claude/rules-snippets/{{name}}.md).
+Follow the rules defined in [.claude/rules-snippets/{{NAME}}.md](../../.claude/rules-snippets/{{NAME}}.md).
 ```
 
 **Commands** — For each `.cursor/commands/*.md`:
 1. Check if a matching snippet exists in `.claude/prompt-snippets/`
 2. If no matching snippet: extract body → create `.claude/prompt-snippets/<name>.md`
-3. Replace body with thin wrapper referencing `../../.claude/prompt-snippets/{{name}}.md`
+3. Replace body with thin wrapper referencing `../../.claude/prompt-snippets/{{NAME}}.md`
 
 **Agents** — For each `.cursor/agents/*.agent.md`:
 1. Check if a matching snippet exists in `.claude/agents-snippets/`
 2. If no matching snippet: extract body → create `.claude/agents-snippets/<name>.md`
-3. Replace body with thin wrapper referencing `../../.claude/agents-snippets/{{name}}.md`
+3. Replace body with thin wrapper referencing `../../.claude/agents-snippets/{{NAME}}.md`
 
 ### Step 7: Create .opencode/ Directory
 
@@ -262,7 +262,7 @@ Follow the rules defined in [.claude/rules-snippets/{{name}}.md](../../.claude/r
 
    # {{TITLE}}
 
-   @.claude/prompt-snippets/{{name}}.md
+   @.claude/prompt-snippets/{{NAME}}.md
    ```
 
 4. Create `.opencode/rules/*.md` — one thin wrapper per `.claude/rules/*.md`:
@@ -270,7 +270,7 @@ Follow the rules defined in [.claude/rules-snippets/{{name}}.md](../../.claude/r
    ```markdown
    # {{TITLE}}
 
-   @.claude/rules-snippets/{{name}}.md
+   @.claude/rules-snippets/{{NAME}}.md
    ```
 
 5. Create `.opencode/agents/*.md` — one thin wrapper per `.claude/agents/*.agent.md`:
@@ -283,7 +283,7 @@ Follow the rules defined in [.claude/rules-snippets/{{name}}.md](../../.claude/r
 
    # {{AGENT_NAME}}
 
-   @.claude/agents-snippets/{{name}}.md
+   @.claude/agents-snippets/{{NAME}}.md
    ```
 
 ### Step 8: Install Pre-Commit Hook

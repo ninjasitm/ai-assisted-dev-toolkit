@@ -11,7 +11,7 @@
 
 ## Orientation to recent work
 
-The [orient-to-recent-work](../.agents/skills/orient-to-recent-work/SKILL.md) skill (auto-loaded) orients you to recent project activity before any non-trivial task: CHANGELOG Unreleased, recent commits, recent decisions. Skip for trivial fixes: typos, version bumps, isolated docs updates, mechanical refactors with a known target.
+The [orient-to-recent-work](.agents/skills/orient-to-recent-work/SKILL.md) skill (auto-loaded) orients you to recent project activity before any non-trivial task: CHANGELOG Unreleased, recent commits, recent decisions. Skip for trivial fixes: typos, version bumps, isolated docs updates, mechanical refactors with a known target.
 
 ## Structure
 
@@ -355,8 +355,8 @@ Documentation updates are **mandatory before committing** any feature or fix. Se
 
 **Quick summary:**
 
-- Create or update `docs/features/{{ISSUE_ID}}-FEATURE-NAME/` (spec + plan) for every feature
-- Add fixes to the monthly log in `docs/fixes/{YYYY-MM}.md` (or a dedicated folder for complex fixes)
+- Create or update `docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/` (spec + plan) for every feature
+- Add fixes to the monthly log in `docs/fixes/{{YYYY-MM}}.md` (or a dedicated folder for complex fixes)
 - Update `docs/api/`, `docs/integration/`, `docs/guides/`, `README.md`, and `CHANGELOG.md` when applicable
 - Reference `docs/constitution.md` for project principles and governance
 - Include all doc changes in the same commit/PR as the code

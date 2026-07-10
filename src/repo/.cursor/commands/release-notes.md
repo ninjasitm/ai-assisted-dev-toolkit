@@ -5,6 +5,11 @@ argument-hint: "version or tag"
 
 # Release Notes
 
+## Agent Dispatch
+
+> **Recommended agent:** `fixer`
+> Release notes generation
+
 Generate professional release notes from git commits.
 
 **CRITICAL: READ:** [.claude/prompt-snippets/release-notes.md](../../.claude/prompt-snippets/release-notes.md)

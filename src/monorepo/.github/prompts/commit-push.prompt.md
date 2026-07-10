@@ -1,5 +1,6 @@
 ---
 description: Commit and push changes with conventional commit messages
+argument-hint: "optional commit message or options"
 ---
 
 ## Agent Dispatch
@@ -10,4 +11,9 @@ description: Commit and push changes with conventional commit messages
 
 # Commit and Push Changes
 
-Follow the prompt defined in [.claude/prompt-snippets/commit-push.md](../../.claude/prompt-snippets/commit-push.md).
+## Agent Dispatch
+
+> **Recommended agent:** `fixer`
+> Git operations, execution-focused
+
+**CRITICAL: READ:** [.claude/prompt-snippets/commit-push.md](../../.claude/prompt-snippets/commit-push.md).

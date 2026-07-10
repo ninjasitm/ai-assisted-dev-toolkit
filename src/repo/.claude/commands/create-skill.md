@@ -12,4 +12,8 @@ argument-hint: "skill name and requirements"
 
 # Create Agent Skill
 
+## Agent Dispatch
+> **Recommended agent:** `fixer`
+> Skill file creation
+
 Follow the prompt defined in [.claude/prompt-snippets/create-skill.md](../prompt-snippets/create-skill.md).

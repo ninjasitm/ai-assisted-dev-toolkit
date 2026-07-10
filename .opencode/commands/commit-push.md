@@ -7,4 +7,4 @@ Commit and push changes to the AI-Assisted Development Toolkit.
 
 $ARGUMENTS
 
-@.claude/rules-snippets/workflows.md
+@.claude/prompt-snippets/commit-push.md

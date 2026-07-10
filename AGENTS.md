@@ -57,8 +57,9 @@ The [orient-to-recent-work](.agents/skills/orient-to-recent-work/SKILL.md) skill
 │   ├── rules-snippets/ # Rules-specific content fragments
 │   └── prompt-snippets/ # Shared content fragments (source of truth)
 ├── .opencode/          # This repo's OpenCode config
-│   ├── agents/         # Agent definitions
 │   ├── commands/       # Custom commands
+│   ├── plugins/        # Plugins
+│   ├── rules/          # Rules
 │   └── opencode.json   # OpenCode configuration
 ├── .vscode/            # VS Code / GitHub Copilot config
 │   └── mcp.json        # Copilot MCP config
@@ -202,8 +203,8 @@ The toolkit includes 32 pre-installed universal skills in `src/repo/.agents/skil
 
 | Skill                            | Purpose                                  |
 | -------------------------------- | ---------------------------------------- |
-| `acli`                           | AWS CLI helpers                          |
-| `bkt-cli`                        | Backup toolkit CLI wrappers              |
+| `acli`                           | Atlassian CLI (ACLI) command reference   |
+| `bkt-cli`                        | Bitbucket CLI (bkt) command reference    |
 | `brainstorming`                  | Structured ideation sessions             |
 | `code-simplifier`                | Simplify and clean up code               |
 | `debugger`                       | General-purpose debugger skill           |

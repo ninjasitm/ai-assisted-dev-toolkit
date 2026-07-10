@@ -12,4 +12,8 @@ argument-hint: "test file or test description"
 
 # Playwright E2E Testing
 
+## Agent Dispatch
+> **Recommended agent:** `fixer`
+> Test generation and execution
+
 Follow the prompt defined in [.claude/prompt-snippets/playwright-test.md](../prompt-snippets/playwright-test.md).

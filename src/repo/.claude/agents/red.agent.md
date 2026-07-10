@@ -1,7 +1,8 @@
 ---
 name: "Red"
 description: "Write failing tests that define expected behavior. Part of the TDD red-green-refactor cycle."
-tools: ["Read", "Write", "Edit", "Bash(*)"]
+tools: ["Read", "Grep", "Write", "Edit", "Bash(*)"]
+user-invocable: true
 ---
 
 # Red Agent

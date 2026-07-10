@@ -12,4 +12,8 @@ argument-hint: "optional commit message or options"
 
 # Commit and Push
 
+## Agent Dispatch
+> **Recommended agent:** `fixer`
+> Git operations, execution-focused
+
 Follow the prompt defined in [.claude/prompt-snippets/commit-push.md](../prompt-snippets/commit-push.md).

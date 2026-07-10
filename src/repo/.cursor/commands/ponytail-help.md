@@ -5,4 +5,9 @@ argument-hint: "no arguments required"
 
 # Ponytail Help
 
+## Agent Dispatch
+
+> **Recommended agent:** `fixer`
+> Quick-reference display
+
 **CRITICAL: READ:** [.claude/prompt-snippets/ponytail-help.md](../../.claude/prompt-snippets/ponytail-help.md)

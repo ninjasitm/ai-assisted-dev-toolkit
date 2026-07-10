@@ -13,4 +13,11 @@ argument-hint: "issue key or task file path"
 
 # Implement Feature
 
-Follow the prompt defined in [.claude/prompt-snippets/implement-feature.md](../../.claude/prompt-snippets/implement-feature.md).
+## Agent Dispatch
+
+| Agent | When to use |
+|-------|-------------|
+| `fixer` | Bounded feature work — spec is clear, files are known |
+| `feature-builder` | Complex feature — needs research, planning, and coordination |
+
+**CRITICAL: READ:** [.claude/prompt-snippets/implement-feature.md](../../.claude/prompt-snippets/implement-feature.md).

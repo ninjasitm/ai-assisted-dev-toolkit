@@ -88,6 +88,7 @@ See [documentation.instructions.md](../.github/instructions/documentation.instru
 - `{{MONTH_NAME}}` - Full month name (e.g., January)
 - `{{YEAR}}` - Four-digit year (e.g., 2026)
 - `{{YYYY-MM-DD}}` - ISO date format
+- `{{LAST_DAY}}` - Last day of the month (e.g., 31)
 - `{{ISSUE_ID}}` - Issue tracker ID
 - `{{FEATURE_NAME}}` - Feature name
 - `{{FIX_NAME}}` - Fix name

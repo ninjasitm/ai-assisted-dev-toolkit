@@ -1,7 +1,8 @@
 ---
 name: "Feature Builder"
 description: "Coordinate end-to-end feature development using subagents for planning, implementation, and review. Orchestrates the full development lifecycle."
-tools: ["Read", "Grep", "Bash(git:*)", "Task"]
+tools: ["Read", "Grep", "Write", "Edit", "Bash(*)", "agent"]
+user-invocable: true
 ---
 
 # Feature Builder Agent

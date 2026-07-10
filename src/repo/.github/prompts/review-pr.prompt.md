@@ -13,4 +13,11 @@ argument-hint: "PR number or URL"
 
 # Review Pull Request
 
-Follow the prompt defined in [.claude/prompt-snippets/review-pr.md](../../.claude/prompt-snippets/review-pr.md).
+## Agent Dispatch
+
+| Agent | When to use |
+|-------|-------------|
+| `reviewer` | Standard PR review — correctness, test coverage, patterns |
+| `oracle` | Complex PR review — architecture, security, cross-system impact |
+
+**CRITICAL: READ:** [.claude/prompt-snippets/review-pr.md](../../.claude/prompt-snippets/review-pr.md).
