@@ -2,12 +2,13 @@
 description: Generate an actionable task list from a specification or plan
 argument-hint: "specification or plan file"
 ---
+
+# Tasks
+
 ## Agent Dispatch
 
 > **Recommended agent:** `planner`
 > Task breakdown and management
-
-# Tasks
 
 Break down a feature into actionable tasks from a specification or plan.
 
