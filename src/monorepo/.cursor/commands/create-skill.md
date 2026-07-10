@@ -4,6 +4,10 @@ argument-hint: "skill name and requirements"
 tags: [skill-creation, agent-skills, documentation, automation]
 version: 1.0.0
 ---
+## Agent Dispatch
+
+> **Recommended agent:** `fixer`
+> Skill file creation
 
 # Create Skill
 

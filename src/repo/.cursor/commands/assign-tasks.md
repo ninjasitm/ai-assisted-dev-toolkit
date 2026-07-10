@@ -2,6 +2,10 @@
 description: Create {{ISSUE_TRACKER}} tickets from requirements or task files
 argument-hint: "requirements or task file path"
 ---
+## Agent Dispatch
+
+> **Recommended agent:** `fixer`
+> Task assignment and execution
 
 # Create Tickets from Requirements
 

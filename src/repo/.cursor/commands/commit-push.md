@@ -2,6 +2,10 @@
 description: Commit and push changes with conventional commit messages
 argument-hint: "optional commit message or options"
 ---
+## Agent Dispatch
+
+> **Recommended agent:** `fixer`
+> Git operations, execution-focused
 
 # Commit & Push
 

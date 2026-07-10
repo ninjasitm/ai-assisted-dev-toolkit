@@ -36,7 +36,7 @@ Detailed standards are organized into focused instruction files. Copilot will au
 
 ## Ponytail, lazy senior dev mode
 
-See [.claude/rules-snippets/ponytail.md](../../.claude/rules-snippets/ponytail.md) for the full rule content.
+See [.claude/rules-snippets/ponytail.md](../.claude/rules-snippets/ponytail.md) for the full rule content.
 
 ## Preferred Workflow: Orchestrator + Subagents
 
