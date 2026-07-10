@@ -33,12 +33,6 @@ This repository serves as a **template source** for AI development instructions 
 │   │   ├── .agents/    # Pre-installed universal skills
 │   │   │   ├── rules/  # Agent behavior rules (ponytail, etc.)
 │   │   │   └── skills/ # Bundled skills (TDD, debugging, etc.)
-│   │   ├── .claude/    # Claude Code configuration
-│   │   │   ├── agents/ # Custom agent templates (subagents)
-│   │   │   ├── rules/  # Claude behavior rules
-│   │   │   ├── commands/ # Custom Claude commands
-│   │   │   ├── skills/ # Additional skills (README placeholder)
-│   │   │   └── settings.json # Claude settings template
 │   │   ├── docs/       # Documentation structure templates
 │   │   ├── templates/  # Reusable document templates
 │   │   ├── AGENTS.md   # AI agent context template
@@ -59,12 +53,6 @@ This repository serves as a **template source** for AI development instructions 
 │       ├── .agents/    # Pre-installed universal skills
 │       │   ├── rules/  # Agent behavior rules (ponytail, etc.)
 │       │   └── skills/ # Bundled skills (TDD, debugging, etc.)
-│       ├── .claude/    # Claude Code configuration
-│       │   ├── agents/ # Custom agent templates (subagents)
-│       │   ├── rules/  # Claude behavior rules
-│       │   ├── commands/ # Custom Claude commands
-│       │   ├── skills/ # Additional skills (README placeholder)
-│       │   └── settings.json # Claude settings template
 │       ├── apps/       # App-specific templates
 │       ├── packages/   # Package-specific templates
 │       ├── docs/       # Documentation structure templates
@@ -89,8 +77,6 @@ This repository serves as a **template source** for AI development instructions 
 cp -r src/repo/.cursor /path/to/your/project/
 cp -r src/repo/.github /path/to/your/project/
 cp -r src/repo/.agents /path/to/your/project/
-cp -r src/repo/.claude /path/to/your/project/
-cp src/repo/CLAUDE.md /path/to/your/project/
 cp src/repo/AGENTS.md /path/to/your/project/
 ```
 
@@ -98,11 +84,10 @@ The `.agents/skills/` folder contains pre-installed universal skills that are re
 
 **Step 2: Run the Bootstrap Command**
 
-Open your project in your preferred editor or Claude Code, then run:
+Open your project in Cursor IDE or VS Code with GitHub Copilot, then run:
 
 - **Cursor IDE**: Use the `/bootstrap` command
 - **GitHub Copilot**: Use the `bootstrap.prompt.md` prompt (`/bootstrap`)
-- **Claude Code**: Use the `/bootstrap` command
 
 The bootstrap process will:
 
@@ -123,8 +108,6 @@ After bootstrapping, review the generated files and add any project-specific pat
 cp -r src/monorepo/.cursor /path/to/your/project/
 cp -r src/monorepo/.github /path/to/your/project/
 cp -r src/monorepo/.agents /path/to/your/project/
-cp -r src/monorepo/.claude /path/to/your/project/
-cp src/monorepo/CLAUDE.md /path/to/your/project/
 cp src/monorepo/AGENTS.md /path/to/your/project/
 # Optionally copy app/package templates
 cp -r src/monorepo/apps/app-template /path/to/your/project/apps/
@@ -135,11 +118,10 @@ The `.agents/skills/` folder contains pre-installed universal skills that are re
 
 **Step 2: Run the Bootstrap Command**
 
-Open your project in your preferred editor or Claude Code, then run:
+Open your project in Cursor IDE or VS Code with GitHub Copilot, then run:
 
 - **Cursor IDE**: Use the `/bootstrap` command
 - **GitHub Copilot**: Use the `bootstrap.prompt.md` prompt (`/bootstrap`)
-- **Claude Code**: Use the `/bootstrap` command
 
 The bootstrap process will:
 
@@ -263,7 +245,7 @@ Cursor IDE behavior rules:
 - `version-control.mdc` - Git and commit conventions
 - `what-to-avoid.mdc` - Anti-patterns and deprecated practices
 - `api-server.mdc` - API server patterns
-- `component-structure.mdc` - Component structure patterns
+- `composition-api-component-structure.mdc` - Vue Composition API patterns
 - `core-libraries.mdc` - Core library usage
 - `environment-tooling.mdc` - Environment and tooling configuration
 - `logging.mdc` - Structured logging standards
@@ -279,7 +261,6 @@ Cursor IDE behavior rules:
 Custom Cursor commands for workflows:
 
 - `bootstrap.md` - **Start here!** Analyze project and customize templates
-- `bootstrap-patch.md` - Apply targeted bootstrap patches
 - `specify.md` - Create feature specifications
 - `plan.md` - Generate implementation plans
 - `implement.md` - Execute implementation tasks
@@ -292,27 +273,6 @@ Custom Cursor commands for workflows:
 - `tasks.md` - Task management workflow
 - `assign-tasks.md` - Task assignment workflow
 - `create-skill.md` - Create custom AI skills
-- `playwright-test.md` - Playwright test generation
-- `release-notes.md` - Release notes generation
-
-### .claude/commands/\*.md
-
-Custom Claude Code slash commands (mirrors Cursor commands):
-
-- `bootstrap.md` - **Start here!** Analyze project and customize templates
-- `specify.md` - Create feature specifications
-- `plan.md` - Generate implementation plans
-- `implement.md` - Execute implementation tasks
-- `implement-feature.md` - Feature implementation workflow
-- `implement-fixes.md` - Bug fix implementation workflow
-- `review.md` - Code review workflow
-- `review-pr.md` - Pull request review workflow
-- `commit-push.md` - Git commit and push workflow
-- `constitution.md` - Project constitution and principles
-- `tasks.md` - Task management workflow
-- `assign-tasks.md` - Task assignment workflow
-- `create-skill.md` - Create custom AI skills
-- `bootstrap-patch.md` - Apply targeted bootstrap patches
 - `playwright-test.md` - Playwright test generation
 - `release-notes.md` - Release notes generation
 
@@ -321,7 +281,6 @@ Custom Claude Code slash commands (mirrors Cursor commands):
 Reusable prompts for GitHub Copilot:
 
 - `bootstrap.prompt.md` - **Start here!** Analyze project and customize templates
-- `bootstrap-patch.prompt.md` - Apply targeted bootstrap patches
 - `commit-push.prompt.md` - Conventional commit workflow
 - `review.prompt.md` - Code review checklist
 - `review-pr.prompt.md` - Pull request review
@@ -651,7 +610,7 @@ Skills are installed to `{.cursor|.agents|.github}/skills/` and automatically av
 
 ### Bundled Universal Skills
 
-This toolkit includes **23 pre-installed universal skills** in the `.agents/skills/` folder. These skills are copied automatically when you set up your project and require **no additional installation**.
+This toolkit includes **30 pre-installed universal skills** in the `.agents/skills/` folder. These skills are copied automatically when you set up your project and require **no additional installation**.
 
 | Skill                              | Description                                                                                          |
 | ---------------------------------- | ---------------------------------------------------------------------------------------------------- |
@@ -678,6 +637,13 @@ This toolkit includes **23 pre-installed universal skills** in the `.agents/skil
 | **ponytail-help**                  | Quick-reference card for all ponytail modes, skills, commands, and deactivation.                     |
 | **ponytail-review**                | Code review focused exclusively on over-engineering: finds what to delete in a diff.                 |
 | **orient-to-recent-work**          | Build a compact mental model of recent project activity (CHANGELOG, recent commits) before any non-trivial task. Auto-loaded at session start. |
+| **acli**                           | Atlassian CLI wrapper for Jira and Confluence operations from the terminal.                                               |
+| **code-simplifier**                | Simplifies code for clarity without changing behavior. Use for readability and maintainability.                            |
+| **debugger**                       | Structured debugging methodology with systematic root cause analysis.                                                      |
+| **gh-cli**                         | GitHub CLI reference for issues, PRs, repos, and workflow management.                                                     |
+| **issue-tracker**                  | Issue tracker integration patterns for Jira, Linear, and GitHub Issues.                                                   |
+| **linear-cli**                     | Linear CLI reference for issue management and project tracking.                                                           |
+| **security-reviewer**              | Security-focused code review patterns for finding vulnerabilities.                                                        |
 
 **These skills are ready to use immediately after copying the templates.** No `npx -y skills add -a <agent> <owner/repo> --skill '*' --agent github-copilot cursor` commands needed.
 
@@ -842,7 +808,7 @@ After copying templates and installing additional skills, your project will have
     │   └── SKILL.md
     ├── verification-before-completion/
     │   └── SKILL.md
-    └── ... (23 skills total)
+    └── ... (30 skills total)
 
 .cursor/                  # or .github/ for GitHub Copilot
 ├── rules/                # IDE behavior rules (from this toolkit)
@@ -873,9 +839,9 @@ After copying templates and installing additional skills, your project will have
 ## Contributing
 
 1. Fork this repository
-2. **Create a feature branch** (never commit directly to `main`): `git checkout -b feat/your-change`
+2. Create a feature branch
 3. Make your changes
-4. Submit a pull request into `main` for review
+4. Submit a pull request
 
 ## License
 

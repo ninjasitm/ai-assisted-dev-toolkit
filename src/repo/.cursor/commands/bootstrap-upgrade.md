@@ -5,4 +5,11 @@ argument-hint: "no arguments required"
 
 # Bootstrap Upgrade
 
+## Agent Dispatch
+
+| Agent | When to use |
+|-------|-------------|
+| `fixer` | Standard upgrade — version bump and migration |
+| `planner` | Complex upgrade — breaking changes needing dependency analysis |
+
 **CRITICAL: READ:** [.claude/prompt-snippets/bootstrap-upgrade.md](../../.claude/prompt-snippets/bootstrap-upgrade.md).
