@@ -8,4 +8,4 @@ alwaysApply: agent
 
 Follow code documentation and logging standards.
 
-📋 **Full definition:** [.claude/rules-snippets/logging-comments.md](../../.claude/rules-snippets/logging-comments.md)
+**CRITICAL: READ:** [.claude/rules-snippets/logging-comments.md](../../.claude/rules-snippets/logging-comments.md)

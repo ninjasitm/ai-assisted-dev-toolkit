@@ -5,4 +5,9 @@ argument-hint: "ponytail level (lite/full/ultra/off)"
 
 # Ponytail
 
-Follow the prompt defined in [.claude/prompt-snippets/ponytail.md](../../.claude/prompt-snippets/ponytail.md).
+## Agent Dispatch
+
+> **Recommended agent:** `fixer`
+> Apply YAGNI/stdlib discipline
+
+**CRITICAL: READ:** [.claude/prompt-snippets/ponytail.md](../../.claude/prompt-snippets/ponytail.md).

@@ -7,4 +7,4 @@ argument-hint: "optional patch options"
 
 Patch AI instructions by comparing against the latest templates and applying updates.
 
-📋 **Full definition:** [.claude/prompt-snippets/bootstrap-patch.md](../../.claude/prompt-snippets/bootstrap-patch.md)
+**CRITICAL: READ:** [.claude/prompt-snippets/bootstrap-patch.md](../../.claude/prompt-snippets/bootstrap-patch.md)

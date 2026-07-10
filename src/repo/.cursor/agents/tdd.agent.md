@@ -8,4 +8,4 @@ alwaysApply: agent
 
 Coordinate the red-green-refactor cycle using specialized subagents.
 
-📋 **Full definition:** [.claude/agents-snippets/tdd.md](../../.claude/agents-snippets/tdd.md)
+**CRITICAL: READ:** [.claude/agents-snippets/tdd.md](../../.claude/agents-snippets/tdd.md)

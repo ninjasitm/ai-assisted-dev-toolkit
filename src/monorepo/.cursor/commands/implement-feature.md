@@ -7,4 +7,4 @@ argument-hint: "feature specification or task list"
 
 Implement a feature by completing tasks sequentially with proper tracking and review gates.
 
-📋 **Full definition:** [.claude/prompt-snippets/implement-feature.md](../../.claude/prompt-snippets/implement-feature.md)
+**CRITICAL: READ:** [.claude/prompt-snippets/implement-feature.md](../../.claude/prompt-snippets/implement-feature.md)

@@ -8,4 +8,4 @@ alwaysApply: agent
 
 Database schema sync, migration naming, and post-migration validation.
 
-📋 **Full definition:** [.claude/rules-snippets/prisma-migrations.md](../../.claude/rules-snippets/prisma-migrations.md)
+**CRITICAL: READ:** [.claude/rules-snippets/prisma-migrations.md](../../.claude/rules-snippets/prisma-migrations.md)

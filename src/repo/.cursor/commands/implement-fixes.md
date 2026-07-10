@@ -7,4 +7,4 @@ argument-hint: "bug description or fix requirements"
 
 Implement bug fixes and corrections with proper validation and documentation.
 
-📋 **Full definition:** [.claude/prompt-snippets/implement-fixes.md](../../.claude/prompt-snippets/implement-fixes.md)
+**CRITICAL: READ:** [.claude/prompt-snippets/implement-fixes.md](../../.claude/prompt-snippets/implement-fixes.md)

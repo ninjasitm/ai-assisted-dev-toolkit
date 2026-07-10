@@ -8,4 +8,4 @@ alwaysApply: agent
 
 Agents must follow conduct rules for clarification, assumption handling, and guardrails in the monorepo.
 
-📋 **Full definition:** [.claude/rules-snippets/agent-conduct.md](../../.claude/rules-snippets/agent-conduct.md)
+**CRITICAL: READ:** [.claude/rules-snippets/agent-conduct.md](../../.claude/rules-snippets/agent-conduct.md)

@@ -7,4 +7,4 @@ argument-hint: "optional bootstrap options"
 
 Bootstrap AI instructions by analyzing the monorepo workspace and customizing template files.
 
-📋 **Full definition:** [.claude/prompt-snippets/bootstrap.md](../../.claude/prompt-snippets/bootstrap.md)
+**CRITICAL: READ:** [.claude/prompt-snippets/bootstrap.md](../../.claude/prompt-snippets/bootstrap.md)

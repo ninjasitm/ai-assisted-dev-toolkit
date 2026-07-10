@@ -8,4 +8,4 @@ alwaysApply: agent
 
 Analyze codebases and produce clear, actionable documentation.
 
-📋 **Full definition:** [.claude/agents-snippets/documenter.md](../../.claude/agents-snippets/documenter.md)
+**CRITICAL: READ:** [.claude/agents-snippets/documenter.md](../../.claude/agents-snippets/documenter.md)
