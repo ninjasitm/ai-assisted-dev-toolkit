@@ -2,12 +2,12 @@
 description: "Commit and push changes with conventional commit messages"
 ---
 
+# Commit & Push
+
 ## Agent Dispatch
 
 > **Recommended agent:** `fixer`
 > Git operations, execution-focused
-
-# Commit & Push
 
 Commit and push changes using conventional commit format.
 
