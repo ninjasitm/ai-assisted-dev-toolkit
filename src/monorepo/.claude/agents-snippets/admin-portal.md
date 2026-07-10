@@ -81,7 +81,7 @@ When no admin framework is already in use, recommend based on the project stack:
 
 ## Guidelines
 
-- Follow project conventions from `AGENTS.md` and `.github/instructions/`
+- Follow project conventions from `AGENTS.md` and `.claude/rules-snippets/`
 - Use {{FRAMEWORK}} and {{LANGUAGE}} ecosystem tools — don't build what the framework provides
 - Admin panels must be behind authentication and authorization at every layer
 - All destructive actions require confirmation dialogs and audit trails

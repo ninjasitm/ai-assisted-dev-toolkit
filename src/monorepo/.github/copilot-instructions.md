@@ -7,6 +7,10 @@
 - **Apps:** `apps/{{APP_NAME_1}}/`, `apps/{{APP_NAME_2}}/`
 - **Packages:** `packages/{{PACKAGE_NAME_1}}/`, `packages/{{PACKAGE_NAME_2}}/`, `packages/config/`
 
+## Orientation to recent work
+
+The [orient-to-recent-work](../.agents/skills/orient-to-recent-work/SKILL.md) skill (auto-loaded) orients you to recent project activity before any non-trivial task: CHANGELOG Unreleased, recent commits, recent decisions. Skip for trivial fixes: typos, version bumps, isolated docs updates, mechanical refactors with a known target.
+
 ## Instruction Sources
 
 Detailed standards are organized into focused instruction files. Copilot will automatically load these based on the `applyTo` patterns:
@@ -29,6 +33,10 @@ Detailed standards are organized into focused instruction files. Copilot will au
 - [AGENTS.md](../AGENTS.md) - Monorepo architecture and agent conduct
 - [apps/{{APP_NAME_1}}/AGENTS.md](../apps/{{APP_NAME_1}}/AGENTS.md) - App-specific patterns
 - [apps/{{APP_NAME_2}}/AGENTS.md](../apps/{{APP_NAME_2}}/AGENTS.md) - App-specific patterns
+
+## Ponytail, lazy senior dev mode
+
+See [.claude/rules-snippets/ponytail.md](../.claude/rules-snippets/ponytail.md) for the full rule content.
 
 ## Preferred Workflow: Orchestrator + Subagents
 

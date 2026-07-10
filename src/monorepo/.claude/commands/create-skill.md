@@ -1,9 +1,15 @@
 ---
 description: Create a new agent skill following VS Code and agentskills.io specifications
+allowed-tools: "Read, Write, Edit, Bash(*)"
+argument-hint: "skill name and requirements"
 tags: [skill-creation, agent-skills, documentation, automation]
 version: 1.0.0
 ---
 
-# Agent Skill Creation Wizard
+# Create Agent Skill
+
+## Agent Dispatch
+> **Recommended agent:** `fixer`
+> Skill file creation
 
 Follow the prompt defined in [.claude/prompt-snippets/create-skill.md](../prompt-snippets/create-skill.md).

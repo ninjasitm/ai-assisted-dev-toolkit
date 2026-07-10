@@ -1,9 +1,17 @@
 ---
 description: Bootstrap AI instructions for monorepo by analyzing workspace and customizing templates
+argument-hint: "optional bootstrap options"
 ---
 
 # Bootstrap
 
+## Agent Dispatch
+
+| Agent | When to use |
+|-------|-------------|
+| `fixer` | Standard bootstrap — project analysis and template customization |
+| `planner` | Complex bootstrap — needs requirements gathering and architecture decisions first |
+
 Bootstrap AI instructions by analyzing the monorepo workspace and customizing template files.
 
-📋 **Full definition:** [.claude/prompt-snippets/bootstrap.md](../../.claude/prompt-snippets/bootstrap.md)
+**CRITICAL: READ:** [.claude/prompt-snippets/bootstrap.md](../../.claude/prompt-snippets/bootstrap.md)

@@ -9,4 +9,4 @@ user-invocable: false
 
 Write minimal code to make failing tests pass.
 
-📋 **Full definition:** [.claude/agents-snippets/green.md](../agents-snippets/green.md)
+**CRITICAL: READ:** [.claude/agents-snippets/green.md](../agents-snippets/green.md)

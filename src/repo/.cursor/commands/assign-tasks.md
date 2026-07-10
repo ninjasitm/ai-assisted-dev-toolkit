@@ -1,9 +1,13 @@
 ---
 description: Create {{ISSUE_TRACKER}} tickets from requirements or task files
+argument-hint: "requirements or task file path"
 ---
 
-# Assign Tasks
+# Create Tickets from Requirements
 
-Parse requirement documents or task breakdown files and create structured tickets in {{ISSUE_TRACKER}}.
+## Agent Dispatch
 
-📋 **Full definition:** [.claude/prompt-snippets/assign-tasks.md](../../.claude/prompt-snippets/assign-tasks.md)
+> **Recommended agent:** `fixer`
+> Task assignment and execution
+
+**CRITICAL: READ:** [.claude/prompt-snippets/assign-tasks.md](../../.claude/prompt-snippets/assign-tasks.md)

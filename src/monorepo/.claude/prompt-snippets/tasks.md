@@ -3,8 +3,8 @@ You are helping to break down a feature into actionable tasks.
 ## Your Task
 
 1. **Load context**:
-   - Read the specification in `docs/specs/{{FEATURE_NAME}}.md`
-   - Read the plan in `docs/plans/{{FEATURE_NAME}}.md` (if exists)
+   - Read the specification in `apps/{{APP_NAME}}/docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/spec.md`
+   - Read the plan in `apps/{{APP_NAME}}/docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/plan.md` (if exists)
    - Review `AGENTS.md` for project patterns
 
 2. **Break down into tasks** (aim for 3-7 total tasks):
@@ -36,7 +36,7 @@ You are helping to break down a feature into actionable tasks.
    - Mark parallelizable tasks with [P]
 
 6. **Create task list**:
-   - Output to `docs/tasks/{{FEATURE_NAME}}.md`
+   - Output to `apps/{{APP_NAME}}/docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/tasks.md`
    - Each task should be specific and actionable
    - Include file paths where relevant
 

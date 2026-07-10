@@ -74,8 +74,8 @@ Detailed explanation of why the bug occurred:
 
 | Component        | Impact Level | Description           |
 | ---------------- | ------------ | --------------------- |
-| {{component_1}}  | High/Med/Low | How it's affected     |
-| {{component_2}}  | High/Med/Low | How it's affected     |
+| {{COMPONENT_1}}  | High/Med/Low | How it's affected     |
+| {{COMPONENT_2}}  | High/Med/Low | How it's affected     |
 
 ### Data Impact
 

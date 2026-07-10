@@ -1,29 +1,35 @@
-Review the current staged files and provide a detailed code review based on the following criteria:
+# Review Staged Files
 
-1. **Changed files**
+Review the current staged files before committing.
 
-   - For each change identify the context and reason for the modification.
-   - Summarize any potential issues or improvements related to the changes.
+> **📋 Builds on [review.md](review.md)** — Uses the same review categories and report format. This prompt adds staged-files-specific context loading and a pre-commit focus.
 
-2. **Code Quality & Best Practices**
+## Usage
 
-   - Adherence to [Language/Framework] coding conventions.
-   - Use of clear and descriptive variable/function names.
-   - Modularity and separation of concerns.
-   - Absence of code smells (e.g., duplicate code, long methods).
+```
+/review-staged
+```
 
-3. **Potential Issues**
+## Process
 
-   - Identification of potential bugs or edge cases.
-   - Security vulnerabilities.
-   - Performance bottlenecks.
+1. **Load Staged Context**:
+   - Run `git diff --cached` to get all staged changes
+   - Run `git diff --cached --stat` for a summary of affected files
+   - Load `AGENTS.md` for project patterns
+   - Identify the scope of changes (feature, fix, refactor, etc.)
 
-4. **Suggested Improvements**
-   - Provide actionable suggestions for improvement with explanations.
+2. **Apply Review Checklist**:
+   - Apply all review categories from [review.md](review.md) (Architecture & Patterns, Functionality, Code Quality, Error Handling, Security, Performance, Testing, Documentation)
+   - Focus on issues that should block this specific commit
 
-**Output Format**
+3. **Pre-Commit Checks**:
+   - [ ] Documentation updated (see `.claude/rules-snippets/documentation.md`)
+   - [ ] No debug code, console logs, or TODO comments left in
+   - [ ] No secrets, credentials, or sensitive data
+   - [ ] Changes match the commit message scope
 
-- Concise summary of review findings.
-- Inline comments for specific code suggestions.
-- Categorize findings by severity (e.g., Critical, High Priority, Medium Priority).
-- Table or checklist of PR comments with resolution plans with a 99.9% confidence level that the resolutions will be effective.
+4. **Output Format**:
+
+   Use the standard report format from [review.md](review.md).
+
+   If issues are found, recommend either fixing before commit or creating a follow-up task.

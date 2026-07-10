@@ -9,4 +9,4 @@ user-invocable: false
 
 Break down feature requests into clear, actionable implementation tasks with dependencies.
 
-📋 **Full definition:** [.claude/agents-snippets/planner.md](../agents-snippets/planner.md)
+**CRITICAL: READ:** [.claude/agents-snippets/planner.md](../agents-snippets/planner.md)

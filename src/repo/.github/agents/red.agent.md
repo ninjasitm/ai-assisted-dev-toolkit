@@ -9,4 +9,4 @@ user-invocable: false
 
 Write tests that define the expected behavior for the given requirement.
 
-📋 **Full definition:** [.claude/agents-snippets/red.md](../../.claude/agents-snippets/red.md)
+**CRITICAL: READ:** [.claude/agents-snippets/red.md](../../.claude/agents-snippets/red.md)

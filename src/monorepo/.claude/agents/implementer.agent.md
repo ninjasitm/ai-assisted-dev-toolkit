@@ -9,4 +9,4 @@ user-invocable: false
 
 Write production-quality code for a specific task, following TDD and self-reviewing before completion.
 
-📋 **Full definition:** [.claude/agents-snippets/implementer.md](../agents-snippets/implementer.md)
+**CRITICAL: READ:** [.claude/agents-snippets/implementer.md](../agents-snippets/implementer.md)

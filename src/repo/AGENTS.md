@@ -9,6 +9,10 @@
 
 {{PROJECT_DESCRIPTION}}
 
+## Orientation to recent work
+
+The [orient-to-recent-work](../.agents/skills/orient-to-recent-work/SKILL.md) skill (auto-loaded) orients you to recent project activity before any non-trivial task: CHANGELOG Unreleased, recent commits, recent decisions. Skip for trivial fixes: typos, version bumps, isolated docs updates, mechanical refactors with a known target.
+
 ## Structure
 
 ```
@@ -33,32 +37,36 @@
 ### Tool Access
 
 See the `issue-tracker` skill (`.agents/skills/issue-tracker/SKILL.md`) for MCP tool prefixes, CLI fallback strategy, tracker configuration, and epic discovery workflow.
-For CLI command reference, see the matching skill: `.agents/skills/{acli,gh-cli,linear-cli}/SKILL.md`.
+For CLI command reference, see the matching skill: `.agents/skills/{acli,gh-cli,glab-cli,bkt-cli,linear-cli}/SKILL.md`.
 
 ## Agent Conduct & Interaction Rules
 
-### Clarification & Assumption Handling
+### Clarification & Alignment Guidelines
 
-**CRITICAL**: Before making assumptions or proceeding with ambiguous requirements, agents MUST proactively ask the user for clarification. This applies to:
+#### 1. Proactive Clarification
 
-- **Ambiguous requirements**: If a task description is vague, incomplete, or could be interpreted multiple ways, ask the user to clarify before proceeding.
-- **Architecture decisions**: When multiple valid approaches exist (e.g., adding a new service vs. extending an existing one), present options and ask for the user's preference.
-- **Data model changes**: Before adding/modifying database columns, relationships, or entities, confirm the intended schema with the user.
-- **Breaking changes**: If an implementation could break existing functionality, API contracts, or database compatibility, flag it and ask before proceeding.
-- **Scope uncertainty**: If unsure whether a feature should be minimal (MVP) or comprehensive, ask about the desired scope.
-- **External dependencies**: When a task requires secrets, third-party services, or infrastructure not yet configured, ask the user before assuming.
-- **Domain-specific decisions**: Sensitive UX choices or domain-specific behavior should be confirmed with the user first.
+- **Identify Ambiguity**: Stop and ask if a task lacks clear acceptance criteria, inputs, or expected outputs.
+- **Resolve Conflicts**: Flag conflicting instructions between the user prompt, existing code, and documentation before writing code.
+- **Expose Assumptions**: State your assumptions clearly and ask for validation before proceeding with high-impact changes.
 
-### How to Ask for Clarification
+#### 2. Technical Validation & Alternatives
 
-- Be specific about what is unclear and why it matters
-- Offer 2-3 concrete options when possible (with a recommended default)
-- Explain the trade-offs of each option briefly
-- If there is a clearly best practice, recommend it but still confirm
+- **Propose Better Paths**: Suggest a simpler, more performant, or more idiomatic alternative if you see a better way to solve the problem.
+- **Flag Code Smells**: Alert the team if the requested changes introduce technical debt, anti-patterns, or break existing architectural rules.
+- **Check Dependencies**: Ask for verification if a task requires adding new third-party libraries or upgrading existing versions.
 
-**Example:**
+#### 3. Scope & Edge Case Management
 
-> "This endpoint could return paginated results or the full list. Given the expected data volume, I'd recommend pagination with a default page size of 20. Should I proceed with that approach, or do you prefer returning all results?"
+- **Surface Edge Cases**: List potential failures, null states, or security risks you discover, and ask how to handle them.
+- **Prevent Scope Creep**: Ask for permission before modifying files or logic outside the explicit scope of the assigned task.
+- **Clarify Breakages**: Warn the user immediately if a requested change will intentionally break backward compatibility or existing APIs.
+
+#### 4. How to Ask Questions (Response Formatting)
+
+When stopping to ask a question, do not just post an open-ended block of text. Format your query using one of these two structures:
+
+- **Structured Multiple-Choice**: For architectural, design, or logic choices, provide a numbered list of distinct options. Include a brief pro/con or trade-off for each path so the user can quickly respond with just a number (e.g., "Go with Option 2").
+- **Targeted Text Input**: For missing data, API endpoints, or environment variables, provide a clear, pre-formatted Markdown template or fill-in-the-blank block. The user should be able to copy, fill out, and return it with minimal friction.
 
 ### Guardrails
 
@@ -89,28 +97,40 @@ Detailed standards are split into focused instruction files in `.github/instruct
 
 For detailed standards on specific topics, refer to these skills in `.agents/skills/`:
 
-| Skill               | File                                      | Purpose                                                    |
-| ------------------- | ----------------------------------------- | ---------------------------------------------------------- |
-| **TDD**             | `test-driven-development/SKILL.md`        | Test-driven development with red-green-refactor            |
-| **Debugging**       | `systematic-debugging/SKILL.md`           | Structured debugging methodology                           |
-| **Verification**    | `verification-before-completion/SKILL.md` | Quality checks before claiming work done                   |
-| **Writing Plans**   | `writing-plans/SKILL.md`                  | Feature planning and specifications                        |
-| **Executing Plans** | `executing-plans/SKILL.md`                | Following through on implementation plans                  |
-| **Code Review**     | `requesting-code-review/SKILL.md`         | Review process and checklists                              |
-| **Review Feedback** | `receiving-code-review/SKILL.md`          | Responding constructively to review feedback               |
-| **Brainstorming**   | `brainstorming/SKILL.md`                  | Structured ideation sessions                               |
-| **Writing Skills**  | `writing-skills/SKILL.md`                 | Creating effective SKILL.md files                          |
-| **Superpowers**     | `using-superpowers/SKILL.md`              | Leveraging the full skill system                           |
-| **Git Worktrees**   | `using-git-worktrees/SKILL.md`            | Parallel development branches                              |
-| **Parallel Agents** | `dispatching-parallel-agents/SKILL.md`    | Coordinating multiple AI agents                            |
-| **Subagent Dev**    | `subagent-driven-development/SKILL.md`    | Breaking tasks into subagent chunks                        |
-| **Branch Finish**   | `finishing-a-development-branch/SKILL.md` | Completing and merging branches                            |
-| **Logging**         | `logging/SKILL.md`                        | Structured logging standards, log levels, observability    |
-| **Documentation**   | `project-documentation/SKILL.md`          | README, comments, ADRs, changelogs                         |
-| **Issue Tracker**   | `issue-tracker/SKILL.md`                  | MCP tools reference, CLI fallback strategy, epic discovery |
-| **Atlassian CLI** | `acli/SKILL.md`                           | Atlassian CLI (ACLI) command reference                     |
-| **GitHub CLI**      | `gh-cli/SKILL.md`                         | GitHub Issues CLI command reference                        |
-| **Linear CLI**      | `linear-cli/SKILL.md`                     | Linear CLI command reference                               |
+| Skill                | File                                      | Purpose                                                    |
+| -------------------- | ----------------------------------------- | ---------------------------------------------------------- |
+| **Atlassian CLI**    | `acli/SKILL.md`                           | Atlassian CLI (ACLI) command reference                     |
+| **Bitbucket CLI**    | `bkt-cli/SKILL.md`                        | Bitbucket PRs, issues, repos CLI reference                 |
+| **Brainstorming**    | `brainstorming/SKILL.md`                  | Structured ideation sessions                               |
+| **Branch Finish**    | `finishing-a-development-branch/SKILL.md` | Completing and merging branches                            |
+| **Code Review**      | `requesting-code-review/SKILL.md`         | Review process and checklists                              |
+| **Code Simplifier**  | `code-simplifier/SKILL.md`                | Analyze recently modified code for simplification opportunities |
+| **Debugging**        | `systematic-debugging/SKILL.md`           | Structured debugging methodology                           |
+| **Debugger**         | `debugger/SKILL.md`                       | Systematic debugging dispatch with mandatory root cause investigation |
+| **Documentation**    | `project-documentation/SKILL.md`          | README, comments, ADRs, changelogs                         |
+| **Executing Plans**  | `executing-plans/SKILL.md`                | Following through on implementation plans                  |
+| **Git Worktrees**    | `using-git-worktrees/SKILL.md`            | Parallel development branches                              |
+| **GitHub CLI**       | `gh-cli/SKILL.md`                         | GitHub Issues CLI command reference                        |
+| **GitLab CLI**       | `glab-cli/SKILL.md`                       | GitLab MRs, issues, pipelines CLI reference                |
+| **Issue Tracker**    | `issue-tracker/SKILL.md`                  | MCP tools reference, CLI fallback strategy, epic discovery |
+| **Linear CLI**       | `linear-cli/SKILL.md`                     | Linear CLI command reference                               |
+| **Logging**          | `logging/SKILL.md`                        | Structured logging standards, log levels, observability    |
+| **Orient to Recent Work** | `orient-to-recent-work/SKILL.md`     | Build context from recent project activity                 |
+| **Parallel Agents**  | `dispatching-parallel-agents/SKILL.md`    | Coordinating multiple AI agents                            |
+| **Ponytail**         | `ponytail/SKILL.md`                       | YAGNI/stdlib/native/minimum-discipline coding mode        |
+| **Ponytail Audit**   | `ponytail-audit/SKILL.md`                 | Whole-repo audit for over-engineering                      |
+| **Ponytail Debt**    | `ponytail-debt/SKILL.md`                  | Track ponytail shortcuts and deferrals                     |
+| **Ponytail Gain**    | `ponytail-gain/SKILL.md`                  | Show ponytail's measured impact                            |
+| **Ponytail Help**    | `ponytail-help/SKILL.md`                  | Quick-reference for ponytail modes and commands            |
+| **Ponytail Review**  | `ponytail-review/SKILL.md`                | Code review focused on over-engineering                    |
+| **Review Feedback**  | `receiving-code-review/SKILL.md`          | Responding constructively to review feedback               |
+| **Security Reviewer** | `security-reviewer/SKILL.md`             | Security-focused code review                               |
+| **Subagent Dev**     | `subagent-driven-development/SKILL.md`    | Breaking tasks into subagent chunks                        |
+| **Superpowers**      | `using-superpowers/SKILL.md`              | Leveraging the full skill system                           |
+| **TDD**              | `test-driven-development/SKILL.md`        | Test-driven development with red-green-refactor            |
+| **Verification**     | `verification-before-completion/SKILL.md` | Quality checks before claiming work done                   |
+| **Writing Plans**    | `writing-plans/SKILL.md`                  | Feature planning and specifications                        |
+| **Writing Skills**   | `writing-skills/SKILL.md`                 | Creating effective SKILL.md files                          |
 
 ## ⚠️ CRITICAL: Orchestration Checkpoint (READ FIRST)
 
@@ -335,9 +355,10 @@ Documentation updates are **mandatory before committing** any feature or fix. Se
 
 **Quick summary:**
 
-- Create or update `docs/features/{{ISSUE_ID}}-FEATURE-NAME/` (spec + plan) for every feature
-- Add fixes to the monthly log in `docs/fixes/{YYYY-MM}.md` (or a dedicated folder for complex fixes)
-- Update `docs/api/`, `README.md`, and `CHANGELOG.md` when applicable
+- Create or update `docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/` (spec + plan) for every feature
+- Add fixes to the monthly log in `docs/fixes/{{YYYY-MM}}.md` (or a dedicated folder for complex fixes)
+- Update `docs/api/`, `docs/integration/`, `docs/guides/`, `README.md`, and `CHANGELOG.md` when applicable
+- Reference `docs/constitution.md` for project principles and governance
 - Include all doc changes in the same commit/PR as the code
 
 ## Contributing

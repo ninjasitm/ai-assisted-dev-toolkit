@@ -17,14 +17,14 @@
 - ✅ Different domain areas (backend + frontend + docs)
 - ✅ Test coverage needed alongside changes
 - ✅ Architecture decisions before coding
+- ✅ Direct code review feedback (no implementation)
+- ✅ Research task (no code changes)
 
 ### Signs Single Agent Is OK
 
 - ✅ Single file edit
 - ✅ Quick typo/syntax fix
-- ✅ Research-only task (no code changes)
 - ✅ Small documentation update
-- ✅ Direct code review feedback (no implementation)
 
 **When in doubt, use orchestrator-first.** It is lower-cost than sequential agent work and provides better code review isolation.
 
@@ -110,6 +110,7 @@ Example: 5 tasks → T001 (setup) → T002 [P] (backend API) + T003 [P] (fronten
 ## Quality Gates
 
 - Every implementation must pass **Reviewer** before proceeding
+- Every plan must pass **Reviewer** before final acceptance during a commit or before implementation begins
 - Coordinators should not skip review even for "simple" changes
 - If a reviewer requests changes, the original specialist fixes them and re-review occurs
 
@@ -117,10 +118,17 @@ Example: 5 tasks → T001 (setup) → T002 [P] (backend API) + T003 [P] (fronten
 
 These skills complement subagent workflows:
 
-| Skill                            | When to Use                                     |
-| -------------------------------- | ----------------------------------------------- |
-| `subagent-driven-development`    | Executing plans with fresh subagent per task    |
-| `dispatching-parallel-agents`    | Multiple independent problems to solve          |
-| `writing-plans`                  | Creating implementation plans before execution  |
-| `requesting-code-review`         | Structured review between implementation stages |
-| `finishing-a-development-branch` | Completing work after all tasks pass review     |
+| Skill                            | When to Use                                      |
+| -------------------------------- | ------------------------------------------------ |
+| `writing-plans`                  | Creating implementation plans before execution   |
+| `subagent-driven-development`    | Executing plans with fresh subagent per task     |
+| `executing-plans`                | Following through on plans in a separate session |
+| `dispatching-parallel-agents`    | Multiple independent problems to solve           |
+| `requesting-code-review`         | Structured review between implementation stages  |
+| `receiving-code-review`          | Responding constructively to review feedback     |
+| `verification-before-completion` | Quality checks before claiming work done         |
+| `finishing-a-development-branch` | Completing work after all tasks pass review      |
+| `orient-to-recent-work`          | Build context from recent project activity       |
+| `brainstorming`                  | Structured ideation when scope is fuzzy          |
+| `systematic-debugging`           | Structured root cause investigation              |
+| `using-superpowers`              | Leveraging the full skill system                 |

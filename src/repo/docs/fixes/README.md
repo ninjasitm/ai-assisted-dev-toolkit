@@ -114,4 +114,4 @@ Follow [Keep a Changelog](https://keepachangelog.com/) format for consistency.
 
 ---
 
-**Last Updated**: {{Date}}
+**Last Updated**: {{DATE}}

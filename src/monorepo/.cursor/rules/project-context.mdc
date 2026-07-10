@@ -8,4 +8,4 @@ alwaysApply: agent
 
 Review project documentation and context before generating code.
 
-📋 **Full definition:** [.claude/rules-snippets/project-context.md](../../.claude/rules-snippets/project-context.md)
+**CRITICAL: READ:** [.claude/rules-snippets/project-context.md](../../.claude/rules-snippets/project-context.md)
