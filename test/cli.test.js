@@ -155,6 +155,15 @@ test('patch: ensures files present and re-emits handoff', () => {
   assert.ok(fs.existsSync(path.join(d, '.nitm', 'BOOTSTRAP.md')), 'handoff present');
 });
 
+test('patch: never overwrites existing files', () => {
+  const d = tmp();
+  cli.cmdInstall(d, {});
+  const f = path.join(d, 'AGENTS.md');
+  fs.writeFileSync(f, 'changed-by-user');
+  cli.cmdPatch(d, { force: true });
+  assert.equal(fs.readFileSync(f, 'utf8'), 'changed-by-user');
+});
+
 test('parseFlags: parses env, monorepo, force, positional', () => {
   const f = cli.parseFlags(['install', '--env', 'cursor', '--monorepo', '--force']);
   assert.equal(f._[0], 'install');

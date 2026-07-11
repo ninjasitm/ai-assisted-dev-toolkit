@@ -34,7 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `orient-to-recent-work` skill — auto-loaded at session start, orients agents to recent activity (CHANGELOG Unreleased, recent commits) before any non-trivial task
 - npm package (`nitm-ai-dev-toolkit`) with a zero-dependency CLI: `install`, `patch`, `upgrade`, `doctor`, `omo-slim-starter install`
 - CLI scaffolds AI agent config (Cursor, GitHub Copilot, Claude Code, OpenCode) into a target repo, then hands off to an AI agent to run the bootstrap flow
-- `doctor` command inspects installs: missing files, unresolved `{{PLACEHOLDER}}` values, and agent-tool calibration drift
+- `doctor` command inspects installs: missing files and unresolved `{{PLACEHOLDER}}` values
 - GitHub Actions workflow (`.github/workflows/publish.yml`) publishing the package to npm on tagged versions (`v*`)
 - CLI test suite (`test/cli.test.js`) using the built-in `node:test` runner (zero dependencies), covering project-type detection, environment scoping, install conflict handling, `doctor` checks, placeholder scanning, and bootstrap handoff; run via `npm test` and in CI (`.github/workflows/test.yml`)
 

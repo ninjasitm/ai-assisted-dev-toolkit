@@ -102,8 +102,16 @@ function copyMissing(type, cwd, force, env) {
       skipped++;
       continue;
     }
-    fs.mkdirSync(path.dirname(to), { recursive: true });
-    fs.copyFileSync(from, to);
+    try {
+      fs.mkdirSync(path.dirname(to), { recursive: true });
+    } catch (e) {
+      if (e.code !== 'EEXIST') throw new Error(`Failed to create directory for ${rel}: ${e.message}`);
+    }
+    try {
+      fs.copyFileSync(from, to);
+    } catch (e) {
+      throw new Error(`Failed to copy ${rel}: ${e.message}`);
+    }
     copied++;
   }
   return { copied, skipped, total: files.length };
@@ -166,7 +174,7 @@ function handoff(type, cwd, env) {
   }
   console.log('    1. Run `/bootstrap` from your AI environment (it auto-detects your harness),');
   console.log('       OR hand `.nitm/BOOTSTRAP.md` to your AI agent to run the full bootstrap flow.');
-  console.log('    3. Run `npx nitm-ai-dev-toolkit doctor' + (env ? ` --env ${env}` : '') + '` to verify the install.');
+  console.log('    2. Run `npx nitm-ai-dev-toolkit doctor' + (env ? ` --env ${env}` : '') + '` to verify the install.');
 }
 
 function cmdInstall(cwd, flags) {
@@ -191,7 +199,8 @@ function cmdInstall(cwd, flags) {
 
 function cmdPatch(cwd, flags) {
   const type = detectType(cwd, flags);
-  const { copied, skipped } = copyMissing(type, cwd, flags.force, flags.env);
+  // patch never overwrites existing files, even with --force (data-loss guard)
+  const { copied, skipped } = copyMissing(type, cwd, false, flags.env);
   ok(`Ensured files present: ${copied} added, ${skipped} already there.`);
   handoff(type, cwd, flags.env);
   return { copied, skipped };
@@ -239,10 +248,10 @@ function cmdDoctor(cwd, flags) {
   return result;
 }
 
-function cmdUpgrade(cwd) {
+function cmdUpgrade(cwd, flags) {
   let latest;
   try {
-    latest = execSync('npm view nitm-ai-dev-toolkit version', { encoding: 'utf8' }).trim();
+    latest = execSync('npm view nitm-ai-dev-toolkit version', { encoding: 'utf8', timeout: 60000, stdio: 'pipe' }).trim();
   } catch (_) {
     err('Could not reach npm to check for updates (are you online?).');
     return;
@@ -259,7 +268,10 @@ function cmdUpgrade(cwd) {
   }
   info(`New version available: ${latest} (current ${cur}).`);
   info('Upgrading via latest package...');
-  const r = spawnSync('npx', ['nitm-ai-dev-toolkit@latest', 'install', '--force'], { cwd, stdio: 'inherit' });
+  const args = ['--yes', 'nitm-ai-dev-toolkit@latest', 'install', '--force'];
+  if (flags && flags.env) args.push('--env', flags.env);
+  const r = spawnSync('npx', args, { cwd, stdio: 'inherit', timeout: 120000 });
+  if (r.error) { err('Upgrade failed: ' + r.error.message); return; }
   if (r.status === 0) ok('Upgrade complete.');
   else err('Upgrade failed.');
 }
@@ -271,7 +283,8 @@ function cmdOmoStarter(cwd, flags) {
     return;
   }
   info('Delegating to the published starter: npx nitm-opencode-starter install');
-  const r = spawnSync('npx', ['nitm-opencode-starter', 'install'], { cwd, stdio: 'inherit' });
+  const r = spawnSync('npx', ['--yes', 'nitm-opencode-starter', 'install'], { cwd, stdio: 'inherit', timeout: 120000 });
+  if (r.error) { err('Could not run starter: ' + r.error.message); return; }
   if (r.status === 0) {
     ok('Starter installed via nitm-opencode-starter.');
   } else {
@@ -288,8 +301,15 @@ function parseFlags(argv) {
     else if (a === '--repo') flags.repo = true;
     else if (a === '--force' || a === '-f') flags.force = true;
     else if (a === '--help' || a === '-h') flags.help = true;
-    else if (a === '--env') flags.env = argv[++i];
-    else if (a.startsWith('--env=')) flags.env = a.slice(6);
+    else if (a === '--env') {
+      const v = argv[++i];
+      if (v === undefined || v.startsWith('--')) throw new Error('--env requires a value (e.g. --env claude)');
+      flags.env = v;
+    } else if (a.startsWith('--env=')) {
+      const v = a.slice(6);
+      if (!v) throw new Error('--env= requires a value');
+      flags.env = v;
+    }
     else flags._.push(a);
   }
   return flags;
@@ -304,7 +324,7 @@ Usage:
       tailored to your harness, then hand off to your AI agent to run the bootstrap flow.
       If files already exist, install aborts (use --force to overwrite, or \`patch\` to add missing).
 
-  npx nitm-ai-dev-toolkit patch [--monorepo|--repo] [--env <env>] [--force]
+  npx nitm-ai-dev-toolkit patch [--monorepo|--repo] [--env <env>]
       Add only missing template files (never overwrites existing ones), then
       re-emit the bootstrap handoff so your AI agent can finish configuration.
 
@@ -313,7 +333,7 @@ Usage:
 
   npx nitm-ai-dev-toolkit doctor [--monorepo|--repo] [--env <env>]
       Inspect the current install: missing files, unresolved {{PLACEHOLDER}}
-      values, and agent-tool calibration drift.
+       values.
 
   npx nitm-ai-dev-toolkit omo-slim-starter install
       Run \`npx nitm-opencode-starter install\` to scaffold the oh-my-opencode-slim
@@ -343,7 +363,7 @@ function main() {
     switch (cmd) {
       case 'install': return cmdInstall(cwd, flags);
       case 'patch': return cmdPatch(cwd, flags);
-      case 'upgrade': return cmdUpgrade(cwd);
+      case 'upgrade': return cmdUpgrade(cwd, flags);
       case 'doctor': return cmdDoctor(cwd, flags);
       case 'omo-slim-starter': return cmdOmoStarter(cwd, flags);
       default:

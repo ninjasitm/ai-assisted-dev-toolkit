@@ -159,7 +159,7 @@ npx nitm-ai-dev-toolkit install --env cursor
 # Add only missing files (never overwrites existing ones) + re-emit the bootstrap handoff
 npx nitm-ai-dev-toolkit patch
 
-# Inspect the install: missing files, unresolved placeholders, tool drift
+# Inspect the install: missing files and unresolved placeholders
 npx nitm-ai-dev-toolkit doctor
 
 # Upgrade to the latest published version
