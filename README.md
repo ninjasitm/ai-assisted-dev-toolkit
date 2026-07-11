@@ -142,7 +142,7 @@ After bootstrapping:
 
 ## CLI (npx)
 
-Scaffold AI agent config into any repo, then hand off to your AI agent to finish setup (replace `{{PLACEHOLDER}}`s, calibrate agent tools).
+Scaffold AI agent config into any repo, then hand off to your AI agent to finish setup (replace `{{PLACEHOLDER}}`s, calibrate agent tools). The CLI scaffolds config for **all** supported harnesses (Claude Code, GitHub Copilot, Cursor, OpenCode); the `/bootstrap` command auto-detects your environment at runtime, so you normally don't need `--env`.
 
 ```bash
 # Scaffold AI config into the current repo (auto-detects repo vs monorepo)
@@ -151,6 +151,9 @@ npx nitm-ai-dev-toolkit install
 # Force a template type
 npx nitm-ai-dev-toolkit install --monorepo
 npx nitm-ai-dev-toolkit install --repo
+
+# Optional: scaffold only one harness (e.g. you only use Cursor)
+npx nitm-ai-dev-toolkit install --env cursor
 
 # Ensure all template files are present and re-emit the bootstrap handoff
 npx nitm-ai-dev-toolkit patch
@@ -165,7 +168,7 @@ npx nitm-ai-dev-toolkit upgrade
 npx nitm-ai-dev-toolkit omo-slim-starter install
 ```
 
-After `install`, read `.nitm/BOOTSTRAP.md` and ask your AI agent to run the bootstrap flow. Use `doctor` to verify the result.
+After `install`, run `/bootstrap` from whatever harness you're in — it auto-detects your environment. You can also read `.nitm/BOOTSTRAP.md` and ask your AI agent to run the bootstrap flow. Use `doctor` to verify the result.
 
 ## Placeholder Reference
 

@@ -48,6 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated AGENTS.md structure diagram to include `.agents/` folder
 - Cleaned AGENTS.md template to remove project-specific content
 - Updated skill reference table in `src/repo/AGENTS.md` to list all 16 skills
+- CLI `install` scaffolds all harnesses by default; `--env` is now optional (the `/bootstrap` command auto-detects the user's environment, so no per-harness runs are needed)
 
 ### Fixed
 
