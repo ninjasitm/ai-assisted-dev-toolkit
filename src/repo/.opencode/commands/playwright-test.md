@@ -2,7 +2,7 @@
 description: "Run or create E2E tests using Playwright"
 ---
 
-## Agent Dispatch
+# Playwright E2E Tests
 
 ## Agent Dispatch
 
@@ -11,3 +11,6 @@ description: "Run or create E2E tests using Playwright"
 
 ## Arguments
 
+$ARGUMENTS
+
+@.claude/prompt-snippets/playwright-test.md

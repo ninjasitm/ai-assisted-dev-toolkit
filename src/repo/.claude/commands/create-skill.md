@@ -4,12 +4,6 @@ allowed-tools: "Read, Write, Edit, Bash(*)"
 argument-hint: "skill name and requirements"
 ---
 
-## Agent Dispatch
-
-> **Recommended agent:** `fixer`
-> Skill file creation
-
-
 # Create Agent Skill
 
 ## Agent Dispatch

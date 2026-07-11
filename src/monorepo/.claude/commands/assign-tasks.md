@@ -4,12 +4,6 @@ allowed-tools: "Read, Write, Edit, Bash(*)"
 argument-hint: "requirements or task file path"
 ---
 
-## Agent Dispatch
-
-> **Recommended agent:** `fixer`
-> Task assignment and execution
-
-
 # Create Tickets from Requirements
 
 ## Agent Dispatch

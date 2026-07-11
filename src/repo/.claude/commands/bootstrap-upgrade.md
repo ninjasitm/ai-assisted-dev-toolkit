@@ -4,13 +4,6 @@ argument-hint: "no arguments required"
 allowed-tools: "Read, Write, Edit, Bash(*)"
 ---
 
-## Agent Dispatch
-
-| Agent | When to use |
-|-------|-------------|
-| `fixer` | Standard upgrade — version bump and migration |
-| `planner` | Complex upgrade — breaking changes needing dependency analysis |
-
 # Bootstrap Upgrade
 
 ## Agent Dispatch

@@ -2,7 +2,7 @@
 description: "Bootstrap AI instructions for monorepo by analyzing workspace and customizing templates"
 ---
 
-## Agent Dispatch
+# Bootstrap Monorepo AI Instructions
 
 ## Agent Dispatch
 

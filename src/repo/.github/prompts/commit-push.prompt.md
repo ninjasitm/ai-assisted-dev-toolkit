@@ -4,12 +4,6 @@ tools: ["read", "search", "terminal"]
 argument-hint: "no arguments required"
 ---
 
-## Agent Dispatch
-
-> **Recommended agent:** `fixer`
-> Git operations, execution-focused
-
-
 # Commit and Push Changes
 
 ## Agent Dispatch

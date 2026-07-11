@@ -2,7 +2,7 @@
 description: "Implement a feature by completing tasks sequentially"
 ---
 
-## Agent Dispatch
+# Implement Feature
 
 ## Agent Dispatch
 

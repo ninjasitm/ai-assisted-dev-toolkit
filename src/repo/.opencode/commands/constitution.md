@@ -2,7 +2,7 @@
 description: "Create or update the project constitution defining core principles and guidelines"
 ---
 
-## Agent Dispatch
+# Project Constitution
 
 ## Agent Dispatch
 

@@ -4,12 +4,6 @@ tools: ["read", "search", "edit"]
 argument-hint: "path to requirements or task file"
 ---
 
-## Agent Dispatch
-
-> **Recommended agent:** `fixer`
-> Task assignment and execution
-
-
 # Create Tickets from Requirements
 
 ## Agent Dispatch

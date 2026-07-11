@@ -4,13 +4,6 @@ argument-hint: "task list or specification"
 allowed-tools: "Read, Write, Edit, Bash(*)"
 ---
 
-## Agent Dispatch
-
-| Agent | When to use |
-|-------|-------------|
-| `fixer` | Bounded implementation — clear spec, known target |
-| `oracle` | Ambiguous implementation — needs architectural judgment first |
-
 # Execute Implementation Tasks
 
 ## Agent Dispatch

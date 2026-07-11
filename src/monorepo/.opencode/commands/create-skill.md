@@ -2,7 +2,7 @@
 description: "Create a new agent skill following VS Code and agentskills.io specifications"
 ---
 
-## Agent Dispatch
+# Create Skill
 
 ## Agent Dispatch
 
@@ -11,3 +11,6 @@ description: "Create a new agent skill following VS Code and agentskills.io spec
 
 ## Arguments
 
+$ARGUMENTS
+
+@.claude/prompt-snippets/create-skill.md

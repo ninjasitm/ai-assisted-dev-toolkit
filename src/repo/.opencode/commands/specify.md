@@ -2,7 +2,7 @@
 description: "Create a feature specification from a natural language description"
 ---
 
-## Agent Dispatch
+# Create Feature Specification
 
 ## Agent Dispatch
 

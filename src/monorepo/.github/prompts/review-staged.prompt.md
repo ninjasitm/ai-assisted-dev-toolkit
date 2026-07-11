@@ -4,13 +4,6 @@ tools: ["read", "search"]
 argument-hint: "no arguments required"
 ---
 
-## Agent Dispatch
-
-| Agent | When to use |
-|-------|-------------|
-| `reviewer` | Standard staged review — correctness, style, patterns |
-| `oracle` | Complex staged review — architecture, security, cross-system impact |
-
 # Review Staged Files
 
 ## Agent Dispatch

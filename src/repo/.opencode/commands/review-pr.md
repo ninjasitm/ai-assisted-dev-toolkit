@@ -2,7 +2,7 @@
 description: "Review pull request for code quality and best practices"
 ---
 
-## Agent Dispatch
+# PR Review
 
 ## Agent Dispatch
 

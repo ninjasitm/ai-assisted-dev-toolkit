@@ -3,13 +3,6 @@ description: Create an implementation plan for a feature
 argument-hint: "feature specification or requirement"
 ---
 
-## Agent Dispatch
-
-| Agent | When to use |
-|-------|-------------|
-| `planner` | Standard implementation plan — breaking work into tasks |
-| `oracle` | Architectural planning — trade-offs, system design, risk analysis |
-
 # Plan Feature Implementation
 
 ## Agent Dispatch

@@ -2,7 +2,7 @@
 description: "Conduct code review for files or features"
 ---
 
-## Agent Dispatch
+# Code Review
 
 ## Agent Dispatch
 

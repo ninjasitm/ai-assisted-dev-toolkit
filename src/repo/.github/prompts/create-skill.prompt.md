@@ -6,12 +6,6 @@ version: 1.0.0
 argument-hint: "skill purpose or description"
 ---
 
-## Agent Dispatch
-
-> **Recommended agent:** `fixer`
-> Skill file creation
-
-
 # Agent Skill Creation Wizard
 
 ## Agent Dispatch

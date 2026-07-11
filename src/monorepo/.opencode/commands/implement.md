@@ -2,7 +2,7 @@
 description: "Execute implementation tasks from a task list or specification"
 ---
 
-## Agent Dispatch
+# Execute Implementation Tasks
 
 ## Agent Dispatch
 

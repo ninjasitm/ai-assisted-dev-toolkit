@@ -4,12 +4,6 @@ allowed-tools: "Read, Write, Edit, Bash(*)"
 argument-hint: version or tag
 ---
 
-## Agent Dispatch
-
-> **Recommended agent:** `fixer`
-> Release notes generation
-
-
 # Generate Release Notes
 
 ## Agent Dispatch

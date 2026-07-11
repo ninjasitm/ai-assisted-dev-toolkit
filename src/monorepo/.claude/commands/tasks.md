@@ -4,12 +4,6 @@ allowed-tools: "Read, Write, Edit, Bash(*)"
 argument-hint: specification or plan file
 ---
 
-## Agent Dispatch
-
-> **Recommended agent:** `planner`
-> Task breakdown and management
-
-
 # Generate Task List
 
 ## Agent Dispatch

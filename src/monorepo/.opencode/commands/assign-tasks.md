@@ -2,7 +2,7 @@
 description: "Create {{ISSUE_TRACKER}} tickets from requirements or task files"
 ---
 
-## Agent Dispatch
+# Assign Tasks
 
 ## Agent Dispatch
 
@@ -11,3 +11,6 @@ description: "Create {{ISSUE_TRACKER}} tickets from requirements or task files"
 
 ## Arguments
 
+$ARGUMENTS
+
+@.claude/prompt-snippets/assign-tasks.md

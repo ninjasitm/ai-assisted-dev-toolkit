@@ -2,7 +2,7 @@
 description: "Bootstrap AI instructions by inferring project details and customizing templates"
 ---
 
-## Agent Dispatch
+# Bootstrap AI Instructions
 
 ## Agent Dispatch
 

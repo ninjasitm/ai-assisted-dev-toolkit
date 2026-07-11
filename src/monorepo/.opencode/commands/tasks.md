@@ -2,7 +2,7 @@
 description: "Generate an actionable task list from a specification or plan"
 ---
 
-## Agent Dispatch
+# Generate Task List
 
 ## Agent Dispatch
 
@@ -11,3 +11,6 @@ description: "Generate an actionable task list from a specification or plan"
 
 ## Arguments
 
+$ARGUMENTS
+
+@.claude/prompt-snippets/tasks.md

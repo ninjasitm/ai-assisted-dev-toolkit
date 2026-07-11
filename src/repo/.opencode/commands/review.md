@@ -2,7 +2,7 @@
 description: "Review code for quality, consistency, and adherence to project patterns"
 ---
 
-## Agent Dispatch
+# Code Review
 
 ## Agent Dispatch
 

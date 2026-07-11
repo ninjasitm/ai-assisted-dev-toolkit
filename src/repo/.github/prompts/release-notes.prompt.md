@@ -4,12 +4,6 @@ tools: ["read", "search", "edit"]
 argument-hint: "format: web, tag, or docs"
 ---
 
-## Agent Dispatch
-
-> **Recommended agent:** `fixer`
-> Release notes generation
-
-
 # Generate Release Notes
 
 ## Agent Dispatch

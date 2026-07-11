@@ -4,12 +4,6 @@ tools: ["read", "search"]
 argument-hint: "issue key or plan file path"
 ---
 
-## Agent Dispatch
-
-> **Recommended agent:** `planner`
-> Task breakdown and management
-
-
 # Generate Task Breakdown
 
 ## Agent Dispatch
