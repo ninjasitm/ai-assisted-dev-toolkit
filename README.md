@@ -142,10 +142,11 @@ After bootstrapping:
 
 ## CLI (npx)
 
-Scaffold AI agent config into any repo, then hand off to your AI agent to finish setup (replace `{{PLACEHOLDER}}`s, calibrate agent tools). The CLI scaffolds config for **all** supported harnesses (Claude Code, GitHub Copilot, Cursor, OpenCode); the `/bootstrap` command auto-detects your environment at runtime, so you normally don't need `--env`.
+Scaffold AI agent config into any repo, then hand off to your AI agent to finish setup (replace `{{PLACEHOLDER}}`s, calibrate agent tools). The CLI scaffolds config for **all** supported harnesses (Claude Code, GitHub Copilot, Cursor, OpenCode); the `/bootstrap` command auto-detects your environment at runtime, so you normally don't need `--env`. `install` aborts if files already exist — use `--force` to overwrite, or `patch` to add only missing files.
 
 ```bash
 # Scaffold AI config into the current repo (auto-detects repo vs monorepo)
+# Aborts if files already exist — use --force to overwrite, or `patch` to add missing
 npx nitm-ai-dev-toolkit install
 
 # Force a template type
@@ -155,7 +156,7 @@ npx nitm-ai-dev-toolkit install --repo
 # Optional: scaffold only one harness (e.g. you only use Cursor)
 npx nitm-ai-dev-toolkit install --env cursor
 
-# Ensure all template files are present and re-emit the bootstrap handoff
+# Add only missing files (never overwrites existing ones) + re-emit the bootstrap handoff
 npx nitm-ai-dev-toolkit patch
 
 # Inspect the install: missing files, unresolved placeholders, tool drift
@@ -164,7 +165,7 @@ npx nitm-ai-dev-toolkit doctor
 # Upgrade to the latest published version
 npx nitm-ai-dev-toolkit upgrade
 
-# Clone the nitm-opencode-starter and wire the commands into it
+# Scaffold the oh-my-opencode-slim starter (delegates to `npx nitm-opencode-starter install`)
 npx nitm-ai-dev-toolkit omo-slim-starter install
 ```
 

@@ -1,5 +1,7 @@
 You are helping to bootstrap AI instructions for this monorepo by analyzing the workspace structure and customizing template files.
 
+> **Merge, don't clobber.** If a target file already exists and carries project-specific content — customized agents, rules, skills, or `{{PLACEHOLDER}}` values already replaced — preserve it. Add missing structure; never overwrite a customized file with template defaults. When a template change conflicts with an existing customization, merge the addition and flag it for the user rather than replacing the file. For incremental updates after the first bootstrap, prefer `/bootstrap-patch`, which is purpose-built for meticulous merging.
+
 ## Your Task
 
 1. **Analyze the Monorepo**:

@@ -69,15 +69,27 @@ test('scopeFiles: unknown env returns every file', () => {
   assert.equal(cli.scopeFiles(files, 'bogus').length, files.length);
 });
 
-test('install: scaffolds repo template and is idempotent', () => {
+test('install: scaffolds repo template', () => {
   const d = tmp();
   const r1 = cli.cmdInstall(d, {});
   assert.ok(r1.copied > 0, 'should copy files');
   assert.ok(fs.existsSync(path.join(d, 'AGENTS.md')), 'AGENTS.md present');
   assert.ok(fs.existsSync(path.join(d, '.claude')), '.claude present');
   assert.ok(fs.existsSync(path.join(d, '.nitm', 'BOOTSTRAP.md')), 'handoff written');
-  const r2 = cli.cmdInstall(d, {});
-  assert.equal(r2.copied, 0, 'second run copies nothing');
+});
+
+test('install: aborts when files already exist without --force', () => {
+  const d = tmp();
+  cli.cmdInstall(d, {});
+  assert.throws(() => cli.cmdInstall(d, {}), /conflicting files/);
+});
+
+test('conflicts: reports existing scaffold files', () => {
+  const d = tmp();
+  cli.cmdInstall(d, {});
+  const cf = cli.conflicts('repo', d, undefined);
+  assert.ok(cf.length > 0, 'detects installed files');
+  assert.ok(cf.includes('AGENTS.md'), 'includes AGENTS.md');
 });
 
 test('install: --env cursor scaffolds only cursor + shared', () => {
@@ -141,20 +153,6 @@ test('patch: ensures files present and re-emits handoff', () => {
   const r = cli.cmdPatch(d, {});
   assert.ok(r.copied > 0, 'copied files');
   assert.ok(fs.existsSync(path.join(d, '.nitm', 'BOOTSTRAP.md')), 'handoff present');
-});
-
-test('mergeStarterScripts: adds ai:* scripts', () => {
-  const pkg = cli.mergeStarterScripts({ name: 'x' });
-  assert.equal(pkg.scripts['ai:install'], 'nitm-ai-dev-toolkit install');
-  assert.equal(pkg.scripts['ai:patch'], 'nitm-ai-dev-toolkit patch');
-  assert.equal(pkg.scripts['ai:upgrade'], 'nitm-ai-dev-toolkit upgrade');
-  assert.equal(pkg.scripts['ai:doctor'], 'nitm-ai-dev-toolkit doctor');
-});
-
-test('mergeStarterScripts: preserves existing scripts', () => {
-  const pkg = cli.mergeStarterScripts({ name: 'x', scripts: { build: 'tsc' } });
-  assert.equal(pkg.scripts.build, 'tsc');
-  assert.equal(pkg.scripts['ai:install'], 'nitm-ai-dev-toolkit install');
 });
 
 test('parseFlags: parses env, monorepo, force, positional', () => {

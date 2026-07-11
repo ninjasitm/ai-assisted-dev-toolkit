@@ -109,12 +109,22 @@ function copyMissing(type, cwd, force, env) {
   return { copied, skipped, total: files.length };
 }
 
+// Files the scaffold would write that already exist in the target repo.
+function conflicts(type, cwd, env) {
+  const files = scopeFiles(templateFiles(type), env);
+  const out = [];
+  for (const rel of files) {
+    if (fs.existsSync(path.join(cwd, rel))) out.push(rel);
+  }
+  return out;
+}
+
 function envHeader(type, env) {
   if (!env || !ENV_INFO[env]) {
     return [
       '# Bootstrap handoff',
       '',
-      'Your AI agent should run the bootstrap flow to finish setup:',
+      'Your AI agent should run the full bootstrap flow (the complete procedure is below). Key steps:',
       '1. Replace all `{{PLACEHOLDER}}` values in the AI instruction files.',
       '2. Calibrate each agent\'s tools for your environment (see the Agent Tool & Permission Calibration section).',
       '3. Verify with `npx nitm-ai-dev-toolkit doctor`.',
@@ -131,10 +141,10 @@ function envHeader(type, env) {
     '',
     `Run the bootstrap via: ${info.command}`,
     '',
-    'Then ask your AI agent to:',
-    '1. Replace all `{{PLACEHOLDER}}` values in the AI instruction files.',
-    `2. Calibrate each agent's tools for ${info.name} (see the Agent Tool & Permission Calibration section).`,
-    `3. Verify with \`npx nitm-ai-dev-toolkit doctor --env ${env}\`.`,
+      'Then ask your AI agent to run the full bootstrap flow (procedure below). Key steps:',
+      '1. Replace all `{{PLACEHOLDER}}` values in the AI instruction files.',
+      `2. Calibrate each agent's tools for ${info.name} (see the Agent Tool & Permission Calibration section).`,
+      `3. Verify with \`npx nitm-ai-dev-toolkit doctor --env ${env}\`.`,
     '',
     'The full bootstrap procedure follows.',
   ].join('\n');
@@ -154,9 +164,8 @@ function handoff(type, cwd, env) {
   } else {
     info('Scaffold complete. Hand off to your AI agent to finish setup:');
   }
-  console.log('    1. Read .nitm/BOOTSTRAP.md (also at .claude/prompt-snippets/bootstrap.md)');
-  console.log('    2. Ask your AI agent to run the bootstrap flow: replace {{PLACEHOLDER}}s');
-  console.log('       and calibrate each agent\'s tools for this project.');
+  console.log('    1. Run `/bootstrap` from your AI environment (it auto-detects your harness),');
+  console.log('       OR hand `.nitm/BOOTSTRAP.md` to your AI agent to run the full bootstrap flow.');
   console.log('    3. Run `npx nitm-ai-dev-toolkit doctor' + (env ? ` --env ${env}` : '') + '` to verify the install.');
 }
 
@@ -164,10 +173,20 @@ function cmdInstall(cwd, flags) {
   const type = detectType(cwd, flags);
   if (flags.env && !ENV_DIRS[flags.env]) warn(`Unknown --env "${flags.env}"; scaffolding all environments.`);
   info(`Detected project type: ${type}` + (flags.env ? `, environment: ${flags.env}` : ''));
+  const cf = conflicts(type, cwd, flags.env);
+  if (cf.length && !flags.force) {
+    err(`Install aborted: ${cf.length} file(s) already exist in this project.`);
+    cf.slice(0, 20).forEach((f) => console.log('     - ' + f));
+    if (cf.length > 20) console.log(`     ...and ${cf.length - 20} more.`);
+    console.log('');
+    info('To overwrite them, re-run with --force.');
+    info('To keep your changes and only add missing files, run: npx nitm-ai-dev-toolkit patch');
+    throw new Error('install: conflicting files exist (use --force to overwrite)');
+  }
   const { copied, skipped } = copyMissing(type, cwd, flags.force, flags.env);
   ok(`Copied ${copied} file(s), skipped ${skipped} existing.`);
   handoff(type, cwd, flags.env);
-  return { copied, skipped };
+  return { copied, skipped, conflicts: cf.length };
 }
 
 function cmdPatch(cwd, flags) {
@@ -240,20 +259,9 @@ function cmdUpgrade(cwd) {
   }
   info(`New version available: ${latest} (current ${cur}).`);
   info('Upgrading via latest package...');
-  const r = spawnSync('npx', ['nitm-ai-dev-toolkit@latest', 'install'], { cwd, stdio: 'inherit' });
+  const r = spawnSync('npx', ['nitm-ai-dev-toolkit@latest', 'install', '--force'], { cwd, stdio: 'inherit' });
   if (r.status === 0) ok('Upgrade complete.');
   else err('Upgrade failed.');
-}
-
-function mergeStarterScripts(pkg) {
-  pkg.scripts = pkg.scripts || {};
-  Object.assign(pkg.scripts, {
-    'ai:install': 'nitm-ai-dev-toolkit install',
-    'ai:patch': 'nitm-ai-dev-toolkit patch',
-    'ai:upgrade': 'nitm-ai-dev-toolkit upgrade',
-    'ai:doctor': 'nitm-ai-dev-toolkit doctor',
-  });
-  return pkg;
 }
 
 function cmdOmoStarter(cwd, flags) {
@@ -262,23 +270,14 @@ function cmdOmoStarter(cwd, flags) {
     err('Usage: nitm-ai-dev-toolkit omo-slim-starter install');
     return;
   }
-  const url = 'https://github.com/ninjasitm/nitm-opencode-starter.git';
-  const target = path.join(cwd, 'nitm-opencode-starter');
-  info(`Cloning starter from ${url} ...`);
-  const r = spawnSync('git', ['clone', url, target], { stdio: 'inherit' });
-  if (r.status !== 0) {
-    err('Clone failed.');
-    return;
+  info('Delegating to the published starter: npx nitm-opencode-starter install');
+  const r = spawnSync('npx', ['nitm-opencode-starter', 'install'], { cwd, stdio: 'inherit' });
+  if (r.status === 0) {
+    ok('Starter installed via nitm-opencode-starter.');
+  } else {
+    err('Could not run `npx nitm-opencode-starter install` (is it published / are you online?).');
+    info('Install it manually: npx nitm-opencode-starter install');
   }
-  const pkgPath = path.join(target, 'package.json');
-  let pkg = {};
-  if (fs.existsSync(pkgPath)) {
-    try { pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8')); } catch (_) { /* ignore */ }
-  }
-  pkg = mergeStarterScripts(pkg);
-  fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
-  ok('Wired install/patch/upgrade/doctor into starter package.json (npm run ai:install, ...).');
-  info('Next: cd nitm-opencode-starter && npm run ai:install');
 }
 
 function parseFlags(argv) {
@@ -303,9 +302,11 @@ Usage:
   npx nitm-ai-dev-toolkit install [--monorepo|--repo] [--env <claude|copilot|cursor|opencode>] [--force]
       Scaffold AI config into the current repo (auto-detects repo vs monorepo),
       tailored to your harness, then hand off to your AI agent to run the bootstrap flow.
+      If files already exist, install aborts (use --force to overwrite, or \`patch\` to add missing).
 
   npx nitm-ai-dev-toolkit patch [--monorepo|--repo] [--env <env>] [--force]
-      Ensure all template files are present and re-emit the bootstrap handoff.
+      Add only missing template files (never overwrites existing ones), then
+      re-emit the bootstrap handoff so your AI agent can finish configuration.
 
   npx nitm-ai-dev-toolkit upgrade
       Upgrade to the latest published version (re-scaffolds via @latest).
@@ -315,8 +316,8 @@ Usage:
       values, and agent-tool calibration drift.
 
   npx nitm-ai-dev-toolkit omo-slim-starter install
-      Clone the nitm-opencode-starter and wire install/patch/upgrade/doctor
-      commands into it.
+      Run \`npx nitm-opencode-starter install\` to scaffold the oh-my-opencode-slim
+      starter (published to npm). Falls back to printing the command if unavailable.
 
 Options:
   --env <env>  Optional. Limit the scaffold to ONE harness:
@@ -338,15 +339,20 @@ function main() {
   }
   const cmd = flags._[0];
   const cwd = process.cwd();
-  switch (cmd) {
-    case 'install': return cmdInstall(cwd, flags);
-    case 'patch': return cmdPatch(cwd, flags);
-    case 'upgrade': return cmdUpgrade(cwd);
-    case 'doctor': return cmdDoctor(cwd, flags);
-    case 'omo-slim-starter': return cmdOmoStarter(cwd, flags);
-    default:
-      if (cmd) err(`Unknown command: ${cmd}`);
-      usage();
+  try {
+    switch (cmd) {
+      case 'install': return cmdInstall(cwd, flags);
+      case 'patch': return cmdPatch(cwd, flags);
+      case 'upgrade': return cmdUpgrade(cwd);
+      case 'doctor': return cmdDoctor(cwd, flags);
+      case 'omo-slim-starter': return cmdOmoStarter(cwd, flags);
+      default:
+        if (cmd) err(`Unknown command: ${cmd}`);
+        usage();
+    }
+  } catch (e) {
+    err(e.message);
+    process.exit(1);
   }
 }
 
@@ -359,7 +365,7 @@ module.exports = {
   copyMissing,
   scanPlaceholders,
   envHeader,
-  mergeStarterScripts,
+  conflicts,
   parseFlags,
   cmdInstall,
   cmdPatch,

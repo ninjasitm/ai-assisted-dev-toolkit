@@ -10,6 +10,8 @@ Analyze the project structure and customize AI instruction templates for this co
 
 ## Process
 
+> **Merge, don't clobber.** If a target file already exists and carries project-specific content — customized agents, rules, skills, or `{{PLACEHOLDER}}` values already replaced — preserve it. Add missing structure; never overwrite a customized file with template defaults. When a template change conflicts with an existing customization, merge the addition and flag it for the user rather than replacing the file. For incremental updates after the first bootstrap, prefer `/bootstrap-patch`, which is purpose-built for meticulous merging.
+
 ### Step 1: Project Analysis
 
 Detect the language ecosystem by checking for these files:
