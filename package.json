@@ -1,0 +1,38 @@
+{
+  "name": "nitm-ai-dev-toolkit",
+  "version": "0.1.0",
+  "description": "Scaffold AI agent config (Cursor, GitHub Copilot, Claude Code, OpenCode) into any repo, then hand off to your AI agent to finish setup.",
+  "bin": {
+    "nitm-ai-dev-toolkit": "bin/cli.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "ai",
+    "agents",
+    "claude",
+    "cursor",
+    "copilot",
+    "opencode",
+    "bootstrap",
+    "subagents"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ninjasitm/ai-assisted-dev-toolkit.git"
+  },
+  "homepage": "https://github.com/ninjasitm/ai-assisted-dev-toolkit#readme",
+  "bugs": {
+    "url": "https://github.com/ninjasitm/ai-assisted-dev-toolkit/issues"
+  },
+  "author": "ninjasitm",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  }
+}

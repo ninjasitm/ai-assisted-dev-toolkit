@@ -140,6 +140,33 @@ After bootstrapping:
 - Check each `apps/*/AGENTS.md` for app-specific patterns
 - Add any custom conventions or patterns unique to your project
 
+## CLI (npx)
+
+Scaffold AI agent config into any repo, then hand off to your AI agent to finish setup (replace `{{PLACEHOLDER}}`s, calibrate agent tools).
+
+```bash
+# Scaffold AI config into the current repo (auto-detects repo vs monorepo)
+npx nitm-ai-dev-toolkit install
+
+# Force a template type
+npx nitm-ai-dev-toolkit install --monorepo
+npx nitm-ai-dev-toolkit install --repo
+
+# Ensure all template files are present and re-emit the bootstrap handoff
+npx nitm-ai-dev-toolkit patch
+
+# Inspect the install: missing files, unresolved placeholders, tool drift
+npx nitm-ai-dev-toolkit doctor
+
+# Upgrade to the latest published version
+npx nitm-ai-dev-toolkit upgrade
+
+# Clone the nitm-opencode-starter and wire the commands into it
+npx nitm-ai-dev-toolkit omo-slim-starter install
+```
+
+After `install`, read `.nitm/BOOTSTRAP.md` and ask your AI agent to run the bootstrap flow. Use `doctor` to verify the result.
+
 ## Placeholder Reference
 
 Templates use `{{PLACEHOLDER}}` syntax for values you need to customize. The bootstrap command will automatically detect and fill most of these values.
