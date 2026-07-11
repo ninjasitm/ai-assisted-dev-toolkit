@@ -145,7 +145,7 @@ Use the appropriate sub-agents when the task benefits from specialized expertise
 
 1. **Choose the right agent** — Match the agent's role to the task
 2. **Provide context** — Reference the relevant rules-snippets or prompt-snippets
-3. **Set constraints** — Use tool restrictions for read-only agents (reviewer, planner)
+3. **Set constraints** — Use tool restrictions for read-only agents (researcher, reviewer)
 4. **Chain when needed** — Planner → Developer → Reviewer for complex changes
 
 ## Clarification & Alignment Guidelines

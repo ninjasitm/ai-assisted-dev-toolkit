@@ -1,5 +1,7 @@
 You are helping to bootstrap AI instructions for this monorepo by analyzing the workspace structure and customizing template files.
 
+> **Merge, don't clobber.** If a target file already exists and carries project-specific content — customized agents, rules, skills, or `{{PLACEHOLDER}}` values already replaced — preserve it. Add missing structure; never overwrite a customized file with template defaults. When a template change conflicts with an existing customization, merge the addition and flag it for the user rather than replacing the file. For incremental updates after the first bootstrap, prefer `/bootstrap-patch`, which is purpose-built for meticulous merging.
+
 ## Your Task
 
 1. **Analyze the Monorepo**:
@@ -234,6 +236,43 @@ Scan agent definition files in `.github/agents/`, `.cursor/agents/`, and `.claud
 - **FastAPI**: FastAPI Admin, Flower, SQLAdmin
 
 For multi-app monorepos with different frameworks, list all with app context (e.g., `"Horizon, Telescope (api); Bull Board (web); Grafana (cross-stack)"`).
+
+#### Agent Tool & Permission Calibration
+
+The `tools:` block (Claude Code, GitHub Copilot) and `permission:` block (OpenCode) must match each agent's role **and** the detected project. Templates ship with defaults, but calibrate them during bootstrap so every agent can do its job without being over-provisioned.
+
+**1. Capability baseline per role** — what the agent functionally needs:
+
+| Agent | read | search | write | edit | terminal/bash | spawn subagents |
+|-------|------|--------|-------|------|---------------|-----------------|
+| Feature Builder, TDD (coordinators) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Backend Architect, Frontend Developer, API Specialist, Admin Portal, Implementer, Red, Green, Refactor | ✓ | ✓ | ✓ | ✓ | ✓ | – |
+| Documenter | ✓ | ✓ | ✓ | ✓ | ✓ (doc generators) | – |
+| Planner | ✓ | ✓ | ✓ (persist plan) | – | ✓ (git log, test discovery) | – |
+| Reviewer | ✓ | ✓ | – | – | ✓ (git diff, tests) | – |
+| Researcher | ✓ | ✓ | – | – | – | – |
+
+**2. Translate the baseline to each platform's syntax:**
+
+| Capability | Claude Code | GitHub Copilot | OpenCode (`permission:`) | Cursor |
+|-----------|-------------|----------------|--------------------------|--------|
+| read | `Read` | `read` | default | default |
+| search | `Grep` | `search` | default | default |
+| write / edit files | `Write`, `Edit` | `edit` | `edit: allow` | default |
+| terminal | `Bash(*)` | `runInTerminal`, `terminalLastCommand` | `bash: allow` | default |
+| spawn subagents | `agent` | n/a | `task: allow` | default |
+
+> **Cursor note:** these templates declare no `tools:` field, so Cursor subagents inherit the full default toolset. Read-only intent (Researcher, Reviewer) is enforced by the agent's instructions, not tool gating. If your Cursor version supports per-agent tool restriction, add a `tools:` field to match the baseline.
+
+**3. Project-driven adjustments** (widen or narrow from the baseline):
+
+- **Planner** — If plans are persisted to files (e.g. `docs/plans/`, `docs/features/`), it MUST have write + terminal. The Copilot default is read-only (`["read","search"]`) and the OpenCode default denies `edit`/`bash` — **widen both** to the baseline. The Claude default already has `Write` but lacks `Bash(*)` — add it so the planner can run `git log` / discover tests.
+- **Documenter** — Always needs edit (updates existing docs); needs terminal when the project uses doc generators (mkdocs, typedoc, sphinx, docusaurus). The OpenCode default denies `edit`/`bash` and the Claude default omits `Edit`/`Bash(*)` — **widen both** to the baseline. The Copilot default is already correct.
+- **Researcher** — Must stay read-only on every platform. The Claude Code default currently grants `Write` — **remove it** (`["Read","Grep"]`).
+- **Reviewer** — Read + terminal only; never grant write/edit. The OpenCode default denies `bash` — **allow `bash`** (keep `edit: deny`) so it can run `git diff` / tests. The Claude default grants `Write` — **remove it** (keep `Bash(*)`).
+- **Worker agents** (Planner, Implementer, Red, Green, Refactor) — in a monorepo keep `user-invocable: false`; they are coordinator-dispatched only.
+
+**4. Apply:** for each agent file (`.claude/agents/*.agent.md`, `.github/agents/*.agent.md`, `.opencode/agents/*.md`), compare the declared tools/permissions to the calibrated baseline and adjust. List the changes, then confirm before applying.
 
 Present the replacements and confirm before applying.
 

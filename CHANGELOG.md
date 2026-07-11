@@ -32,6 +32,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - 6 ponytail commands (`ponytail`, `ponytail-audit`, `ponytail-debt`, `ponytail-gain`, `ponytail-help`, `ponytail-review`) with thin-wrapper sources in `.claude/prompt-snippets/`
 - `check-parity.sh` extended with a Ponytail Parity block
 - `orient-to-recent-work` skill — auto-loaded at session start, orients agents to recent activity (CHANGELOG Unreleased, recent commits) before any non-trivial task
+- npm package (`nitm-ai-dev-toolkit`) with a zero-dependency CLI: `install`, `patch`, `upgrade`, `doctor`, `omo-slim-starter install`
+- CLI scaffolds AI agent config (Cursor, GitHub Copilot, Claude Code, OpenCode) into a target repo, then hands off to an AI agent to run the bootstrap flow
+- `doctor` command inspects installs: missing files and unresolved `{{PLACEHOLDER}}` values
+- GitHub Actions workflow (`.github/workflows/publish.yml`) publishing the package to npm on tagged versions (`v*`)
+- CLI test suite (`test/cli.test.js`) using the built-in `node:test` runner (zero dependencies), covering project-type detection, environment scoping, install conflict handling, `doctor` checks, placeholder scanning, and bootstrap handoff; run via `npm test` and in CI (`.github/workflows/test.yml`)
+
+### Changed
+
+- `install` now aborts if target files already exist (instead of silently skipping) and tells the user to pass `--force` to overwrite or run `patch` to add only missing files
+- `patch` is documented as add-missing-only (never overwrites existing customizations) and re-emits the bootstrap handoff
+- `omo-slim-starter install` now delegates to the published `npx nitm-opencode-starter install` (guides the user if unavailable) instead of cloning the repo and wiring scripts
+- Bootstrap prompts (`bootstrap.md`) now state a "merge, don't clobber" principle so existing customized configs are preserved
 
 ### Changed
 
@@ -44,6 +56,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated AGENTS.md structure diagram to include `.agents/` folder
 - Cleaned AGENTS.md template to remove project-specific content
 - Updated skill reference table in `src/repo/AGENTS.md` to list all 16 skills
+- CLI `install` scaffolds all harnesses by default; `--env` is now optional (the `/bootstrap` command auto-detects the user's environment, so no per-harness runs are needed)
+- `publish.yml` now runs the test suite before publishing (the `publish` job `needs: test`)
 
 ### Fixed
 
@@ -64,6 +78,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Template READMEs and docs — replaced project-specific `LEB-123`/`LEB-456` with generic `ISSUE-123`/`ISSUE-456`
 - Renamed `composition-api-component-structure` rule to `component-structure` across repo and monorepo templates
 - Comprehensive template review fixes: corrected `CLAUDE.md` `@import` paths (`prompt-snippets` → `rules-snippets`); fixed broken `../.agents/` skill links in `src/repo/AGENTS.md` and `src/monorepo/AGENTS.md`; updated README bundled-skills count to 32 and added `bkt-cli`/`glab-cli` rows; synced truncated monorepo rules-snippets (`agent-conduct`, `subagent-workflow`, `coding-standards`, `core-libraries`) to repo; converted inlined Cursor commands (`review-pr`, `review`, `commit-push`) to thin wrappers; aligned monorepo agent `tools:` names to Claude Code standard; fixed root `.opencode/commands` snippet imports; added missing `testing.md` rule and `component-structure.md` snippet; removed remaining `composition-api-component-structure` stale files
+- Agent tool permissions corrected across repo and monorepo templates: Planner gained write + terminal (Copilot `edit`/`runInTerminal`/`terminalLastCommand`, OpenCode `edit: allow, bash: allow`, Claude `Bash(*)`); Documenter gained `Edit` + `Bash(*)` and OpenCode `edit: allow, bash: allow`; Researcher (Claude) lost `Write` (read-only); Reviewer (Claude) lost `Write` and OpenCode gained `bash: allow` (read + terminal). Added Agent Tool & Permission Calibration step to both `bootstrap.md` files
 
 ## [0.1.0] - 2026-01-26
 

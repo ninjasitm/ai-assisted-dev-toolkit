@@ -140,6 +140,37 @@ After bootstrapping:
 - Check each `apps/*/AGENTS.md` for app-specific patterns
 - Add any custom conventions or patterns unique to your project
 
+## CLI (npx)
+
+Scaffold AI agent config into any repo, then hand off to your AI agent to finish setup (replace `{{PLACEHOLDER}}`s, calibrate agent tools). The CLI scaffolds config for **all** supported harnesses (Claude Code, GitHub Copilot, Cursor, OpenCode); the `/bootstrap` command auto-detects your environment at runtime, so you normally don't need `--env`. `install` aborts if files already exist — use `--force` to overwrite, or `patch` to add only missing files.
+
+```bash
+# Scaffold AI config into the current repo (auto-detects repo vs monorepo)
+# Aborts if files already exist — use --force to overwrite, or `patch` to add missing
+npx nitm-ai-dev-toolkit install
+
+# Force a template type
+npx nitm-ai-dev-toolkit install --monorepo
+npx nitm-ai-dev-toolkit install --repo
+
+# Optional: scaffold only one harness (e.g. you only use Cursor)
+npx nitm-ai-dev-toolkit install --env cursor
+
+# Add only missing files (never overwrites existing ones) + re-emit the bootstrap handoff
+npx nitm-ai-dev-toolkit patch
+
+# Inspect the install: missing files and unresolved placeholders
+npx nitm-ai-dev-toolkit doctor
+
+# Upgrade to the latest published version
+npx nitm-ai-dev-toolkit upgrade
+
+# Scaffold the oh-my-opencode-slim starter (delegates to `npx nitm-opencode-starter install`)
+npx nitm-ai-dev-toolkit omo-slim-starter install
+```
+
+After `install`, run `/bootstrap` from whatever harness you're in — it auto-detects your environment. You can also read `.nitm/BOOTSTRAP.md` and ask your AI agent to run the bootstrap flow. Use `doctor` to verify the result.
+
 ## Placeholder Reference
 
 Templates use `{{PLACEHOLDER}}` syntax for values you need to customize. The bootstrap command will automatically detect and fill most of these values.
@@ -406,9 +437,9 @@ The coordinator decides when to delegate. You don't need to manually invoke suba
 | ---------------------- | ----------- | ---------------------------- | ---------------- | --------------------------------------------- |
 | **Feature Builder**    | Coordinator | agent, edit, search, read    | `true`           | Orchestrates end-to-end feature development   |
 | **TDD**                | Coordinator | agent, edit, search, read    | `true`           | Red-green-refactor cycle coordination         |
-| **Planner**            | Worker      | read, search                 | `false`          | Break down features into implementation tasks |
+| **Planner**            | Worker      | read, search, edit, terminal | `false`          | Break down features into implementation tasks |
 | **Implementer**        | Worker      | read, search, edit, terminal | `false`          | Write production code following TDD           |
-| **Reviewer**           | Worker      | read, search                 | `false`          | Multi-perspective code review                 |
+| **Reviewer**           | Worker      | read, search, terminal       | `false`          | Multi-perspective code review                 |
 | **Researcher**         | Worker      | read, search                 | `true`           | Read-only codebase analysis                   |
 | **Red**                | Worker      | read, search, edit, terminal | `false`          | Write failing tests (TDD red phase)           |
 | **Green**              | Worker      | read, search, edit, terminal | `false`          | Write minimal code to pass tests (TDD green)  |

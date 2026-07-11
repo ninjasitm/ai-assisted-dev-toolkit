@@ -11,6 +11,6 @@
 			".claude/skills/**/*.md"
 		]
 	},
-	"plugin": [".opencode/plugins/ponytail.mjs"],
-	"lsp": true
+	"lsp": true,
+	"plugin": ["@dietrichgebert/ponytail"]
 }

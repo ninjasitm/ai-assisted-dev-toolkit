@@ -1,7 +1,7 @@
 ---
 name: Planner
 description: "Break down feature requests into implementation tasks. Read specifications, analyze codebase patterns, and produce structured plans with dependencies."
-tools: ["Read", "Grep", "Write"]
+tools: ["Read", "Grep", "Write", "Bash(*)"]
 user-invocable: false
 ---
 
