@@ -3,8 +3,8 @@ description: "Break down feature requests into implementation tasks. Read specif
 mode: subagent
 temperature: 0.1
 permission:
-  edit: deny
-  bash: deny
+  edit: allow
+  bash: allow
 ---
 
 # Planner Agent

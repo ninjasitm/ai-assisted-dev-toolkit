@@ -3,8 +3,8 @@ description: "Analyze codebases and create comprehensive documentation. Use for 
 mode: subagent
 temperature: 0.1
 permission:
-  edit: deny
-  bash: deny
+  edit: allow
+  bash: allow
 ---
 
 # Documenter

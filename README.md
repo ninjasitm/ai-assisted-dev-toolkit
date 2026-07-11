@@ -406,9 +406,9 @@ The coordinator decides when to delegate. You don't need to manually invoke suba
 | ---------------------- | ----------- | ---------------------------- | ---------------- | --------------------------------------------- |
 | **Feature Builder**    | Coordinator | agent, edit, search, read    | `true`           | Orchestrates end-to-end feature development   |
 | **TDD**                | Coordinator | agent, edit, search, read    | `true`           | Red-green-refactor cycle coordination         |
-| **Planner**            | Worker      | read, search                 | `false`          | Break down features into implementation tasks |
+| **Planner**            | Worker      | read, search, edit, terminal | `false`          | Break down features into implementation tasks |
 | **Implementer**        | Worker      | read, search, edit, terminal | `false`          | Write production code following TDD           |
-| **Reviewer**           | Worker      | read, search                 | `false`          | Multi-perspective code review                 |
+| **Reviewer**           | Worker      | read, search, terminal       | `false`          | Multi-perspective code review                 |
 | **Researcher**         | Worker      | read, search                 | `true`           | Read-only codebase analysis                   |
 | **Red**                | Worker      | read, search, edit, terminal | `false`          | Write failing tests (TDD red phase)           |
 | **Green**              | Worker      | read, search, edit, terminal | `false`          | Write minimal code to pass tests (TDD green)  |

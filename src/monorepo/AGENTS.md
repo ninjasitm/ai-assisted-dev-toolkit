@@ -292,7 +292,7 @@ Workers are dispatched by coordinators and are not directly user-invocable.
 
 | Agent           | Tools                        | Purpose                                       |
 | --------------- | ---------------------------- | --------------------------------------------- |
-| **Planner**     | read, search                 | Break down features into implementation tasks |
+| **Planner**     | read, search, edit, terminal | Break down features into implementation tasks |
 | **Implementer** | read, search, edit, terminal | Write production code following TDD           |
 | **Researcher**  | read, search                 | Codebase analysis without changes             |
 | **Red**         | read, search, edit, terminal | Write failing tests (TDD red phase)           |
