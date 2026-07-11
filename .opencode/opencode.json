@@ -11,5 +11,6 @@
 			".claude/skills/**/*.md"
 		]
 	},
-	"lsp": true
+	"lsp": true,
+	"plugin": ["@dietrichgebert/ponytail"]
 }
