@@ -36,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CLI scaffolds AI agent config (Cursor, GitHub Copilot, Claude Code, OpenCode) into a target repo, then hands off to an AI agent to run the bootstrap flow
 - `doctor` command inspects installs: missing files, unresolved `{{PLACEHOLDER}}` values, and agent-tool calibration drift
 - GitHub Actions workflow (`.github/workflows/publish.yml`) publishing the package to npm on tagged versions (`v*`)
+- CLI test suite (`test/cli.test.js`) using the built-in `node:test` runner (zero dependencies), covering project-type detection, environment scoping, install idempotency, `doctor` checks, placeholder scanning, and starter-script wiring; run via `npm test` and in CI (`.github/workflows/test.yml`)
 
 ### Changed
 
@@ -49,6 +50,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cleaned AGENTS.md template to remove project-specific content
 - Updated skill reference table in `src/repo/AGENTS.md` to list all 16 skills
 - CLI `install` scaffolds all harnesses by default; `--env` is now optional (the `/bootstrap` command auto-detects the user's environment, so no per-harness runs are needed)
+- `publish.yml` now runs the test suite before publishing (the `publish` job `needs: test`)
 
 ### Fixed
 

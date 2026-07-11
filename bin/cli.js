@@ -167,6 +167,7 @@ function cmdInstall(cwd, flags) {
   const { copied, skipped } = copyMissing(type, cwd, flags.force, flags.env);
   ok(`Copied ${copied} file(s), skipped ${skipped} existing.`);
   handoff(type, cwd, flags.env);
+  return { copied, skipped };
 }
 
 function cmdPatch(cwd, flags) {
@@ -174,6 +175,7 @@ function cmdPatch(cwd, flags) {
   const { copied, skipped } = copyMissing(type, cwd, flags.force, flags.env);
   ok(`Ensured files present: ${copied} added, ${skipped} already there.`);
   handoff(type, cwd, flags.env);
+  return { copied, skipped };
 }
 
 function scanPlaceholders(cwd, relFiles) {
@@ -191,7 +193,6 @@ function scanPlaceholders(cwd, relFiles) {
 
 function cmdDoctor(cwd, flags) {
   const type = detectType(cwd, flags);
-  info(`Doctor check (type=${type}` + (flags.env ? `, env=${flags.env}` : '') + ')');
   const files = scopeFiles(templateFiles(type), flags.env);
   const missingFiles = [];
   let present = 0;
@@ -200,6 +201,7 @@ function cmdDoctor(cwd, flags) {
     else missingFiles.push(rel);
   }
   const placeholders = scanPlaceholders(cwd, files);
+  const result = { type, present, missingFiles, placeholders };
 
   console.log('');
   if (missingFiles.length === 0) ok(`All ${present} template files present.`);
@@ -215,6 +217,7 @@ function cmdDoctor(cwd, flags) {
   }
   console.log('');
   info('Run your AI agent on .nitm/BOOTSTRAP.md to finish configuration, then re-run doctor.');
+  return result;
 }
 
 function cmdUpgrade(cwd) {
@@ -242,6 +245,17 @@ function cmdUpgrade(cwd) {
   else err('Upgrade failed.');
 }
 
+function mergeStarterScripts(pkg) {
+  pkg.scripts = pkg.scripts || {};
+  Object.assign(pkg.scripts, {
+    'ai:install': 'nitm-ai-dev-toolkit install',
+    'ai:patch': 'nitm-ai-dev-toolkit patch',
+    'ai:upgrade': 'nitm-ai-dev-toolkit upgrade',
+    'ai:doctor': 'nitm-ai-dev-toolkit doctor',
+  });
+  return pkg;
+}
+
 function cmdOmoStarter(cwd, flags) {
   const sub = flags._[1];
   if (sub !== 'install') {
@@ -261,13 +275,7 @@ function cmdOmoStarter(cwd, flags) {
   if (fs.existsSync(pkgPath)) {
     try { pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8')); } catch (_) { /* ignore */ }
   }
-  pkg.scripts = pkg.scripts || {};
-  Object.assign(pkg.scripts, {
-    'ai:install': 'nitm-ai-dev-toolkit install',
-    'ai:patch': 'nitm-ai-dev-toolkit patch',
-    'ai:upgrade': 'nitm-ai-dev-toolkit upgrade',
-    'ai:doctor': 'nitm-ai-dev-toolkit doctor',
-  });
+  pkg = mergeStarterScripts(pkg);
   fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
   ok('Wired install/patch/upgrade/doctor into starter package.json (npm run ai:install, ...).');
   info('Next: cd nitm-opencode-starter && npm run ai:install');
@@ -342,4 +350,23 @@ function main() {
   }
 }
 
-main();
+if (require.main === module) main();
+
+module.exports = {
+  detectType,
+  scopeFiles,
+  templateFiles,
+  copyMissing,
+  scanPlaceholders,
+  envHeader,
+  mergeStarterScripts,
+  parseFlags,
+  cmdInstall,
+  cmdPatch,
+  cmdDoctor,
+  cmdUpgrade,
+  cmdOmoStarter,
+  ENV_DIRS,
+  SHARED_ROOT,
+  SHARED_DIRS,
+};

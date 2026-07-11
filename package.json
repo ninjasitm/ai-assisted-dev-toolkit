@@ -5,6 +5,9 @@
   "bin": {
     "nitm-ai-dev-toolkit": "bin/cli.js"
   },
+  "scripts": {
+    "test": "node --test"
+  },
   "files": [
     "bin",
     "src",
