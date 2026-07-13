@@ -1,4 +1,4 @@
-name: Auto Patch Tag
+name: Auto Patch Tag & Release
 
 on:
   push:
@@ -9,48 +9,65 @@ permissions:
   contents: write
 
 jobs:
-  tag:
+  release:
+    # Skip the release commit this workflow itself creates (prevents recursion).
+    if: "!contains(github.event.head_commit.message, '[release]')"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org
 
       - name: Calculate next patch tag
         id: semver
         shell: bash
         run: |
           set -euo pipefail
-
           latest=$(git tag -l '[0-9]*.[0-9]*.[0-9]*' --sort=-v:refname | head -n 1)
-          if [[ -z "$latest" ]]; then
-            latest="0.0.0"
-          fi
-
+          if [[ -z "$latest" ]]; then latest="0.0.0"; fi
           IFS='.' read -r major minor patch <<< "$latest"
           next_patch=$((patch + 1))
           candidate="${major}.${minor}.${next_patch}"
-
           # Skip to the next available patch tag if a rerun or collision occurs.
           while git rev-parse -q --verify "refs/tags/${candidate}" >/dev/null; do
             next_patch=$((next_patch + 1))
             candidate="${major}.${minor}.${next_patch}"
           done
-
           echo "latest=${latest}" >> "$GITHUB_OUTPUT"
           echo "next=${candidate}" >> "$GITHUB_OUTPUT"
 
-      - name: Create and push patch tag
+      - name: Bump package.json, commit, tag, push
         shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-
           next_tag="${{ steps.semver.outputs.next }}"
           latest_tag="${{ steps.semver.outputs.latest }}"
-
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
+          git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git"
+          # Sync package.json version with the tag so `npm publish` ships the right version.
+          npm pkg set version="$next_tag"
+          git add package.json
+          git commit -m "chore(release): ${next_tag} [release]"
           git tag -a "$next_tag" -m "ci: patch bump from ${latest_tag} to ${next_tag}"
-          git push origin "$next_tag"
+          git push origin main --follow-tags
+
+      - name: Install, test, publish
+        shell: bash
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          set -euo pipefail
+          npm install
+          npm test
+          npm publish --access public

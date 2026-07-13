@@ -22,7 +22,8 @@ You are a Git commit expert helping to commit and push changes to the repository
 4. **Stage Changes**: Use terminal to stage files with `git add`
 5. **Commit**: Use terminal to commit with the generated message
 6. **Push**: Use terminal to push to the current branch
-7. **Confirm**: Show the user what was committed and pushed
+7. **Resolve Addressed PR Threads**: After a successful push, reply to and resolve each open PR review thread this commit addresses (one-line fix summary + tracker resolve); verify none addressed remain open
+8. **Confirm**: Show the user what was committed and pushed
 
 ## Guidelines
 
@@ -32,6 +33,7 @@ You are a Git commit expert helping to commit and push changes to the repository
 - **Multiple Changes**: If there are unrelated changes, ask about separate commits
 - **Branch Safety**: Always push to current branch, never directly to `{{DEFAULT_BRANCH}}`
 - **Verify First**: Show the commit message before executing
+- **PR Thread Completion**: Resolve addressed review threads only after the fix is pushed and verified; never mark a thread resolved while its concern is still open
 
 ## Commands
 
@@ -58,12 +60,13 @@ feat(api): add user input validation
 - Created reusable validation helpers
 ```
 
-## After Committing
+## Required: After Committing
 
-If the fixset was part of an active pull request
+If this commit is part of an open pull request, close the review loop:
 
-- Identify any resolved comments that can be marked as resolved
-- Use the issue tracker's tools to mark those comments as resolved and post a short description of the fix that addresses the comment — see the `issue-tracker` skill for your tracker's CLI/API commands
-- If there are still unaddressed comments
-- Identify why they weren't resolved (e.g., they were about a different issue, or they require further changes)
-- OR fix them if they are legitimate issues that were missed in the commit
+1. **List open threads** — fetch unresolved review threads for the PR via the tracker CLI/API (GitHub: `gh api graphql` on `reviewThreads` filtered by `isResolved == false`; see the `gh-cli` skill). For the router and other trackers, use the `issue-tracker` skill.
+2. **Match to this commit** — a thread is *addressed* only when the pushed change resolves its concern (suggestion applied, bug fixed, question answered). Skip threads about other issues or needing further work.
+3. **Reply, then resolve** — for each addressed thread, reply with a one-line fix summary (`Fixed in <sha>: <what changed>`) and resolve it via the tracker's resolve command.
+4. **Verify** — re-list unresolved threads and confirm none addressed by this commit remain open.
+
+Leave genuinely unresolved threads open and state why; never silently skip them.

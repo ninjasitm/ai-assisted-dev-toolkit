@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - '[0-9]*'
+  workflow_dispatch:
 
 concurrency:
   group: "npm-publish"
@@ -11,6 +12,8 @@ concurrency:
 
 jobs:
   test:
+    # Skip when the tag was pushed by the auto-release workflow (it publishes itself).
+    if: github.event_name == 'workflow_dispatch' || !contains(github.event.head_commit.message, '[release]')
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -24,6 +27,8 @@ jobs:
       - run: npm test
 
   publish:
+    # Skip when the tag was pushed by the auto-release workflow (it publishes itself).
+    if: github.event_name == 'workflow_dispatch' || !contains(github.event.head_commit.message, '[release]')
     needs: test
     runs-on: ubuntu-latest
     permissions:
