@@ -11,9 +11,5 @@
 			".claude/skills/**/*.md"
 		]
 	},
-	"lsp": true,
-	"plugin": [
-		"@dietrichgebert/ponytail",
-		"opentmux"
-	]
+	"lsp": true
 }
