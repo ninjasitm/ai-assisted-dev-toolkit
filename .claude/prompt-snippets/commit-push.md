@@ -28,12 +28,13 @@ You are a Git commit expert helping to commit and push changes to the AI-Assiste
 - **Multiple Changes**: If there are unrelated changes, ask about separate commits
 - **Branch Safety**: Always push to current branch
 
-## After Committing
+## Required: After Committing
 
-If the fixset was part of an active pull request
+If this commit is part of an open pull request, close the review loop:
 
-- Identify any resolved comments that can be marked as resolved
-- Use `resolve_pr_comments` or the `gh` cli, referencing gh skills in the project, tool to mark those comments as resolved and post a short description of the fix that addresses the comment
-- If there are still unaddressed comments
-- Identify why they weren't resolved (e.g., they were about a different issue, or they require further changes)
-- OR fix them if they are legitimate issues that were missed in the commit
+1. **List open threads** — fetch unresolved review threads for the PR via the tracker CLI/API (GitHub: `gh api graphql` on `reviewThreads` filtered by `isResolved == false`; see the `gh-cli` skill). For the router and other trackers, use the `issue-tracker` skill.
+2. **Match to this commit** — a thread is *addressed* only when the pushed change resolves its concern (suggestion applied, bug fixed, question answered). Skip threads about other issues or needing further work.
+3. **Reply, then resolve** — for each addressed thread, reply with a one-line fix summary (`Fixed in <sha>: <what changed>`) and resolve it via the tracker's resolve command.
+4. **Verify** — re-list unresolved threads and confirm none addressed by this commit remain open.
+
+Leave genuinely unresolved threads open and state why; never silently skip them.
