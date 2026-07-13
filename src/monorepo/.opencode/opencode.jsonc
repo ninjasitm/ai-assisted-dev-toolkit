@@ -11,6 +11,11 @@
 			".claude/skills/**/*.md"
 		]
 	},
-	"lsp": true,
-	"plugin": ["@dietrichgebert/ponytail"]
+	"plugin": [
+		"opencode-mem",
+		"@tarquinen/opencode-dcp@latest",
+		"@dietrichgebert/ponytail",
+		"opentmux"
+	],
+	"lsp": true
 }

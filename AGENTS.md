@@ -60,7 +60,7 @@ The [orient-to-recent-work](.agents/skills/orient-to-recent-work/SKILL.md) skill
 │   ├── commands/       # Custom commands
 │   ├── plugins/        # Plugins
 │   ├── rules/          # Rules
-│   └── opencode.json   # OpenCode configuration
+│   └── opencode.jsonc   # OpenCode configuration
 ├── .vscode/            # VS Code / GitHub Copilot config
 │   └── mcp.json        # Copilot MCP config
 ├── CLAUDE.md           # Redirect → AGENTS.md
@@ -89,7 +89,7 @@ This toolkit uses a layered architecture for cross-tool compatibility (Claude Co
 ### Tool-specific
 
 - **`.cursor/`** — Cursor IDE (independent, .mdc format)
-- **`.opencode/`** — OpenCode (agents, commands, opencode.json)
+- **`.opencode/`** — OpenCode (agents, commands, opencode.jsonc)
 - **`.vscode/mcp.json`** — GitHub Copilot MCP config (`"servers"` key)
 
 ### Reference patterns

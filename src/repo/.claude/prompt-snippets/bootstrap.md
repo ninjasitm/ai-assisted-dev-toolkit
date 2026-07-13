@@ -207,49 +207,49 @@ Replace placeholders in all template files:
 - `.claude/rules-snippets/*.md` - Rules content (source of truth)
 - `.claude/prompt-snippets/*.md` - Prompt content (source of truth)
 - `.claude/agents-snippets/*.md` - Agent definitions (source of truth)
-- `.opencode/opencode.json` - OpenCode configuration (⚠️ see schema validation below)
+- `.opencode/opencode.jsonc` - OpenCode configuration (⚠️ see schema validation below)
 - `.opencode/commands/*.md` - OpenCode commands
 - `.opencode/rules/*.md` - OpenCode rules
 - `.opencode/agents/*.md` - OpenCode agents
 - `.toolkit-version` - Toolkit version tracking
 
-**⚠️ OpenCode `opencode.json` Schema Validation:**
+**⚠️ OpenCode `opencode.jsonc` Schema Validation:**
 
-When creating or modifying `.opencode/opencode.json`, **only use supported top-level keys**. The schema is defined at `https://opencode.ai/config.json`. Adding unsupported keys will cause validation errors.
+When creating or modifying `.opencode/opencode.jsonc`, **only use supported top-level keys**. The schema is defined at `https://opencode.ai/config.json`. Adding unsupported keys will cause validation errors.
 
 **Supported top-level keys:**
 
-| Key | Purpose |
-|-----|---------|
-| `$schema` | Schema reference (always include) |
-| `instructions` | Array of instruction file paths/globs |
-| `skills` | Skill folder paths and URLs |
-| `agent` | Custom agent configurations |
-| `default_agent` | Default agent name |
-| `model` | Model ID (provider/model format) |
-| `small_model` | Lightweight model for title generation |
-| `provider` | Provider configurations and API keys |
-| `mcp` | MCP server configurations |
-| `tools` | Enable/disable tools |
-| `permission` | Tool permission rules |
-| `lsp` | LSP server configuration |
-| `formatter` | Code formatter configuration |
-| `server` | Server settings (port, hostname, CORS) |
-| `shell` | Default shell for terminal |
-| `command` | Custom command definitions |
-| `plugin` | Plugin list |
-| `watcher` | File watcher ignore patterns |
-| `snapshot` | Enable/disable snapshot tracking |
-| `share` | Sharing behavior (manual/auto/disabled) |
-| `autoupdate` | Auto-update settings |
-| `compaction` | Context compaction settings |
-| `attachment` | Image attachment limits |
-| `logLevel` | Log level (DEBUG/INFO/WARN/ERROR) |
-| `disabled_providers` | Providers to disable |
-| `enabled_providers` | Allowlist of providers |
-| `tool_output` | Tool output truncation thresholds |
-| `enterprise` | Enterprise URL |
-| `experimental` | Experimental features |
+| Key                  | Purpose                                 |
+| -------------------- | --------------------------------------- |
+| `$schema`            | Schema reference (always include)       |
+| `instructions`       | Array of instruction file paths/globs   |
+| `skills`             | Skill folder paths and URLs             |
+| `agent`              | Custom agent configurations             |
+| `default_agent`      | Default agent name                      |
+| `model`              | Model ID (provider/model format)        |
+| `small_model`        | Lightweight model for title generation  |
+| `provider`           | Provider configurations and API keys    |
+| `mcp`                | MCP server configurations               |
+| `tools`              | Enable/disable tools                    |
+| `permission`         | Tool permission rules                   |
+| `lsp`                | LSP server configuration                |
+| `formatter`          | Code formatter configuration            |
+| `server`             | Server settings (port, hostname, CORS)  |
+| `shell`              | Default shell for terminal              |
+| `command`            | Custom command definitions              |
+| `plugin`             | Plugin list                             |
+| `watcher`            | File watcher ignore patterns            |
+| `snapshot`           | Enable/disable snapshot tracking        |
+| `share`              | Sharing behavior (manual/auto/disabled) |
+| `autoupdate`         | Auto-update settings                    |
+| `compaction`         | Context compaction settings             |
+| `attachment`         | Image attachment limits                 |
+| `logLevel`           | Log level (DEBUG/INFO/WARN/ERROR)       |
+| `disabled_providers` | Providers to disable                    |
+| `enabled_providers`  | Allowlist of providers                  |
+| `tool_output`        | Tool output truncation thresholds       |
+| `enterprise`         | Enterprise URL                          |
+| `experimental`       | Experimental features                   |
 
 **Do NOT add keys not listed above** (e.g., `rules`, `agents`, `commands`, `prompts` as top-level keys — these are configured via `instructions`, `skills`, and the `.opencode/` directory structure instead).
 
@@ -633,7 +633,7 @@ Would you like to install these skills now? (Y/n)
 - [x] .claude/rules-snippets/\*.md (rules content)
 - [x] .claude/prompt-snippets/\*.md (prompt content)
 - [x] .claude/agents-snippets/\*.md (agent content)
-- [x] .opencode/opencode.json
+- [x] .opencode/opencode.jsonc
 - [x] .opencode/commands/\*.md
 - [x] .opencode/rules/\*.md
 - [x] .opencode/agents/\*.md
@@ -777,11 +777,11 @@ Verify that all necessary instruction files exist and are properly configured:
 
 **Snippet Directories:**
 
-| Directory | Purpose | Status |
-|-----------|---------|--------|
-| `.claude/rules-snippets/` | Rules content (source of truth) | ✓ |
-| `.claude/prompt-snippets/` | Prompt content (source of truth) | ✓ |
-| `.claude/agents-snippets/` | Agent definitions (source of truth) | ✓ |
+| Directory                  | Purpose                             | Status |
+| -------------------------- | ----------------------------------- | ------ |
+| `.claude/rules-snippets/`  | Rules content (source of truth)     | ✓      |
+| `.claude/prompt-snippets/` | Prompt content (source of truth)    | ✓      |
+| `.claude/agents-snippets/` | Agent definitions (source of truth) | ✓      |
 
 ### 📝 Create Missing Instruction Files?
 

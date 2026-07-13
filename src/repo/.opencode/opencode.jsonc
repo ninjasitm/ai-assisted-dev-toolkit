@@ -1,0 +1,21 @@
+{
+	"$schema": "https://opencode.ai/config.json",
+	"instructions": [
+		"AGENTS.md",
+		".opencode/rules/*.md",
+		".agents/skills/orient-to-recent-work/SKILL.md"
+	],
+	"skills": {
+		"paths": [
+			".agents/skills/**/*.md",
+			".claude/skills/**/*.md"
+		]
+	},
+	"plugin": [
+		"opencode-mem",
+		"@tarquinen/opencode-dcp@latest",
+		"@dietrichgebert/ponytail",
+		"opentmux"
+	],
+	"lsp": true
+}

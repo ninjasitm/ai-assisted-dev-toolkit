@@ -218,10 +218,10 @@ for cmd in ponytail ponytail-audit ponytail-debt ponytail-gain ponytail-help pon
     "src/monorepo/.github/prompts/$cmd.prompt.md"
 done
 
-# opencode.json
-check_identical "opencode.json repo ↔ monorepo" \
-  "src/repo/.opencode/opencode.json" \
-  "src/monorepo/.opencode/opencode.json"
+# opencode.jsonc
+check_identical "opencode.jsonc repo ↔ monorepo" \
+  "src/repo/.opencode/opencode.jsonc" \
+  "src/monorepo/.opencode/opencode.jsonc"
 
 echo ""
 echo "=== orient-to-recent-work Parity ==="

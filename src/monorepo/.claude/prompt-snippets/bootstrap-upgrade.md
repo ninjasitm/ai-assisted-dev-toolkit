@@ -38,17 +38,17 @@ Migrate this monorepo's AI instruction files from the pre-3.0 inline pattern to 
 
 4. **Inventory files to migrate** (parallelizable — scan all directories simultaneously):
 
-   | Directory | Glob | Count |
-   |-----------|------|-------|
-   | `.claude/rules/` | `*.md` | {{N}} |
-   | `.claude/commands/` | `*.md` | {{N}} |
-   | `.claude/agents/` | `*.agent.md` | {{N}} |
+   | Directory               | Glob                | Count |
+   | ----------------------- | ------------------- | ----- |
+   | `.claude/rules/`        | `*.md`              | {{N}} |
+   | `.claude/commands/`     | `*.md`              | {{N}} |
+   | `.claude/agents/`       | `*.agent.md`        | {{N}} |
    | `.github/instructions/` | `*.instructions.md` | {{N}} |
-   | `.github/prompts/` | `*.prompt.md` | {{N}} |
-   | `.github/agents/` | `*.agent.md` | {{N}} |
-   | `.cursor/rules/` | `*.mdc` | {{N}} |
-   | `.cursor/commands/` | `*.md` | {{N}} |
-   | `.cursor/agents/` | `*.agent.md` | {{N}} |
+   | `.github/prompts/`      | `*.prompt.md`       | {{N}} |
+   | `.github/agents/`       | `*.agent.md`        | {{N}} |
+   | `.cursor/rules/`        | `*.mdc`             | {{N}} |
+   | `.cursor/commands/`     | `*.md`              | {{N}} |
+   | `.cursor/agents/`       | `*.agent.md`        | {{N}} |
 
 5. **Present summary and ask for confirmation**:
 
@@ -89,17 +89,20 @@ mkdir -p .claude/agents-snippets
 > **Parallelizable**: Process rules, commands, and agents in parallel.
 
 For each `.claude/rules/*.md`:
+
 1. Read the file
 2. Parse frontmatter (between `---` delimiters) — **preserve `paths:` and `applyTo:` fields**
 3. Extract the body (everything after the closing `---`)
 4. Write to `.claude/rules-snippets/<name>.md` — include the frontmatter fields (`paths:`, `applyTo:`, `description:`) at the top of the snippet
 
 For each `.claude/commands/*.md`:
+
 1. Read the file
 2. Extract body content (after frontmatter)
 3. Write to `.claude/prompt-snippets/<name>.md`
 
 For each `.claude/agents/*.agent.md`:
+
 1. Read the file
 2. Parse frontmatter — preserve `user-invocable`, `agents`, `mode`, `model`, `temperature`, `permission` fields
 3. Extract body content
@@ -113,7 +116,7 @@ For each `.claude/agents/*.agent.md`:
 
 ```markdown
 ---
-{{ORIGINAL_FRONTMATTER}}
+{ { ORIGINAL_FRONTMATTER } }
 ---
 
 # {{TITLE}}
@@ -125,7 +128,7 @@ Follow the rules defined in [.claude/rules-snippets/{{NAME}}.md](../rules-snippe
 
 ```markdown
 ---
-{{ORIGINAL_FRONTMATTER}}
+{ { ORIGINAL_FRONTMATTER } }
 ---
 
 # {{TITLE}}
@@ -137,7 +140,7 @@ Follow the prompt defined in [.claude/prompt-snippets/{{NAME}}.md](../prompt-sni
 
 ```markdown
 ---
-{{ORIGINAL_FRONTMATTER}}
+{ { ORIGINAL_FRONTMATTER } }
 ---
 
 # {{AGENT_NAME}}
@@ -150,6 +153,7 @@ Follow the agent definition in [.claude/agents-snippets/{{NAME}}.md](../agents-s
 > **Parallelizable**: Process instructions, prompts, and agents in parallel.
 
 **Instructions** — For each `.github/instructions/*.instructions.md`:
+
 1. Check if a matching snippet exists in `.claude/rules-snippets/`
 2. If no matching snippet: extract body content → create `.claude/rules-snippets/<name>.md`
 3. Replace body with thin wrapper preserving `applyTo:` and `description:` frontmatter:
@@ -166,13 +170,14 @@ Follow the rules defined in [.claude/rules-snippets/{{NAME}}.md](../../.claude/r
 ```
 
 **Prompts** — For each `.github/prompts/*.prompt.md`:
+
 1. Check if a matching snippet exists in `.claude/prompt-snippets/`
 2. If no matching snippet: extract body → create `.claude/prompt-snippets/<name>.md`
 3. Replace body with thin wrapper:
 
 ```markdown
 ---
-{{ORIGINAL_FRONTMATTER}}
+{ { ORIGINAL_FRONTMATTER } }
 ---
 
 # {{TITLE}}
@@ -181,13 +186,14 @@ Follow the prompt defined in [.claude/prompt-snippets/{{NAME}}.md](../../.claude
 ```
 
 **Agents** — For each `.github/agents/*.agent.md`:
+
 1. Check if a matching snippet exists in `.claude/agents-snippets/`
 2. If no matching snippet: extract body → create `.claude/agents-snippets/<name>.md`
 3. Replace body with thin wrapper:
 
 ```markdown
 ---
-{{ORIGINAL_FRONTMATTER}}
+{ { ORIGINAL_FRONTMATTER } }
 ---
 
 # {{AGENT_NAME}}
@@ -200,13 +206,14 @@ Follow the agent definition in [.claude/agents-snippets/{{NAME}}.md](../../.clau
 > **Parallelizable**: Process rules, commands, and agents in parallel.
 
 **Rules** — For each `.cursor/rules/*.mdc`:
+
 1. Check if a matching snippet exists in `.claude/rules-snippets/`
 2. If no matching snippet: extract body → create `.claude/rules-snippets/<name>.md`
 3. Replace body with thin wrapper preserving original `.mdc` frontmatter:
 
 ```markdown
 ---
-{{ORIGINAL_MDC_FRONTMATTER}}
+{ { ORIGINAL_MDC_FRONTMATTER } }
 ---
 
 # {{TITLE}}
@@ -215,33 +222,29 @@ Follow the rules defined in [.claude/rules-snippets/{{NAME}}.md](../../.claude/r
 ```
 
 **Commands** — For each `.cursor/commands/*.md`:
+
 1. Check if a matching snippet exists in `.claude/prompt-snippets/`
 2. If no matching snippet: extract body → create `.claude/prompt-snippets/<name>.md`
 3. Replace body with thin wrapper referencing `../../.claude/prompt-snippets/{{NAME}}.md`
 
 **Agents** — For each `.cursor/agents/*.agent.md`:
+
 1. Check if a matching snippet exists in `.claude/agents-snippets/`
 2. If no matching snippet: extract body → create `.claude/agents-snippets/<name>.md`
 3. Replace body with thin wrapper referencing `../../.claude/agents-snippets/{{NAME}}.md`
 
 ### Step 7: Create .opencode/ Directory
 
-1. Create `.opencode/opencode.json` using only supported schema keys:
+1. Create `.opencode/opencode.jsonc` using only supported schema keys:
 
    ```json
    {
-     "$schema": "https://opencode.ai/config.json",
-     "instructions": [
-       "AGENTS.md",
-       ".opencode/rules/*.md"
-     ],
-     "skills": {
-       "paths": [
-         ".agents/skills/**/*.md",
-         ".claude/skills/**/*.md"
-       ]
-     },
-     "lsp": true
+   	"$schema": "https://opencode.ai/config.json",
+   	"instructions": ["AGENTS.md", ".opencode/rules/*.md"],
+   	"skills": {
+   		"paths": [".agents/skills/**/*.md", ".claude/skills/**/*.md"]
+   	},
+   	"lsp": true
    }
    ```
 
@@ -299,6 +302,7 @@ Install the CHANGELOG/secrets enforcement hook to run before every commit:
    ```
 
 This enforces:
+
 - **CHANGELOG.md** — [Unreleased] must have content when non-trivial files are staged
 - **Zone.Identifier** — `*:Zone.Identifier` files are blocked from commit
 - **Secrets** — `.env`, `.env.*`, `*.key`, `*.pem` files are blocked from commit
@@ -335,6 +339,7 @@ Read the existing `CLAUDE.md` and add missing sections:
    - Build system section ({{BUILD_SYSTEM}} detected in Step 1)
 
 3. **Snippet architecture section** — add:
+
    ```markdown
    ## Snippet Architecture
 
@@ -377,45 +382,45 @@ If `--verbose`: log each check result.
 
 ### Directories Created
 
-| Directory | Files |
-|-----------|-------|
-| `.claude/rules-snippets/` | {{N}} |
+| Directory                  | Files |
+| -------------------------- | ----- |
+| `.claude/rules-snippets/`  | {{N}} |
 | `.claude/prompt-snippets/` | {{N}} |
 | `.claude/agents-snippets/` | {{N}} |
-| `.opencode/commands/` | {{N}} |
-| `.opencode/rules/` | {{N}} |
-| `.opencode/agents/` | {{N}} |
+| `.opencode/commands/`      | {{N}} |
+| `.opencode/rules/`         | {{N}} |
+| `.opencode/agents/`        | {{N}} |
 
 ### Files Converted to Thin Wrappers
 
-| Category | Count | Example |
-|----------|-------|---------|
-| `.claude/rules/` | {{N}} | `coding-standards.md` → thin wrapper |
-| `.claude/commands/` | {{N}} | `bootstrap.md` → thin wrapper |
-| `.claude/agents/` | {{N}} | `reviewer.agent.md` → thin wrapper |
+| Category                | Count | Example                                           |
+| ----------------------- | ----- | ------------------------------------------------- |
+| `.claude/rules/`        | {{N}} | `coding-standards.md` → thin wrapper              |
+| `.claude/commands/`     | {{N}} | `bootstrap.md` → thin wrapper                     |
+| `.claude/agents/`       | {{N}} | `reviewer.agent.md` → thin wrapper                |
 | `.github/instructions/` | {{N}} | `coding-standards.instructions.md` → thin wrapper |
-| `.github/prompts/` | {{N}} | `specify.prompt.md` → thin wrapper |
-| `.github/agents/` | {{N}} | `reviewer.agent.md` → thin wrapper |
-| `.cursor/rules/` | {{N}} | `coding-standards.mdc` → thin wrapper |
-| `.cursor/commands/` | {{N}} | `bootstrap.md` → thin wrapper |
-| `.cursor/agents/` | {{N}} | `reviewer.agent.md` → thin wrapper |
+| `.github/prompts/`      | {{N}} | `specify.prompt.md` → thin wrapper                |
+| `.github/agents/`       | {{N}} | `reviewer.agent.md` → thin wrapper                |
+| `.cursor/rules/`        | {{N}} | `coding-standards.mdc` → thin wrapper             |
+| `.cursor/commands/`     | {{N}} | `bootstrap.md` → thin wrapper                     |
+| `.cursor/agents/`       | {{N}} | `reviewer.agent.md` → thin wrapper                |
 
 ### New Files
 
-| File | Purpose |
-|------|---------|
-| `.opencode/opencode.json` | OpenCode configuration |
-| `.toolkit-version` | Version tracking (`3.0.0`) |
+| File                       | Purpose                    |
+| -------------------------- | -------------------------- |
+| `.opencode/opencode.jsonc` | OpenCode configuration     |
+| `.toolkit-version`         | Version tracking (`3.0.0`) |
 
 ### Validation Results
 
-| Check | Status |
-|-------|--------|
-| Snippet completeness | ✅ All snippets have content |
-| Thin wrapper references | ✅ All wrappers reference correct snippets |
-| `paths:` frontmatter preserved | ✅ Monorepo scoping intact |
-| No lost placeholders | ✅ All `{{VAR}}` preserved |
-| No broken paths | ✅ All relative paths resolve |
+| Check                          | Status                                     |
+| ------------------------------ | ------------------------------------------ |
+| Snippet completeness           | ✅ All snippets have content               |
+| Thin wrapper references        | ✅ All wrappers reference correct snippets |
+| `paths:` frontmatter preserved | ✅ Monorepo scoping intact                 |
+| No lost placeholders           | ✅ All `{{VAR}}` preserved                 |
+| No broken paths                | ✅ All relative paths resolve              |
 
 ### Cleanup
 

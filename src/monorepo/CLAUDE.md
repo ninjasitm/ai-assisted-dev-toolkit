@@ -55,7 +55,7 @@
 
 ## OpenCode
 
-- Config is in `.opencode/opencode.json`.
+- Config is in `.opencode/opencode.jsonc`.
 - Commands are in `.opencode/commands/`.
 - Rules are in `.opencode/rules/`.
 - Agents are in `.opencode/agents/`.

@@ -97,40 +97,40 @@ Detailed standards are split into focused instruction files in `.github/instruct
 
 For detailed standards on specific topics, refer to these skills in `.agents/skills/`:
 
-| Skill                | File                                      | Purpose                                                    |
-| -------------------- | ----------------------------------------- | ---------------------------------------------------------- |
-| **Atlassian CLI**    | `acli/SKILL.md`                           | Atlassian CLI (ACLI) command reference                     |
-| **Bitbucket CLI**    | `bkt-cli/SKILL.md`                        | Bitbucket PRs, issues, repos CLI reference                 |
-| **Brainstorming**    | `brainstorming/SKILL.md`                  | Structured ideation sessions                               |
-| **Branch Finish**    | `finishing-a-development-branch/SKILL.md` | Completing and merging branches                            |
-| **Code Review**      | `requesting-code-review/SKILL.md`         | Review process and checklists                              |
-| **Code Simplifier**  | `code-simplifier/SKILL.md`                | Analyze recently modified code for simplification opportunities |
-| **Debugging**        | `systematic-debugging/SKILL.md`           | Structured debugging methodology                           |
-| **Debugger**         | `debugger/SKILL.md`                       | Systematic debugging dispatch with mandatory root cause investigation |
-| **Documentation**    | `project-documentation/SKILL.md`          | README, comments, ADRs, changelogs                         |
-| **Executing Plans**  | `executing-plans/SKILL.md`                | Following through on implementation plans                  |
-| **Git Worktrees**    | `using-git-worktrees/SKILL.md`            | Parallel development branches                              |
-| **GitHub CLI**       | `gh-cli/SKILL.md`                         | GitHub Issues CLI command reference                        |
-| **GitLab CLI**       | `glab-cli/SKILL.md`                       | GitLab MRs, issues, pipelines CLI reference                |
-| **Issue Tracker**    | `issue-tracker/SKILL.md`                  | MCP tools reference, CLI fallback strategy, epic discovery |
-| **Linear CLI**       | `linear-cli/SKILL.md`                     | Linear CLI command reference                               |
-| **Logging**          | `logging/SKILL.md`                        | Structured logging standards, log levels, observability    |
-| **Orient to Recent Work** | `orient-to-recent-work/SKILL.md`     | Build context from recent project activity                 |
-| **Parallel Agents**  | `dispatching-parallel-agents/SKILL.md`    | Coordinating multiple AI agents                            |
-| **Ponytail**         | `ponytail/SKILL.md`                       | YAGNI/stdlib/native/minimum-discipline coding mode        |
-| **Ponytail Audit**   | `ponytail-audit/SKILL.md`                 | Whole-repo audit for over-engineering                      |
-| **Ponytail Debt**    | `ponytail-debt/SKILL.md`                  | Track ponytail shortcuts and deferrals                     |
-| **Ponytail Gain**    | `ponytail-gain/SKILL.md`                  | Show ponytail's measured impact                            |
-| **Ponytail Help**    | `ponytail-help/SKILL.md`                  | Quick-reference for ponytail modes and commands            |
-| **Ponytail Review**  | `ponytail-review/SKILL.md`                | Code review focused on over-engineering                    |
-| **Review Feedback**  | `receiving-code-review/SKILL.md`          | Responding constructively to review feedback               |
-| **Security Reviewer** | `security-reviewer/SKILL.md`             | Security-focused code review                               |
-| **Subagent Dev**     | `subagent-driven-development/SKILL.md`    | Breaking tasks into subagent chunks                        |
-| **Superpowers**      | `using-superpowers/SKILL.md`              | Leveraging the full skill system                           |
-| **TDD**              | `test-driven-development/SKILL.md`        | Test-driven development with red-green-refactor            |
-| **Verification**     | `verification-before-completion/SKILL.md` | Quality checks before claiming work done                   |
-| **Writing Plans**    | `writing-plans/SKILL.md`                  | Feature planning and specifications                        |
-| **Writing Skills**   | `writing-skills/SKILL.md`                 | Creating effective SKILL.md files                          |
+| Skill                     | File                                      | Purpose                                                               |
+| ------------------------- | ----------------------------------------- | --------------------------------------------------------------------- |
+| **Atlassian CLI**         | `acli/SKILL.md`                           | Atlassian CLI (ACLI) command reference                                |
+| **Bitbucket CLI**         | `bkt-cli/SKILL.md`                        | Bitbucket PRs, issues, repos CLI reference                            |
+| **Brainstorming**         | `brainstorming/SKILL.md`                  | Structured ideation sessions                                          |
+| **Branch Finish**         | `finishing-a-development-branch/SKILL.md` | Completing and merging branches                                       |
+| **Code Review**           | `requesting-code-review/SKILL.md`         | Review process and checklists                                         |
+| **Code Simplifier**       | `code-simplifier/SKILL.md`                | Analyze recently modified code for simplification opportunities       |
+| **Debugging**             | `systematic-debugging/SKILL.md`           | Structured debugging methodology                                      |
+| **Debugger**              | `debugger/SKILL.md`                       | Systematic debugging dispatch with mandatory root cause investigation |
+| **Documentation**         | `project-documentation/SKILL.md`          | README, comments, ADRs, changelogs                                    |
+| **Executing Plans**       | `executing-plans/SKILL.md`                | Following through on implementation plans                             |
+| **Git Worktrees**         | `using-git-worktrees/SKILL.md`            | Parallel development branches                                         |
+| **GitHub CLI**            | `gh-cli/SKILL.md`                         | GitHub Issues CLI command reference                                   |
+| **GitLab CLI**            | `glab-cli/SKILL.md`                       | GitLab MRs, issues, pipelines CLI reference                           |
+| **Issue Tracker**         | `issue-tracker/SKILL.md`                  | MCP tools reference, CLI fallback strategy, epic discovery            |
+| **Linear CLI**            | `linear-cli/SKILL.md`                     | Linear CLI command reference                                          |
+| **Logging**               | `logging/SKILL.md`                        | Structured logging standards, log levels, observability               |
+| **Orient to Recent Work** | `orient-to-recent-work/SKILL.md`          | Build context from recent project activity                            |
+| **Parallel Agents**       | `dispatching-parallel-agents/SKILL.md`    | Coordinating multiple AI agents                                       |
+| **Ponytail**              | `ponytail/SKILL.md`                       | YAGNI/stdlib/native/minimum-discipline coding mode                    |
+| **Ponytail Audit**        | `ponytail-audit/SKILL.md`                 | Whole-repo audit for over-engineering                                 |
+| **Ponytail Debt**         | `ponytail-debt/SKILL.md`                  | Track ponytail shortcuts and deferrals                                |
+| **Ponytail Gain**         | `ponytail-gain/SKILL.md`                  | Show ponytail's measured impact                                       |
+| **Ponytail Help**         | `ponytail-help/SKILL.md`                  | Quick-reference for ponytail modes and commands                       |
+| **Ponytail Review**       | `ponytail-review/SKILL.md`                | Code review focused on over-engineering                               |
+| **Review Feedback**       | `receiving-code-review/SKILL.md`          | Responding constructively to review feedback                          |
+| **Security Reviewer**     | `security-reviewer/SKILL.md`              | Security-focused code review                                          |
+| **Subagent Dev**          | `subagent-driven-development/SKILL.md`    | Breaking tasks into subagent chunks                                   |
+| **Superpowers**           | `using-superpowers/SKILL.md`              | Leveraging the full skill system                                      |
+| **TDD**                   | `test-driven-development/SKILL.md`        | Test-driven development with red-green-refactor                       |
+| **Verification**          | `verification-before-completion/SKILL.md` | Quality checks before claiming work done                              |
+| **Writing Plans**         | `writing-plans/SKILL.md`                  | Feature planning and specifications                                   |
+| **Writing Skills**        | `writing-skills/SKILL.md`                 | Creating effective SKILL.md files                                     |
 
 ## ⚠️ CRITICAL: Orchestration Checkpoint (READ FIRST)
 
@@ -384,4 +384,4 @@ Documentation updates are **mandatory before committing** any feature or fix. Se
 - [.opencode/rules/](.opencode/rules/) - OpenCode rules (thin wrappers → rules-snippets)
 - [.opencode/commands/](.opencode/commands/) - OpenCode commands (thin wrappers → prompt-snippets)
 - [.opencode/agents/](.opencode/agents/) - OpenCode agents (thin wrappers → agents-snippets)
-- [.opencode/opencode.json](.opencode/opencode.json) - OpenCode configuration
+- [.opencode/opencode.jsonc](.opencode/opencode.jsonc) - OpenCode configuration

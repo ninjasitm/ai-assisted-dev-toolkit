@@ -136,16 +136,16 @@ You are helping to bootstrap AI instructions for this monorepo by analyzing the 
    - `.claude/rules-snippets/*.md` (rules content — source of truth)
    - `.claude/prompt-snippets/*.md` (prompt content — source of truth)
    - `.claude/agents-snippets/*.md` (agent definitions — source of truth)
-   - `.opencode/opencode.json` (OpenCode configuration — ⚠️ see schema validation below)
+   - `.opencode/opencode.jsonc` (OpenCode configuration — ⚠️ see schema validation below)
    - `.opencode/commands/*.md` (OpenCode commands)
    - `.opencode/rules/*.md` (OpenCode rules)
    - `.opencode/agents/*.md` (OpenCode agents)
    - `.toolkit-version` (version tracking)
    - `CLAUDE.md` (if it contains placeholders)
 
-   **⚠️ OpenCode `opencode.json` Schema Validation:**
+   **⚠️ OpenCode `opencode.jsonc` Schema Validation:**
 
-   When creating or modifying `.opencode/opencode.json`, **only use supported top-level keys**. The schema is defined at `https://opencode.ai/config.json`. Adding unsupported keys will cause validation errors.
+   When creating or modifying `.opencode/opencode.jsonc`, **only use supported top-level keys**. The schema is defined at `https://opencode.ai/config.json`. Adding unsupported keys will cause validation errors.
 
    **Supported top-level keys:** `$schema`, `instructions`, `skills`, `agent`, `default_agent`, `model`, `small_model`, `provider`, `mcp`, `tools`, `permission`, `lsp`, `formatter`, `server`, `shell`, `command`, `plugin`, `watcher`, `snapshot`, `share`, `autoupdate`, `compaction`, `attachment`, `logLevel`, `disabled_providers`, `enabled_providers`, `tool_output`, `enterprise`, `experimental`
 
@@ -174,17 +174,17 @@ After replacing placeholders, update the `paths:` frontmatter in `.claude/rules/
 
 **Review each path-scoped rule and adjust paths to match your monorepo layout:**
 
-| Rule File                                | Default Paths                                                                                            | Adjust To Match                                |
-| ---------------------------------------- | -------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
-| `api-server.md`                          | `src/server/**`, `apps/**/server/**`, `**/*.server.*`                                                    | Your API app directories (e.g., `apps/api/**`) |
-| `component-structure.md`               | `src/components/**`, `apps/**/components/**`, `packages/**/components/**`, `**/*.{vue,tsx,jsx}`          | Your UI app and design system package paths    |
-| `core-libraries.md`                      | `src/**`, `apps/**`, `packages/**`                                                                       | Adjust if your workspace dirs differ           |
-| `logging.md`                             | `src/**`, `apps/**`, `packages/**`                                                                       | Adjust if your workspace dirs differ           |
-| `logging-comments.md`                    | `src/**`, `apps/**`, `packages/**`                                                                       | Adjust if your workspace dirs differ           |
-| `prisma-migrations.md`                   | `prisma/**`, `**/migrations/**`, `**/*.prisma`                                                           | Your ORM/migration directories                 |
-| `server-client-separation.md`            | `src/**`, `apps/**`, `packages/**`                                                                       | Focus on apps with server+client code          |
-| `testing-quality.md`                     | `**/*.{test,spec}.*`, `tests/**`, `apps/**/tests/**`, `packages/**/tests/**`                             | Your test directories and naming conventions   |
-| `ui-accessibility.md`                    | `src/components/**`, `apps/**/components/**`, `packages/**/components/**`, `**/*.{vue,tsx,jsx,css,scss}` | Your UI app and component package paths        |
+| Rule File                     | Default Paths                                                                                            | Adjust To Match                                |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| `api-server.md`               | `src/server/**`, `apps/**/server/**`, `**/*.server.*`                                                    | Your API app directories (e.g., `apps/api/**`) |
+| `component-structure.md`      | `src/components/**`, `apps/**/components/**`, `packages/**/components/**`, `**/*.{vue,tsx,jsx}`          | Your UI app and design system package paths    |
+| `core-libraries.md`           | `src/**`, `apps/**`, `packages/**`                                                                       | Adjust if your workspace dirs differ           |
+| `logging.md`                  | `src/**`, `apps/**`, `packages/**`                                                                       | Adjust if your workspace dirs differ           |
+| `logging-comments.md`         | `src/**`, `apps/**`, `packages/**`                                                                       | Adjust if your workspace dirs differ           |
+| `prisma-migrations.md`        | `prisma/**`, `**/migrations/**`, `**/*.prisma`                                                           | Your ORM/migration directories                 |
+| `server-client-separation.md` | `src/**`, `apps/**`, `packages/**`                                                                       | Focus on apps with server+client code          |
+| `testing-quality.md`          | `**/*.{test,spec}.*`, `tests/**`, `apps/**/tests/**`, `packages/**/tests/**`                             | Your test directories and naming conventions   |
+| `ui-accessibility.md`         | `src/components/**`, `apps/**/components/**`, `packages/**/components/**`, `**/*.{vue,tsx,jsx,css,scss}` | Your UI app and component package paths        |
 
 **Common monorepo adjustments:**
 
@@ -243,24 +243,24 @@ The `tools:` block (Claude Code, GitHub Copilot) and `permission:` block (OpenCo
 
 **1. Capability baseline per role** — what the agent functionally needs:
 
-| Agent | read | search | write | edit | terminal/bash | spawn subagents |
-|-------|------|--------|-------|------|---------------|-----------------|
-| Feature Builder, TDD (coordinators) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Backend Architect, Frontend Developer, API Specialist, Admin Portal, Implementer, Red, Green, Refactor | ✓ | ✓ | ✓ | ✓ | ✓ | – |
-| Documenter | ✓ | ✓ | ✓ | ✓ | ✓ (doc generators) | – |
-| Planner | ✓ | ✓ | ✓ (persist plan) | – | ✓ (git log, test discovery) | – |
-| Reviewer | ✓ | ✓ | – | – | ✓ (git diff, tests) | – |
-| Researcher | ✓ | ✓ | – | – | – | – |
+| Agent                                                                                                  | read | search | write            | edit | terminal/bash               | spawn subagents |
+| ------------------------------------------------------------------------------------------------------ | ---- | ------ | ---------------- | ---- | --------------------------- | --------------- |
+| Feature Builder, TDD (coordinators)                                                                    | ✓    | ✓      | ✓                | ✓    | ✓                           | ✓               |
+| Backend Architect, Frontend Developer, API Specialist, Admin Portal, Implementer, Red, Green, Refactor | ✓    | ✓      | ✓                | ✓    | ✓                           | –               |
+| Documenter                                                                                             | ✓    | ✓      | ✓                | ✓    | ✓ (doc generators)          | –               |
+| Planner                                                                                                | ✓    | ✓      | ✓ (persist plan) | –    | ✓ (git log, test discovery) | –               |
+| Reviewer                                                                                               | ✓    | ✓      | –                | –    | ✓ (git diff, tests)         | –               |
+| Researcher                                                                                             | ✓    | ✓      | –                | –    | –                           | –               |
 
 **2. Translate the baseline to each platform's syntax:**
 
-| Capability | Claude Code | GitHub Copilot | OpenCode (`permission:`) | Cursor |
-|-----------|-------------|----------------|--------------------------|--------|
-| read | `Read` | `read` | default | default |
-| search | `Grep` | `search` | default | default |
-| write / edit files | `Write`, `Edit` | `edit` | `edit: allow` | default |
-| terminal | `Bash(*)` | `runInTerminal`, `terminalLastCommand` | `bash: allow` | default |
-| spawn subagents | `agent` | n/a | `task: allow` | default |
+| Capability         | Claude Code     | GitHub Copilot                         | OpenCode (`permission:`) | Cursor  |
+| ------------------ | --------------- | -------------------------------------- | ------------------------ | ------- |
+| read               | `Read`          | `read`                                 | default                  | default |
+| search             | `Grep`          | `search`                               | default                  | default |
+| write / edit files | `Write`, `Edit` | `edit`                                 | `edit: allow`            | default |
+| terminal           | `Bash(*)`       | `runInTerminal`, `terminalLastCommand` | `bash: allow`            | default |
+| spawn subagents    | `agent`         | n/a                                    | `task: allow`            | default |
 
 > **Cursor note:** these templates declare no `tools:` field, so Cursor subagents inherit the full default toolset. Read-only intent (Researcher, Reviewer) is enforced by the agent's instructions, not tool gating. If your Cursor version supports per-agent tool restriction, add a `tools:` field to match the baseline.
 
@@ -316,7 +316,7 @@ This template bundles issue tracker skills in `.agents/skills/`. Verify the corr
 
 | Detected Tracker | Required Skills                | Expected Files                                                                |
 | ---------------- | ------------------------------ | ----------------------------------------------------------------------------- |
-| Jira             | `issue-tracker` + `acli`   | `.agents/skills/issue-tracker/SKILL.md`, `.agents/skills/acli/SKILL.md`   |
+| Jira             | `issue-tracker` + `acli`       | `.agents/skills/issue-tracker/SKILL.md`, `.agents/skills/acli/SKILL.md`       |
 | GitHub Issues    | `issue-tracker` + `gh-cli`     | `.agents/skills/issue-tracker/SKILL.md`, `.agents/skills/gh-cli/SKILL.md`     |
 | Linear           | `issue-tracker` + `linear-cli` | `.agents/skills/issue-tracker/SKILL.md`, `.agents/skills/linear-cli/SKILL.md` |
 
@@ -445,7 +445,7 @@ Root Files Updated:
 - .claude/rules-snippets/*.md (rules content)
 - .claude/prompt-snippets/*.md (prompt content)
 - .claude/agents-snippets/*.md (agent content)
-- .opencode/opencode.json
+- .opencode/opencode.jsonc
 - .opencode/commands/*.md
 - .opencode/rules/*.md
 - .opencode/agents/*.md
