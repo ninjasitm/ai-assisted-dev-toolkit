@@ -1,22 +1,28 @@
 name: Auto Patch Tag & Release
 
+# Gate the release on the Test workflow: only run after Test completes
+# successfully on main, and never for the release commit itself (prevents
+# recursion when this workflow pushes its own [release] commit).
 on:
-  push:
-    branches:
-      - main
+  workflow_run:
+    workflows: ["Test"]
+    types: [completed]
+    branches: [main]
 
 permissions:
   contents: write
 
 jobs:
   release:
-    # Skip the release commit this workflow itself creates (prevents recursion).
-    if: "!contains(github.event.head_commit.message, '[release]')"
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      !contains(github.event.workflow_run.head_commit.message, '[release]')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.workflow_run.head_branch }}
           fetch-depth: 0
           persist-credentials: false
 
