@@ -8,6 +8,17 @@ Analyze the project structure and customize AI instruction templates for this co
 /bootstrap
 ```
 
+**Codex:** `/bootstrap` is not a native Codex command. For npm installs, ask Codex to read and follow `.nitm/BOOTSTRAP.md`. For manually copied templates without `.nitm/`, ask it to read and follow `.claude/prompt-snippets/bootstrap.md` as a task document.
+
+### Harness selection and native Codex targets
+
+- Identify the actual running harness from session/runtime information or ask the user which harnesses they use. Directory presence alone is not evidence: the default installer scaffolds every supported harness.
+- Codex uses `AGENTS.md` (including more-specific nested instructions) and `.agents/skills/*/SKILL.md` natively. Read linked standards when relevant; `.github/instructions/` and Claude snippets are not automatically loaded as Codex rules.
+- `.codex/config.toml` is an optional, comment-only project config. Preserve inherited defaults and existing user settings. Project config is loaded only after the user explicitly trusts the project; never write self-trust or change model/provider, approvals, sandbox, security, or feature settings during bootstrap.
+- Calibrate Codex by customizing project instructions and skills, not by translating Claude/Copilot `tools:` frontmatter or OpenCode `permission:` blocks. This toolkit ships no Codex custom-agent format; use only delegation capabilities actually available in the running harness.
+- Codex MCP uses native `[mcp_servers.name]` TOML, not `.mcp.json`. Treat other harness MCP templates as references only; do not activate servers, copy credentials, or install hooks automatically.
+- Update and audit only confirmed harness targets. For Codex-only setup, `AGENTS.md`, `.agents/skills/`, and `.codex/config.toml` are the native targets; the remaining tool-specific examples below are conditional.
+
 ## Process
 
 > **Merge, don't clobber.** If a target file already exists and carries project-specific content — customized agents, rules, skills, or `{{PLACEHOLDER}}` values already replaced — preserve it. Add missing structure; never overwrite a customized file with template defaults. When a template change conflicts with an existing customization, merge the addition and flag it for the user rather than replacing the file. For incremental updates after the first bootstrap, prefer `/bootstrap-patch`, which is purpose-built for meticulous merging.
@@ -197,6 +208,8 @@ Replace placeholders in all template files:
 **Files to Update:**
 
 - `AGENTS.md` - Project context and patterns (include project management section)
+- `.agents/skills/*/SKILL.md` - Shared native skills (including Codex)
+- `.codex/config.toml` - Optional Codex config; retain comment-only inherited defaults
 - `.github/copilot-instructions.md` - Copilot configuration
 - `.github/instructions/*.instructions.md` - Context instructions
 - `.github/prompts/*.prompt.md` - Reusable prompts
@@ -281,7 +294,7 @@ Use the first available method when interacting with the issue tracker:
 
 **If Jira:**
 
-1. **MCP server** (preferred): `mcp_atlassian_atl_*` tools (configured in `.mcp.json`)
+1. **MCP server** (preferred): use the actual runtime tool names (`.mcp.json` for Claude; native `[mcp_servers.name]` TOML for Codex)
 2. **CLI fallback**: [`acli`](https://developer.atlassian.com/cloud/acli/reference/commands/) — `acli jira auth login --web`
 
 **If GitHub Issues:**
@@ -291,7 +304,7 @@ Use the first available method when interacting with the issue tracker:
 
 **If Linear:**
 
-1. **MCP server** (preferred): `mcp_linear_*` tools (configured in `.mcp.json`)
+1. **MCP server** (preferred): use the actual runtime tool names (`.mcp.json` for Claude; native `[mcp_servers.name]` TOML for Codex)
 2. **CLI fallback**: [`linear`](https://github.com/linear/linear-cli) — `linear auth` or set `LINEAR_API_KEY`
 
 See the `issue-tracker` and relevant CLI skills for detailed setup and usage examples.
@@ -407,6 +420,8 @@ Customize agent definition files (`.github/agents/` and `.cursor/agents/`) based
 
 The `tools:` block (Claude Code, GitHub Copilot) and `permission:` block (OpenCode) must match each agent's role **and** the detected project. Templates ship with defaults, but calibrate them during bootstrap so every agent can do its job without being over-provisioned.
 
+**Codex native calibration:** apply the harness-selection guidance above. Do not generate Codex agent files from this table or change native security settings to simulate per-role tool gating.
+
 **1. Capability baseline per role** — what the agent functionally needs:
 
 | Agent | read | search | write | edit | terminal/bash | spawn subagents |
@@ -481,14 +496,15 @@ Apply agent customizations? (Y/n)
 
 ### Step 6: Detect Installed AI Agents
 
-Before recommending skills, detect which AI agent directories exist in the workspace. Supported agents are located here: https://github.com/vercel-labs/skills?tab=readme-ov-file#available-agents:
+Before recommending skills, identify the running harness from session/runtime information and confirm additional harnesses with the user. Consult supported skill installer IDs at https://github.com/vercel-labs/skills?tab=readme-ov-file#available-agents.
 
-**Note:** `.agents/` directory is used by multiple agents: `amp`, `codex`, `gemini-cli`, `github-copilot`, `opencode`, `replit`. If only `.agents/` exists, default to `codex` or `github-copilot` based on other indicators.
+**Note:** `.agents/` is shared by multiple agents. Neither it nor `.codex/`, `.claude/`, `.cursor/`, or `.github/` proves a harness is installed or in use; the toolkit scaffolds all by default. If runtime evidence is unavailable, ask rather than defaulting to an agent.
 
 **Build the agent flags string:**
-- For each detected agent, add `-a <agent>` to the command
-- Example: If `.cursor/` and `.github/` exist → use `-a cursor -a github-copilot`
-- If no agents detected, omit `-a` flags (CLI will prompt)
+- For each confirmed harness, add `-a <supported-agent-id>` to the command
+- Example: confirmed Codex only → `{{AGENT_FLAGS}}` becomes `-a codex` (supported by the skills installer)
+- Example: confirmed Cursor and Copilot → `-a cursor -a github-copilot`
+- If no harness is confirmed, ask before installing (or let the CLI prompt); do not infer from scaffold directories
 
 ### Step 7: AI Agent Skills Recommendation
 
@@ -553,13 +569,13 @@ This template bundles issue tracker skills in `.agents/skills/`. Verify the corr
 | React              | `vercel-labs/agent-skills`            | `npx -y skills add {{AGENT_FLAGS}} vercel-labs/agent-skills --skill "vercel-react-best-practices"`     |
 | Vue                | `onmax/nuxt-skills` (vue)             | `npx -y skills add {{AGENT_FLAGS}} onmax/nuxt-skills --skill "vue"`                                    |
 | Nuxt               | `onmax/nuxt-skills` (nuxt)            | `npx -y skills add {{AGENT_FLAGS}} onmax/nuxt-skills --skill "nuxt"`                                   |
-| Expo               | `expo/skills`                         | `npx -y skills add {{AGENT_FLAGS}} expo/skills --skill '*' --agent github-copilot cursor`                                                        |
-| TypeScript         | `pproenca/dot-skills` (typescript)    | `npx -y skills add {{AGENT_FLAGS}} pproenca/dot-skills --skill '*' --agent github-copilot cursor`                                                |
-| Advanced Types     | `wshobson/agents` (ts-advanced-types) | `npx -y skills add {{AGENT_FLAGS}} wshobson/agents --skill '*' --agent github-copilot cursor`                                                    |
+| Expo               | `expo/skills`                         | `npx -y skills add {{AGENT_FLAGS}} expo/skills --skill '*'` |
+| TypeScript         | `pproenca/dot-skills` (typescript)    | `npx -y skills add {{AGENT_FLAGS}} pproenca/dot-skills --skill '*'` |
+| Advanced Types     | `wshobson/agents` (ts-advanced-types) | `npx -y skills add {{AGENT_FLAGS}} wshobson/agents --skill '*'` |
 
 **Skill Creation for Unsupported Frameworks:**
 
-Use `npx -y skills add {{AGENT_FLAGS}} anthropics/skills --skill '*' --agent github-copilot cursor` (includes `skill-creator`) to create custom skills.
+Use `npx -y skills add {{AGENT_FLAGS}} anthropics/skills --skill '*'` (includes `skill-creator`) to create custom skills.
 
 **Present Recommendation:**
 
@@ -574,9 +590,9 @@ Based on your project ({{FRAMEWORK}}/{{LANGUAGE}}):
 ### Core Skills (recommended for all projects)
 
 ```bash
-npx -y skills add {{AGENT_FLAGS}} obra/superpowers --skill '*' --agent github-copilot cursor
-npx -y skills add {{AGENT_FLAGS}} trailofbits/skills --skill '*' --agent github-copilot cursor
-npx -y skills add {{AGENT_FLAGS}} softaworks/agent-toolkit --skill '*' --agent github-copilot cursor
+npx -y skills add {{AGENT_FLAGS}} obra/superpowers --skill '*'
+npx -y skills add {{AGENT_FLAGS}} trailofbits/skills --skill '*'
+npx -y skills add {{AGENT_FLAGS}} softaworks/agent-toolkit --skill '*'
 `````
 
 ### Issue Tracker Skills (bundled — {{ISSUE_TRACKER}})
@@ -592,7 +608,7 @@ npx -y skills add {{AGENT_FLAGS}} softaworks/agent-toolkit --skill '*' --agent g
 ### Framework-Specific Skills
 
 ```bash
-npx -y skills add {{FRAMEWORK_SKILL_REPO}} --skill '*' --agent github-copilot cursor
+npx -y skills add {{AGENT_FLAGS}} {{FRAMEWORK_SKILL_REPO}} --skill '*'
 ```
 
 ### Install All?
@@ -604,7 +620,7 @@ Would you like to install these skills now? (Y/n)
 **On Confirmation:**
 
 - Run skill installation commands
-- Skills installed to `.github/skills/{skill-name}/` (by skill name, not org/repo)
+- Verify the installer's reported paths; Codex uses `.agents/skills/{skill-name}/` (by skill name, not org/repo)
 - Update `AGENTS.md` to reference installed skills
 
 ### Step 7: Completion Report
@@ -662,7 +678,7 @@ After bootstrap completion, review all installed skills for relevance:
 **Skill Audit Process:**
 
 1. **Inventory Installed Skills**
-   - Scan `.github/skills/` and `.cursor/skills/` directories
+   - Scan `.agents/skills/` and confirmed harness skill directories, including `.github/skills/` and `.cursor/skills/` if used
    - List all installed skill names and descriptions
    - Check each skill's SKILL.md for its purpose
 
@@ -742,6 +758,8 @@ Kept {{N}} relevant skills:
 ### Step 9: Instruction Files Verification
 
 Verify that all necessary instruction files exist and are properly configured:
+
+For Codex, verify `AGENTS.md`, relevant nested `AGENTS.md` files, and `.agents/skills/*/SKILL.md`; parse `.codex/config.toml` as TOML and confirm it retains inherited defaults. The Copilot-specific audit below applies only when Copilot is confirmed in use; do not create Copilot instructions merely to satisfy a Codex audit.
 
 **Required Instruction Files:**
 
@@ -921,6 +939,8 @@ All instruction files are automatically loaded by GitHub Copilot when editing ma
 ```
 
 ### Step 10: Final Verification
+
+Report only actual changes and checks for confirmed harnesses. For Codex, include native instruction/skill discovery and TOML validation; do not mark other harness configuration as active merely because its scaffold exists.
 
 ```markdown
 ## ✅ Bootstrap Complete & Verified!

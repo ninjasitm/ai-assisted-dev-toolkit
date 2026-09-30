@@ -9,6 +9,7 @@ const assert = require('node:assert/strict');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const { spawnSync } = require('child_process');
 
 const cli = require('../bin/cli.js');
 
@@ -18,6 +19,17 @@ function tmp() {
 function writeJson(p, obj) {
   fs.mkdirSync(path.dirname(p), { recursive: true });
   fs.writeFileSync(p, JSON.stringify(obj));
+}
+function captureOutput(fn) {
+  const lines = [];
+  const log = console.log;
+  console.log = (...args) => lines.push(args.join(' '));
+  try {
+    fn();
+  } finally {
+    console.log = log;
+  }
+  return lines.join('\n');
 }
 
 test('detectType: defaults to repo', () => {
@@ -177,12 +189,110 @@ test('parseFlags: supports --env=val form', () => {
   assert.equal(f.env, 'opencode');
 });
 
-test('envHeader: generic when no env (mentions auto-detect)', () => {
+test('envHeader: generic includes Codex and directs agents to the handoff file', () => {
   const h = cli.envHeader('repo', undefined);
-  assert.match(h, /auto-detects/);
+  assert.match(h, /OpenAI Codex/);
+  assert.match(h, /read and follow `\.nitm\/BOOTSTRAP\.md`/);
+  assert.match(h, /no native `\/bootstrap` command is provided/);
+  assert.doesNotMatch(h, /auto-detects your harness/);
 });
 
 test('envHeader: tailored when env given', () => {
   const h = cli.envHeader('repo', 'claude');
   assert.match(h, /Claude Code/);
+});
+
+test('scopeFiles: Codex keeps .codex, .agents, and shared files only', () => {
+  const files = ['AGENTS.md', 'docs/x.md', '.codex/config.toml', '.agents/skills/a.md',
+    '.claude/a.md', '.cursor/a.md', '.github/a.md', '.vscode/a.json', '.opencode/a.md'];
+  assert.deepEqual(cli.ENV_DIRS.codex, ['.codex', '.agents']);
+  assert.deepEqual(cli.scopeFiles(files, 'codex'), files.slice(0, 4));
+  assert.deepEqual(cli.ENV_DIRS.claude, ['.claude', '.agents']);
+  assert.deepEqual(cli.ENV_DIRS.copilot, ['.github', '.vscode']);
+  assert.deepEqual(cli.ENV_DIRS.cursor, ['.cursor']);
+  assert.deepEqual(cli.ENV_DIRS.opencode, ['.opencode']);
+  for (const env of ['claude', 'copilot', 'cursor', 'opencode']) {
+    assert.ok(!cli.scopeFiles(files, env).includes('.codex/config.toml'));
+  }
+});
+
+for (const type of ['repo', 'monorepo']) {
+  test(`install: default ${type} includes Codex and all other harnesses`, () => {
+    const d = tmp();
+    const output = captureOutput(() => cli.cmdInstall(d, { [type]: true }));
+    assert.ok(fs.existsSync(path.join(d, '.codex', 'config.toml')));
+    for (const dir of ['.agents', '.claude', '.github', '.vscode', '.cursor', '.opencode']) {
+      assert.ok(fs.existsSync(path.join(d, dir)), `${dir} present`);
+    }
+    assert.match(output, /OpenAI Codex/);
+    assert.match(output, /read and follow `\.nitm\/BOOTSTRAP\.md`/);
+    assert.doesNotMatch(output, /auto-detects your harness/);
+  });
+
+  test(`install: scoped Codex ${type} has shared files and no other harness dirs`, () => {
+    const d = tmp();
+    const flags = { [type]: true, env: 'codex' };
+    const output = captureOutput(() => cli.cmdInstall(d, flags));
+    for (const rel of ['AGENTS.md', '.agents', '.codex/config.toml', '.nitm/BOOTSTRAP.md']) {
+      assert.ok(fs.existsSync(path.join(d, rel)), `${rel} present`);
+    }
+    for (const dir of ['.claude', '.github', '.vscode', '.cursor', '.opencode']) {
+      assert.ok(!fs.existsSync(path.join(d, dir)), `${dir} absent`);
+    }
+    const header = fs.readFileSync(path.join(d, '.nitm', 'BOOTSTRAP.md'), 'utf8');
+    assert.ok(header.startsWith(cli.envHeader(type, 'codex')));
+    assert.match(output, /tailored to OpenAI Codex/);
+    assert.match(output, /read and follow \.nitm\/BOOTSTRAP\.md/);
+    assert.match(output, /doctor --env codex/);
+    assert.doesNotMatch(output, /\/bootstrap|auto-detects|Unknown --env/);
+    assert.equal(cli.cmdDoctor(d, flags).missingFiles.length, 0);
+    fs.rmSync(path.join(d, '.codex', 'config.toml'));
+    let result;
+    const doctorOutput = captureOutput(() => { result = cli.cmdDoctor(d, flags); });
+    assert.deepEqual(result.missingFiles, [path.join('.codex', 'config.toml')]);
+    assert.match(doctorOutput, /\.codex[\\/]config\.toml/);
+  });
+
+  test(`patch: scoped Codex ${type} adds missing files and preserves custom config with --force`, () => {
+    const d = tmp();
+    const flags = { [type]: true, env: 'codex', force: true };
+    const first = cli.cmdPatch(d, flags);
+    assert.ok(first.copied > 0);
+    const config = path.join(d, '.codex', 'config.toml');
+    assert.ok(fs.existsSync(config));
+    const custom = '# User customization\nmodel = "user-selected-model"\n';
+    fs.writeFileSync(config, custom);
+    fs.rmSync(path.join(d, 'AGENTS.md'));
+    fs.rmSync(path.join(d, '.nitm', 'BOOTSTRAP.md'));
+    const patched = cli.cmdPatch(d, flags);
+    assert.equal(patched.copied, 1);
+    assert.equal(fs.readFileSync(config, 'utf8'), custom);
+    assert.ok(fs.existsSync(path.join(d, 'AGENTS.md')));
+    assert.ok(fs.existsSync(path.join(d, '.nitm', 'BOOTSTRAP.md')));
+    assert.equal(cli.cmdDoctor(d, flags).missingFiles.length, 0);
+  });
+}
+
+test('parseFlags: supports Codex in both env forms', () => {
+  assert.equal(cli.parseFlags(['install', '--env', 'codex']).env, 'codex');
+  assert.equal(cli.parseFlags(['doctor', '--env=codex']).env, 'codex');
+});
+
+test('envHeader: Codex reads the handoff file and uses scoped doctor', () => {
+  const h = cli.envHeader('repo', 'codex');
+  assert.match(h, /environment: OpenAI Codex/);
+  assert.match(h, /read and follow \.nitm\/BOOTSTRAP\.md/);
+  assert.match(h, /doctor --env codex/);
+  assert.doesNotMatch(h, /\/bootstrap|auto-detects/);
+});
+
+test('help: lists Codex and truthful default and bootstrap instructions', () => {
+  const r = spawnSync(process.execPath, [path.join(__dirname, '..', 'bin', 'cli.js'), '--help'],
+    { encoding: 'utf8' });
+  assert.equal(r.status, 0);
+  assert.match(r.stdout, /claude\|codex\|copilot\|cursor\|opencode/);
+  assert.match(r.stdout, /ALL environments, including OpenAI Codex/);
+  assert.match(r.stdout, /read and follow \.nitm\/BOOTSTRAP\.md/);
+  assert.match(r.stdout, /no native \/bootstrap command is provided/);
+  assert.doesNotMatch(r.stdout, /auto-detects your harness/);
 });

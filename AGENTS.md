@@ -18,6 +18,7 @@ The [orient-to-recent-work](.agents/skills/orient-to-recent-work/SKILL.md) skill
 /
 ├── src/
 │   ├── repo/           # Single repository templates
+│   │   ├── .codex/     # Optional native Codex config (comment-only)
 │   │   ├── .cursor/    # Cursor IDE config templates
 │   │   │   ├── agents/ # Custom agent templates (subagents)
 │   │   │   ├── rules/  # IDE behavior rules
@@ -42,6 +43,7 @@ The [orient-to-recent-work](.agents/skills/orient-to-recent-work/SKILL.md) skill
 │   │   └── AGENTS.md   # Agent context (source of truth)
 │   │
 │   └── monorepo/       # Monorepo templates
+│       ├── .codex/     # Optional native Codex config (comment-only)
 │       ├── .cursor/    # Root Cursor config
 │       ├── .github/    # Root GitHub config
 │       ├── .claude/    # Root Claude Code config
@@ -88,6 +90,9 @@ This toolkit uses a layered architecture for cross-tool compatibility (Claude Co
 
 ### Tool-specific
 
+- **Codex** — Native `AGENTS.md` and `.agents/skills/`; optional comment-only `.codex/config.toml`, loaded only after explicit user trust. Preserve inherited defaults; do not set model/provider, approval, sandbox, security, feature, self-trust, or active MCP settings in the template. Native MCP uses `[mcp_servers.name]` TOML, not `.mcp.json`.
+- **Codex bootstrap** — For npm installs, ask Codex to read and follow `.nitm/BOOTSTRAP.md`; manual copies without `.nitm/` use `.claude/prompt-snippets/bootstrap.md` as a task document. `/bootstrap` is not a native Codex command. Do not invent Codex custom-agent formats or assume Claude frontmatter compatibility.
+- **Harness detection** — Use actual session/runtime evidence or ask the user; default scaffolding includes all harness directories and does not prove installation or use.
 - **`.cursor/`** — Cursor IDE (independent, .mdc format)
 - **`.opencode/`** — OpenCode (agents, commands, opencode.jsonc)
 - **`.vscode/mcp.json`** — GitHub Copilot MCP config (`"servers"` key)

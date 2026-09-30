@@ -110,6 +110,12 @@ See the following files for AI-assisted development:
 
 ## AI Instructions and Commands
 
+### Native Codex
+
+Codex reads `AGENTS.md` and `.agents/skills/` natively. The optional comment-only `.codex/config.toml` preserves inherited defaults and is loaded only after explicit user trust; it does not grant trust or activate MCP servers. Codex MCP uses native `[mcp_servers.name]` TOML, not `.mcp.json`.
+
+For npm setup, ask Codex to read and follow `.nitm/BOOTSTRAP.md`. For manual copies without `.nitm/`, provide `.claude/prompt-snippets/bootstrap.md` as a task document (copy the shared snippets too). For AI-guided updates, provide `.claude/prompt-snippets/bootstrap-patch.md`. The slash commands below and tool-specific custom-agent formats are not native Codex commands or agent definitions. Bootstrap must identify the actual running harness or ask, not infer it from scaffolded directories.
+
 This repository includes AI instruction files to standardize development workflows across tools. The `.cursor/` and `.github/` folders define how AI assistants should analyze, plan, implement, and review changes.
 
 ### Planning

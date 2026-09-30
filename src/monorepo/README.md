@@ -50,6 +50,12 @@ This is a monorepo managed with {{BUILD_SYSTEM}}.
 
 ## Getting Started
 
+### Native Codex
+
+Codex reads root/nested `AGENTS.md` instructions and `.agents/skills/` natively. The optional comment-only `.codex/config.toml` preserves inherited defaults and is loaded only after explicit user trust; it does not grant trust or activate MCP servers. Codex MCP uses native `[mcp_servers.name]` TOML, not `.mcp.json`.
+
+For npm setup, ask Codex to read and follow `.nitm/BOOTSTRAP.md`. For manual copies without `.nitm/`, provide `.claude/prompt-snippets/bootstrap.md` as a task document (copy the shared snippets too). For AI-guided updates, provide `.claude/prompt-snippets/bootstrap-patch.md`. Toolkit slash commands and other tools' custom-agent formats are not native Codex commands or agent definitions. Bootstrap must identify the actual running harness or ask, not infer it from scaffolded directories.
+
 ### Prerequisites
 
 - Node.js {{NODE_VERSION}}
