@@ -16,7 +16,7 @@ const SRC_DIR = path.join(PKG_ROOT, 'src');
 // Platform config dirs per harness. Claude and Codex share `.agents` (universal skills).
 const ENV_DIRS = {
   claude: ['.claude', '.agents'],
-  codex: ['.codex', '.agents'],
+  codex: ['.codex', '.agents', path.join('.github', 'instructions'), path.join('.claude', 'rules-snippets')],
   copilot: ['.github', '.vscode'],
   cursor: ['.cursor'],
   opencode: ['.opencode'],
@@ -86,9 +86,12 @@ function templateFiles(type) {
 function scopeFiles(files, env) {
   if (!env || !ENV_DIRS[env]) return files;
   const allowed = new Set([...SHARED_ROOT, ...SHARED_DIRS, ...ENV_DIRS[env]]);
+  const dirs = [...SHARED_DIRS, ...ENV_DIRS[env]].map((dir) => path.normalize(dir));
   return files.filter((rel) => {
-    const top = rel.split(path.sep)[0];
-    return allowed.has(top) || allowed.has(rel);
+    const normalized = path.normalize(rel);
+    const top = normalized.split(path.sep)[0];
+    return allowed.has(top) || allowed.has(normalized)
+      || dirs.some((dir) => normalized.startsWith(dir + path.sep));
   });
 }
 

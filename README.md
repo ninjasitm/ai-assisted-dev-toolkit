@@ -183,6 +183,7 @@ After `install`, ask your AI agent to read and follow `.nitm/BOOTSTRAP.md`. Harn
 
 ### Native Codex
 
+- `--env codex` includes `.codex/`, `.agents/`, and shared context, plus `.github/instructions/` and `.claude/rules-snippets/` solely to supply the standards linked from `AGENTS.md` and those standards' wrapper source content. It does not install other harness command, agent, or config directories. These reference files neither establish Copilot/Claude use nor load automatically as Codex rules; other harness scopes are unchanged.
 - Codex reads `AGENTS.md` and discovers `.agents/skills/*/SKILL.md` natively. Monorepos can use more-specific nested `AGENTS.md` files for app/package guidance. Linked standards are references to read as needed, not automatically loaded Claude/Copilot rules.
 - The optional `.codex/config.toml` is deliberately comment-only: it preserves the user's inherited defaults. Codex loads project config only after the user explicitly trusts the project; the toolkit does not grant trust or set model/provider, approval, sandbox, security, or feature overrides.
 - For manual copies without `.nitm/`, provide `.claude/prompt-snippets/bootstrap.md` to Codex directly. For incremental AI-guided merges, provide `.claude/prompt-snippets/bootstrap-patch.md` as a task document; the CLI `patch` command only adds missing files.

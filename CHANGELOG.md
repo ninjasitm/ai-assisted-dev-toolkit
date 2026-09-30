@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Bootstrap audit/creation examples are explicitly conditional on confirmed Copilot use; completion reports describe performed harness-specific checks without assuming OpenCode configuration, Codex trust/loading, or Copilot/Cursor readiness. Codex-scoped install documentation now includes linked standards and their wrapper sources without implying other harness activation.
+
 ### Added
 
 - Native Codex support for repo and monorepo templates: shared `AGENTS.md` and `.agents/skills/`, plus optional comment-only `.codex/config.toml` preserving inherited defaults and requiring explicit user trust

@@ -17,7 +17,7 @@ Analyze the project structure and customize AI instruction templates for this co
 - `.codex/config.toml` is an optional, comment-only project config. Preserve inherited defaults and existing user settings. Project config is loaded only after the user explicitly trusts the project; never write self-trust or change model/provider, approvals, sandbox, security, or feature settings during bootstrap.
 - Calibrate Codex by customizing project instructions and skills, not by translating Claude/Copilot `tools:` frontmatter or OpenCode `permission:` blocks. This toolkit ships no Codex custom-agent format; use only delegation capabilities actually available in the running harness.
 - Codex MCP uses native `[mcp_servers.name]` TOML, not `.mcp.json`. Treat other harness MCP templates as references only; do not activate servers, copy credentials, or install hooks automatically.
-- Update and audit only confirmed harness targets. For Codex-only setup, `AGENTS.md`, `.agents/skills/`, and `.codex/config.toml` are the native targets; the remaining tool-specific examples below are conditional.
+- Update and audit only confirmed harness targets. For Codex-only setup, `AGENTS.md`, `.agents/skills/`, and `.codex/config.toml` are the native targets. `--env codex` also includes `.github/instructions/` and `.claude/rules-snippets/` solely as AGENTS-linked standards and their wrapper sources, not automatically loaded rules or evidence of Copilot/Claude use; other harness command, agent, and config directories are excluded. The remaining tool-specific examples below are conditional.
 
 ## Process
 
@@ -625,6 +625,8 @@ Would you like to install these skills now? (Y/n)
 
 ### Step 7: Completion Report
 
+Populate this example with only files actually changed and skills actually installed. Omit unconfirmed harness targets; for Codex, include native targets and shared reference standards only when changed. This is a change inventory, not proof of runtime loading or trust.
+
 ```markdown
 ## ✅ Bootstrap Complete!
 
@@ -639,27 +641,19 @@ Would you like to install these skills now? (Y/n)
 
 ### Updated Files
 
-- [x] AGENTS.md (with {{LANGUAGE}} patterns)
-- [x] .github/copilot-instructions.md
-- [x] .github/instructions/\*.instructions.md
-- [x] .cursor/rules/\*.mdc
-- [x] .cursor/commands/\*.md
-- [x] .github/prompts/\*.prompt.md
-- [x] .claude/rules/\*.md (thin wrappers)
-- [x] .claude/rules-snippets/\*.md (rules content)
-- [x] .claude/prompt-snippets/\*.md (prompt content)
-- [x] .claude/agents-snippets/\*.md (agent content)
-- [x] .opencode/opencode.jsonc
-- [x] .opencode/commands/\*.md
-- [x] .opencode/rules/\*.md
-- [x] .opencode/agents/\*.md
-- [x] .toolkit-version
+- AGENTS.md (with {{LANGUAGE}} patterns; if changed)
+- .agents/skills/\*/SKILL.md (if changed)
+- .codex/config.toml (Codex; if changed)
+- .github/instructions/\*.instructions.md (linked standards or confirmed Copilot; if changed)
+- .claude/rules-snippets/\*.md (reference sources; if changed)
+- Other confirmed harness files actually changed (list exact paths)
+- .toolkit-version (if changed)
 
 ### Installed Skills
 
-- [x] obra/superpowers - Development workflow
-- [x] trailofbits/skills - Security & quality
-- [x] {{FRAMEWORK_SKILL}} - Framework patterns
+- obra/superpowers - Development workflow (only if installed)
+- trailofbits/skills - Security & quality (only if installed)
+- {{FRAMEWORK_SKILL}} - Framework patterns (only if installed)
 
 ### Next Steps
 
@@ -761,7 +755,7 @@ Verify that all necessary instruction files exist and are properly configured:
 
 For Codex, verify `AGENTS.md`, relevant nested `AGENTS.md` files, and `.agents/skills/*/SKILL.md`; parse `.codex/config.toml` as TOML and confirm it retains inherited defaults. The Copilot-specific audit below applies only when Copilot is confirmed in use; do not create Copilot instructions merely to satisfy a Codex audit.
 
-**Required Instruction Files:**
+**Required Copilot Instruction Files (only if Copilot is confirmed in use):**
 
 | File                          | Purpose                         | Location                |
 | ----------------------------- | ------------------------------- | ----------------------- |
@@ -772,10 +766,10 @@ For Codex, verify `AGENTS.md`, relevant nested `AGENTS.md` files, and `.agents/s
 | `testing.instructions.md`     | Testing conventions             | `.github/instructions/` |
 | `api.instructions.md`         | API conventions (if applicable) | `.github/instructions/` |
 
-**Detection & Validation:**
+**Copilot Detection & Validation Example (only if confirmed in use):**
 
 ```markdown
-## 📋 Instruction Files Audit
+## 📋 Copilot Instruction Files Audit — confirmed Copilot use only
 
 ### ✅ Found ({{N}} files)
 
@@ -801,18 +795,18 @@ For Codex, verify `AGENTS.md`, relevant nested `AGENTS.md` files, and `.agents/s
 | `.claude/prompt-snippets/` | Prompt content (source of truth)    | ✓      |
 | `.claude/agents-snippets/` | Agent definitions (source of truth) | ✓      |
 
-### 📝 Create Missing Instruction Files?
+### 📝 Create Missing Copilot Instruction Files? (confirmed Copilot use only)
 
 These files would help AI understand your project's conventions.
 
 Create recommended instructions? (Y/n)
 ```
 
-**On Confirmation:**
+**On Confirmation (only if Copilot is confirmed in use):**
 
-Generate missing instruction files with appropriate templates:
+Generate missing Copilot instruction files with appropriate templates; skip creation for a Codex-only audit even when shared reference standards are present:
 
-**Example: Framework Instruction Template**
+**Copilot Example: Framework Instruction Template (only if confirmed in use)**
 
 ```markdown
 ---
@@ -866,7 +860,7 @@ Key packages:
 - [Project README](README.md)
 ```
 
-**Example: Testing Instruction Template**
+**Copilot Example: Testing Instruction Template (only if confirmed in use)**
 
 ```markdown
 ---
@@ -917,10 +911,10 @@ Available test utilities:
 - {{TESTING_ANTIPATTERN_2}}
 ```
 
-**Post-Creation Report:**
+**Copilot Post-Creation Report Example (only if confirmed in use and files were created):**
 
 ```markdown
-## ✅ Instruction Files Created
+## ✅ Copilot Instruction Files Created — confirmed Copilot use only
 
 Created {{N}} new instruction files:
 
@@ -940,20 +934,20 @@ All instruction files are automatically loaded by GitHub Copilot when editing ma
 
 ### Step 10: Final Verification
 
-Report only actual changes and checks for confirmed harnesses. For Codex, include native instruction/skill discovery and TOML validation; do not mark other harness configuration as active merely because its scaffold exists.
+Report only actual changes and checks for confirmed harnesses. For Codex, distinguish file inspection and TOML validation from runtime instruction/skill discovery, project trust, and config loading. Mark runtime behavior unverified unless directly confirmed; file presence alone proves none of these. Remove inapplicable rows and mark checklist items complete only after performing the check.
 
 ```markdown
-## ✅ Bootstrap Complete & Verified!
+## Bootstrap Verification Report
 
 ### Summary
 
 | Category                  | Count | Status |
 | ------------------------- | ----- | ------ |
-| Files updated             | {{N}} | ✓      |
-| Skills installed          | {{N}} | ✓      |
-| Skills removed            | {{N}} | ✓      |
-| Instruction files created | {{N}} | ✓      |
-| Project management        | 1     | ✓      |
+| Files updated             | {{N}} | Report actual result |
+| Skills installed          | {{N}} | Report actual result |
+| Skills removed            | {{N}} | Report actual result |
+| Instruction files created | {{N}} | Report actual result |
+| Project management        | 1     | Report actual result or not configured |
 
 ### Project Management Configuration
 
@@ -961,7 +955,7 @@ Report only actual changes and checks for confirmed harnesses. For Codex, includ
 **URL:** {{PM_URL}} _(if applicable)_
 **Project Key:** {{PROJECT_KEY}} _(if applicable)_
 **Issue Format:** `{{PM_ISSUE_KEY}}`
-**Location:** Root AGENTS.md and copilot-instructions.md
+**Location:** Root AGENTS.md; include copilot-instructions.md only if Copilot is confirmed and the file was updated
 
 ### Skill Inventory
 
@@ -973,7 +967,7 @@ Report only actual changes and checks for confirmed harnesses. For Codex, includ
 
 ### Instruction Files
 
-**Active Instructions ({{N}}):**
+**Inspected Instructions ({{N}}; report runtime loading separately):**
 
 - {{INSTRUCTION_1}}
 - {{INSTRUCTION_2}}
@@ -981,25 +975,28 @@ Report only actual changes and checks for confirmed harnesses. For Codex, includ
 
 ### Quality Checks
 
-- [x] All placeholders replaced
-- [x] Framework patterns match detected stack
-- [x] No duplicate skills
-- [x] AGENTS.md configured
-- [x] Instruction files cover all frameworks
-- [x] Skills align with tech stack
-- [x] Snippet directories created
-- [x] Thin wrappers reference correct snippets
-- [x] .opencode/ directory configured
-- [x] .toolkit-version file created
+- [ ] All placeholders replaced (list any remaining)
+- [ ] Framework patterns match detected stack
+- [ ] No duplicate skills
+- [ ] AGENTS.md configured
+- [ ] Instruction files cover applicable frameworks
+- [ ] Skills align with tech stack
+- [ ] Required reference snippet sources present and links resolve
+- [ ] Thin wrappers reference correct snippets (if applicable)
+- [ ] OpenCode configuration validated (only if OpenCode is confirmed in use)
+- [ ] .toolkit-version file created or checked
 
-### Your Project is Ready! 🎉
+### Native Codex Check Example (only if Codex is confirmed in use)
 
-GitHub Copilot and Cursor will now understand:
+| Target | Check to report | Result |
+| ------ | --------------- | ------ |
+| `AGENTS.md` and relevant nested files | Contents and linked standards inspected | Actual inspection result |
+| `.agents/skills/*/SKILL.md` | Skill contents and relevance inspected | Actual inspection result; runtime discovery unverified unless confirmed |
+| `.codex/config.toml` (if present) | TOML syntax and inherited defaults inspected | Actual validation result; user trust and native loading unverified unless confirmed |
 
-- Your project structure
-- Framework-specific patterns
-- Custom conventions
-- Testing strategies
+### Next Steps for Confirmed Harnesses
+
+List the confirmed harnesses, checks actually performed, remaining issues, and runtime checks still needed. Do not infer Copilot/Cursor readiness or Codex trust/loading from scaffold files.
 
 Try asking:
 

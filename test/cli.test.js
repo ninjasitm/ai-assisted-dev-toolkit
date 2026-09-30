@@ -202,11 +202,15 @@ test('envHeader: tailored when env given', () => {
   assert.match(h, /Claude Code/);
 });
 
-test('scopeFiles: Codex keeps .codex, .agents, and shared files only', () => {
+test('scopeFiles: Codex keeps bounded shared standards without changing other scopes', () => {
   const files = ['AGENTS.md', 'docs/x.md', '.codex/config.toml', '.agents/skills/a.md',
+    path.join('.github', 'instructions', 'patterns.instructions.md'),
+    path.join('.claude', 'rules-snippets', 'patterns.md'),
     '.claude/a.md', '.cursor/a.md', '.github/a.md', '.vscode/a.json', '.opencode/a.md'];
-  assert.deepEqual(cli.ENV_DIRS.codex, ['.codex', '.agents']);
-  assert.deepEqual(cli.scopeFiles(files, 'codex'), files.slice(0, 4));
+  assert.deepEqual(cli.ENV_DIRS.codex, ['.codex', '.agents',
+    path.join('.github', 'instructions'), path.join('.claude', 'rules-snippets')]);
+  assert.deepEqual(cli.scopeFiles(files, 'codex'), files.slice(0, 6));
+  assert.deepEqual(cli.SHARED_DIRS, ['docs', 'templates', 'hooks']);
   assert.deepEqual(cli.ENV_DIRS.claude, ['.claude', '.agents']);
   assert.deepEqual(cli.ENV_DIRS.copilot, ['.github', '.vscode']);
   assert.deepEqual(cli.ENV_DIRS.cursor, ['.cursor']);
@@ -214,6 +218,24 @@ test('scopeFiles: Codex keeps .codex, .agents, and shared files only', () => {
   for (const env of ['claude', 'copilot', 'cursor', 'opencode']) {
     assert.ok(!cli.scopeFiles(files, env).includes('.codex/config.toml'));
   }
+  assert.ok(!cli.scopeFiles(files, 'claude').includes(files[4]));
+  assert.ok(!cli.scopeFiles(files, 'copilot').includes(files[5]));
+  for (const env of ['cursor', 'opencode']) {
+    assert.ok(!cli.scopeFiles(files, env).includes(files[4]));
+    assert.ok(!cli.scopeFiles(files, env).includes(files[5]));
+  }
+});
+
+test('scopeFiles: nested Codex standards match normalized directory boundaries only', () => {
+  const kept = [path.join('.github', 'instructions', 'nested', 'x.md'),
+    path.join('.claude', 'rules-snippets', 'patterns.md'),
+    '.github//instructions//patterns.instructions.md'];
+  const excluded = [path.join('.github', 'instructions-extra', 'x.md'),
+    path.join('.claude', 'rules-snippets-extra', 'x.md'),
+    path.join('.github', 'instructions.md'), path.join('.claude', 'rules-snippets.md'),
+    path.join('.github', 'instructions', '..', 'prompts', 'x.md'),
+    path.join('.claude', 'rules-snippets', '..', 'commands', 'x.md')];
+  assert.deepEqual(cli.scopeFiles([...kept, ...excluded], 'codex'), kept);
 });
 
 for (const type of ['repo', 'monorepo']) {
@@ -229,16 +251,30 @@ for (const type of ['repo', 'monorepo']) {
     assert.doesNotMatch(output, /auto-detects your harness/);
   });
 
-  test(`install: scoped Codex ${type} has shared files and no other harness dirs`, () => {
+  test(`install: scoped Codex ${type} has readable linked standards and no unrelated harness content`, () => {
     const d = tmp();
     const flags = { [type]: true, env: 'codex' };
     const output = captureOutput(() => cli.cmdInstall(d, flags));
     for (const rel of ['AGENTS.md', '.agents', '.codex/config.toml', '.nitm/BOOTSTRAP.md']) {
       assert.ok(fs.existsSync(path.join(d, rel)), `${rel} present`);
     }
-    for (const dir of ['.claude', '.github', '.vscode', '.cursor', '.opencode']) {
+    assert.deepEqual(fs.readdirSync(path.join(d, '.github')), ['instructions']);
+    assert.deepEqual(fs.readdirSync(path.join(d, '.claude')), ['rules-snippets']);
+    for (const dir of ['.vscode', '.cursor', '.opencode']) {
       assert.ok(!fs.existsSync(path.join(d, dir)), `${dir} absent`);
     }
+    const instructions = path.join(d, '.github', 'instructions');
+    let linkedStandards = 0;
+    for (const file of fs.readdirSync(instructions)) {
+      const wrapper = fs.readFileSync(path.join(instructions, file), 'utf8');
+      for (const match of wrapper.matchAll(/\]\(([^)]+\.claude\/rules-snippets\/[^)]+)\)/g)) {
+        const target = path.resolve(instructions, match[1]);
+        assert.ok(target.startsWith(path.join(d, '.claude', 'rules-snippets') + path.sep));
+        assert.ok(fs.readFileSync(target, 'utf8').length > 0, `${file} links to readable standards`);
+        linkedStandards++;
+      }
+    }
+    assert.equal(linkedStandards, fs.readdirSync(instructions).length, 'all instruction wrappers have readable snippet targets');
     const header = fs.readFileSync(path.join(d, '.nitm', 'BOOTSTRAP.md'), 'utf8');
     assert.ok(header.startsWith(cli.envHeader(type, 'codex')));
     assert.match(output, /tailored to OpenAI Codex/);
@@ -271,6 +307,28 @@ for (const type of ['repo', 'monorepo']) {
     assert.ok(fs.existsSync(path.join(d, '.nitm', 'BOOTSTRAP.md')));
     assert.equal(cli.cmdDoctor(d, flags).missingFiles.length, 0);
   });
+
+  for (const force of [false, true]) {
+    test(`patch: scoped Codex ${type} restores missing standards without overwriting snippets (force=${force})`, () => {
+      const d = tmp();
+      const flags = { [type]: true, env: 'codex', force };
+      cli.cmdInstall(d, flags);
+      const snippet = path.join('.claude', 'rules-snippets', 'patterns.md');
+      const instruction = path.join('.github', 'instructions', 'patterns.instructions.md');
+      const missingSnippet = path.join('.claude', 'rules-snippets', 'testing.md');
+      const custom = '# Customized standards\nKeep user conventions.\n';
+      fs.writeFileSync(path.join(d, snippet), custom);
+      for (const rel of [instruction, missingSnippet]) fs.rmSync(path.join(d, rel));
+      assert.deepEqual(cli.cmdDoctor(d, flags).missingFiles.sort(), [instruction, missingSnippet].sort());
+      const result = cli.cmdPatch(d, flags);
+      assert.equal(result.copied, 2);
+      assert.equal(fs.readFileSync(path.join(d, snippet), 'utf8'), custom);
+      for (const rel of [instruction, missingSnippet]) {
+        assert.ok(fs.readFileSync(path.join(d, rel), 'utf8').length > 0, `${rel} restored`);
+      }
+      assert.equal(cli.cmdDoctor(d, flags).missingFiles.length, 0);
+    });
+  }
 }
 
 test('parseFlags: supports Codex in both env forms', () => {
