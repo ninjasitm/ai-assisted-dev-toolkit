@@ -7,8 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Bootstrap audit/creation examples are explicitly conditional on confirmed Copilot use; completion reports describe performed harness-specific checks without assuming OpenCode configuration, Codex trust/loading, or Copilot/Cursor readiness. Codex-scoped install documentation now includes linked standards and their wrapper sources without implying other harness activation.
+
 ### Added
 
+- Native Codex support for repo and monorepo templates: shared `AGENTS.md` and `.agents/skills/`, plus optional comment-only `.codex/config.toml` preserving inherited defaults and requiring explicit user trust
+- Codex setup documentation and native bootstrap/patch guidance, including `.nitm/BOOTSTRAP.md` handoff, manual snippet fallback, and native MCP TOML configuration
 - Custom agent templates (`.agent.md`) for subagent orchestration workflows
 - Feature Builder coordinator agent for end-to-end feature development
 - TDD coordinator agent with Red-Green-Refactor cycle
@@ -40,6 +46,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- CLI default-install documentation and package metadata now include Codex; bootstrap uses actual runtime harness evidence or asks rather than inferring use from scaffolded directories
+- Bootstrap skill commands use confirmed harness flags without hardcoded Copilot/Cursor overrides
 - `install` now aborts if target files already exist (instead of silently skipping) and tells the user to pass `--force` to overwrite or run `patch` to add only missing files
 - `patch` is documented as add-missing-only (never overwrites existing customizations) and re-emits the bootstrap handoff
 - `omo-slim-starter install` now delegates to the published `npx nitm-opencode-starter install` (guides the user if unavailable) instead of cloning the repo and wiring scripts

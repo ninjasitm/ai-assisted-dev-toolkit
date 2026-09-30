@@ -9,6 +9,7 @@ const assert = require('node:assert/strict');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const { spawnSync } = require('child_process');
 
 const cli = require('../bin/cli.js');
 
@@ -18,6 +19,17 @@ function tmp() {
 function writeJson(p, obj) {
   fs.mkdirSync(path.dirname(p), { recursive: true });
   fs.writeFileSync(p, JSON.stringify(obj));
+}
+function captureOutput(fn) {
+  const lines = [];
+  const log = console.log;
+  console.log = (...args) => lines.push(args.join(' '));
+  try {
+    fn();
+  } finally {
+    console.log = log;
+  }
+  return lines.join('\n');
 }
 
 test('detectType: defaults to repo', () => {
@@ -177,12 +189,168 @@ test('parseFlags: supports --env=val form', () => {
   assert.equal(f.env, 'opencode');
 });
 
-test('envHeader: generic when no env (mentions auto-detect)', () => {
+test('envHeader: generic includes Codex and directs agents to the handoff file', () => {
   const h = cli.envHeader('repo', undefined);
-  assert.match(h, /auto-detects/);
+  assert.match(h, /OpenAI Codex/);
+  assert.match(h, /read and follow `\.nitm\/BOOTSTRAP\.md`/);
+  assert.match(h, /no native `\/bootstrap` command is provided/);
+  assert.doesNotMatch(h, /auto-detects your harness/);
 });
 
 test('envHeader: tailored when env given', () => {
   const h = cli.envHeader('repo', 'claude');
   assert.match(h, /Claude Code/);
+});
+
+test('scopeFiles: Codex keeps bounded shared standards without changing other scopes', () => {
+  const files = ['AGENTS.md', 'docs/x.md', '.codex/config.toml', '.agents/skills/a.md',
+    path.join('.github', 'instructions', 'patterns.instructions.md'),
+    path.join('.claude', 'rules-snippets', 'patterns.md'),
+    '.claude/a.md', '.cursor/a.md', '.github/a.md', '.vscode/a.json', '.opencode/a.md'];
+  assert.deepEqual(cli.ENV_DIRS.codex, ['.codex', '.agents',
+    path.join('.github', 'instructions'), path.join('.claude', 'rules-snippets')]);
+  assert.deepEqual(cli.scopeFiles(files, 'codex'), files.slice(0, 6));
+  assert.deepEqual(cli.SHARED_DIRS, ['docs', 'templates', 'hooks']);
+  assert.deepEqual(cli.ENV_DIRS.claude, ['.claude', '.agents']);
+  assert.deepEqual(cli.ENV_DIRS.copilot, ['.github', '.vscode']);
+  assert.deepEqual(cli.ENV_DIRS.cursor, ['.cursor']);
+  assert.deepEqual(cli.ENV_DIRS.opencode, ['.opencode']);
+  for (const env of ['claude', 'copilot', 'cursor', 'opencode']) {
+    assert.ok(!cli.scopeFiles(files, env).includes('.codex/config.toml'));
+  }
+  assert.ok(!cli.scopeFiles(files, 'claude').includes(files[4]));
+  assert.ok(!cli.scopeFiles(files, 'copilot').includes(files[5]));
+  for (const env of ['cursor', 'opencode']) {
+    assert.ok(!cli.scopeFiles(files, env).includes(files[4]));
+    assert.ok(!cli.scopeFiles(files, env).includes(files[5]));
+  }
+});
+
+test('scopeFiles: nested Codex standards match normalized directory boundaries only', () => {
+  const kept = [path.join('.github', 'instructions', 'nested', 'x.md'),
+    path.join('.claude', 'rules-snippets', 'patterns.md'),
+    '.github//instructions//patterns.instructions.md'];
+  const excluded = [path.join('.github', 'instructions-extra', 'x.md'),
+    path.join('.claude', 'rules-snippets-extra', 'x.md'),
+    path.join('.github', 'instructions.md'), path.join('.claude', 'rules-snippets.md'),
+    path.join('.github', 'instructions', '..', 'prompts', 'x.md'),
+    path.join('.claude', 'rules-snippets', '..', 'commands', 'x.md')];
+  assert.deepEqual(cli.scopeFiles([...kept, ...excluded], 'codex'), kept);
+});
+
+for (const type of ['repo', 'monorepo']) {
+  test(`install: default ${type} includes Codex and all other harnesses`, () => {
+    const d = tmp();
+    const output = captureOutput(() => cli.cmdInstall(d, { [type]: true }));
+    assert.ok(fs.existsSync(path.join(d, '.codex', 'config.toml')));
+    for (const dir of ['.agents', '.claude', '.github', '.vscode', '.cursor', '.opencode']) {
+      assert.ok(fs.existsSync(path.join(d, dir)), `${dir} present`);
+    }
+    assert.match(output, /OpenAI Codex/);
+    assert.match(output, /read and follow `\.nitm\/BOOTSTRAP\.md`/);
+    assert.doesNotMatch(output, /auto-detects your harness/);
+  });
+
+  test(`install: scoped Codex ${type} has readable linked standards and no unrelated harness content`, () => {
+    const d = tmp();
+    const flags = { [type]: true, env: 'codex' };
+    const output = captureOutput(() => cli.cmdInstall(d, flags));
+    for (const rel of ['AGENTS.md', '.agents', '.codex/config.toml', '.nitm/BOOTSTRAP.md']) {
+      assert.ok(fs.existsSync(path.join(d, rel)), `${rel} present`);
+    }
+    assert.deepEqual(fs.readdirSync(path.join(d, '.github')), ['instructions']);
+    assert.deepEqual(fs.readdirSync(path.join(d, '.claude')), ['rules-snippets']);
+    for (const dir of ['.vscode', '.cursor', '.opencode']) {
+      assert.ok(!fs.existsSync(path.join(d, dir)), `${dir} absent`);
+    }
+    const instructions = path.join(d, '.github', 'instructions');
+    let linkedStandards = 0;
+    for (const file of fs.readdirSync(instructions)) {
+      const wrapper = fs.readFileSync(path.join(instructions, file), 'utf8');
+      for (const match of wrapper.matchAll(/\]\(([^)]+\.claude\/rules-snippets\/[^)]+)\)/g)) {
+        const target = path.resolve(instructions, match[1]);
+        assert.ok(target.startsWith(path.join(d, '.claude', 'rules-snippets') + path.sep));
+        assert.ok(fs.readFileSync(target, 'utf8').length > 0, `${file} links to readable standards`);
+        linkedStandards++;
+      }
+    }
+    assert.equal(linkedStandards, fs.readdirSync(instructions).length, 'all instruction wrappers have readable snippet targets');
+    const header = fs.readFileSync(path.join(d, '.nitm', 'BOOTSTRAP.md'), 'utf8');
+    assert.ok(header.startsWith(cli.envHeader(type, 'codex')));
+    assert.match(output, /tailored to OpenAI Codex/);
+    assert.match(output, /read and follow \.nitm\/BOOTSTRAP\.md/);
+    assert.match(output, /doctor --env codex/);
+    assert.doesNotMatch(output, /\/bootstrap|auto-detects|Unknown --env/);
+    assert.equal(cli.cmdDoctor(d, flags).missingFiles.length, 0);
+    fs.rmSync(path.join(d, '.codex', 'config.toml'));
+    let result;
+    const doctorOutput = captureOutput(() => { result = cli.cmdDoctor(d, flags); });
+    assert.deepEqual(result.missingFiles, [path.join('.codex', 'config.toml')]);
+    assert.match(doctorOutput, /\.codex[\\/]config\.toml/);
+  });
+
+  test(`patch: scoped Codex ${type} adds missing files and preserves custom config with --force`, () => {
+    const d = tmp();
+    const flags = { [type]: true, env: 'codex', force: true };
+    const first = cli.cmdPatch(d, flags);
+    assert.ok(first.copied > 0);
+    const config = path.join(d, '.codex', 'config.toml');
+    assert.ok(fs.existsSync(config));
+    const custom = '# User customization\nmodel = "user-selected-model"\n';
+    fs.writeFileSync(config, custom);
+    fs.rmSync(path.join(d, 'AGENTS.md'));
+    fs.rmSync(path.join(d, '.nitm', 'BOOTSTRAP.md'));
+    const patched = cli.cmdPatch(d, flags);
+    assert.equal(patched.copied, 1);
+    assert.equal(fs.readFileSync(config, 'utf8'), custom);
+    assert.ok(fs.existsSync(path.join(d, 'AGENTS.md')));
+    assert.ok(fs.existsSync(path.join(d, '.nitm', 'BOOTSTRAP.md')));
+    assert.equal(cli.cmdDoctor(d, flags).missingFiles.length, 0);
+  });
+
+  for (const force of [false, true]) {
+    test(`patch: scoped Codex ${type} restores missing standards without overwriting snippets (force=${force})`, () => {
+      const d = tmp();
+      const flags = { [type]: true, env: 'codex', force };
+      cli.cmdInstall(d, flags);
+      const snippet = path.join('.claude', 'rules-snippets', 'patterns.md');
+      const instruction = path.join('.github', 'instructions', 'patterns.instructions.md');
+      const missingSnippet = path.join('.claude', 'rules-snippets', 'testing.md');
+      const custom = '# Customized standards\nKeep user conventions.\n';
+      fs.writeFileSync(path.join(d, snippet), custom);
+      for (const rel of [instruction, missingSnippet]) fs.rmSync(path.join(d, rel));
+      assert.deepEqual(cli.cmdDoctor(d, flags).missingFiles.sort(), [instruction, missingSnippet].sort());
+      const result = cli.cmdPatch(d, flags);
+      assert.equal(result.copied, 2);
+      assert.equal(fs.readFileSync(path.join(d, snippet), 'utf8'), custom);
+      for (const rel of [instruction, missingSnippet]) {
+        assert.ok(fs.readFileSync(path.join(d, rel), 'utf8').length > 0, `${rel} restored`);
+      }
+      assert.equal(cli.cmdDoctor(d, flags).missingFiles.length, 0);
+    });
+  }
+}
+
+test('parseFlags: supports Codex in both env forms', () => {
+  assert.equal(cli.parseFlags(['install', '--env', 'codex']).env, 'codex');
+  assert.equal(cli.parseFlags(['doctor', '--env=codex']).env, 'codex');
+});
+
+test('envHeader: Codex reads the handoff file and uses scoped doctor', () => {
+  const h = cli.envHeader('repo', 'codex');
+  assert.match(h, /environment: OpenAI Codex/);
+  assert.match(h, /read and follow \.nitm\/BOOTSTRAP\.md/);
+  assert.match(h, /doctor --env codex/);
+  assert.doesNotMatch(h, /\/bootstrap|auto-detects/);
+});
+
+test('help: lists Codex and truthful default and bootstrap instructions', () => {
+  const r = spawnSync(process.execPath, [path.join(__dirname, '..', 'bin', 'cli.js'), '--help'],
+    { encoding: 'utf8' });
+  assert.equal(r.status, 0);
+  assert.match(r.stdout, /claude\|codex\|copilot\|cursor\|opencode/);
+  assert.match(r.stdout, /ALL environments, including OpenAI Codex/);
+  assert.match(r.stdout, /read and follow \.nitm\/BOOTSTRAP\.md/);
+  assert.match(r.stdout, /no native \/bootstrap command is provided/);
+  assert.doesNotMatch(r.stdout, /auto-detects your harness/);
 });

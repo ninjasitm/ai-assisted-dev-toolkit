@@ -79,6 +79,14 @@ When stopping to ask a question, do not just post an open-ended block of text. F
 
 ## Detailed Instructions
 
+### Native Codex
+
+Codex-scoped installs include `.github/instructions/` and `.claude/rules-snippets/` solely as AGENTS-linked standards and their wrapper sources. Read them as references when relevant, not as automatically loaded Codex rules or evidence of Copilot/Claude use; other harness command, agent, and config directories are excluded from `--env codex`.
+
+Codex uses this `AGENTS.md` and `.agents/skills/` natively; more-specific nested `AGENTS.md` files provide scoped guidance. Read linked standards when relevant rather than assuming tool-specific rules are auto-loaded. Optional `.codex/config.toml` is comment-only and preserves inherited defaults; project config loads only after explicit user trust. Do not grant self-trust, change security/model/feature defaults, translate Claude frontmatter into Codex agents, or activate MCP servers automatically. Codex MCP uses native `[mcp_servers.name]` TOML, not `.mcp.json`.
+
+For npm setup, read and follow `.nitm/BOOTSTRAP.md`. If manually copied and `.nitm/` is absent, read `.claude/prompt-snippets/bootstrap.md` as a task document; `/bootstrap` is not a native Codex command. Determine the actual harness from runtime information or ask; scaffold directories alone do not establish use. Named custom-agent examples below apply only to harnesses that support their formats; in Codex, use workflow skills and only available native delegation capabilities.
+
 Detailed standards are split into focused instruction files in `.github/instructions/`:
 
 | Instruction File                   | Description                                     |

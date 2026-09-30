@@ -19,6 +19,10 @@ Fetch the latest AI instruction templates from the ai-assisted-dev-toolkit repos
 
 ## Process
 
+**Codex invocation and scope:** `/bootstrap-patch` is not a native Codex command. Ask Codex to read and follow this snippet as a task document. Identify the actual harness from session/runtime evidence or ask; scaffold directories do not prove use. Codex targets `AGENTS.md`, relevant nested instructions, `.agents/skills/`, and optional `.codex/config.toml`. Include `.github/instructions/` and `.claude/rules-snippets/` solely as AGENTS-linked standards and their wrapper sources for Codex-scoped installs, not automatically loaded rules or evidence of Copilot/Claude use. Only include other harness command, agent, and config categories when those harnesses are confirmed in use.
+
+**Codex merge guardrails:** preserve existing TOML and inherited user defaults. The shipped `.codex/config.toml` is comment-only; parse it as TOML, do not add model/provider, approval, sandbox, security, feature, self-trust, or active MCP settings. Project config is loaded only after explicit user trust. MCP uses native `[mcp_servers.name]` TOML, not `.mcp.json`; do not migrate or activate servers automatically. Claude/Copilot frontmatter and OpenCode permission blocks are not Codex agent definitions; no Codex custom-agent format is shipped here.
+
 1.  **Fetch Latest Templates**:
 
     Clone or fetch the latest ai-assisted-dev-toolkit templates:
@@ -65,6 +69,7 @@ Fetch the latest AI instruction templates from the ai-assisted-dev-toolkit repos
     | **Claude Agents**          | `.claude/agents/*.agent.md`              | `src/{type}/.claude/agents/*.agent.md`              |
     | **Skills**                 | `.agents/skills/*/SKILL.md`              | `src/{type}/.agents/skills/*/SKILL.md`              |
     | **AGENTS.md**              | `AGENTS.md`                              | `src/{type}/AGENTS.md`                              |
+    | **Codex Config**           | `.codex/config.toml`                     | `src/{type}/.codex/config.toml`                     |
     | **CLAUDE.md**              | `CLAUDE.md`                              | `src/{type}/CLAUDE.md`                              |
     | **Claude Rules Snippets**  | `.claude/rules-snippets/*.md`            | `src/{type}/.claude/rules-snippets/*.md`            |
     | **Claude Prompt Snippets** | `.claude/prompt-snippets/*.md`           | `src/{type}/.claude/prompt-snippets/*.md`           |

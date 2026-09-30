@@ -11,6 +11,7 @@ This repository serves as a **template source** for AI development instructions 
 - **GitHub Copilot instructions** (`.github/copilot-instructions.md`)
 - **GitHub prompts** (`.github/prompts/`) for reusable prompt templates
 - **AGENTS.md** files for AI agent context
+- **Native Codex setup** using `AGENTS.md`, `.agents/skills/`, and an optional comment-only `.codex/config.toml`
 - **Skills recommendations** from [skills.sh](https://skills.sh/) for enhanced AI capabilities
 
 ## Repository Structure
@@ -19,6 +20,7 @@ This repository serves as a **template source** for AI development instructions 
 /
 ├── src/
 │   ├── repo/           # Templates for single repositories
+│   │   ├── .codex/     # Optional native Codex config (comment-only)
 │   │   ├── .cursor/    # Cursor IDE configuration
 │   │   │   ├── agents/ # Custom agent templates (subagents)
 │   │   │   ├── rules/  # IDE behavior rules
@@ -39,6 +41,7 @@ This repository serves as a **template source** for AI development instructions 
 │   │   └── README.md   # Project README template
 │   │
 │   └── monorepo/       # Templates for monorepos
+│       ├── .codex/     # Optional native Codex config (comment-only)
 │       ├── .cursor/    # Root-level Cursor config
 │       │   ├── agents/ # Custom agent templates (subagents)
 │       │   ├── rules/  # IDE behavior rules
@@ -77,6 +80,8 @@ This repository serves as a **template source** for AI development instructions 
 cp -r src/repo/.cursor /path/to/your/project/
 cp -r src/repo/.github /path/to/your/project/
 cp -r src/repo/.agents /path/to/your/project/
+cp -r src/repo/.claude /path/to/your/project/ # Shared snippet sources
+cp -r src/repo/.codex /path/to/your/project/  # Optional Codex config
 cp src/repo/AGENTS.md /path/to/your/project/
 ```
 
@@ -88,6 +93,7 @@ Open your project in Cursor IDE or VS Code with GitHub Copilot, then run:
 
 - **Cursor IDE**: Use the `/bootstrap` command
 - **GitHub Copilot**: Use the `bootstrap.prompt.md` prompt (`/bootstrap`)
+- **Codex**: Ask it to read and follow `.claude/prompt-snippets/bootstrap.md` as a task document (manual copies have no `.nitm/BOOTSTRAP.md`). Do not use `/bootstrap` as a native Codex command.
 
 The bootstrap process will:
 
@@ -108,6 +114,8 @@ After bootstrapping, review the generated files and add any project-specific pat
 cp -r src/monorepo/.cursor /path/to/your/project/
 cp -r src/monorepo/.github /path/to/your/project/
 cp -r src/monorepo/.agents /path/to/your/project/
+cp -r src/monorepo/.claude /path/to/your/project/ # Shared snippet sources
+cp -r src/monorepo/.codex /path/to/your/project/  # Optional Codex config
 cp src/monorepo/AGENTS.md /path/to/your/project/
 # Optionally copy app/package templates
 cp -r src/monorepo/apps/app-template /path/to/your/project/apps/
@@ -122,6 +130,7 @@ Open your project in Cursor IDE or VS Code with GitHub Copilot, then run:
 
 - **Cursor IDE**: Use the `/bootstrap` command
 - **GitHub Copilot**: Use the `bootstrap.prompt.md` prompt (`/bootstrap`)
+- **Codex**: Ask it to read and follow `.claude/prompt-snippets/bootstrap.md` as a task document (manual copies have no `.nitm/BOOTSTRAP.md`). Do not use `/bootstrap` as a native Codex command.
 
 The bootstrap process will:
 
@@ -142,7 +151,7 @@ After bootstrapping:
 
 ## CLI (npx)
 
-Scaffold AI agent config into any repo, then hand off to your AI agent to finish setup (replace `{{PLACEHOLDER}}`s, calibrate agent tools). The CLI scaffolds config for **all** supported harnesses (Claude Code, GitHub Copilot, Cursor, OpenCode); the `/bootstrap` command auto-detects your environment at runtime, so you normally don't need `--env`. `install` aborts if files already exist — use `--force` to overwrite, or `patch` to add only missing files.
+Scaffold AI agent config into any repo, then hand off to your AI agent to finish setup (replace `{{PLACEHOLDER}}`s, calibrate native instructions). The CLI scaffolds config for **all** supported harnesses (Claude Code, GitHub Copilot, Cursor, OpenCode, Codex) by default, so you normally don't need `--env`. Scaffolding does not prove a harness is installed or active: bootstrap uses actual runtime information or asks which harnesses you use. `install` aborts if files already exist — use `--force` to overwrite, or `patch` to add only missing files.
 
 ```bash
 # Scaffold AI config into the current repo (auto-detects repo vs monorepo)
@@ -155,6 +164,7 @@ npx nitm-ai-dev-toolkit install --repo
 
 # Optional: scaffold only one harness (e.g. you only use Cursor)
 npx nitm-ai-dev-toolkit install --env cursor
+npx nitm-ai-dev-toolkit install --env codex
 
 # Add only missing files (never overwrites existing ones) + re-emit the bootstrap handoff
 npx nitm-ai-dev-toolkit patch
@@ -169,7 +179,18 @@ npx nitm-ai-dev-toolkit upgrade
 npx nitm-ai-dev-toolkit omo-slim-starter install
 ```
 
-After `install`, run `/bootstrap` from whatever harness you're in — it auto-detects your environment. You can also read `.nitm/BOOTSTRAP.md` and ask your AI agent to run the bootstrap flow. Use `doctor` to verify the result.
+After `install`, ask your AI agent to read and follow `.nitm/BOOTSTRAP.md`. Harnesses that supply a toolkit `/bootstrap` wrapper can also use it; **Codex has no native toolkit `/bootstrap` command**. Use `doctor` to verify the result.
+
+### Native Codex
+
+- `--env codex` includes `.codex/`, `.agents/`, and shared context, plus `.github/instructions/` and `.claude/rules-snippets/` solely to supply the standards linked from `AGENTS.md` and those standards' wrapper source content. It does not install other harness command, agent, or config directories. These reference files neither establish Copilot/Claude use nor load automatically as Codex rules; other harness scopes are unchanged.
+- Codex reads `AGENTS.md` and discovers `.agents/skills/*/SKILL.md` natively. Monorepos can use more-specific nested `AGENTS.md` files for app/package guidance. Linked standards are references to read as needed, not automatically loaded Claude/Copilot rules.
+- The optional `.codex/config.toml` is deliberately comment-only: it preserves the user's inherited defaults. Codex loads project config only after the user explicitly trusts the project; the toolkit does not grant trust or set model/provider, approval, sandbox, security, or feature overrides.
+- For manual copies without `.nitm/`, provide `.claude/prompt-snippets/bootstrap.md` to Codex directly. For incremental AI-guided merges, provide `.claude/prompt-snippets/bootstrap-patch.md` as a task document; the CLI `patch` command only adds missing files.
+- Codex MCP configuration uses native `[mcp_servers.name]` TOML in Codex config, **not `.mcp.json`**. No MCP servers are activated by the Codex template. Configure only user-approved servers using the native docs; do not copy credentials or activate other harness hooks automatically.
+- Existing `.claude/agents/`, `.github/agents/`, and `.opencode/agents/` formats are tool-specific, not Codex custom agents. This toolkit does not translate their frontmatter or permissions into Codex configuration. Use only delegation capabilities actually available in your running harness.
+
+Official Codex docs: [basic configuration](https://learn.chatgpt.com/docs/config-file/config-basic) · [configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference) · [AGENTS.md](https://learn.chatgpt.com/docs/agent-configuration/agents-md) · [skills](https://learn.chatgpt.com/docs/build-skills) · [MCP](https://learn.chatgpt.com/docs/extend/mcp?surface=cli).
 
 ## Placeholder Reference
 

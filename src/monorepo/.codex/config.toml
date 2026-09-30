@@ -1,0 +1,6 @@
+# Codex project configuration (optional).
+# Instructions: AGENTS.md; reusable skills: .agents/skills/.
+# Intentionally comment-only: inherit the user's Codex defaults.
+# Codex loads project config only after the user explicitly trusts the project.
+# Configure optional MCP servers in native [mcp_servers.name] TOML, not .mcp.json.
+# Reference: https://learn.chatgpt.com/docs/config-file/config-basic

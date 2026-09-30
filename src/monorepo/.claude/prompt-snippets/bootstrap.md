@@ -2,6 +2,16 @@ You are helping to bootstrap AI instructions for this monorepo by analyzing the 
 
 > **Merge, don't clobber.** If a target file already exists and carries project-specific content — customized agents, rules, skills, or `{{PLACEHOLDER}}` values already replaced — preserve it. Add missing structure; never overwrite a customized file with template defaults. When a template change conflicts with an existing customization, merge the addition and flag it for the user rather than replacing the file. For incremental updates after the first bootstrap, prefer `/bootstrap-patch`, which is purpose-built for meticulous merging.
 
+## Harness selection and native Codex targets
+
+**Codex:** `/bootstrap` is not a native Codex command. For npm installs, ask Codex to read and follow `.nitm/BOOTSTRAP.md`. For manually copied templates without `.nitm/`, ask it to read and follow `.claude/prompt-snippets/bootstrap.md` as a task document.
+
+- Identify the actual running harness from session/runtime information or ask which harnesses the user uses. Directory presence alone is not evidence: the default installer scaffolds every supported harness.
+- Codex uses root and more-specific nested `AGENTS.md` instructions and `.agents/skills/*/SKILL.md` natively. Customize app/package instructions for their scopes. Read linked standards when relevant; Claude snippets and `.github/instructions/` are not automatically loaded as Codex rules.
+- `.codex/config.toml` is optional and comment-only. Preserve inherited defaults and existing user settings. Project config is loaded only after the user explicitly trusts the project; never write self-trust or change model/provider, approvals, sandbox, security, or feature settings during bootstrap.
+- Codex MCP uses native `[mcp_servers.name]` TOML, not `.mcp.json`. Treat other harness MCP templates as references only; do not activate servers, copy credentials, or install hooks automatically.
+- Update and audit only confirmed harness targets. For Codex-only setup, the native targets are root/nested `AGENTS.md`, `.agents/skills/`, and `.codex/config.toml`. `--env codex` also includes `.github/instructions/` and `.claude/rules-snippets/` solely as AGENTS-linked standards and their wrapper sources, not automatically loaded rules or evidence of Copilot/Claude use; other harness command, agent, and config directories are excluded. Tool-specific steps below are conditional.
+
 ## Your Task
 
 1. **Analyze the Monorepo**:
@@ -125,6 +135,8 @@ You are helping to bootstrap AI instructions for this monorepo by analyzing the 
 
    **Root Level:**
    - `AGENTS.md` (include project management section)
+   - `.agents/skills/*/SKILL.md` (shared native skills, including Codex)
+   - `.codex/config.toml` (optional Codex config; retain comment-only inherited defaults)
    - `.github/copilot-instructions.md` (include PM context)
    - `.github/instructions/*.instructions.md`
    - `.github/prompts/*.prompt.md`
@@ -241,6 +253,8 @@ For multi-app monorepos with different frameworks, list all with app context (e.
 
 The `tools:` block (Claude Code, GitHub Copilot) and `permission:` block (OpenCode) must match each agent's role **and** the detected project. Templates ship with defaults, but calibrate them during bootstrap so every agent can do its job without being over-provisioned.
 
+**Codex native calibration:** customize project instructions and skills, not Claude/Copilot `tools:` frontmatter or OpenCode `permission:` blocks. This toolkit ships no Codex custom-agent format. Use only delegation capabilities actually available in the running harness; do not generate agent files from this table or change native security settings to simulate per-role tool gating.
+
 **1. Capability baseline per role** — what the agent functionally needs:
 
 | Agent                                                                                                  | read | search | write            | edit | terminal/bash               | spawn subagents |
@@ -278,16 +292,16 @@ Present the replacements and confirm before applying.
 
 9. **Detect Installed AI Agents**:
 
-   Before recommending skills, detect which AI agent directories exist in the workspace. Supported agents are located here: https://github.com/vercel-labs/skills?tab=readme-ov-file#available-agents:
+   Before recommending skills, identify the running harness from session/runtime information and confirm additional harnesses with the user. Consult supported installer IDs at https://github.com/vercel-labs/skills?tab=readme-ov-file#available-agents.
 
-   **Note:** `.agents/` directory is used by multiple agents: `amp`, `codex`, `gemini-cli`, `github-copilot`, `opencode`, `replit`. If only `.agents/` exists, default to `codex` or `github-copilot` based on other indicators.
+   **Note:** `.agents/` is shared by multiple agents. Neither it nor scaffolded `.codex/`, `.claude/`, `.cursor/`, or `.github/` directories proves a harness is installed or used. If runtime evidence is unavailable, ask rather than defaulting to an agent.
 
-   **Note:** `.claude/` directory indicates Claude Code is installed. Add `-a claude-code` to agent flags.
+   **Codex:** the skills installer supports agent ID `codex`; confirmed Codex use maps to `-a codex` and native `.agents/skills/`.
 
    **Build the agent flags string:**
-   - For each detected agent, add `-a <agent>` to the command
-   - Example: If `.cursor/`, `.claude/`, and `.github/` exist → use `-a cursor -a claude-code -a github-copilot`
-   - If no agents detected, omit `-a` flags (CLI will prompt)
+   - For each confirmed harness, add `-a <supported-agent-id>` to the command
+   - Example: confirmed Cursor, Claude Code, and Copilot → `-a cursor -a claude-code -a github-copilot`
+   - If no harness is confirmed, ask before installing (or let the CLI prompt); do not infer from scaffold directories
 
 10. **Recommend and Install AI Agent Skills**:
 
@@ -303,11 +317,11 @@ Based on detected ecosystem and frameworks, recommend relevant skills from [skil
 | `trailofbits/skills`       | Security analysis, Semgrep, property-based testing |
 | `softaworks/agent-toolkit` | README writing, clear documentation                |
 
-**Example commands** (replace `<detected-agents>` with the actual flags from step 9, e.g., `-a cursor -a github-copilot`):
+**Example commands** (replace `{{AGENT_FLAGS}}` with confirmed harness flags from step 9, e.g., `-a codex`):
 
 ```bash
-npx -y skills add <detected-agents> obra/superpowers --skill '*' --agent github-copilot cursor
-npx -y skills add <detected-agents> trailofbits/skills --skill '*' --agent github-copilot cursor
+npx -y skills add {{AGENT_FLAGS}} obra/superpowers --skill '*'
+npx -y skills add {{AGENT_FLAGS}} trailofbits/skills --skill '*'
 ```
 
 **Issue Tracker Skills Health Check (if {{ISSUE_TRACKER}} is configured):**
@@ -361,25 +375,25 @@ When recommending framework-specific skills, include the detected agent flags. E
 
 | Language/Framework | Skill Repository                      | Install Command                                                                                          |
 | ------------------ | ------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| PHP                | `vapvarun/claude-backup` (php)        | `npx -y skills add <detected-agents> vapvarun/claude-backup --skill "php"`                               |
-| Laravel            | `vapvarun/claude-backup` (laravel)    | `npx -y skills add <detected-agents> vapvarun/claude-backup --skill "laravel"`                           |
-| Python             | `siviter-xyz/dot-agent` (python)      | `npx -y skills add <detected-agents> siviter-xyz/dot-agent --skill "python"`                             |
-| Django             | `vintasoftware/django-ai-plugins`     | `npx -y skills add <detected-agents> vintasoftware/django-ai-plugins --skill "django-expert"`            |
-| Next.js            | `sickn33/antigravity-awesome-skills`  | `npx -y skills add <detected-agents> sickn33/antigravity-awesome-skills --skill "nextjs-best-practices"` |
-| React              | `vercel-labs/agent-skills`            | `npx -y skills add <detected-agents> vercel-labs/agent-skills --skill "vercel-react-best-practices"`     |
-| Vue                | `onmax/nuxt-skills` (vue)             | `npx -y skills add <detected-agents> onmax/nuxt-skills --skill "vue"`                                    |
-| Nuxt               | `onmax/nuxt-skills` (nuxt)            | `npx -y skills add <detected-agents> onmax/nuxt-skills --skill "nuxt"`                                   |
-| Expo               | `expo/skills`                         | `npx -y skills add <detected-agents> expo/skills --skill '*' --agent github-copilot cursor`              |
-| TypeScript         | `pproenca/dot-skills` (typescript)    | `npx -y skills add <detected-agents> pproenca/dot-skills --skill '*' --agent github-copilot cursor`      |
-| Advanced Types     | `wshobson/agents` (ts-advanced-types) | `npx -y skills add <detected-agents> wshobson/agents --skill '*' --agent github-copilot cursor`          |
+| PHP                | `vapvarun/claude-backup` (php)        | `npx -y skills add {{AGENT_FLAGS}} vapvarun/claude-backup --skill "php"` |
+| Laravel            | `vapvarun/claude-backup` (laravel)    | `npx -y skills add {{AGENT_FLAGS}} vapvarun/claude-backup --skill "laravel"` |
+| Python             | `siviter-xyz/dot-agent` (python)      | `npx -y skills add {{AGENT_FLAGS}} siviter-xyz/dot-agent --skill "python"` |
+| Django             | `vintasoftware/django-ai-plugins`     | `npx -y skills add {{AGENT_FLAGS}} vintasoftware/django-ai-plugins --skill "django-expert"` |
+| Next.js            | `sickn33/antigravity-awesome-skills`  | `npx -y skills add {{AGENT_FLAGS}} sickn33/antigravity-awesome-skills --skill "nextjs-best-practices"` |
+| React              | `vercel-labs/agent-skills`            | `npx -y skills add {{AGENT_FLAGS}} vercel-labs/agent-skills --skill "vercel-react-best-practices"` |
+| Vue                | `onmax/nuxt-skills` (vue)             | `npx -y skills add {{AGENT_FLAGS}} onmax/nuxt-skills --skill "vue"` |
+| Nuxt               | `onmax/nuxt-skills` (nuxt)            | `npx -y skills add {{AGENT_FLAGS}} onmax/nuxt-skills --skill "nuxt"` |
+| Expo               | `expo/skills`                         | `npx -y skills add {{AGENT_FLAGS}} expo/skills --skill '*'` |
+| TypeScript         | `pproenca/dot-skills` (typescript)    | `npx -y skills add {{AGENT_FLAGS}} pproenca/dot-skills --skill '*'` |
+| Advanced Types     | `wshobson/agents` (ts-advanced-types) | `npx -y skills add {{AGENT_FLAGS}} wshobson/agents --skill '*'` |
 
 **Skill Creation for Unsupported Frameworks:**
 
-Use `npx -y skills add <detected-agents> anthropics/skills --skill '*' --agent github-copilot cursor` (includes `skill-creator`) to create custom skills.
+Use `npx -y skills add {{AGENT_FLAGS}} anthropics/skills --skill '*'` (includes `skill-creator`) to create custom skills.
 
 **Monorepo-Specific Considerations:**
 
-- Install skills at workspace root (`.cursor/skills/{skill-name}/` or `.github/skills/{skill-name}/`)
+- Install skills at workspace root (Codex: `.agents/skills/{skill-name}/`); verify the installer's reported paths for other harnesses
 - Skills are installed by skill name, not org/repo path (e.g., `superpowers/` not `obra/superpowers/`)
 - Consider per-app skills if apps use different frameworks
 - Update root `AGENTS.md` to reference installed skills
@@ -397,9 +411,9 @@ Using flags: {{AGENT_FLAGS}}
 Based on your monorepo ({{BUILD_SYSTEM}}/{{LANGUAGE}}):
 
 Core Skills (recommended for all projects):
-npx -y skills add {{AGENT_FLAGS}} obra/superpowers --skill '*' --agent github-copilot cursor
-npx -y skills add {{AGENT_FLAGS}} trailofbits/skills --skill '*' --agent github-copilot cursor
-npx -y skills add {{AGENT_FLAGS}} softaworks/agent-toolkit --skill '*' --agent github-copilot cursor
+npx -y skills add {{AGENT_FLAGS}} obra/superpowers --skill '*'
+npx -y skills add {{AGENT_FLAGS}} trailofbits/skills --skill '*'
+npx -y skills add {{AGENT_FLAGS}} softaworks/agent-toolkit --skill '*'
 
 Issue Tracker Skills (bundled — {{ISSUE_TRACKER}}):
 ✅ .agents/skills/issue-tracker/SKILL.md (shared strategy)
@@ -407,26 +421,28 @@ Issue Tracker Skills (bundled — {{ISSUE_TRACKER}}):
 ⚠️ Prune any issue-tracker CLI skills that do not match {{ISSUE_TRACKER}} (if any)
 
 Framework-Specific Skills:
-- web (Next.js): npx -y skills add {{AGENT_FLAGS}} vercel-labs/agent-skills --skill '*' --agent github-copilot cursor
-- api (Hono): npx -y skills add {{AGENT_FLAGS}} elysiajs/skills --skill '*' --agent github-copilot cursor
+- web (Next.js): npx -y skills add {{AGENT_FLAGS}} vercel-labs/agent-skills --skill '*'
+- api (Hono): npx -y skills add {{AGENT_FLAGS}} elysiajs/skills --skill '*'
 
 Install All? (Y/n)
 ```
 
 **Example with detected agents:**
 
-- If `.cursor/` and `.github/` exist: `AGENT_FLAGS="-a cursor -a github-copilot"`
-- If only `.cursor/` exists: `AGENT_FLAGS="-a cursor"`
-- Commands become: `npx -y skills add -a cursor -a github-copilot obra/superpowers --skill '*' --agent github-copilot cursor`
+- If Cursor and Copilot are confirmed: `AGENT_FLAGS="-a cursor -a github-copilot"`
+- If only Codex is confirmed: `AGENT_FLAGS="-a codex"`
+- Codex-only command: `npx -y skills add -a codex obra/superpowers --skill '*'`
 
 **On Confirmation:**
 
 - Run skill installation commands at workspace root
-- Skills installed to `.cursor/skills/`
+- Verify the installer's reported paths; Codex uses `.agents/skills/`
 - Update root `AGENTS.md` to reference installed skills
 - Add skill references to relevant app `AGENTS.md` files
 
 10. **Report Completion**:
+
+Populate this example with only files actually changed and skills actually installed. Omit unconfirmed harness targets; for Codex, include native targets and shared reference standards only when changed. This is a change inventory, not proof of runtime loading or trust.
 
 ```
 ✅ Monorepo Bootstrap Complete!
@@ -434,22 +450,13 @@ Install All? (Y/n)
 Ecosystem: {{LANGUAGE}} / {{BUILD_SYSTEM}}
 
 Root Files Updated:
-- AGENTS.md
-- .github/copilot-instructions.md
-- .github/instructions/*.instructions.md
-- .cursor/rules/*.mdc
-- .cursor/commands/*.md
-- .claude/rules/*.md (thin wrappers)
-- .claude/commands/*.md (thin wrappers)
-- .claude/agents/*.agent.md (thin wrappers)
-- .claude/rules-snippets/*.md (rules content)
-- .claude/prompt-snippets/*.md (prompt content)
-- .claude/agents-snippets/*.md (agent content)
-- .opencode/opencode.jsonc
-- .opencode/commands/*.md
-- .opencode/rules/*.md
-- .opencode/agents/*.md
-- .toolkit-version
+- AGENTS.md (if changed)
+- .agents/skills/*/SKILL.md (if changed)
+- .codex/config.toml (Codex; if changed)
+- .github/instructions/*.instructions.md (linked standards or confirmed Copilot; if changed)
+- .claude/rules-snippets/*.md (reference sources; if changed)
+- Other confirmed harness files actually changed (list exact paths)
+- .toolkit-version (if changed)
 
 App Files Created/Updated:
 - {{APP_DIR}}/{{APP_1}}/AGENTS.md
@@ -459,9 +466,9 @@ Package/Library Files Updated:
 - {{PACKAGES_DIR}}/{{PACKAGE_1}}/README.md
 
 Installed Skills:
-- obra/superpowers - Development workflow
-- trailofbits/skills - Security & quality
-- {{FRAMEWORK_SKILL}} - Framework patterns
+- obra/superpowers - Development workflow (only if installed)
+- trailofbits/skills - Security & quality (only if installed)
+- {{FRAMEWORK_SKILL}} - Framework patterns (only if installed)
 
 Next Steps:
 1. Review root AGENTS.md for accuracy
@@ -475,7 +482,7 @@ Next Steps:
 9. **Review Installed Skills**:
 
    After completion, audit all installed skills:
-   - Scan `.github/skills/` and `.cursor/skills/` directories
+   - Scan `.agents/skills/` and confirmed harness skill directories, including `.github/skills/` and `.cursor/skills/` if used
    - Compare each skill against detected ecosystems and frameworks
    - Flag skills that don't match any app's tech stack
 
@@ -507,8 +514,12 @@ Next Steps:
 
     Check for required instruction files at root and app levels:
 
+    For Codex, verify root/app/package `AGENTS.md` instructions and `.agents/skills/*/SKILL.md`; parse optional `.codex/config.toml` as TOML and confirm inherited defaults are preserved. The Copilot-specific audit below applies only when Copilot is confirmed in use; do not create Copilot instructions merely to satisfy a Codex audit.
+
+    **Copilot Audit Example (only if Copilot is confirmed in use):**
+
     ```
-    ## 📋 Instruction Files Audit
+    ## 📋 Copilot Instruction Files Audit — confirmed Copilot use only
 
     ### ✅ Found ({{N}} files)
     | File | Purpose | Status |
@@ -523,48 +534,54 @@ Next Steps:
     | fastapi.instructions.md | FastAPI patterns | api app uses FastAPI |
     | testing.instructions.md | Test conventions | Multiple frameworks |
 
-    Create missing instruction files? (Y/n)
+    Create missing Copilot instruction files? (confirmed Copilot use only; Y/n)
     ```
 
-    **On Confirmation:**
-    - Generate instruction files with appropriate templates
+    **On Confirmation (only if Copilot is confirmed in use):**
+    - Generate missing Copilot instruction files with appropriate templates; skip creation for a Codex-only audit even when shared reference standards are present
     - Include app-specific scoping (applyTo paths)
     - Include framework-specific patterns from skills
     - Report created files
 
 11. **Final Verification Report**:
 
+    Report only actual changes and checks for confirmed harnesses. For Codex, distinguish file inspection and TOML validation from runtime instruction/skill discovery, project trust, and config loading. Mark runtime behavior unverified unless directly confirmed; file presence alone proves none of these. Remove inapplicable rows and mark checklist items complete only after performing the check.
+
     ```
-    ## ✅ Bootstrap Complete & Verified!
+    ## Bootstrap Verification Report
 
     ### Summary
     | Category | Count | Status |
     |----------|-------|--------|
-    | Root files updated | {{N}} | ✓ |
-    | App files created | {{N}} | ✓ |
-    | Package files updated | {{N}} | ✓ |
-    | Skills installed | {{N}} | ✓ |
-    | Skills removed | {{N}} | ✓ |
-    | Instructions created | {{N}} | ✓ |
+    | Root files updated | {{N}} | Report actual result |
+    | App files created | {{N}} | Report actual result |
+    | Package files updated | {{N}} | Report actual result |
+    | Skills installed | {{N}} | Report actual result |
+    | Skills removed | {{N}} | Report actual result |
+    | Instructions created | {{N}} | Report actual result |
 
     ### Quality Checks
-    - [x] Placeholders replaced
-    - [x] Skills match tech stack
-    - [x] No duplicate skills
-    - [x] All apps have AGENTS.md
-    - [x] Instructions cover all frameworks
-    - [x] Snippet directories created
-    - [x] Thin wrappers reference correct snippets
-    - [x] .opencode/ directory configured
-    - [x] .toolkit-version file created
+    - [ ] Placeholders replaced (list any remaining)
+    - [ ] Skills match tech stack
+    - [ ] No duplicate skills
+    - [ ] Applicable apps/packages have scoped AGENTS.md
+    - [ ] Instructions cover applicable frameworks
+    - [ ] Required reference snippet sources present and links resolve
+    - [ ] Thin wrappers reference correct snippets (if applicable)
+    - [ ] OpenCode configuration validated (only if OpenCode is confirmed in use)
+    - [ ] .toolkit-version file created or checked
 
-    ### Your Monorepo is Ready! 🎉
+    ### Native Codex Check Example (only if Codex is confirmed in use)
 
-    GitHub Copilot and Cursor understand:
-    - Monorepo structure
-    - App-specific frameworks
-    - Shared packages
-    - Cross-cutting patterns
+    | Target | Check to report | Result |
+    | ------ | --------------- | ------ |
+    | Root/app/package `AGENTS.md` | Contents, scopes, and linked standards inspected | Actual inspection result |
+    | `.agents/skills/*/SKILL.md` | Skill contents and relevance inspected | Actual inspection result; runtime discovery unverified unless confirmed |
+    | `.codex/config.toml` (if present) | TOML syntax and inherited defaults inspected | Actual validation result; user trust and native loading unverified unless confirmed |
+
+    ### Next Steps for Confirmed Harnesses
+
+    List the confirmed harnesses, checks actually performed, remaining issues, and runtime checks still needed. Do not infer Copilot/Cursor readiness or Codex trust/loading from scaffold files.
 
     Try asking:
     - "Create an endpoint in apps/api using our patterns"

@@ -13,15 +13,17 @@ const { execSync, spawnSync } = require('child_process');
 const PKG_ROOT = path.join(__dirname, '..');
 const SRC_DIR = path.join(PKG_ROOT, 'src');
 
-// Platform config dirs per harness. `.agents` is Claude-only (universal skills).
+// Platform config dirs per harness. Claude and Codex share `.agents` (universal skills).
 const ENV_DIRS = {
   claude: ['.claude', '.agents'],
+  codex: ['.codex', '.agents', path.join('.github', 'instructions'), path.join('.claude', 'rules-snippets')],
   copilot: ['.github', '.vscode'],
   cursor: ['.cursor'],
   opencode: ['.opencode'],
 };
 const ENV_INFO = {
   claude: { name: 'Claude Code', command: '/bootstrap (Claude Code command in .claude/commands/)' },
+  codex: { name: 'OpenAI Codex', command: 'read and follow .nitm/BOOTSTRAP.md' },
   copilot: { name: 'GitHub Copilot', command: '/bootstrap (Copilot prompt in .github/prompts/bootstrap.prompt.md)' },
   cursor: { name: 'Cursor', command: '/bootstrap (Cursor command in .cursor/commands/)' },
   opencode: { name: 'OpenCode', command: 'the bootstrap command in .opencode/commands/' },
@@ -84,9 +86,12 @@ function templateFiles(type) {
 function scopeFiles(files, env) {
   if (!env || !ENV_DIRS[env]) return files;
   const allowed = new Set([...SHARED_ROOT, ...SHARED_DIRS, ...ENV_DIRS[env]]);
+  const dirs = [...SHARED_DIRS, ...ENV_DIRS[env]].map((dir) => path.normalize(dir));
   return files.filter((rel) => {
-    const top = rel.split(path.sep)[0];
-    return allowed.has(top) || allowed.has(rel);
+    const normalized = path.normalize(rel);
+    const top = normalized.split(path.sep)[0];
+    return allowed.has(top) || allowed.has(normalized)
+      || dirs.some((dir) => normalized.startsWith(dir + path.sep));
   });
 }
 
@@ -137,8 +142,10 @@ function envHeader(type, env) {
       '2. Calibrate each agent\'s tools for your environment (see the Agent Tool & Permission Calibration section).',
       '3. Verify with `npx nitm-ai-dev-toolkit doctor`.',
       '',
-      'The `/bootstrap` command auto-detects your harness (Claude Code, GitHub Copilot, Cursor, or OpenCode),',
-      'so you do not need to specify it — just run `/bootstrap` from whatever environment you are in.',
+      'The default scaffold includes Claude Code, OpenAI Codex, GitHub Copilot, Cursor, and OpenCode.',
+      'Ask your AI agent to read and follow `.nitm/BOOTSTRAP.md`.',
+      'Claude Code, GitHub Copilot, Cursor, and OpenCode also have harness-specific bootstrap commands.',
+      'For OpenAI Codex, use the handoff file directly; no native `/bootstrap` command is provided.',
       '',
       'The full bootstrap procedure follows.',
     ].join('\n');
@@ -147,7 +154,7 @@ function envHeader(type, env) {
   return [
     `# Bootstrap handoff — environment: ${info.name}`,
     '',
-    `Run the bootstrap via: ${info.command}`,
+    `Bootstrap entry point: ${info.command}`,
     '',
       'Then ask your AI agent to run the full bootstrap flow (procedure below). Key steps:',
       '1. Replace all `{{PLACEHOLDER}}` values in the AI instruction files.',
@@ -168,12 +175,15 @@ function handoff(type, cwd, env) {
   fs.writeFileSync(path.join(nitmDir, 'BOOTSTRAP.md'), header + '\n\n' + body);
   if (env && ENV_INFO[env]) {
     info(`Scaffold complete (tailored to ${ENV_INFO[env].name}). Hand off to your AI agent:`);
-    console.log(`    Run ${ENV_INFO[env].command}`);
+    console.log(`    Bootstrap entry point: ${ENV_INFO[env].command}`);
   } else {
     info('Scaffold complete. Hand off to your AI agent to finish setup:');
   }
-  console.log('    1. Run `/bootstrap` from your AI environment (it auto-detects your harness),');
-  console.log('       OR hand `.nitm/BOOTSTRAP.md` to your AI agent to run the full bootstrap flow.');
+  console.log('    1. Ask your AI agent to read and follow `.nitm/BOOTSTRAP.md`.');
+  if (!env || !ENV_INFO[env]) {
+    console.log('       Includes Claude Code, OpenAI Codex, GitHub Copilot, Cursor, and OpenCode.');
+    console.log('       Other harnesses also have bootstrap commands; Codex uses the handoff file directly.');
+  }
   console.log('    2. Run `npx nitm-ai-dev-toolkit doctor' + (env ? ` --env ${env}` : '') + '` to verify the install.');
 }
 
@@ -319,7 +329,7 @@ function usage() {
   console.log(`nitm-ai-dev-toolkit — scaffold AI agent config into any repo, then hand off to your AI agent.
 
 Usage:
-  npx nitm-ai-dev-toolkit install [--monorepo|--repo] [--env <claude|copilot|cursor|opencode>] [--force]
+  npx nitm-ai-dev-toolkit install [--monorepo|--repo] [--env <claude|codex|copilot|cursor|opencode>] [--force]
       Scaffold AI config into the current repo (auto-detects repo vs monorepo),
       tailored to your harness, then hand off to your AI agent to run the bootstrap flow.
       If files already exist, install aborts (use --force to overwrite, or \`patch\` to add missing).
@@ -341,9 +351,11 @@ Usage:
 
 Options:
   --env <env>  Optional. Limit the scaffold to ONE harness:
-               claude | copilot | cursor | opencode
-               Omit to scaffold ALL environments (cross-compatible). The /bootstrap
-               command auto-detects your harness at runtime, so --env is rarely needed.
+               claude | codex | copilot | cursor | opencode
+               Omit to scaffold ALL environments, including OpenAI Codex.
+               Ask your agent to read and follow .nitm/BOOTSTRAP.md.
+               Other harnesses also have bootstrap commands; Codex uses the handoff
+               file directly (no native /bootstrap command is provided).
   --monorepo   Force monorepo template
   --repo       Force single-repo template
   --force      Overwrite existing files
