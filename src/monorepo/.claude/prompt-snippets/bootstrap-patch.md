@@ -1,9 +1,17 @@
-You are helping to patch AI instructions in this project by comparing against the latest templates from the ai-assisted-dev-toolkit repository and applying any updates.
+You are helping to patch AI instructions by comparing against supported toolkit v4.x templates from the ai-assisted-dev-toolkit repository's `v4.x` branch and merging updates into this project.
+
+## OpenCode version preflight (before any changes)
+
+- Confirm OpenCode use from actual session/runtime evidence or ask the user; directory presence alone is not proof. If only other harnesses are used, skip this preflight and all OpenCode steps.
+- For confirmed OpenCode use, run `opencode --version` before any project writes. Trim output and parse numeric major/minor/patch components, accepting an optional leading `v`; toolkit 4.x requires `major >= 2`.
+- If OpenCode V1 (`major < 2`) is detected, **STOP** before customizing/migrating OpenCode files or writing `.toolkit-version` as `4.0.0`. Ask the user to upgrade OpenCode to V2 or remain on toolkit 3.x.
+- If the CLI is missing, fails, or output is unparseable, **STOP OpenCode steps** and leave the version marker unchanged; ask the user to confirm/install a supported OpenCode version, then rerun this check. Never assume V2.
+- If oh-my-opencode-slim >=3.0.0 is used or planned, require OpenCode >=2.0.7 (compare version components numerically); otherwise **STOP** before changes and ask to upgrade. Proceed only after this gate passes.
 
 ## Orchestrator Checkpoint
 
 > **🛑 Before starting**: This command involves fetching, diffing, and applying changes across many files.
-> Dispatch parallel subagents for independent file groups (rules, commands, prompts, instructions, skills, agents).
+> Complete Step 1's source/version gates before dispatching parallel diff agents for independent file groups (rules, commands, prompts, instructions, skills, agents).
 > See `.claude/rules-snippets/subagent-workflow.md` for patterns.
 
 ## Usage
@@ -23,12 +31,15 @@ You are helping to patch AI instructions in this project by comparing against th
 
 1.  **Fetch Latest Templates**:
 
-    Clone or fetch the latest ai-assisted-dev-toolkit templates:
+    Fetch only the supported `v4.x` source branch:
 
     ```bash
+    set -e
     TOOLKIT_TEMP=$(mktemp -d)
-    git clone --depth 1 https://github.com/ninjasitm/ai-assisted-dev-toolkit.git "$TOOLKIT_TEMP"
+    git clone --depth 1 --branch v4.x https://github.com/ninjasitm/ai-assisted-dev-toolkit.git "$TOOLKIT_TEMP"
     ```
+
+    **Source availability gate:** If the clone fails or `v4.x` is unavailable (for example, not yet published), **STOP** before diff/apply/version marking. Do not fall back to the default branch or V3, and do not push/publish a branch to unblock this task; ask for an approved available v4.x source.
 
     Determine the correct source path based on project structure:
     - **Single repo**: Use `$TOOLKIT_TEMP/src/repo/`
@@ -42,9 +53,11 @@ You are helping to patch AI instructions in this project by comparing against th
 
     Check for a `.toolkit-version` file in the project root:
     - If exists: Read the version string (e.g., `2.0.10`, `3.0.0`)
-    - If missing: Assume legacy version (pre-3.0.0)
+    - If missing: Verify the installed version or legacy state with the user; absence alone does not prove a pre-3.0 installation
 
-    Read the toolkit's version from `$TOOLKIT_TEMP/.toolkit-version` to compare.
+    Read the toolkit's version from the `version` field in `$TOOLKIT_TEMP/package.json` to compare; `.toolkit-version` tracks the target project's installed version.
+
+    **Source version guard (before diff/apply/version marking):** Parse source/target versions as SemVer and compare them (major/minor/patch numerically). If the fetched package's major is not `4`, or its version is older than the target `.toolkit-version`, **STOP** without diffing, applying changes, or updating the marker. Unknown/unparseable versions must also **STOP** and ask rather than guess. Never auto-downgrade.
 
     **Version Comparison:**
     - **Same version**: No structural changes expected
@@ -76,20 +89,20 @@ You are helping to patch AI instructions in this project by comparing against th
     | **OpenCode Commands**      | `.opencode/commands/*.md`                | `src/{type}/.opencode/commands/*.md`                |
     | **OpenCode Rules**         | `.opencode/rules/*.md`                   | `src/{type}/.opencode/rules/*.md`                   |
     | **OpenCode Agents**        | `.opencode/agents/*.md`                  | `src/{type}/.opencode/agents/*.md`                  |
-    | **OpenCode Plugins**       | `.opencode/plugins/*.mjs`                | `src/{type}/.opencode/plugins/*.mjs`                |
+    | **OpenCode Local Plugins** | `.opencode/plugins/*.{js,mjs,ts}`        | Inventory only; preserve unrelated plugins         |
     | **Hooks**                  | `hooks/*.{js,sh,ps1}`                    | `src/{type}/hooks/*.{js,sh,ps1}`                    |
     | **Agent Rules**            | `.agents/rules/*.md`                     | `src/{type}/.agents/rules/*.md`                     |
-    | **Toolkit Version**        | `.toolkit-version`                       | `.toolkit-version` (root of toolkit)                |
+    | **Toolkit Version**        | `.toolkit-version`                       | `package.json` `version` (toolkit root)             |
 
-    **⚠️ OpenCode `opencode.jsonc` Schema Validation:**
+    **OpenCode native V2 merge checks (confirmed OpenCode use only):**
 
-    When patching `.opencode/opencode.jsonc`, **only add or modify supported top-level keys**. The schema is defined at `https://opencode.ai/config.json`. Do NOT add unsupported keys.
+    Follow official V2 [migration](https://opencode.ai/v2/docs/migrate-v1), [config](https://opencode.ai/v2/docs/config), [agents](https://opencode.ai/v2/docs/agents), and [plugins](https://opencode.ai/v2/docs/build/plugins) docs. The published schema may describe V1; neither it nor a V1 API fetch validates native V2. Plural keys are intentional.
 
-    **Supported top-level keys:** `$schema`, `instructions`, `skills`, `agent`, `default_agent`, `model`, `small_model`, `provider`, `mcp`, `tools`, `permission`, `lsp`, `formatter`, `server`, `shell`, `command`, `plugin`, `watcher`, `snapshot`, `share`, `autoupdate`, `compaction`, `attachment`, `logLevel`, `disabled_providers`, `enabled_providers`, `tool_output`, `enterprise`, `experimental`
-
-        **Do NOT add** keys like `rules`, `agents`, `commands`, `prompts` as top-level keys — OpenCode uses the `.opencode/` directory structure and `instructions` array instead.
-
-    > **Watch out:** the ponytail template uses the `plugin` key (singular). If you see `plugins` (plural) in your `opencode.jsonc`, that's a typo and the plugin won't load.
+    - Use `agents`/`system`, `request.body.temperature`, ordered `permissions` (`action`/`resource`/`effect`, `shell`/`subagent`, last match wins), `commands`/`subagent`, `plugins` with `{ "package": "…", "options": {} }`, skill-directory arrays, and `mcp.servers` with inverse `disabled` and `timeout.catalog`/`timeout.execution`.
+    - The version preflight must pass before changes. Back up V1 before native conversion (converted files are incompatible with V1). Preserve models/providers/user-global plugins. Only with approval, merge `"plugins": ["oh-my-opencode-slim@3.0.0"]` locally. Slim's separate strict schema keeps `prompt`/`permission`/`variant`; do not host-migrate it or silently upgrade the separate external starter.
+    - **Ponytail replacement (plan here; apply after backup and approval in Step 5):** Remove only known obsolete toolkit-owned `.opencode/plugins/ponytail.js`, `.opencode/plugins/ponytail.mjs`, and `.opencode/plugins/ponytail.ts` copies. Preserve unrelated local plugins. Merge/deduplicate the author's native V2 `@dietrichgebert/ponytail@4.12.0` registration in the local `plugins` array where appropriate, retaining other registrations/options; do not edit global config. Keep `opentmux` commented as V1-only. Do not port local APIs or add bridges; runtime integration is untested. Native local discovery needs no duplicate registration.
+    - `instructions` entries are accepted but not loaded; ambient root/nested `AGENTS.md` works. `@refs` are ordinary text: explicitly read snippets. `request.body.temperature` remains in config, but the current runner does not send it. Preserve `lsp: true`; use workspace lint/typecheck/compiler commands (no V2 LSP tools/diagnostics currently).
+    - `--env opencode` supplies minimal shared references without other harness activation. Activate on the next run/restart and report only installed-V2 checks actually run, not assumed runtime validation. Publishing 4.0.0 has not been executed.
 
 3.  **Diff Analysis** (parallelizable — dispatch one subagent per category):
 
@@ -100,7 +113,7 @@ You are helping to patch AI instructions in this project by comparing against th
     - **📝 Updated**: Exists in both but template has newer content → candidate for merge
     - **✅ Current**: Exists in both and content matches → no action needed
     - **🔧 Customized**: Exists in both, project version has non-placeholder customizations → careful merge
-    - **⚠️ Missing in Template**: Exists in project but not in template → project-specific, keep as-is
+    - **⚠️ Missing in Template**: Exists in project but not in template → project-specific, keep as-is except the approved obsolete toolkit Ponytail removal above
 
     b. **For updated files, generate a structured diff**:
     - Preserve project-specific `{{PLACEHOLDER}}` replacements (already-bootstrapped values)
@@ -161,7 +174,9 @@ You are helping to patch AI instructions in this project by comparing against th
       a. **New files**: Copy directly from template
       b. **Updated files (no customization)**: Replace with template version
       c. **Updated files (customized)**: Apply structural additions while preserving project values
-      d. **Git commit**: Stage and commit all changes with message:
+      d. **OpenCode plugins**: Apply only the approved Ponytail replacement above after backing up the known obsolete toolkit copies and local config; preserve all unrelated local/global plugins.
+      e. **Toolkit version**: Update `.toolkit-version` to the fetched toolkit version (`4.0.0` for this migration) only after the approved migration and OpenCode preflight pass (or OpenCode is confirmed out of scope).
+      f. **Git commit**: Stage and commit all changes with message:
       ```bash
       git add -A
       git commit -m "chore: patch AI instructions from toolkit [$(date +%Y-%m-%d)]"

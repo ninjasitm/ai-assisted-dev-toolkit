@@ -1,10 +1,16 @@
 ---
 description: "Write minimal code to make failing tests pass. Part of the TDD red-green-refactor cycle."
 mode: subagent
-temperature: 0.1
-permission:
-  edit: allow
-  bash: allow
+request:
+  body:
+    temperature: 0.1
+permissions:
+  - action: edit
+    resource: "*"
+    effect: allow
+  - action: shell
+    resource: "*"
+    effect: allow
 ---
 
 # Green Agent (TDD — Make Tests Pass)

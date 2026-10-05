@@ -42,6 +42,14 @@ jobs:
           IFS='.' read -r major minor patch <<< "$latest"
           next_patch=$((patch + 1))
           candidate="${major}.${minor}.${next_patch}"
+          # Respect an explicit newer package release (for example a major migration).
+          package_version=$(node -p 'require("./package.json").version')
+          if [[ "$package_version" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]] &&
+             [[ "$package_version" != "$candidate" ]] &&
+             [[ "$(printf '%s\n' "$candidate" "$package_version" | sort -V | tail -n 1)" == "$package_version" ]]; then
+            candidate="$package_version"
+            IFS='.' read -r major minor next_patch <<< "$candidate"
+          fi
           # Skip to the next available patch tag if a rerun or collision occurs.
           while git rev-parse -q --verify "refs/tags/${candidate}" >/dev/null; do
             next_patch=$((next_patch + 1))
@@ -64,7 +72,9 @@ jobs:
           # Sync package.json version with the tag so `npm publish` ships the right version.
           npm pkg set version="$next_tag"
           git add package.json
-          git commit -m "chore(release): ${next_tag} [release]"
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(release): ${next_tag} [release]"
+          fi
           git tag -a "$next_tag" -m "ci: patch bump from ${latest_tag} to ${next_tag}"
           git push origin main --follow-tags
 

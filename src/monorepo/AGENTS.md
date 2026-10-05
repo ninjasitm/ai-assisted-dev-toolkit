@@ -102,6 +102,14 @@ Each app has its own `AGENTS.md` with detailed patterns:
 - `{{APP_DIR}}/{{APP_NAME_1}}/AGENTS.md` - {{APP_1_DESCRIPTION}} patterns
 - `{{APP_DIR}}/{{APP_NAME_2}}/AGENTS.md` - {{APP_2_DESCRIPTION}} patterns
 
+## OpenCode V2 Context
+
+OpenCode use with toolkit v4 requires native V2; Slim >=3.0.0 requires OpenCode >=2.0.7. Read [native setup](README.md#native-opencode-v2) before migration. All bootstrap flows run `opencode --version` before changes for confirmed OpenCode use: V1 must stop and upgrade OpenCode or remain on toolkit 3.x; missing/unparseable versions block OpenCode steps and toolkit 4.0.0 marking. Directory presence is not harness proof; other-harness-only setup is unaffected.
+
+Use `agents`/`system`, `request.body.temperature`, ordered `permissions` (`action`/`resource`/`effect`, `shell`/`subagent`), `commands`, `plugins`, directory-based `skills`, and `mcp.servers`. Preserve user models/providers/plugins and Slim's separate strict schema; do not host-migrate its `prompt`/`permission`/`variant` fields or silently upgrade the separate external starter. Templates register the author's native V2 `@dietrichgebert/ponytail@4.12.0` locally instead of a bundled Ponytail plugin; `opentmux` stays commented as V1-only. Remove only known obsolete toolkit Ponytail `.js`/`.mjs`/`.ts` copies after backup and approval, preserve unrelated local plugins, and merge/deduplicate upstream registration locally without editing global config. No local API port or bridge is used; plugin/runtime integration is untested.
+
+Ambient root/nested `AGENTS.md` works; config `instructions` entries do not load. `@refs` are ordinary text: explicitly read linked snippets. `request.body.temperature` remains in config, but the current runner does not send it. Preserve `lsp: true`; use workspace lint/typecheck/compiler commands, not unavailable V2 LSP diagnostics. Back up V1 before native conversion; converted files are incompatible with V1. Activate on the next run/restart.
+
 ## Detailed Instructions
 
 ### Native Codex

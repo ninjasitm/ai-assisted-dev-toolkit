@@ -168,9 +168,26 @@ check_identical "cursor-rule: ponytail repo ↔ monorepo" \
   "src/repo/.cursor/rules/ponytail.mdc" \
   "src/monorepo/.cursor/rules/ponytail.mdc"
 
-check_identical "plugin: ponytail repo ↔ monorepo" \
-  "src/repo/.opencode/plugins/ponytail.mjs" \
-  "src/monorepo/.opencode/plugins/ponytail.mjs"
+for config in src/repo/.opencode/opencode.jsonc src/monorepo/.opencode/opencode.jsonc; do
+  if grep -Fq '"@dietrichgebert/ponytail@4.12.0"' "$config"; then
+    printf "${GREEN}  OK${NC}  upstream ponytail plugin: %s\n" "$config"
+  else
+    printf "${RED}MISSING${NC} upstream ponytail plugin: %s\n" "$config"
+    ((errors += 1))
+  fi
+done
+
+for root in .opencode src/repo/.opencode src/monorepo/.opencode; do
+  for extension in js mjs ts; do
+    plugin="$root/plugins/ponytail.$extension"
+    if [[ -e "$plugin" ]]; then
+      printf "${RED}FOUND${NC} local ponytail plugin: %s\n" "$plugin"
+      ((errors += 1))
+    else
+      printf "${GREEN}  OK${NC}  local ponytail plugin removed: %s\n" "$plugin"
+    fi
+  done
+done
 
 check_identical "agent-rule: ponytail repo ↔ monorepo" \
   "src/repo/.agents/rules/ponytail.md" \

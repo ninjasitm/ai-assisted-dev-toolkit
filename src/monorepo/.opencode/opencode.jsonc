@@ -5,17 +5,15 @@
 		".opencode/rules/*.md",
 		".agents/skills/orient-to-recent-work/SKILL.md"
 	],
-	"skills": {
-		"paths": [
-			".agents/skills/**/*.md",
-			".claude/skills/**/*.md"
-		]
-	},
-	"plugin": [
+	"skills": [
+		".agents/skills",
+		".claude/skills"
+	],
+	"plugins": [
 		"opencode-mem",
 		"@tarquinen/opencode-dcp@latest",
-		"@dietrichgebert/ponytail",
-		"opentmux"
+		"@dietrichgebert/ponytail@4.12.0"
+		// "opentmux": V1-only; enable only after it supports V2.
 	],
 	"lsp": true
 }
