@@ -32,6 +32,45 @@ function captureOutput(fn) {
   return lines.join('\n');
 }
 
+function assertOpenCodeReferences(d, type) {
+  // Each local wrapper's shared source must be readable in the installed tree.
+  for (const dir of ['agents', 'commands', 'rules']) {
+    const wrappers = cli.templateFiles(type).filter((rel) =>
+      rel.startsWith(path.join('.opencode', dir) + path.sep) && rel.endsWith('.md'));
+    assert.ok(wrappers.length > 0, `${dir} wrappers present`);
+    let linkedSources = 0;
+    for (const rel of wrappers) {
+      const content = fs.readFileSync(path.join(d, rel), 'utf8');
+      const imports = [...content.matchAll(/^@(\.claude\/(?:agents|prompt|rules)-snippets\/[^\s]+)$/gm)];
+      linkedSources += imports.length;
+      for (const [, target] of imports) {
+        assert.ok(fs.readFileSync(path.join(d, target), 'utf8').length > 0, `${rel}: ${target} readable`);
+      }
+    }
+    assert.ok(linkedSources > 0, `${dir} shared sources checked`);
+  }
+  for (const rel of ['.agents/skills/ponytail/SKILL.md',
+    '.agents/skills/orient-to-recent-work/SKILL.md', 'hooks/ponytail-config.js',
+    'hooks/ponytail-instructions.js']) {
+    assert.ok(fs.readFileSync(path.join(d, rel), 'utf8').length > 0, `${rel} readable`);
+  }
+  const config = JSON.parse(fs.readFileSync(path.join(d, '.opencode/opencode.jsonc'), 'utf8')
+    .replace(/^\s*\/\/.*$/gm, ''));
+  assert.ok(config.plugins.includes('@dietrichgebert/ponytail@4.12.0'), 'upstream Ponytail registered');
+  for (const extension of ['js', 'mjs', 'ts']) {
+    assert.equal(fs.existsSync(path.join(d, '.opencode/plugins', `ponytail.${extension}`)), false);
+  }
+  const instructions = path.join(d, '.github', 'instructions');
+  for (const file of fs.readdirSync(instructions)) {
+    const content = fs.readFileSync(path.join(instructions, file), 'utf8');
+    const links = [...content.matchAll(/\]\(([^)]+\.claude\/rules-snippets\/[^)]+)\)/g)];
+    assert.ok(links.length > 0, `${file} links to shared standards`);
+    for (const [, target] of links) {
+      assert.ok(fs.readFileSync(path.resolve(instructions, target), 'utf8').length > 0);
+    }
+  }
+}
+
 test('detectType: defaults to repo', () => {
   const d = tmp();
   assert.equal(cli.detectType(d, {}), 'repo');
@@ -214,13 +253,15 @@ test('scopeFiles: Codex keeps bounded shared standards without changing other sc
   assert.deepEqual(cli.ENV_DIRS.claude, ['.claude', '.agents']);
   assert.deepEqual(cli.ENV_DIRS.copilot, ['.github', '.vscode']);
   assert.deepEqual(cli.ENV_DIRS.cursor, ['.cursor']);
-  assert.deepEqual(cli.ENV_DIRS.opencode, ['.opencode']);
+  assert.deepEqual(cli.ENV_DIRS.opencode, ['.opencode', path.join('.agents', 'skills'),
+    path.join('.claude', 'agents-snippets'), path.join('.claude', 'prompt-snippets'),
+    path.join('.claude', 'rules-snippets'), path.join('.github', 'instructions')]);
   for (const env of ['claude', 'copilot', 'cursor', 'opencode']) {
     assert.ok(!cli.scopeFiles(files, env).includes('.codex/config.toml'));
   }
   assert.ok(!cli.scopeFiles(files, 'claude').includes(files[4]));
   assert.ok(!cli.scopeFiles(files, 'copilot').includes(files[5]));
-  for (const env of ['cursor', 'opencode']) {
+  for (const env of ['cursor']) {
     assert.ok(!cli.scopeFiles(files, env).includes(files[4]));
     assert.ok(!cli.scopeFiles(files, env).includes(files[5]));
   }
@@ -238,6 +279,17 @@ test('scopeFiles: nested Codex standards match normalized directory boundaries o
   assert.deepEqual(cli.scopeFiles([...kept, ...excluded], 'codex'), kept);
 });
 
+test('scopeFiles: OpenCode reference dependencies stay within exact directory boundaries', () => {
+  const kept = ['.opencode/opencode.jsonc', '.agents/skills/x/SKILL.md',
+    '.claude/agents-snippets/x.md', '.claude/prompt-snippets/x.md',
+    '.claude/rules-snippets/x.md', '.github/instructions/x.instructions.md', 'hooks/ponytail-config.js'];
+  const excluded = ['.agents/other.md', '.agents/skills-extra/x.md', '.claude/settings.json',
+    '.claude/agents/x.md', '.claude/commands/x.md', '.claude/rules/x.md',
+    '.claude/agents-snippets-extra/x.md', '.claude/prompt-snippets/../commands/x.md',
+    '.github/agents/x.md', '.github/instructions-extra/x.md', '.codex/config.toml'];
+  assert.deepEqual(cli.scopeFiles([...kept, ...excluded], 'opencode'), kept);
+});
+
 for (const type of ['repo', 'monorepo']) {
   test(`install: default ${type} includes Codex and all other harnesses`, () => {
     const d = tmp();
@@ -249,7 +301,93 @@ for (const type of ['repo', 'monorepo']) {
     assert.match(output, /OpenAI Codex/);
     assert.match(output, /read and follow `\.nitm\/BOOTSTRAP\.md`/);
     assert.doesNotMatch(output, /auto-detects your harness/);
+    assertOpenCodeReferences(d, type);
   });
+
+  test(`install: scoped OpenCode ${type} has reference closure without other active harness configs`, () => {
+    const d = tmp();
+    const flags = { [type]: true, env: 'opencode' };
+    captureOutput(() => cli.cmdInstall(d, flags));
+    assertOpenCodeReferences(d, type);
+    assert.deepEqual(fs.readdirSync(path.join(d, '.claude')).sort(),
+      ['agents-snippets', 'prompt-snippets', 'rules-snippets']);
+    assert.deepEqual(fs.readdirSync(path.join(d, '.github')), ['instructions']);
+    assert.deepEqual(fs.readdirSync(path.join(d, '.agents')), ['skills']);
+    for (const rel of ['.claude/settings.json', '.claude/config', '.claude/agents',
+      '.claude/commands', '.claude/rules', '.claude/skills', '.github/agents',
+      '.github/copilot-instructions.md', '.github/prompts', '.codex', '.cursor', '.vscode']) {
+      assert.ok(!fs.existsSync(path.join(d, rel)), `${rel} absent`);
+    }
+    let doctor;
+    captureOutput(() => { doctor = cli.cmdDoctor(d, flags); });
+    assert.deepEqual(doctor.missingFiles, []);
+  });
+
+  test(`install: existing-project OpenCode ${type} retains plugins and hands off gated cleanup`, async (t) => {
+    const d = tmp();
+    t.after(() => fs.rmSync(d, { recursive: true, force: true }));
+    const pluginDir = path.join(d, '.opencode', 'plugins');
+    fs.mkdirSync(pluginDir, { recursive: true });
+    const plugins = { 'ponytail.mjs': '// Obsolete toolkit-local Ponytail copy\n',
+      'custom.mjs': 'export default () => {};\n' };
+    for (const [file, content] of Object.entries(plugins)) {
+      fs.writeFileSync(path.join(pluginDir, file), content);
+    }
+    captureOutput(() => cli.cmdInstall(d, { [type]: true, force: true, env: 'opencode' }));
+    const config = JSON.parse(fs.readFileSync(path.join(d, '.opencode/opencode.jsonc'), 'utf8')
+      .replace(/^\s*\/\/.*$/gm, ''));
+    assert.ok(config.plugins.includes('@dietrichgebert/ponytail@4.12.0'));
+    for (const [file, content] of Object.entries(plugins)) {
+      assert.equal(fs.readFileSync(path.join(pluginDir, file), 'utf8'), content,
+        `${file} must not be deleted automatically by install --force`);
+    }
+
+    // The CLI emits instructions; it does not perform the approved migration itself.
+    await t.test('handoff doc contract: approved in-flow cleanup precedes activation', () => {
+      const handoff = fs.readFileSync(path.join(d, '.nitm', 'BOOTSTRAP.md'), 'utf8');
+      const cleanup = handoff.match(/\*\*Ponytail pre-activation cleanup[^\n]*\n([\s\S]*?)(?=\s*\*\*Create Toolkit Version File)/);
+      assert.ok(cleanup, 'Ponytail cleanup must be in this bootstrap flow');
+      assert.match(cleanup[1], /in this bootstrap flow/i);
+      for (const extension of ['js', 'mjs', 'ts']) {
+        assert.ok(cleanup[1].includes(`.opencode/plugins/ponytail.${extension}`));
+      }
+      assert.match(cleanup[1], /verif[^\n]*obsolete toolkit ownership[^\n]*(?:contents|provenance)[^\n]*not filename alone/i);
+      assert.match(cleanup[1], /(?:backup|back[ -]?up)[^\n]*local config[^\n]*approv[^\n]*remov[^\n]*only/i);
+      assert.match(cleanup[1], /preserv[^\n]*(?:custom|unrelated)[^\n]*plugins/i);
+      assert.doesNotMatch(cleanup[1], /(?:use|defer)[^\n]*bootstrap-(?:patch|upgrade)[^\n]*remov/i,
+        'cleanup may not be deferred exclusively to another task');
+      assert.match(cleanup[1], /safe removal[^\n]*unverified[^\n]*approval[^\n]*denied[^\n]*stop[^\n]*activat/i,
+        'unsafe or declined cleanup must block activation');
+      assert.match(cleanup[1], /\.toolkit-version[^\n]*unchanged/i);
+      const removal = cleanup[1].search(/then remove ONLY/i);
+      const activation = cleanup[1].search(/(?:proceed|restart)[^\n]*only after[^\n]*gate passes/i);
+      assert.ok(removal >= 0 && activation > removal, 'approved cleanup must precede activation');
+    });
+  });
+
+  for (const force of [false, true]) {
+    test(`patch: scoped OpenCode ${type} restores reference closure without clobber (force=${force})`, () => {
+      const d = tmp();
+      const flags = { [type]: true, env: 'opencode', force };
+      captureOutput(() => cli.cmdInstall(d, flags));
+      const preserved = ['.opencode/opencode.jsonc', '.claude/agents-snippets/reviewer.md',
+        '.claude/prompt-snippets/bootstrap.md', '.claude/rules-snippets/patterns.md',
+        '.github/instructions/patterns.instructions.md', '.agents/skills/ponytail/SKILL.md',
+        'hooks/ponytail-config.js'];
+      for (const rel of preserved) fs.writeFileSync(path.join(d, rel), `custom: ${rel}\n`);
+      const missing = ['.claude/rules-snippets/testing.md', 'hooks/ponytail-instructions.js',
+        '.agents/skills/orient-to-recent-work/SKILL.md'];
+      for (const rel of missing) fs.rmSync(path.join(d, rel));
+      let patched;
+      captureOutput(() => { patched = cli.cmdPatch(d, flags); });
+      assert.equal(patched.copied, missing.length);
+      for (const rel of preserved) assert.equal(fs.readFileSync(path.join(d, rel), 'utf8'), `custom: ${rel}\n`);
+      for (const rel of missing) assert.ok(fs.readFileSync(path.join(d, rel), 'utf8').length > 0);
+      assert.deepEqual(fs.readdirSync(path.join(d, '.claude')).sort(),
+        ['agents-snippets', 'prompt-snippets', 'rules-snippets']);
+      assert.deepEqual(fs.readdirSync(path.join(d, '.github')), ['instructions']);
+    });
+  }
 
   test(`install: scoped Codex ${type} has readable linked standards and no unrelated harness content`, () => {
     const d = tmp();

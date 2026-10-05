@@ -19,7 +19,10 @@ const ENV_DIRS = {
   codex: ['.codex', '.agents', path.join('.github', 'instructions'), path.join('.claude', 'rules-snippets')],
   copilot: ['.github', '.vscode'],
   cursor: ['.cursor'],
-  opencode: ['.opencode'],
+  // Shared reference sources, not other harnesses' active config/agent wrappers.
+  opencode: ['.opencode', path.join('.agents', 'skills'),
+    path.join('.claude', 'agents-snippets'), path.join('.claude', 'prompt-snippets'),
+    path.join('.claude', 'rules-snippets'), path.join('.github', 'instructions')],
 };
 const ENV_INFO = {
   claude: { name: 'Claude Code', command: '/bootstrap (Claude Code command in .claude/commands/)' },

@@ -110,6 +110,20 @@ See the following files for AI-assisted development:
 
 ## AI Instructions and Commands
 
+### Native OpenCode V2
+
+Toolkit v4 requires **OpenCode V2 (major >=2)** for OpenCode use; oh-my-opencode-slim >=3.0.0 requires OpenCode >=2.0.7. Bootstrap, patch, and upgrade run `opencode --version` before changes (optional leading `v` accepted). V1 must stop before OpenCode customization/migration or marking toolkit 4.0.0: upgrade OpenCode or remain on toolkit 3.x. A missing CLI or unparseable version stops OpenCode steps and version marking until confirmed/installed. Confirm harness use from runtime evidence or ask, not scaffold directories; other-harness-only setup is unaffected.
+
+The template's local `plugins` array registers the author's native V2 package `@dietrichgebert/ponytail@4.12.0`, alongside `opencode-mem` and `@tarquinen/opencode-dcp@latest`; `opentmux` remains commented as V1-only. The obsolete local Ponytail plugin is no longer bundled; no local API port or bridge is used. For existing projects, back up and obtain approval before removing only known toolkit `.opencode/plugins/ponytail.js`, `.mjs`, or `.ts` copies; preserve unrelated local plugins and merge/deduplicate upstream registration locally without editing global plugins. Native local plugins are discovered automatically; do not register them twice.
+
+With approval, merge `"plugins": ["oh-my-opencode-slim@3.0.0"]` locally without replacing other registrations. Slim's separate strict schema retains `prompt`, `permission`, and `variant`; do not host-migrate it. The external starter is a separate package, not automatically upgraded. Plugin/runtime integration has not been tested.
+
+Use native `agents`/`system`, `request.body.temperature`, ordered `permissions` (`action`/`resource`/`effect`, `shell`/`subagent`), `commands`/`subagent`, `plugins` with `{ "package": "…", "options": {} }`, skill-directory arrays, and `mcp.servers` with inverse `disabled` and `timeout.catalog`/`timeout.execution`. Follow the [V2 migration guide](https://opencode.ai/v2/docs/migrate-v1) and [plugin guide](https://opencode.ai/v2/docs/build/plugins); the published schema may describe V1 and is not V2 validation authority.
+
+Ambient `AGENTS.md` works; config `instructions` entries are not loaded. `@refs` are ordinary text: read linked snippets explicitly. `request.body.temperature` remains in config, but the current runner does not send it. Preserve `lsp: true`; use project lint/typecheck/compiler commands (no V2 LSP tools/diagnostics currently).
+
+`--env opencode` supplies minimal shared references without activating other harnesses. Back up V1, merge rather than clobber models/providers/plugins, and activate on the next run/restart. Native-converted files are incompatible with V1. Verify with installed V2; `doctor` is not runtime validation. Toolkit 4.0.0 publishing has not been executed.
+
 ### Native Codex
 
 `--env codex` includes `.codex/`, `.agents/`, and shared context, plus `.github/instructions/` and `.claude/rules-snippets/` solely to supply AGENTS-linked standards and their wrapper source content. No other harness command, agent, or config directories are installed; these references do not establish Copilot/Claude use or load automatically as Codex rules. Other harness scopes are unchanged.

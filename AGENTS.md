@@ -94,7 +94,7 @@ This toolkit uses a layered architecture for cross-tool compatibility (Claude Co
 - **Codex bootstrap** — For npm installs, ask Codex to read and follow `.nitm/BOOTSTRAP.md`; manual copies without `.nitm/` use `.claude/prompt-snippets/bootstrap.md` as a task document. `/bootstrap` is not a native Codex command. Do not invent Codex custom-agent formats or assume Claude frontmatter compatibility.
 - **Harness detection** — Use actual session/runtime evidence or ask the user; default scaffolding includes all harness directories and does not prove installation or use.
 - **`.cursor/`** — Cursor IDE (independent, .mdc format)
-- **`.opencode/`** — OpenCode (agents, commands, opencode.jsonc)
+- **`.opencode/`** — OpenCode use requires V2 for toolkit v4; Slim >=3.0.0 requires OpenCode >=2.0.7. Bootstrap runs `opencode --version` before changes; V1 must upgrade OpenCode or remain on toolkit 3.x, and missing/unparseable versions block OpenCode steps and toolkit 4.0.0 marking. Use plural `agents`, `commands`, `plugins`, ordered `permissions` (`action`/`resource`/`effect`, actions `shell`/`subagent`), `request.body.temperature`, skill-directory arrays, and `mcp.servers`. See [native V2 setup](README.md#native-opencode-v2-toolkit-400); the published schema may describe V1 and is not V2 validation authority. Preserve models/providers/user plugins. Slim's separate `prompt`/`permission`/`variant` fields are not host config.
 - **`.vscode/mcp.json`** — GitHub Copilot MCP config (`"servers"` key)
 
 ### Reference patterns
@@ -102,6 +102,10 @@ This toolkit uses a layered architecture for cross-tool compatibility (Claude Co
 - **CLAUDE.md** uses `@AGENTS.md` import (for Claude Code) and markdown links in "Related Documentation" (for human readers)
 - **`.github/copilot-instructions.md`** is the Copilot equivalent of CLAUDE.md
 - **Thin wrappers** in `.claude/`, `.cursor/`, `.github/`, `.opencode/` use markdown links to reference snippet files
+
+OpenCode V2 loads ambient `AGENTS.md`, not config `instructions` entries. `@refs` are ordinary text: explicitly read referenced snippets. `request.body.temperature` remains in config, but the current runner does not send it. Preserve `lsp: true`; use project lint/typecheck/compiler commands (no V2 LSP tools/diagnostics currently). Back up V1 before native conversion; converted files are incompatible with V1. Activate on the next run/restart.
+
+The local `ponytail.mjs` files are removed from the root and both templates. Templates register the author's native V2 `@dietrichgebert/ponytail@4.12.0` package locally; `opentmux` stays commented as V1-only. The toolkit root alone intentionally omits `plugins` to inherit existing user/global registrations; its upstream Ponytail registration is unchanged. Do not edit global config, port local APIs, or introduce bridges. Existing targets may remove only known obsolete toolkit Ponytail `.js`/`.mjs`/`.ts` copies after backup and approval; preserve unrelated local plugins and merge/deduplicate upstream registration locally where appropriate. Native local discovery needs no duplicate explicit registration. Plugin/runtime integration has not been tested.
 
 ## Sub-Agent Patterns
 

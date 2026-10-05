@@ -65,7 +65,7 @@ This repository serves as a **template source** for AI development instructions 
 ├── .cursor/            # This toolkit's own Cursor config
 ├── .github/            # This toolkit's own GitHub config
 ├── .opencode/          # This toolkit's own OpenCode config
-│   └── plugins/        # OpenCode plugins (ponytail mode manager, etc.)
+│   └── plugins/        # Other local OpenCode plugins (Ponytail uses upstream)
 ├── hooks/              # Claude Code / Copilot activation hooks (ponytail, etc.)
 └── AGENTS.md           # This toolkit's agent context
 ```
@@ -180,6 +180,37 @@ npx nitm-ai-dev-toolkit omo-slim-starter install
 ```
 
 After `install`, ask your AI agent to read and follow `.nitm/BOOTSTRAP.md`. Harnesses that supply a toolkit `/bootstrap` wrapper can also use it; **Codex has no native toolkit `/bootstrap` command**. Use `doctor` to verify the result.
+
+### Native OpenCode V2 (toolkit 4.0.0)
+
+Toolkit v4 requires **OpenCode V2 (major >=2)** for OpenCode use; **oh-my-opencode-slim >=3.0.0** requires **OpenCode >=2.0.7**. All repo/monorepo bootstrap, patch, and upgrade flows run `opencode --version` before changes, accepting an optional leading `v`. V1 must stop before OpenCode customization/migration or marking toolkit 4.0.0: upgrade OpenCode or remain on toolkit 3.x. A missing CLI or unparseable version stops OpenCode steps and version marking until the user confirms/installs a supported version. Confirm harness use from runtime evidence or ask; scaffold directories are not proof. Other-harness-only setup is unaffected.
+
+Publishing 4.0.0 has not been executed. The external `nitm-opencode-starter` is a separate package, not automatically upgraded.
+
+With user approval, merge this reproducible registration without replacing user/global plugins:
+
+```jsonc
+{ "plugins": ["oh-my-opencode-slim@3.0.0"] }
+```
+
+The toolkit root deliberately omits `plugins` to inherit user/global registrations; its existing upstream Ponytail registration is unchanged. Both target templates register the author's native V2 package `@dietrichgebert/ponytail@4.12.0` in their local `plugins` arrays, alongside `opencode-mem` and `@tarquinen/opencode-dcp@latest`; `opentmux` remains commented as V1-only. The local `ponytail.mjs` files are removed from the toolkit root and both templates; no local API port or bridge replaces them.
+
+For existing targets, back up and obtain approval before removing only known obsolete toolkit `.opencode/plugins/ponytail.js`, `.mjs`, or `.ts` copies. Preserve unrelated local plugins; merge/deduplicate upstream package registration locally where appropriate, without editing or overwriting global plugins. Native local plugins are discovered automatically, so do not register them twice. Slim's separate strict schema keeps its own `prompt`, `permission`, and `variant`: do not host-migrate plugin-owned fields. The root's no-`plugins` policy is specific to this toolkit repository, not target templates.
+
+| Setting | Native V2 form |
+| --- | --- |
+| Agents | `agents`, JSON `system` (Markdown body for file agents), `request.body.temperature`, model `provider/model#variant` |
+| Permissions | Ordered `permissions` with `action`, `resource`, `effect`; `shell`/`subagent` actions; last match wins |
+| Commands | `commands`; delegated commands use `subagent` |
+| Plugins | `plugins`; options use `{ "package": "…", "options": {} }` |
+| Skills | Directory-path array, e.g. `[".agents/skills"]`, not Markdown globs |
+| MCP | `mcp.servers`; `disabled` inverts legacy `enabled`; `timeout.catalog`/`timeout.execution` |
+
+Follow official V2 [migration](https://opencode.ai/v2/docs/migrate-v1), [config](https://opencode.ai/v2/docs/config), [agents](https://opencode.ai/v2/docs/agents), and [plugins](https://opencode.ai/v2/docs/build/plugins) docs. The published `https://opencode.ai/config.json` schema may describe V1; it is not native V2 validation authority.
+
+**Runtime limits:** config `instructions` entries are accepted but not loaded; ambient `AGENTS.md` works. `@refs` are ordinary text, not automatic attachments: agents must read referenced snippets explicitly. `request.body.temperature` remains in config, but the current runner does not send it. Plugin/runtime integration has not been tested. Preserve `lsp: true`, but V2 currently exposes no LSP tools or diagnostics: use project lint/typecheck/compiler commands.
+
+`--env opencode` includes minimal shared references for wrappers and AGENTS-linked standards without activating other harnesses. Merge, don't clobber: back up V1, preserve models/providers and user/global plugins, and ask before changes. Native-converted files are **incompatible with V1**. Activate on the next run/restart, then check behavior with the installed V2 runtime. `doctor` checks scaffold files/placeholders, not runtime behavior; do not substitute a V1 API/schema fetch or claim checks that were not run.
 
 ### Native Codex
 
@@ -701,7 +732,7 @@ This toolkit includes **32 pre-installed universal skills** in the `.agents/skil
 
 **These skills are ready to use immediately after copying the templates.** No `npx -y skills add -a <agent> <owner/repo> --skill '*' --agent github-copilot cursor` commands needed.
 
-The **ponytail** skill bundle is an integrated optional skill set from [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) that adds YAGNI/stdlib/native/one-line/minimum discipline to your AI agents. It includes 6 skills, 6 commands, an OpenCode plugin, 7 activation hooks, and ambient agent rules — all pre-configured and ready to use.
+The **ponytail** skill bundle is an integrated optional skill set from [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) that adds YAGNI/stdlib/native/one-line/minimum discipline to your AI agents. It includes 6 skills, 6 commands, 7 activation hooks, and ambient agent rules. OpenCode uses the author's upstream `@dietrichgebert/ponytail@4.12.0` package, not a bundled local plugin. See [native setup](#native-opencode-v2-toolkit-400); scaffolding alone does not establish activation.
 
 ### Additional Recommended Skills
 

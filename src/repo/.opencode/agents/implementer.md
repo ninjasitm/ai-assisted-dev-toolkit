@@ -1,10 +1,16 @@
 ---
 description: "Implement code changes for a specific task. Follow TDD, write tests alongside code, and self-review before reporting completion."
 mode: subagent
-temperature: 0.1
-permission:
-  edit: allow
-  bash: allow
+request:
+  body:
+    temperature: 0.1
+permissions:
+  - action: edit
+    resource: "*"
+    effect: allow
+  - action: shell
+    resource: "*"
+    effect: allow
 ---
 
 # Implementer Agent

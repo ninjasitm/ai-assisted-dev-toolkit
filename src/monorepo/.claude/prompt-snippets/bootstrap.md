@@ -2,6 +2,14 @@ You are helping to bootstrap AI instructions for this monorepo by analyzing the 
 
 > **Merge, don't clobber.** If a target file already exists and carries project-specific content — customized agents, rules, skills, or `{{PLACEHOLDER}}` values already replaced — preserve it. Add missing structure; never overwrite a customized file with template defaults. When a template change conflicts with an existing customization, merge the addition and flag it for the user rather than replacing the file. For incremental updates after the first bootstrap, prefer `/bootstrap-patch`, which is purpose-built for meticulous merging.
 
+## OpenCode version preflight (before any changes)
+
+- Confirm OpenCode use from actual session/runtime evidence or ask the user; directory presence alone is not proof. If only other harnesses are used, skip this preflight and all OpenCode steps.
+- For confirmed OpenCode use, run `opencode --version` before any project writes. Trim output and parse numeric major/minor/patch components, accepting an optional leading `v`; toolkit 4.x requires `major >= 2`.
+- If OpenCode V1 (`major < 2`) is detected, **STOP** before customizing/migrating OpenCode files or writing `.toolkit-version` as `4.0.0`. Ask the user to upgrade OpenCode to V2 or remain on toolkit 3.x.
+- If the CLI is missing, fails, or output is unparseable, **STOP OpenCode steps** and leave the version marker unchanged; ask the user to confirm/install a supported OpenCode version, then rerun this check. Never assume V2.
+- If oh-my-opencode-slim >=3.0.0 is used or planned, require OpenCode >=2.0.7 (compare version components numerically); otherwise **STOP** before changes and ask to upgrade. Proceed only after this gate passes.
+
 ## Harness selection and native Codex targets
 
 **Codex:** `/bootstrap` is not a native Codex command. For npm installs, ask Codex to read and follow `.nitm/BOOTSTRAP.md`. For manually copied templates without `.nitm/`, ask it to read and follow `.claude/prompt-snippets/bootstrap.md` as a task document.
@@ -133,6 +141,8 @@ You are helping to bootstrap AI instructions for this monorepo by analyzing the 
 
 7. **Update Template Files**:
 
+   For confirmed OpenCode use, complete the Ponytail pre-activation cleanup below before customizing OpenCode files or marking the migration complete.
+
    **Root Level:**
    - `AGENTS.md` (include project management section)
    - `.agents/skills/*/SKILL.md` (shared native skills, including Codex)
@@ -148,27 +158,36 @@ You are helping to bootstrap AI instructions for this monorepo by analyzing the 
    - `.claude/rules-snippets/*.md` (rules content — source of truth)
    - `.claude/prompt-snippets/*.md` (prompt content — source of truth)
    - `.claude/agents-snippets/*.md` (agent definitions — source of truth)
-   - `.opencode/opencode.jsonc` (OpenCode configuration — ⚠️ see schema validation below)
+   - `.opencode/opencode.jsonc` (OpenCode configuration — see native V2 checks below)
    - `.opencode/commands/*.md` (OpenCode commands)
    - `.opencode/rules/*.md` (OpenCode rules)
    - `.opencode/agents/*.md` (OpenCode agents)
    - `.toolkit-version` (version tracking)
    - `CLAUDE.md` (if it contains placeholders)
 
-   **⚠️ OpenCode `opencode.jsonc` Schema Validation:**
+   **OpenCode native V2 checks (only for confirmed OpenCode use):**
 
-   When creating or modifying `.opencode/opencode.jsonc`, **only use supported top-level keys**. The schema is defined at `https://opencode.ai/config.json`. Adding unsupported keys will cause validation errors.
+   Follow official V2 [migration](https://opencode.ai/v2/docs/migrate-v1), [config](https://opencode.ai/v2/docs/config), [agents](https://opencode.ai/v2/docs/agents), and [plugins](https://opencode.ai/v2/docs/build/plugins) docs, not V1 API/schema fetches. The published schema may describe V1; do not reject native plural keys based on it.
 
-   **Supported top-level keys:** `$schema`, `instructions`, `skills`, `agent`, `default_agent`, `model`, `small_model`, `provider`, `mcp`, `tools`, `permission`, `lsp`, `formatter`, `server`, `shell`, `command`, `plugin`, `watcher`, `snapshot`, `share`, `autoupdate`, `compaction`, `attachment`, `logLevel`, `disabled_providers`, `enabled_providers`, `tool_output`, `enterprise`, `experimental`
+   - After the version preflight passes, use `agents`/JSON `system` (Markdown bodies for file agents), `request.body.temperature`, ordered `permissions` (`action`/`resource`/`effect`, `shell`/`subagent`, last match wins), `commands`/`subagent`, `plugins` with `{ "package": "…", "options": {} }`, skill-directory arrays, and `mcp.servers` with inverse `disabled` and `timeout.catalog`/`timeout.execution`.
+   - Back up V1; native-converted files are incompatible with V1. Merge rather than clobber models/providers/user-global plugins. Only with approval, merge pinned `"plugins": ["oh-my-opencode-slim@3.0.0"]` locally. Slim's separate strict schema retains `prompt`/`permission`/`variant`; do not host-migrate it or silently upgrade the separate external starter.
+   - Templates register the author's native V2 package `@dietrichgebert/ponytail@4.12.0` locally; no local Ponytail source is bundled or ported. Keep `opentmux` commented as V1-only. Native local discovery needs no duplicate registration; do not introduce API ports or bridges or claim tested runtime integration.
+   - Config `instructions` entries are not loaded; ambient root/nested `AGENTS.md` works. `@refs` are ordinary text: explicitly read snippets. `request.body.temperature` remains in config, but the current runner does not send it. Preserve `lsp: true`; use workspace lint/typecheck/compiler commands (no V2 LSP tools/diagnostics currently).
+   - `--env opencode` supplies minimal shared references without other harness activation. Activate on the next run/restart; report only checks actually run with installed V2. Scaffold/placeholder checks are not runtime validation; publishing 4.0.0 has not been executed.
 
-   **Do NOT add keys not listed above** (e.g., `rules`, `agents`, `commands`, `prompts` as top-level keys — these are configured via `instructions`, `skills`, and the `.opencode/` directory structure instead).
+   **Ponytail pre-activation cleanup (confirmed OpenCode use only):**
+
+   1. In this bootstrap flow, inspect `.opencode/plugins/ponytail.js`, `.opencode/plugins/ponytail.mjs`, and `.opencode/plugins/ponytail.ts` for existing-target leftovers. Verify obsolete toolkit ownership from contents/provenance, not filename alone; absent paths need no deletion. Preserve unrelated/custom plugins and global config.
+   2. Back up the local config and verified obsolete toolkit copies, obtain explicit removal approval, then remove ONLY those copies. Do not automatically delete files in the CLI or remove custom plugins.
+   3. With approval, merge/deduplicate upstream `@dietrichgebert/ponytail@4.12.0` registration locally where appropriate, preserving other registrations/options and leaving global config untouched. No API port or bridge.
+   4. If any present copy's ownership or safe removal is unverified, or required removal approval is denied, **STOP OpenCode activation and migration completion**; leave `.toolkit-version` unchanged and report blocked, not complete. Proceed/restart only after this gate passes; runtime integration remains untested.
 
    **Create Toolkit Version File:**
 
-   Create a `.toolkit-version` file in the project root with the current toolkit version:
+   Create a `.toolkit-version` file in the project root with the current toolkit version only after the OpenCode preflight and Ponytail cleanup gate pass (or OpenCode is confirmed out of scope):
 
    ```
-    3.0.0
+    4.0.0
    ```
 
    This file enables `bootstrap-patch` to detect version changes and apply migrations automatically.
@@ -251,9 +270,9 @@ For multi-app monorepos with different frameworks, list all with app context (e.
 
 #### Agent Tool & Permission Calibration
 
-The `tools:` block (Claude Code, GitHub Copilot) and `permission:` block (OpenCode) must match each agent's role **and** the detected project. Templates ship with defaults, but calibrate them during bootstrap so every agent can do its job without being over-provisioned.
+The `tools:` block (Claude Code, GitHub Copilot) and ordered `permissions:` rules (OpenCode V2) must match each agent's role **and** the detected project. Inspect actual defaults before proposing changes; calibrate without over-provisioning.
 
-**Codex native calibration:** customize project instructions and skills, not Claude/Copilot `tools:` frontmatter or OpenCode `permission:` blocks. This toolkit ships no Codex custom-agent format. Use only delegation capabilities actually available in the running harness; do not generate agent files from this table or change native security settings to simulate per-role tool gating.
+**Codex native calibration:** customize project instructions and skills, not Claude/Copilot `tools:` frontmatter or OpenCode `permissions:` rules. This toolkit ships no Codex custom-agent format. Use only delegation capabilities actually available in the running harness; do not generate agent files from this table or change native security settings to simulate per-role tool gating.
 
 **1. Capability baseline per role** — what the agent functionally needs:
 
@@ -268,22 +287,22 @@ The `tools:` block (Claude Code, GitHub Copilot) and `permission:` block (OpenCo
 
 **2. Translate the baseline to each platform's syntax:**
 
-| Capability         | Claude Code     | GitHub Copilot                         | OpenCode (`permission:`) | Cursor  |
+| Capability         | Claude Code     | GitHub Copilot                         | OpenCode (`permissions:` rule) | Cursor  |
 | ------------------ | --------------- | -------------------------------------- | ------------------------ | ------- |
 | read               | `Read`          | `read`                                 | default                  | default |
 | search             | `Grep`          | `search`                               | default                  | default |
-| write / edit files | `Write`, `Edit` | `edit`                                 | `edit: allow`            | default |
-| terminal           | `Bash(*)`       | `runInTerminal`, `terminalLastCommand` | `bash: allow`            | default |
-| spawn subagents    | `agent`         | n/a                                    | `task: allow`            | default |
+| write / edit files | `Write`, `Edit` | `edit`                                 | `{action: edit, resource: "*", effect: allow}` | default |
+| terminal           | `Bash(*)`       | `runInTerminal`, `terminalLastCommand` | `{action: shell, resource: "*", effect: allow}` | default |
+| spawn subagents    | `agent`         | n/a                                    | `{action: subagent, resource: "*", effect: allow}` | default |
 
 > **Cursor note:** these templates declare no `tools:` field, so Cursor subagents inherit the full default toolset. Read-only intent (Researcher, Reviewer) is enforced by the agent's instructions, not tool gating. If your Cursor version supports per-agent tool restriction, add a `tools:` field to match the baseline.
 
 **3. Project-driven adjustments** (widen or narrow from the baseline):
 
-- **Planner** — If plans are persisted to files (e.g. `docs/plans/`, `docs/features/`), it MUST have write + terminal. The Copilot default is read-only (`["read","search"]`) and the OpenCode default denies `edit`/`bash` — **widen both** to the baseline. The Claude default already has `Write` but lacks `Bash(*)` — add it so the planner can run `git log` / discover tests.
-- **Documenter** — Always needs edit (updates existing docs); needs terminal when the project uses doc generators (mkdocs, typedoc, sphinx, docusaurus). The OpenCode default denies `edit`/`bash` and the Claude default omits `Edit`/`Bash(*)` — **widen both** to the baseline. The Copilot default is already correct.
+- **Planner** — Persisted plans need write + terminal. If Copilot is read-only (`["read","search"]`), widen to the baseline. If Claude lacks `Bash(*)`, add it for `git log` / test discovery. For OpenCode, inspect ordered rules and propose `edit`/`shell` allows only when missing and approved.
+- **Documenter** — Needs edit for docs, terminal for doc generators. If Claude omits `Edit`/`Bash(*)`, propose them. For OpenCode, inspect ordered `edit`/`shell` rules against this baseline, not presumed legacy defaults.
 - **Researcher** — Must stay read-only on every platform. The Claude Code default currently grants `Write` — **remove it** (`["Read","Grep"]`).
-- **Reviewer** — Read + terminal only; never grant write/edit. The OpenCode default denies `bash` — **allow `bash`** (keep `edit: deny`) so it can run `git diff` / tests. The Claude default grants `Write` — **remove it** (keep `Bash(*)`).
+- **Reviewer** — Read + terminal only; never grant write/edit. OpenCode ordered rules should allow `shell` and deny `edit` for this baseline. If Claude grants `Write`, remove it (keep `Bash(*)`).
 - **Worker agents** (Planner, Implementer, Red, Green, Refactor) — in a monorepo keep `user-invocable: false`; they are coordinator-dispatched only.
 
 **4. Apply:** for each agent file (`.claude/agents/*.agent.md`, `.github/agents/*.agent.md`, `.opencode/agents/*.md`), compare the declared tools/permissions to the calibrated baseline and adjust. List the changes, then confirm before applying.

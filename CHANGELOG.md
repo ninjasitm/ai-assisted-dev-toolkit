@@ -7,8 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Migration
+
+- Toolkit v4 / package 4.0.0 requires native OpenCode V2 for OpenCode use; oh-my-opencode-slim >=3.0.0 requires OpenCode >=2.0.7. Native host config uses plural maps, ordered permissions, skill directories, and `mcp.servers`. Back up V1 (converted files are incompatible with it), preserve user/global settings and Slim's separate strict schema, leave the external starter unchanged, and activate on the next run/restart. Config `instructions` are ignored, ambient `AGENTS.md` works, `@refs` require explicit reads, and `request.body.temperature` is preserved but not currently sent by the runner. Preserve `lsp: true`; use project checks, not unavailable V2 LSP tools. Plugin/runtime integration is untested; publishing has not been executed.
+- Removed all three local Ponytail plugin copies (root, repo template, monorepo template). Both templates register the author's native V2 `@dietrichgebert/ponytail@4.12.0` package locally; `opentmux` remains commented as V1-only. No API port or bridge was added. The toolkit root alone omits `plugins` to inherit existing user/global registrations; no global config was changed. Existing targets remove only known obsolete toolkit Ponytail `.js`/`.mjs`/`.ts` copies after backup and approval, preserving unrelated plugins and deduplicating upstream registration locally.
+
 ### Fixed
 
+- All six repo/monorepo bootstrap flows now require a fail-closed `opencode --version` preflight before changes for confirmed OpenCode use: accept an optional leading `v`, reject V1 before OpenCode customization/migration or toolkit 4.0.0 marking, and stop on a missing CLI or unparseable version. Slim >=3.0.0 enforces OpenCode >=2.0.7; other-harness-only setup is unaffected. Focused instruction-order/version-metadata regression checks cover the guard.
 - Bootstrap audit/creation examples are explicitly conditional on confirmed Copilot use; completion reports describe performed harness-specific checks without assuming OpenCode configuration, Codex trust/loading, or Copilot/Cursor readiness. Codex-scoped install documentation now includes linked standards and their wrapper sources without implying other harness activation.
 
 ### Added
@@ -32,7 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `bkt-cli` skill — Bitbucket CLI (`bkt`) command reference for repo and monorepo templates
 - `glab-cli` skill — GitLab CLI (`glab`) command reference for repo and monorepo templates
 - Ponytail skill bundle — 6 YAGNI/stdlib/native/minimum-discipline skills (`ponytail`, `ponytail-audit`, `ponytail-debt`, `ponytail-gain`, `ponytail-help`, `ponytail-review`)
-- Ponytail OpenCode plugin (`.opencode/plugins/ponytail.mjs`) loaded via the `plugin` config key
+- Author's upstream Ponytail OpenCode plugin registration (`@dietrichgebert/ponytail@4.12.0`) in both template configs; no bundled local plugin source
 - 7 ponytail hooks in `hooks/` (`ponytail-activate`, `ponytail-config`, `ponytail-instructions`, `ponytail-mode-tracker`, `ponytail-runtime`, `ponytail-statusline.sh`, `ponytail-statusline.ps1`), plus 2 hook configuration files for Claude/Codex and Copilot (`claude-codex-hooks.json`, `copilot-hooks.json`)
 - Ponytail rule in `.agents/rules/` and `.cursor/rules/` for ambient agent context
 - 6 ponytail commands (`ponytail`, `ponytail-audit`, `ponytail-debt`, `ponytail-gain`, `ponytail-help`, `ponytail-review`) with thin-wrapper sources in `.claude/prompt-snippets/`
@@ -74,7 +80,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added missing templates referenced in templates/README.md
 - `scripts/pre-commit-check.sh` — early-exit when no files are staged so the CHANGELOG check no longer fires on empty commits (PR #20 review)
 - `scripts/check-parity.sh` — removed duplicate `check_body_match` call for the cursor ↔ github prompt body (PR #20 review)
-- `.opencode/plugins/ponytail.mjs` — wrapped `writeMode` in a try/catch so an unwritable state directory no longer crashes the plugin (PR #20 review)
 - `ponytail-help` SKILL.md and prompt snippet — added missing `ponytail-audit`, `ponytail-debt`, and `/ponytail-gain` entries; corrected OpenCode slash-command count to six; rewrote the Claude-Code-specific Update section to describe the template update flow (PR #20 review)
 - `ponytail-gain` SKILL.md and prompt snippet (repo, monorepo, root) — replaced the phantom `benchmarks/` source reference with the upstream `DietrichGebert/ponytail` repo link (PR #20 review)
 - `README.md` — corrected "8 activation hooks" to "7 activation hooks" to match CHANGELOG and the actual hook count (PR #20 review)

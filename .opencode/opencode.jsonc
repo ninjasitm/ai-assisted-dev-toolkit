@@ -5,11 +5,9 @@
 		".opencode/rules/*.md",
 		".agents/skills/orient-to-recent-work/SKILL.md"
 	],
-	"skills": {
-		"paths": [
-			".agents/skills/**/*.md",
-			".claude/skills/**/*.md"
-		]
-	},
+	"skills": [
+		".agents/skills",
+		".claude/skills"
+	],
 	"lsp": true
 }

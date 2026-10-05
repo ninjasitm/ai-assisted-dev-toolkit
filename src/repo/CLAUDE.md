@@ -47,5 +47,5 @@
 - Commands are in `.opencode/commands/`.
 - Rules are in `.opencode/rules/`.
 - Agents are in `.opencode/agents/`.
-- Instructions are loaded from `AGENTS.md`, `.github/instructions/`, and `.claude/rules/`.
+- Native V2 loads ambient `AGENTS.md`, not config `instructions` entries. Explicitly read referenced snippets (`@refs` are ordinary text, not attachments). See [OpenCode setup](README.md#native-opencode-v2).
 - Skills are loaded from `.agents/skills/` and `.claude/skills/`.

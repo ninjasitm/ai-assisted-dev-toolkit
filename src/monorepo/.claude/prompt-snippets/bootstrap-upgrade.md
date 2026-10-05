@@ -1,12 +1,32 @@
 # Bootstrap Upgrade — Monorepo
 
-Migrate this monorepo's AI instruction files from the pre-3.0 inline pattern to the 3.0+ snippet-based architecture.
+Upgrade this monorepo to toolkit 4.0.0, including native OpenCode V2 for confirmed OpenCode users. For pre-3.0 installations, also migrate inline content to snippet-based architecture. Only modify confirmed harness targets; preserve unrelated harness/Codex behavior.
+
+## OpenCode version preflight (before any changes)
+
+- Confirm OpenCode use from actual session/runtime evidence or ask the user; directory presence alone is not proof. If only other harnesses are used, skip this preflight and all OpenCode steps.
+- For confirmed OpenCode use, run `opencode --version` before any project writes. Trim output and parse numeric major/minor/patch components, accepting an optional leading `v`; toolkit 4.x requires `major >= 2`.
+- If OpenCode V1 (`major < 2`) is detected, **STOP** before customizing/migrating OpenCode files or writing `.toolkit-version` as `4.0.0`. Ask the user to upgrade OpenCode to V2 or remain on toolkit 3.x.
+- If the CLI is missing, fails, or output is unparseable, **STOP OpenCode steps** and leave the version marker unchanged; ask the user to confirm/install a supported OpenCode version, then rerun this check. Never assume V2.
+- If oh-my-opencode-slim >=3.0.0 is used or planned, require OpenCode >=2.0.7 (compare version components numerically); otherwise **STOP** before changes and ask to upgrade. Proceed only after this gate passes.
+
+## Toolkit version routing (before parallel dispatch)
+
+Read `.toolkit-version` and select the route before dispatching agents or changing files; apply only confirmed harness scopes:
+
+- **>=4.0.0**: Use bootstrap-patch and **STOP** this upgrade without rewrites or version marking.
+- **v3 (`3.x`)**: **Skip Steps 2–6 and 8–10.** Run only the relevant native OpenCode migration in Step 7 (confirmed OpenCode use only), then applicable approved merge/validation/version/report steps 11–15. Preserve existing snippet bodies/frontmatter and unrelated harness files.
+- **Pre-3.0 or missing marker**: Steps 2–6 and applicable approved legacy steps 8–10 require a verified legacy inline installation. A missing marker alone is not legacy evidence; if snippets already exist or the installed version cannot be verified, **STOP** and ask rather than extracting/rewriting them. Back up before legacy conversion and preserve existing customizations.
+- **Invalid or unverified version**: **STOP** and ask; never guess a route or downgrade.
+
+## OpenCode migration guardrails
+
+Back up V1; native-converted files are incompatible with V1. Preserve models/providers/user-global plugins. Templates register the author's native V2 package `@dietrichgebert/ponytail@4.12.0`; obsolete toolkit-local Ponytail copies are replaced only after backup and approval (Step 7), with no API port or bridge. Keep `opentmux` commented as V1-only. Only with approval, merge pinned `"plugins": ["oh-my-opencode-slim@3.0.0"]` locally without replacing other registrations. Slim's separate strict schema retains `prompt`/`permission`/`variant`; do not host-migrate it or silently upgrade the separate external starter. Activate on the next run/restart; plugin/runtime integration is untested and publishing 4.0.0 has not been executed.
 
 ## Orchestrator Checkpoint
 
 > **🛑 Before starting**: This command involves reading, extracting, and rewriting many files across multiple directories.
-> Dispatch parallel subagents for independent file groups (`.claude/`, `.github/`, `.cursor/`, `.opencode/`).
-> Steps 3-6 can run in parallel per directory. Steps 7-15 are sequential.
+> Complete version routing above before parallel dispatch; only the verified legacy route may dispatch Steps 3–6, for confirmed harnesses. Applicable Steps 7–15 are sequential.
 
 ## Usage
 
@@ -25,9 +45,7 @@ Migrate this monorepo's AI instruction files from the pre-3.0 inline pattern to 
 
 1. **Confirm monorepo structure**: Verify `apps/` and `packages/` directories exist at root. If not, abort and suggest using the single-repo upgrade command instead.
 
-2. **Check existing version**: Read `.toolkit-version` if it exists.
-   - If version is `>= 3.0.0` and snippet directories exist → **abort**: "Already on v3.0+. No migration needed."
-   - If version is `< 3.0.0` or missing → proceed.
+2. **Check existing version**: Apply the route selected above; inventory and confirm only its applicable steps and confirmed harness targets.
 
 3. **Detect build system** (for CLAUDE.md update in Step 10):
    - `turbo.json` → Turborepo
@@ -53,17 +71,17 @@ Migrate this monorepo's AI instruction files from the pre-3.0 inline pattern to 
 5. **Present summary and ask for confirmation**:
 
    ```markdown
-   ## 🔄 Monorepo Upgrade: Pre-3.0 → v3.0.0 (Snippet Architecture)
+    ## 🔄 Monorepo Upgrade: toolkit v4.0.0
 
-   ### What will change
+    **Selected route**: verified legacy | v3 native OpenCode
 
-   - Create `.claude/rules-snippets/`, `.claude/prompt-snippets/`, `.claude/agents-snippets/`
-   - Extract content from {{N}} files into snippet files
-   - Convert originals to thin wrappers referencing snippets
-   - Create `.opencode/` directory with thin wrappers
-   - Clean up duplicate skill directories
-   - Update CLAUDE.md with multi-tool sections
-   - Write `.toolkit-version` with `3.0.0`
+    ### What will change (omit skipped steps for the selected route)
+
+    - Verified legacy only: create missing snippet directories, extract inline content from {{N}} files, and convert confirmed harness wrappers (Steps 2–6)
+    - Confirmed OpenCode only: merge native V2 host files and approved missing wrappers (Step 7)
+    - Verified legacy only: approved hook installation and verified identical duplicate skill cleanup (Steps 8–10); preserve custom skills
+    - Merge only applicable missing documentation and validate the selected route; v3 keeps existing snippet bodies/frontmatter unchanged
+   - Write `.toolkit-version` with `4.0.0` after the approved migration
 
    ### Monorepo-specific changes
 
@@ -75,6 +93,8 @@ Migrate this monorepo's AI instruction files from the pre-3.0 inline pattern to 
    ```
 
 ### Step 2: Create Snippet Directories
+
+**Steps 2–6 are verified-legacy-only.** Skip this entire block for v3; never extract or rewrite existing snippet bodies/frontmatter. Process only confirmed harness targets.
 
 Create these directories if they don't exist:
 
@@ -233,27 +253,29 @@ Follow the rules defined in [.claude/rules-snippets/{{NAME}}.md](../../.claude/r
 2. If no matching snippet: extract body → create `.claude/agents-snippets/<name>.md`
 3. Replace body with thin wrapper referencing `../../.claude/agents-snippets/{{NAME}}.md`
 
-### Step 7: Create .opencode/ Directory
+### Step 7: Create .opencode/ Directory (confirmed OpenCode use only)
 
-1. Create `.opencode/opencode.jsonc` using only supported schema keys:
+For the v3 route, merge only relevant native OpenCode host fields; preserve existing wrapper bodies, modes, unrelated frontmatter, and shared snippet bodies/frontmatter. The wrapper examples below apply only to approved missing files, not replacement of existing wrappers.
+
+1. Merge `.opencode/opencode.jsonc` using native V2 fields:
 
    ```json
    {
-   	"$schema": "https://opencode.ai/config.json",
-   	"instructions": ["AGENTS.md", ".opencode/rules/*.md"],
-   	"skills": {
-   		"paths": [".agents/skills/**/*.md", ".claude/skills/**/*.md"]
-   	},
-   	"lsp": true
+     "$schema": "https://opencode.ai/config.json",
+      "instructions": ["AGENTS.md", ".opencode/rules/*.md"],
+      "skills": [".agents/skills"],
+      "plugins": ["@dietrichgebert/ponytail@4.12.0"],
+      "lsp": true
    }
    ```
 
-   **⚠️ Schema Validation:** Only use supported top-level keys from `https://opencode.ai/config.json`. Do NOT add unsupported keys like `rules`, `commands`, or `agents` as top-level entries — OpenCode discovers these via the `.opencode/` directory structure and the `instructions`/`skills` config arrays.
+   Follow official V2 [migration](https://opencode.ai/v2/docs/migrate-v1), [config](https://opencode.ai/v2/docs/config), [agents](https://opencode.ai/v2/docs/agents), and [plugins](https://opencode.ai/v2/docs/build/plugins) docs. The published schema may describe V1; do not use it or a V1 API fetch as native V2 validation authority. Use `agents`/JSON `system` (Markdown bodies for file agents), `request.body.temperature`, ordered `permissions` (`action`/`resource`/`effect`, `shell`/`subagent`, last match wins), `commands`/`subagent`, `plugins` with `{ "package": "…", "options": {} }`, skill-directory arrays, and `mcp.servers` with inverse `disabled` and `timeout.catalog`/`timeout.execution`.
 
-   **Supported top-level keys:** `$schema`, `instructions`, `skills`, `agent`, `default_agent`, `model`, `small_model`, `provider`, `mcp`, `tools`, `permission`, `lsp`, `formatter`, `server`, `shell`, `command`, `plugin`, `watcher`, `snapshot`, `share`, `autoupdate`, `compaction`, `attachment`, `logLevel`, `disabled_providers`, `enabled_providers`, `tool_output`, `enterprise`, `experimental`
+   `instructions` entries are accepted but not loaded; ambient root/nested `AGENTS.md` works. `@refs` are ordinary text, not attachments: wrappers must explicitly tell agents to read referenced snippets. `request.body.temperature` remains in config, but the current runner does not send it. Preserve `lsp: true`; use workspace lint/typecheck/compiler commands (no current V2 LSP tools/diagnostics). `--env opencode` supplies minimal shared references without other harness activation. Verify using installed V2 after the next run/restart; report only checks actually run.
 
-2. **Copy OpenCode plugins**:
-   - Copy any `.opencode/plugins/*.mjs` files from the template
+2. **Replace obsolete toolkit Ponytail (backup and approval only)**:
+   - Back up the local config and known obsolete toolkit-owned `.opencode/plugins/ponytail.js`, `.opencode/plugins/ponytail.mjs`, and `.opencode/plugins/ponytail.ts` copies; obtain approval before removing only those copies. Preserve unrelated local plugins.
+   - Merge/deduplicate the author's native V2 `@dietrichgebert/ponytail@4.12.0` package in the local `plugins` array where appropriate, preserving other registrations/options. Do not edit global config or overwrite global plugins. Keep `opentmux` commented as V1-only; do not copy local Ponytail source, port APIs, or introduce bridges. Native local discovery needs no duplicate explicit registration; runtime integration remains untested.
 
 3. Create `.opencode/commands/*.md` — one thin wrapper per `.claude/commands/*.md`:
 
@@ -265,7 +287,7 @@ Follow the rules defined in [.claude/rules-snippets/{{NAME}}.md](../../.claude/r
 
    # {{TITLE}}
 
-   @.claude/prompt-snippets/{{NAME}}.md
+   Read and follow `.claude/prompt-snippets/{{NAME}}.md` before executing this command.
    ```
 
 4. Create `.opencode/rules/*.md` — one thin wrapper per `.claude/rules/*.md`:
@@ -273,7 +295,7 @@ Follow the rules defined in [.claude/rules-snippets/{{NAME}}.md](../../.claude/r
    ```markdown
    # {{TITLE}}
 
-   @.claude/rules-snippets/{{NAME}}.md
+   Read and follow `.claude/rules-snippets/{{NAME}}.md` when these standards apply.
    ```
 
 5. Create `.opencode/agents/*.md` — one thin wrapper per `.claude/agents/*.agent.md`:
@@ -286,7 +308,7 @@ Follow the rules defined in [.claude/rules-snippets/{{NAME}}.md](../../.claude/r
 
    # {{AGENT_NAME}}
 
-   @.claude/agents-snippets/{{NAME}}.md
+   Read and follow `.claude/agents-snippets/{{NAME}}.md` before performing this role.
    ```
 
 ### Step 8: Install Pre-Commit Hook
@@ -317,16 +339,14 @@ Use `git commit --no-verify` to bypass.
 
 ### Step 10: Clean Up Duplicate Skills
 
-- Copy `.agents/rules/*.md` from the template
-
-1. Keep `.agents/skills/` as the source of truth
-2. For each of `.claude/skills/`, `.cursor/skills/`, `.github/skills/`:
-   - If directory exists, remove all subdirectories except `README.md`
-3. Remove any nested duplicates: `subagent-driven-development/subagent-driven-development/`
+- Merge approved `.agents/rules/*.md` additions without overwriting custom content; skip this step on the v3 route.
+- Preserve custom, unmatched, modified, and nested skill content; name or location alone does not prove duplication.
+- A candidate in a confirmed harness skill directory may be removed only after the same-name canonical `.agents/skills/<skill-name>/` copy exists and a complete recursive comparison (`diff -qr` or equivalent, including nested content) proves them identical. Missing canonical copy, differences, or comparison errors mean preserve and report, not delete.
+- Back up the verified identical duplicate and obtain explicit approval before removing only that duplicate; keep the canonical copy intact. No bulk deletion or name/location-based nested cleanup.
 
 ### Step 11: Update CLAUDE.md
 
-Read the existing `CLAUDE.md` and add missing sections:
+If `CLAUDE.md` is an applicable confirmed harness target, merge only missing relevant sections; preserve existing bodies/frontmatter:
 
 1. **Multi-tool sections** — add if missing:
    - GitHub Copilot section (references `.github/instructions/`, `.github/prompts/`, `.github/agents/`)
@@ -354,31 +374,36 @@ Read the existing `CLAUDE.md` and add missing sections:
    - `.cursor/rules/*.mdc` → `.claude/rules-snippets/`
    - `.cursor/commands/*.md` → `.claude/prompt-snippets/`
    - `.cursor/agents/*.agent.md` → `.claude/agents-snippets/`
-   - `.opencode/{commands,rules,agents}/*.md` → `@.claude/{snippet-type}/`
+   - `.opencode/{commands,rules,agents}/*.md` → explicit read instructions for `.claude/{snippet-type}/` (no automatic `@ref` attachment)
    ```
 
 ### Step 12: Create .toolkit-version File
 
-Write `3.0.0` to `.toolkit-version`.
+Write `4.0.0` to `.toolkit-version` only after the approved migration and OpenCode preflight pass (or OpenCode is confirmed out of scope).
 
 ### Step 13: Validation
 
-Run these checks (parallelizable):
+Run only checks applicable to the selected route and confirmed harnesses (parallelizable); on v3 compare retained snippet bodies/frontmatter to backups:
 
 1. **Snippet completeness**: Every `.md` file in `.claude/rules-snippets/`, `.claude/prompt-snippets/`, `.claude/agents-snippets/` must have content (not empty)
 2. **Thin wrapper correctness**: Every thin wrapper must contain a reference to its snippet with the correct relative path
 3. **Monorepo `paths:` preserved**: For files that had `paths:` frontmatter in `.claude/rules/`, verify the snippet also contains `paths:`
 4. **No lost placeholders**: Scan all snippet files — any `{{` in original must appear in snippet
 5. **No broken paths**: Verify all relative paths resolve correctly (e.g., `../rules-snippets/` from `.claude/rules/`)
+6. **Custom skills preserved**: Only approved verified identical duplicates were removed; canonical copies and custom, unmatched, and nested content remain
 
 If `--verbose`: log each check result.
 
 ### Step 14: Generate Upgrade Report
 
+Include only operations/checks actually performed for the selected route; omit legacy extraction/cleanup rows on v3 and never pre-mark skipped checks as passed.
+
 ```markdown
-## ✅ Monorepo Upgrade Complete: v3.0.0 (Snippet Architecture)
+## ✅ Monorepo Upgrade Complete: v4.0.0
 
 ### Build System: {{BUILD_SYSTEM}}
+
+**Selected route**: verified legacy | v3 native OpenCode
 
 ### Directories Created
 
@@ -410,22 +435,22 @@ If `--verbose`: log each check result.
 | File                       | Purpose                    |
 | -------------------------- | -------------------------- |
 | `.opencode/opencode.jsonc` | OpenCode configuration     |
-| `.toolkit-version`         | Version tracking (`3.0.0`) |
+| `.toolkit-version`         | Version tracking (`4.0.0`) |
 
 ### Validation Results
 
 | Check                          | Status                                     |
 | ------------------------------ | ------------------------------------------ |
-| Snippet completeness           | ✅ All snippets have content               |
-| Thin wrapper references        | ✅ All wrappers reference correct snippets |
-| `paths:` frontmatter preserved | ✅ Monorepo scoping intact                 |
-| No lost placeholders           | ✅ All `{{VAR}}` preserved                 |
-| No broken paths                | ✅ All relative paths resolve              |
+| Snippet completeness           | Report actual applicable checks            |
+| Thin wrapper references        | Report actual applicable checks            |
+| `paths:` frontmatter preserved | Report actual checks; v3 snippets unchanged |
+| No lost placeholders           | Report actual `{{VAR}}` preservation checks |
+| No broken paths                | Report actual applicable checks            |
 
 ### Cleanup
 
-- Removed duplicate skill directories from `.claude/skills/`, `.cursor/skills/`, `.github/skills/`
-- Kept `.agents/skills/` as source of truth
+- Removed only verified identical duplicates after comparison, backup, and approval (if performed)
+- Preserved custom, unmatched, and nested skill content and canonical `.agents/skills/` copies
 
 ### Next Steps
 
@@ -439,7 +464,7 @@ If `--verbose`: log each check result.
 
 ```bash
 git add -A
-git commit -m "chore: upgrade AI instructions to toolkit v3.0.0 (snippet architecture)"
+git commit -m "chore: upgrade AI instructions to toolkit v4.0.0"
 ```
 
 ## Error Handling
@@ -447,7 +472,7 @@ git commit -m "chore: upgrade AI instructions to toolkit v3.0.0 (snippet archite
 - If a `.claude/rules/*.md` file is already a thin wrapper (< 20 lines with a snippet reference), skip it
 - If `.github/instructions/*.instructions.md` already references `.claude/rules-snippets/`, skip it
 - If a snippet file already exists with content, do not overwrite — log a warning
-- If `.opencode/` already exists, merge new files without overwriting existing ones
+- If `.opencode/` already exists, add missing files and propose native V2 conversion of existing host files; preserve customizations and skip files already migrated
 
 ## Notes
 
