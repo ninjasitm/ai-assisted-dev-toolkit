@@ -1,5 +1,5 @@
 ---
-name: "Green"
+name: "green"
 description: "Write minimal code to make failing tests pass. Part of the TDD red-green-refactor cycle."
 tools: ["Read", "Grep", "Write", "Edit", "Bash(*)"]
 user-invocable: true

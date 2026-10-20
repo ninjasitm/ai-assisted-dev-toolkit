@@ -13,6 +13,12 @@ Templates use `{{PLACEHOLDER}}` syntax (SCREAMING_SNAKE_CASE). The most common p
 | `{{LANGUAGE}}` | Programming language (TypeScript, PHP, Python, C#, etc.) |
 | `{{PACKAGE_MANAGER}}` | Package manager (npm, pnpm, composer, pip, etc.) |
 | `{{DEV_PORT}}` | Development server port |
+| `{{DEV_PORT_FLAG}}` | Flag or env var that sets the dev port |
+| `{{SETUP_COMMAND}}` | Install command |
+| `{{DEV_COMMAND}}` | Dev server command |
+| `{{TEST_COMMAND}}` | Test command |
+| `{{LINT_COMMAND}}` | Lint command |
+| `{{BUILD_COMMAND}}` | Build command |
 | `{{DEPLOY_PLATFORM}}` | Deployment target |
 | `{{ISSUE_TRACKER}}` | Issue tracker (Jira, Linear, GitHub Issues) |
 | `{{ISSUE_ID}}` | Issue or ticket identifier |

@@ -1,5 +1,5 @@
 ---
-name: Refactor
+name: refactor
 description: "Improve code quality and structure while keeping all tests passing. Part of the TDD red-green-refactor cycle."
 tools: ["Read", "Grep", "Write", "Edit", "Bash(*)"]
 user-invocable: false

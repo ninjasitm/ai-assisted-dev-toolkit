@@ -1,5 +1,5 @@
 ---
-name: Implementer
+name: implementer
 description: "Implement code changes for a specific task. Follow TDD, write tests alongside code, and self-review before reporting completion."
 tools: ["Read", "Grep", "Write", "Edit", "Bash(*)"]
 user-invocable: false

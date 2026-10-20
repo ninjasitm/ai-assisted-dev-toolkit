@@ -100,26 +100,36 @@ Detect the language ecosystem by checking for these files:
 
 Map discovered information to template variables:
 
-| Variable                    | Source                                                                      |
-| --------------------------- | --------------------------------------------------------------------------- |
-| `{{PROJECT_NAME}}`          | Config file name field or directory                                         |
-| `{{PROJECT_DESCRIPTION}}`   | Config description or README                                                |
-| `{{LANGUAGE}}`              | Detected language (TypeScript, PHP, C#, Python, etc.)                       |
-| `{{FRAMEWORK}}`             | Detected framework with version                                             |
-| `{{PACKAGE_MANAGER}}`       | Lock file or config (npm, composer, dotnet, pip, bundler, go, cargo, maven) |
-| `{{DEV_PORT}}`              | Scripts, config, or framework default                                       |
-| `{{SRC_DIR}}`               | Source directory structure                                                  |
-| `{{TEST_DIR}}`              | Test directory location                                                     |
-| `{{FILE_EXTENSION}}`        | Primary extension (ts, php, cs, py, rb, go, rs, java)                       |
-| `{{DATABASE}}`              | ORM/database dependencies                                                   |
-| `{{TEST_FRAMEWORK}}`        | Test framework                                                              |
-| `{{DEPLOY_PLATFORM}}`       | Deployment config files                                                     |
-| `{{RUNTIME_VERSION}}`       | Runtime version from config                                                 |
-| `{{ISSUE_TRACKER}}`         | Detected project management tool                                            |
-| `{{PM_URL}}`                | Project management tool URL/workspace (if applicable)                       |
-| `{{PROJECT_KEY}}`           | Project ID or workspace ID (if applicable)                                  |
-| `{{PM_ISSUE_KEY}}`          | Issue key format (e.g., PROJ-###)                                           |
-| `{{NEW_RELEVANT_VARIABLE}}` | ...other inferred values...                                                 |
+| Variable                    | Source                                                                                                                                                                                                     |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `{{PROJECT_NAME}}`          | Config file name field or directory                                                                                                                                                                        |
+| `{{PROJECT_DESCRIPTION}}`   | Config description or README                                                                                                                                                                               |
+| `{{LANGUAGE}}`              | Detected language (TypeScript, PHP, C#, Python, etc.)                                                                                                                                                      |
+| `{{FRAMEWORK}}`             | Detected framework with version                                                                                                                                                                            |
+| `{{PACKAGE_MANAGER}}`       | Lock file or config (npm, composer, dotnet, pip, bundler, go, cargo, maven)                                                                                                                                |
+| `{{SETUP_COMMAND}}`         | Install step from the lock file (`npm ci`, `pnpm install --frozen-lockfile`, `composer install`, `dotnet restore`, `pip install -r requirements.txt`); a `setup` script or Makefile target wins if present |
+| `{{DEV_PORT}}`              | Scripts, config, or framework default                                                                                                                                                                      |
+| `{{DEV_COMMAND}}`           | `dev` or `start` script, Makefile `dev` target, or framework CLI (`php artisan serve`, `dotnet run`, `cargo run`)                                                                                          |
+| `{{DEV_PORT_FLAG}}`         | Flag or env var that sets the dev port: `--port <port>`, `-- --port <port>` (npm script passthrough), or `PORT=<port>`; check the script and framework config. Ask if none                                 |
+| `{{SRC_DIR}}`               | Source directory structure                                                                                                                                                                                 |
+| `{{TEST_DIR}}`              | Test directory location                                                                                                                                                                                    |
+| `{{FILE_EXTENSION}}`        | Primary extension (ts, php, cs, py, rb, go, rs, java)                                                                                                                                                      |
+| `{{DATABASE}}`              | ORM/database dependencies                                                                                                                                                                                  |
+| `{{TEST_FRAMEWORK}}`        | Test framework                                                                                                                                                                                             |
+| `{{TEST_COMMAND}}`          | `test` script, or the runner (`vitest run`, `phpunit`, `pytest`, `go test ./...`, `cargo test`, `dotnet test`)                                                                                             |
+| `{{LINT_COMMAND}}`          | `lint` script, or the linter (ESLint, Biome, ruff, phpstan, golangci-lint, clippy, dotnet format)                                                                                                          |
+| `{{BUILD_COMMAND}}`         | `build` script, or the build tool (`go build ./...`, `cargo build`, `dotnet build`, `mvn package`)                                                                                                         |
+| `{{DEPLOY_PLATFORM}}`       | Deployment config files                                                                                                                                                                                    |
+| `{{RUNTIME_VERSION}}`       | Runtime version from config                                                                                                                                                                                |
+| `{{ISSUE_TRACKER}}`         | Detected project management tool                                                                                                                                                                           |
+| `{{PM_URL}}`                | Project management tool URL/workspace (if applicable)                                                                                                                                                      |
+| `{{PROJECT_KEY}}`           | Project ID or workspace ID (if applicable)                                                                                                                                                                 |
+| `{{PM_ISSUE_KEY}}`          | Issue key format (e.g., PROJ-###)                                                                                                                                                                          |
+| `{{DEFAULT_BRANCH}}`        | `git symbolic-ref --short refs/remotes/origin/HEAD`, minus `origin/`; else `main`                                                                                                                          |
+| `{{FACTORY_PORT_BASE}}`     | Default `5100`                                                                                                                                                                                             |
+| `{{APPROVAL_MODE}}`         | Default `human`                                                                                                                                                                                            |
+| `{{FACTORY_REVIEW_LENSES}}` | Default `code, security`; add `ux, ui` only if the project has a UI and a browser tool is configured (for example a browser MCP server)                                                                    |
+| `{{NEW_RELEVANT_VARIABLE}}` | ...other inferred values...                                                                                                                                                                                |
 
 ### Step 2.5: Project Management Detection
 

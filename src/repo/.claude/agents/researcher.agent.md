@@ -1,5 +1,5 @@
 ---
-name: "Researcher"
+name: "researcher"
 description: "Research codebase patterns, dependencies, and technical context. Analyze code structure, find relevant examples, and report findings without making changes."
 tools: ["Read", "Grep", "Write"]
 user-invocable: true

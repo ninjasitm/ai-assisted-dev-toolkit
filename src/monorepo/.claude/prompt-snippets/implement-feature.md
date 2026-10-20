@@ -56,7 +56,7 @@ Implement a feature by completing tasks sequentially with proper tracking.
 
    c. **Implement (TDD required)**:
 
-   - Follow acceptance criteria exactly
+   - Follow the acceptance criteria in `spec.md` for this task's deliverable
    - Use patterns from `AGENTS.md`
    - **Write a failing test first** — one behavior per test, clear name, real code
    - **Verify it fails** — watch it fail for the right reason (feature missing, not error)
@@ -79,7 +79,7 @@ Implement a feature by completing tasks sequentially with proper tracking.
    git commit -m "feat({{SCOPE}}): {{DESCRIPTION}}"
    ```
 
-   f. **Mark Task Complete**
+   f. **Mark Task Complete**: tick `- [x]` for the task in `tasks.md`
 
 5. **Post-Implementation Review**:
    - Dispatch **Reviewer** agent on all changes before proceeding

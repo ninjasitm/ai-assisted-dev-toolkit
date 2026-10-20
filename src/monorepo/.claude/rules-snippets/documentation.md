@@ -8,12 +8,14 @@ This monorepo uses a **distributed documentation strategy** where app-specific d
 
 **App-specific documentation** must live in respective app folders:
 
-- **{{APP_1}} Features** → `apps/{{APP_1}}/docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/`
-- **{{APP_2}} Features** → `apps/{{APP_2}}/docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/`
+- **{{APP_1}} Features** → `apps/{{APP_1}}/docs/features/<feature>/`
+- **{{APP_2}} Features** → `apps/{{APP_2}}/docs/features/<feature>/`
 - **{{APP_1}} Fixes** → `apps/{{APP_1}}/docs/fixes/`
 - **{{APP_2}} Fixes** → `apps/{{APP_2}}/docs/fixes/`
 - **Shared Package Features** → `packages/{{PACKAGE_NAME}}/docs/features/`
 - **Shared Package Fixes** → `packages/{{PACKAGE_NAME}}/docs/fixes/`
+
+**Factory features are root-scoped.** The factory pipeline runs from the monorepo root, so features it runs live at root `docs/features/<feature>/` (for example `docs/features/PROJ-1234-onboarding/`). Other features stay in their app or package folder as listed above. `<feature>` is the per-run feature folder name: `<KEY>-<slug>`, or `<slug>` when there is no ticket.
 
 **Root `docs/` folder** is ONLY for monorepo-wide documentation:
 
@@ -81,12 +83,12 @@ If the monorepo includes a documentation app (e.g., Docus, Nuxt Content, Docusau
 
 Each app maintains its own feature documentation:
 
-**Location:** `apps/{{APP_NAME}}/docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/`
+**Location:** `apps/{{APP_NAME}}/docs/features/<feature>/`
 
 **Required Files:**
 
 ```
-apps/{{APP_1}}/docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/
+apps/{{APP_1}}/docs/features/<feature>/
 ├── spec.md       # Functional specification
 ├── plan.md       # Implementation plan
 └── [optional]    # Code examples, component diagrams
@@ -160,8 +162,8 @@ Before running `git commit`, verify ALL items that apply to your change:
 
 **All changes:**
 
-- [ ] **Features**: `docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/spec.md` exists and reflects the current implementation
-- [ ] **Features**: `docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/plan.md` is updated if scope changed
+- [ ] **Features**: `docs/features/<feature>/spec.md` exists and reflects the current implementation
+- [ ] **Features**: `docs/features/<feature>/plan.md` is updated if scope changed
 - [ ] **Fixes**: Entry added to `apps/{{APP_NAME}}/docs/fixes/{{YYYY-MM}}.md` (or complex fix folder created)
 - [ ] **Breaking changes**: `CHANGELOG.md` updated
 - [ ] **Architectural decisions**: ADR created in `docs/architecture/` if a significant choice was made

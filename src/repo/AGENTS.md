@@ -27,6 +27,19 @@ The [orient-to-recent-work](.agents/skills/orient-to-recent-work/SKILL.md) skill
 **Testing:** {{TEST_FRAMEWORK}}
 **Build:** {{BUILD_TOOL}}
 
+## Commands
+
+Run from the project root. Default dev port: `{{DEV_PORT}}`.
+
+| Task            | Command                                                                                 |
+| --------------- | --------------------------------------------------------------------------------------- |
+| Setup           | `{{SETUP_COMMAND}}`                                                                     |
+| Dev server      | `{{DEV_COMMAND}}`                                                                       |
+| Dev server port | `{{DEV_PORT_FLAG}}`: the flag or env var that sets the port; `<port>` is the port value |
+| Test            | `{{TEST_COMMAND}}`                                                                      |
+| Lint            | `{{LINT_COMMAND}}`                                                                      |
+| Build           | `{{BUILD_COMMAND}}`                                                                     |
+
 ## Project Management
 
 **Tracker:** {{ISSUE_TRACKER}}
@@ -125,6 +138,7 @@ For detailed standards on specific topics, refer to these skills in `.agents/ski
 | **Debugger**              | `debugger/SKILL.md`                       | Systematic debugging dispatch with mandatory root cause investigation |
 | **Documentation**         | `project-documentation/SKILL.md`          | README, comments, ADRs, changelogs                                    |
 | **Executing Plans**       | `executing-plans/SKILL.md`                | Following through on implementation plans                             |
+| **Factory**               | `factory/SKILL.md`                        | Opt-in spec-to-merge feature pipeline                                 |
 | **Git Worktrees**         | `using-git-worktrees/SKILL.md`            | Parallel development branches                                         |
 | **GitHub CLI**            | `gh-cli/SKILL.md`                         | GitHub Issues CLI command reference                                   |
 | **GitLab CLI**            | `glab-cli/SKILL.md`                       | GitLab MRs, issues, pipelines CLI reference                           |
@@ -365,13 +379,17 @@ Subagents are typically **agent-initiated** — the coordinator decides when to 
 
 > **Docs:** [VS Code Subagents](https://code.visualstudio.com/docs/copilot/agents/subagents) · [Cursor Subagents](https://cursor.com/docs/subagents)
 
+### Factory (opt-in)
+
+An optional file-driven pipeline for feature-sized work, alongside Feature Builder and TDD. Start it with `/factory <request>` in Claude Code, Copilot, Cursor, or OpenCode. The orchestrator reads the project and asks only the glaring questions before it creates anything, then asks you to continue or change the answers. Resume a feature with `/factory start <KEY | slug | job-id>`. Codex runs the orchestrator skill directly. Each job belongs to a feature folder in `docs/features/`, stops at a spec gate and a plan gate for your confirmation before any ticket or build, builds in its own git worktree unless you ask for `--in-place`, and moves its tickets when the project tracks them. The orchestrator is [.agents/skills/factory/SKILL.md](.agents/skills/factory/SKILL.md). Its seven agents are `factory-spec-writer`, `factory-builder`, `factory-reviewer-code`, `factory-reviewer-security`, `factory-reviewer-ux`, `factory-reviewer-ui`, and `factory-approver`, with wrappers in each harness's agents folder that point to the shared snippets in `.claude/agents-snippets/`. Setup, placeholders, and approval modes are in [factory/README.md](factory/README.md).
+
 ## Documentation Requirements
 
 Documentation updates are **mandatory before committing** any feature or fix. See [`.github/instructions/documentation.instructions.md`](.github/instructions/documentation.instructions.md) for the full pre-commit checklist, templates, and AI agent directives.
 
 **Quick summary:**
 
-- Create or update `docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/` (spec + plan) for every feature
+- Create or update `docs/features/<feature>/` (spec + plan) for every feature, where `<feature>` is `<KEY>-<slug>` or `<slug>`
 - Add fixes to the monthly log in `docs/fixes/{{YYYY-MM}}.md` (or a dedicated folder for complex fixes)
 - Update `docs/api/`, `docs/integration/`, `docs/guides/`, `README.md`, and `CHANGELOG.md` when applicable
 - Reference `docs/constitution.md` for project principles and governance

@@ -1,5 +1,5 @@
 ---
-name: "Feature Builder"
+name: "feature-builder"
 description: "Coordinate end-to-end feature development using subagents for planning, implementation, and review. Orchestrates the full development lifecycle."
 tools: ["Read", "Grep", "Write", "Edit", "Bash(*)", "agent"]
 user-invocable: true

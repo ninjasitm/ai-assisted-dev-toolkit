@@ -6,4 +6,4 @@ alwaysApply: true
 
 # Orient to recent work
 
-Before any non-trivial task, build a compact mental model of recent project activity. Full protocol: [../.agents/skills/orient-to-recent-work/SKILL.md](../.agents/skills/orient-to-recent-work/SKILL.md).
+Before any non-trivial task, build a compact mental model of recent project activity. Full protocol: [../../.agents/skills/orient-to-recent-work/SKILL.md](../../.agents/skills/orient-to-recent-work/SKILL.md).
