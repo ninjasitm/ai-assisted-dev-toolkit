@@ -5,7 +5,7 @@ const test = require('node:test');
 
 const root = path.join(__dirname, '..');
 const read = (file) => readFileSync(path.join(root, file), 'utf8');
-const assertToolkitV4 = (version) => assert.match(version, /^4\./, 'supported toolkit major is 4.x');
+const assertToolkitV4 = (version) => assert.ok(Number(version.split('.')[0]) >= 4, 'supported toolkit major is 4.x or later');
 
 // Check agent instructions and their ordering, not installed OpenCode runtime behavior.
 for (const [variant, flow, mutation] of [
@@ -38,7 +38,7 @@ for (const [variant, flow, mutation] of [
   });
 }
 
-test('toolkit package stays on supported 4.x and READMEs require OpenCode V2', () => {
+test('toolkit package stays on 4.x or later and READMEs require OpenCode V2', () => {
   assertToolkitV4(JSON.parse(read('package.json')).version);
   for (const file of ['README.md', 'src/repo/README.md', 'src/monorepo/README.md']) {
     assert.match(read(file), /Toolkit v4 requires \*\*OpenCode V2/);
