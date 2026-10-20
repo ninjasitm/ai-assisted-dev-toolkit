@@ -38,7 +38,7 @@ Bootstrap replaces these when it adopts the template. The names below have no br
 | `/factory status [--all]` | Summarize open jobs from their `job.json` (read-only). Closed jobs are hidden unless `--all` (see Status) |
 | `/factory watch [--all]` | Show the status table, then the command for the live view to run in a terminal (read-only). `--all` as for status |
 | `/factory archive [--all] [--dry-run]` | Move closed jobs to `factory/archive/` (see Archive). Open jobs never move |
-| `/factory prune [--all] [--dry-run]` | Permanently delete closed jobs from `factory/jobs/` and `factory/archive/` (see Prune). Open jobs and `docs/features/` are never touched |
+| `/factory prune [--all] [--abandoned] [--dry-run]` | Permanently delete closed jobs from `factory/jobs/` and `factory/archive/` (see Prune). Open jobs and `docs/features/` are never touched |
 
 A first argument of `start`, `approve`, `rework`, `abandon`, `status`, `watch`, `archive`, or `prune` selects its row. Anything else is a request for intake. A bare job id that matches an existing `factory/jobs/<id>/` or `factory/archive/<id>/` is not a request: it goes to Start. An archived job is closed. `rework` and `abandon` refuse it. `approve` on an archived `merged` job only moves its tickets to Done, and merges nothing.
 
@@ -533,20 +533,20 @@ The live view needs an interactive terminal, which agent shells do not have, so 
 
 ## Prune
 
-`/factory prune [--all] [--dry-run]` permanently deletes closed jobs (`merged` or `abandoned`) from both `factory/jobs/` and `factory/archive/`. A pruned job cannot be recovered. It never deletes an open job, and it never touches `docs/features/`.
+`/factory prune [--all] [--abandoned] [--dry-run]` permanently deletes closed jobs from both `factory/jobs/` and `factory/archive/`. By default only `merged` jobs are deleted. `--abandoned` also deletes `abandoned` jobs. A pruned job cannot be recovered. It never deletes an open job, and it never touches `docs/features/`.
 
-The selection is the same as Archive: by default only closed jobs whose `updatedAt` is more than 7 days ago, and `--all` selects every closed job. A closed job with no valid `updatedAt` is not selected.
+The age rule is the same as Archive: by default only jobs whose `updatedAt` is more than 7 days ago, and `--all` drops the age limit. A job with no valid `updatedAt` is not selected. `--abandoned` adds `abandoned` jobs under the same rule. Without it, abandoned jobs are never selected, and the list counts the ones it kept.
 
-1. **List.** Run `npx nitm-ai-dev-toolkit factory prune [--all]` from the main checkout, without `--yes`. It lists the candidates and deletes nothing. Show the list in chat. Then read each abandoned candidate's `job.json` and keep its id, its `worktree_path`, and whether branch `factory/<id>` still exists. This must happen before any delete, because the folder and its `job.json` are gone afterwards.
+1. **List.** Run `npx nitm-ai-dev-toolkit factory prune [--all] [--abandoned]` from the main checkout, without `--yes`, using the flags the operator asked for. It lists the candidates and deletes nothing. Show the list in chat. If the list has abandoned candidates, read each one's `job.json` and keep its id, its `worktree_path`, and whether branch `factory/<id>` still exists. This must happen before any delete, because the folder and its `job.json` are gone afterwards. If the list kept abandoned jobs because `--abandoned` was not passed, say how many and offer once, in chat, to rerun the list with `--abandoned`. Do not add the flag without a yes.
    With `--dry-run`, stop after this step. Nothing is deleted, and no question or branch question is asked.
 2. **Confirm.** Ask once in chat, as a numbered choice:
    1. Permanently delete the listed jobs.
    2. Cancel.
 
    Nothing is deleted without a yes. On cancel, stop and report that nothing changed.
-3. **Delete.** On yes, run `npx nitm-ai-dev-toolkit factory prune [--all] --yes` with the same flags as step 1. It deletes the listed jobs. If the CLI cannot run, delete directly: first recompute the selection with the same rules. If it differs from the list shown, stop and show the new list again. Otherwise `rm -rf` each listed folder, one exact path at a time: `factory/jobs/<id>` or `factory/archive/<id>`. Never use a glob, and never delete a path outside those two folders.
-4. **Branches.** For each pruned abandoned job whose branch existed in step 1, run the branch step of Archive (step 2) with the `worktree_path` recorded in step 1. The question, the `U` count, the `-D` rule, and the worktree rule are the same. Merged branches are listed, never deleted (Archive step 3).
-5. **Report.** Give the count pruned from `factory/jobs/` and from `factory/archive/`, the open jobs skipped, the branches deleted and kept (with why), and the merged leftovers. Never push.
+3. **Delete.** On yes, run `npx nitm-ai-dev-toolkit factory prune [--all] [--abandoned] --yes` with the same flags as step 1. It deletes the listed jobs. If the CLI cannot run, delete directly: first recompute the selection with the same rules. If it differs from the list shown, stop and show the new list again. Otherwise `rm -rf` each listed folder, one exact path at a time: `factory/jobs/<id>` or `factory/archive/<id>`. Never use a glob, and never delete a path outside those two folders.
+4. **Branches.** Only when `--abandoned` was used and abandoned jobs were pruned. For each pruned abandoned job whose branch existed in step 1, run the branch step of Archive (step 2) with the `worktree_path` recorded in step 1. The question, the `U` count, the `-D` rule, and the worktree rule are the same. Merged branches are listed, never deleted (Archive step 3). If no abandoned job was pruned, skip this step.
+5. **Report.** Give the count pruned from `factory/jobs/` and from `factory/archive/`, the open jobs skipped, the abandoned jobs kept (when `--abandoned` was not passed), the branches deleted and kept (with why, when this step ran), and the merged leftovers. Never push.
 
 ## Subagent dispatch
 

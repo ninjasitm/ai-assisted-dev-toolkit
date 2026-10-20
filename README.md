@@ -652,7 +652,7 @@ It runs alongside Feature Builder and TDD and does not replace them. Nothing run
 | `/factory status [--all]` | Summarize open jobs (read-only). Closed jobs are hidden unless `--all` |
 | `/factory watch [--all]` | Show the status table here, then print the command to run the live view in your terminal (read-only). Closed jobs are hidden unless `--all` |
 | `/factory archive [--all] [--dry-run]` | Move closed jobs (`merged` or `abandoned`) from `factory/jobs/` to `factory/archive/`. By default only jobs not updated for 7 days move. `--dry-run` moves nothing. Open jobs never move |
-| `/factory prune [--all] [--dry-run]` | Permanently delete closed jobs from `factory/jobs/` and `factory/archive/`, after one confirmation. Same selection as archive. Open jobs and `docs/features/` are never touched |
+| `/factory prune [--all] [--abandoned] [--dry-run]` | Permanently delete closed jobs from `factory/jobs/` and `factory/archive/`, after one confirmation. By default only `merged` jobs (same 7-day age rule as archive; `--all` drops the age limit). `--abandoned` also deletes `abandoned` jobs. Open jobs and `docs/features/` are never touched |
 
 **Two gates are mandatory.** Every job stops at `awaiting-spec` after the spec, and at `awaiting-plan` after the plan. At the spec gate you confirm the spec or request changes. At the plan gate you review the tasks, the size, the tracking proposal, and the build mode, then confirm or request changes. Leave either gate for later with `/factory start <job-id>`. Nothing is ticketed or built before you confirm the plan.
 
@@ -666,10 +666,10 @@ Check jobs from a terminal:
 npx nitm-ai-dev-toolkit factory status [--all]        # one-shot table of open jobs (--all: closed too)
 npx nitm-ai-dev-toolkit factory watch [--all]         # live view: ↑/↓ to select, Enter to open, q to quit
 npx nitm-ai-dev-toolkit factory archive [--all] [--dry-run]   # move closed jobs to factory/archive/
-npx nitm-ai-dev-toolkit factory prune [--all] [--dry-run]     # list closed jobs to delete; add --yes to delete them
+npx nitm-ai-dev-toolkit factory prune [--all] [--abandoned] [--dry-run]   # list merged jobs to delete; add --yes to delete them
 ```
 
-`status` and `watch` read `factory/jobs/*/job.json`, write nothing, and hide closed jobs unless `--all` is passed. `archive` moves closed jobs and touches no git state. `prune` permanently deletes closed jobs from both folders, after you confirm. Neither touches open jobs or `docs/features/`. The factory's placeholders are listed under [Factory Placeholders](#factory-placeholders).
+`status` and `watch` read `factory/jobs/*/job.json`, write nothing, and hide closed jobs unless `--all` is passed. `archive` moves closed jobs and touches no git state. `prune` permanently deletes merged jobs from both folders, after you confirm. Pass `--abandoned` to delete abandoned jobs too. Neither touches open jobs or `docs/features/`. The factory's placeholders are listed under [Factory Placeholders](#factory-placeholders).
 
 ## AI Agent Skills
 

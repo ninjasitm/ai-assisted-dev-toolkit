@@ -655,7 +655,7 @@ const exists = (cwd, loc, id) => fs.existsSync(path.join(loc === 'jobs' ? jobsRo
 test('prune: without --yes deletes nothing and says to rerun with --yes', () => {
   const cwd = pruneTree();
   const stdout = pipe();
-  const res = prune.cmdFactoryPrune(cwd, { all: true }, { stdout, now: NOW });
+  const res = prune.cmdFactoryPrune(cwd, { all: true, abandoned: true }, { stdout, now: NOW });
   assert.equal(res.willDelete, false);
   assert.ok(exists(cwd, 'jobs', '001-old'));
   assert.ok(exists(cwd, 'archive', '002-old'));
@@ -670,7 +670,7 @@ test('prune --yes: deletes job folders from both jobs and archive, nothing else'
   fs.mkdirSync(path.dirname(docs), { recursive: true });
   fs.writeFileSync(docs, '# spec');
   const stdout = pipe();
-  const res = prune.cmdFactoryPrune(cwd, { all: true, yes: true }, { stdout, now: NOW });
+  const res = prune.cmdFactoryPrune(cwd, { all: true, yes: true, abandoned: true }, { stdout, now: NOW });
   assert.equal(exists(cwd, 'jobs', '001-old'), false);
   assert.equal(exists(cwd, 'archive', '002-old'), false);
   assert.ok(fs.existsSync(archiveRootOf(cwd)), 'archive dir itself is kept');
@@ -695,7 +695,7 @@ test('prune --all --yes: deletes every closed job, including ones with no date',
   const cwd = tmp();
   writeJob(jobsRootOf(cwd), '001-six-days', jobAged('001-six-days', 'merged', 6));
   writeJob(archiveRootOf(cwd), '002-no-date', { id: '002-no-date', stage: 'abandoned' });
-  const res = prune.cmdFactoryPrune(cwd, { all: true, yes: true }, { stdout: pipe(), now: NOW });
+  const res = prune.cmdFactoryPrune(cwd, { all: true, yes: true, abandoned: true }, { stdout: pipe(), now: NOW });
   assert.deepEqual(res.deleted.map((d) => d.id), ['001-six-days', '002-no-date']);
   assert.equal(exists(cwd, 'archive', '002-no-date'), false);
 });
@@ -703,7 +703,7 @@ test('prune --all --yes: deletes every closed job, including ones with no date',
 test('prune --dry-run with --yes: lists only, deletes nothing', () => {
   const cwd = pruneTree();
   const stdout = pipe();
-  const res = prune.cmdFactoryPrune(cwd, { all: true, yes: true, dryRun: true }, { stdout, now: NOW });
+  const res = prune.cmdFactoryPrune(cwd, { all: true, yes: true, abandoned: true, dryRun: true }, { stdout, now: NOW });
   assert.equal(res.willDelete, false);
   assert.ok(exists(cwd, 'jobs', '001-old'));
   assert.ok(exists(cwd, 'archive', '002-old'));
@@ -745,7 +745,7 @@ test('cli factory prune: unknown flag prints a usage error and exits 1', () => {
   const r = spawnSync(process.execPath, [CLI, 'factory', 'prune', '--bogus'], { encoding: 'utf8', cwd: tmp() });
   assert.equal(r.status, 1);
   assert.match(r.stdout, /Unknown option for factory prune: --bogus/);
-  assert.match(r.stdout, /factory prune \[--dir <path>\] \[--all\] \[--dry-run\] \[--yes\]/);
+  assert.match(r.stdout, /factory prune \[--dir <path>\] \[--all\] \[--abandoned\] \[--dry-run\] \[--yes\]/);
 });
 
 test('cli factory prune without --yes: exits 0, lists, deletes nothing', () => {
@@ -755,4 +755,82 @@ test('cli factory prune without --yes: exits 0, lists, deletes nothing', () => {
   assert.equal(r.status, 0, r.stderr);
   assert.match(r.stdout, /Rerun with --yes/);
   assert.ok(exists(cwd, 'jobs', '001-old'));
+});
+
+test('prune: default deletes old merged jobs and keeps old abandoned ones', () => {
+  const cwd = tmp();
+  writeJob(jobsRootOf(cwd), '001-merged', jobAged('001-merged', 'merged', 30));
+  writeJob(jobsRootOf(cwd), '002-abandoned', jobAged('002-abandoned', 'abandoned', 30));
+  writeJob(archiveRootOf(cwd), '003-abandoned', jobAged('003-abandoned', 'abandoned', 30));
+  const stdout = pipe();
+  const res = prune.cmdFactoryPrune(cwd, { yes: true }, { stdout, now: NOW });
+  assert.deepEqual(res.deleted.map((d) => d.id), ['001-merged']);
+  assert.equal(res.skippedAbandoned, 2);
+  assert.equal(res.skippedOpen, 0, 'abandoned jobs are not counted as open');
+  assert.ok(exists(cwd, 'jobs', '002-abandoned'));
+  assert.ok(exists(cwd, 'archive', '003-abandoned'));
+  assert.match(stdout.output(), /Kept 2 abandoned job\(s\) \(--abandoned deletes them too\)\./);
+  assert.match(stdout.output(), /Skipped 0 open job\(s\)/);
+});
+
+test('prune --abandoned: deletes old merged and old abandoned jobs, still keeps young ones', () => {
+  const cwd = tmp();
+  writeJob(jobsRootOf(cwd), '001-merged', jobAged('001-merged', 'merged', 30));
+  writeJob(jobsRootOf(cwd), '002-abandoned', jobAged('002-abandoned', 'abandoned', 30));
+  writeJob(archiveRootOf(cwd), '003-abandoned-young', jobAged('003-abandoned-young', 'abandoned', 2));
+  const stdout = pipe();
+  const res = prune.cmdFactoryPrune(cwd, { yes: true, abandoned: true }, { stdout, now: NOW });
+  assert.deepEqual(res.deleted.map((d) => d.id), ['001-merged', '002-abandoned']);
+  assert.equal(res.skippedAbandoned, 0);
+  assert.equal(res.kept, 1);
+  assert.ok(exists(cwd, 'archive', '003-abandoned-young'));
+  assert.doesNotMatch(stdout.output(), /--abandoned deletes them too/);
+});
+
+test('prune --all: deletes every merged job but still keeps abandoned ones unless --abandoned', () => {
+  const cwd = tmp();
+  writeJob(jobsRootOf(cwd), '001-merged-young', jobAged('001-merged-young', 'merged', 1));
+  writeJob(jobsRootOf(cwd), '002-abandoned', jobAged('002-abandoned', 'abandoned', 30));
+  const res = prune.cmdFactoryPrune(cwd, { all: true, yes: true }, { stdout: pipe(), now: NOW });
+  assert.deepEqual(res.deleted.map((d) => d.id), ['001-merged-young']);
+  assert.equal(res.skippedAbandoned, 1);
+  assert.ok(exists(cwd, 'jobs', '002-abandoned'));
+});
+
+test('archive unchanged: moves both merged and abandoned jobs, prune stage filter does not apply', () => {
+  const cwd = tmp();
+  writeJob(jobsRootOf(cwd), '001-merged', jobAged('001-merged', 'merged', 30));
+  writeJob(jobsRootOf(cwd), '002-abandoned', jobAged('002-abandoned', 'abandoned', 30));
+  const res = factoryArchive.cmdFactoryArchive(cwd, {}, { stdout: pipe(), now: NOW });
+  assert.deepEqual(res.moved.map((m) => m.id), ['001-merged', '002-abandoned']);
+  assert.equal(res.skippedAbandoned, undefined, 'archive result has no prune-only field');
+  assert.ok(exists(cwd, 'archive', '002-abandoned'));
+});
+
+test('selectClosedJobs: stages option narrows the selection and counts skipped abandoned', () => {
+  const cwd = tmp();
+  writeJob(jobsRootOf(cwd), '001-merged', jobAged('001-merged', 'merged', 30));
+  writeJob(jobsRootOf(cwd), '002-abandoned', jobAged('002-abandoned', 'abandoned', 30));
+  const merged = factory.selectClosedJobs(jobsRootOf(cwd), { now: NOW, stages: ['merged'] });
+  assert.deepEqual(merged.candidates.map((c) => c.id), ['001-merged']);
+  assert.equal(merged.skippedAbandoned, 1);
+  const both = factory.selectClosedJobs(jobsRootOf(cwd), { now: NOW });
+  assert.deepEqual(both.candidates.map((c) => c.id), ['001-merged', '002-abandoned']);
+  assert.equal(both.skippedAbandoned, 0);
+});
+
+test('cli factory prune --abandoned: lists abandoned jobs; --abandoned is refused for archive and status', () => {
+  const cwd = tmp();
+  writeJob(jobsRootOf(cwd), '001-abandoned', jobAged('001-abandoned', 'abandoned', 30));
+  const list = spawnSync(process.execPath, [CLI, 'factory', 'prune', '--abandoned'], { encoding: 'utf8', cwd });
+  assert.equal(list.status, 0, list.stderr);
+  assert.match(list.stdout, /Would delete 1 closed job\(s\):/);
+  assert.match(list.stdout, /\[jobs\] 001-abandoned  abandoned/);
+  assert.ok(exists(cwd, 'jobs', '001-abandoned'));
+  for (const sub of ['archive', 'status']) {
+    const r = spawnSync(process.execPath, [CLI, 'factory', sub, '--abandoned'], { encoding: 'utf8', cwd });
+    assert.equal(r.status, 1, sub);
+    assert.match(r.stdout, /--abandoned is only for factory prune/);
+    assert.ok(exists(cwd, 'jobs', '001-abandoned'), `${sub} deletes and moves nothing`);
+  }
 });

@@ -37,7 +37,7 @@ Orchestrator: [.agents/skills/factory/SKILL.md](../.agents/skills/factory/SKILL.
 | `/factory status [--all]` | Summarize open jobs from their `job.json` files. Closed jobs are hidden unless `--all` |
 | `/factory watch [--all]` | Show the status table, then print the command for the live view to run in a terminal (read-only). Closed jobs are hidden unless `--all` |
 | `/factory archive [--all] [--dry-run]` | Move closed jobs to `factory/archive/`. Open jobs never move. See [Archive](#archive) |
-| `/factory prune [--all] [--dry-run]` | Permanently delete closed jobs from `factory/jobs/` and `factory/archive/`, after one confirmation. Open jobs and `docs/features/` are never touched. See [Prune](#prune) |
+| `/factory prune [--all] [--abandoned] [--dry-run]` | Permanently delete closed jobs from `factory/jobs/` and `factory/archive/`, after one confirmation. Open jobs and `docs/features/` are never touched. See [Prune](#prune) |
 
 `--in-place` can follow either form (`/factory --in-place <request>`, `/factory start --in-place <...>`). It builds in the main checkout instead of a worktree. See [In-place builds](#in-place-builds).
 
@@ -147,9 +147,9 @@ Jobs that escalate (`needs-human`) keep their branch and worktree so you can ins
 
 ## Prune
 
-`/factory prune [--all] [--dry-run]` permanently deletes closed jobs (`merged` or `abandoned`) from `factory/jobs/` and `factory/archive/`. The selection is the same as archive: jobs last updated more than 7 days ago, or every closed job with `--all`. The list comes first, and nothing is deleted until you confirm once in chat. A pruned job cannot be recovered. Open jobs and `docs/features/` are never touched.
+`/factory prune [--all] [--abandoned] [--dry-run]` permanently deletes closed jobs from `factory/jobs/` and `factory/archive/`. By default only `merged` jobs are deleted; `--abandoned` also deletes `abandoned` jobs. The age rule is the same as archive: jobs last updated more than 7 days ago, and `--all` drops the age limit. The list comes first, and nothing is deleted until you confirm once in chat. A pruned job cannot be recovered. Open jobs and `docs/features/` are never touched.
 
-Abandoned jobs whose branch still exists get the same per-branch question as archive. Merged branches are only listed. `npx nitm-ai-dev-toolkit factory prune` lists by default; add `--yes` to delete.
+Without `--abandoned`, abandoned jobs are kept and counted, and the flow offers to rerun with it. When abandoned jobs are pruned, each one whose branch still exists gets the same per-branch question as archive. Merged branches are only listed. `npx nitm-ai-dev-toolkit factory prune` lists by default; add `--yes` to delete (and `--abandoned` to include abandoned jobs).
 
 ## Layout
 

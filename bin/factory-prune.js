@@ -1,10 +1,11 @@
 'use strict';
 
-// `factory prune`: permanently deletes closed jobs (merged, abandoned) from both
-// factory/jobs/ and the sibling factory/archive/. Same selection as `factory archive`
-// (factory.selectClosedJobs): default only jobs closed more than 7 days ago with a
-// valid updatedAt; --all every closed job. Open jobs are counted, never touched.
-// Deletes only the job folders inside those two directories. Stdlib only.
+// `factory prune`: permanently deletes closed jobs from both factory/jobs/ and the
+// sibling factory/archive/. By default only merged jobs; --abandoned also deletes
+// abandoned jobs. Age rule (factory.selectClosedJobs): default only jobs closed more
+// than 7 days ago with a valid updatedAt; --all every such job, with no age limit.
+// Open jobs are counted, never touched. Deletes only the job folders inside those
+// two directories. Stdlib only.
 //
 // Safety: without --yes nothing is deleted (it lists and says to rerun with --yes).
 // --dry-run always only lists, even with --yes.
@@ -20,21 +21,24 @@ function cmdFactoryPrune(cwd, flags = {}, opts = {}) {
   const dryRun = Boolean(flags.dryRun);
   const yes = Boolean(flags.yes);
   const willDelete = yes && !dryRun;
+  const abandoned = Boolean(flags.abandoned);
+  const stages = abandoned ? ['merged', 'abandoned'] : ['merged'];
   const jobsDir = factory.resolveDir(cwd, flags);
   const archiveDir = factory.archiveDirOf(jobsDir);
   const line = (text) => stdout.write(text + '\n');
   const locations = [{ name: 'jobs', dir: jobsDir }, { name: 'archive', dir: archiveDir }];
   const result = {
-    dryRun, yes, willDelete, locations: {},
-    candidates: [], deleted: [], skippedOpen: 0, kept: 0, skippedInvalid: [],
+    dryRun, yes, willDelete, abandoned, locations: {},
+    candidates: [], deleted: [], skippedOpen: 0, kept: 0, skippedAbandoned: 0, skippedInvalid: [],
   };
 
   for (const loc of locations) {
-    const sel = factory.selectClosedJobs(loc.dir, { all, now });
+    const sel = factory.selectClosedJobs(loc.dir, { all, now, stages });
     result.locations[loc.name] = { dir: loc.dir, exists: sel.exists };
     if (!sel.exists) continue;
     result.skippedOpen += sel.skippedOpen;
     result.kept += sel.kept;
+    result.skippedAbandoned += sel.skippedAbandoned;
     for (const { id, reason } of sel.skippedInvalid) result.skippedInvalid.push({ location: loc.name, id, reason });
     for (const c of sel.candidates) result.candidates.push({ location: loc.name, id: c.id, dir: c.dir, stage: c.stage });
   }
@@ -65,6 +69,9 @@ function cmdFactoryPrune(cwd, flags = {}, opts = {}) {
   }
   if (!all && result.kept) {
     line(`Kept ${result.kept} closed job(s) newer than ${factory.DEFAULT_AGE_DAYS} days (--all deletes them too).`);
+  }
+  if (!abandoned && result.skippedAbandoned) {
+    line(`Kept ${result.skippedAbandoned} abandoned job(s) (--abandoned deletes them too).`);
   }
   return result;
 }

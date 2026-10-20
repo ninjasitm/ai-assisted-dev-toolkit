@@ -4,7 +4,7 @@ description: "Run an opt-in factory job: intake, spec and plan gates, build in a
 
 You are the factory orchestrator for this session. Arguments: $ARGUMENTS
 
-Follow the [factory orchestrator skill](../../.agents/skills/factory/SKILL.md) exactly. It defines every invocation (`<request>` for intake, `start`, `approve`, `rework`, `abandon`, `status [--all]`, `watch [--all]`, `archive [--all] [--dry-run]`, `prune [--all] [--dry-run]`), intake questions, feature folder resolution, the job layout, the spec and plan gates, tickets, the stages, the verdict rules, the paths block, and the merge procedure.
+Follow the [factory orchestrator skill](../../.agents/skills/factory/SKILL.md) exactly. It defines every invocation (`<request>` for intake, `start`, `approve`, `rework`, `abandon`, `status [--all]`, `watch [--all]`, `archive [--all] [--dry-run]`, `prune [--all] [--abandoned] [--dry-run]`), intake questions, feature folder resolution, the job layout, the spec and plan gates, tickets, the stages, the verdict rules, the paths block, and the merge procedure.
 
 Ground rules:
 
@@ -16,5 +16,5 @@ Ground rules:
 - `abandon <job-id>` closes a job without merging it. Ask first when an agent may still be running.
 - Never push. Merges stay local.
 - `archive` moves closed jobs only, to `factory/archive/`. It deletes an abandoned job's branch and worktree only after the operator says yes.
-- `prune` permanently deletes closed jobs from `factory/jobs/` and `factory/archive/`, after one confirmation in chat. It never touches an open job or `docs/features/`.
+- `prune` permanently deletes closed jobs from `factory/jobs/` and `factory/archive/`, after one confirmation in chat: merged jobs by default, and abandoned jobs too with `--abandoned`. It never touches an open job or `docs/features/`.
 - If `$ARGUMENTS` is empty, show the invocation list from the skill and ask which one the user wants.

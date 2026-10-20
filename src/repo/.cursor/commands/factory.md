@@ -1,6 +1,6 @@
 ---
 description: "Run an opt-in factory job: intake, spec and plan gates, build in a worktree or in place, reviews, approval, local merge"
-argument-hint: "[--in-place] <feature request> | start [--in-place] <request | KEY | slug | job-id> | approve <job-id> | rework <job-id> <note> | abandon <job-id> | status [--all] | watch [--all] | archive [--all] [--dry-run] | prune [--all] [--dry-run]"
+argument-hint: "[--in-place] <feature request> | start [--in-place] <request | KEY | slug | job-id> | approve <job-id> | rework <job-id> <note> | abandon <job-id> | status [--all] | watch [--all] | archive [--all] [--dry-run] | prune [--all] [--abandoned] [--dry-run]"
 ---
 
 # Factory

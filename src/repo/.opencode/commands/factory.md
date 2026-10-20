@@ -22,7 +22,7 @@ Dispatch each agent by its kebab-case name, as in the first column. Copilot may 
 
 ## Arguments
 
-Subcommands: `[--in-place] <feature request>` · `start [--in-place] <request | KEY | slug | job-id>` · `approve <job-id>` · `rework <job-id> <note>` · `abandon <job-id>` · `status [--all]` · `watch [--all]` · `archive [--all] [--dry-run]` · `prune [--all] [--dry-run]`
+Subcommands: `[--in-place] <feature request>` · `start [--in-place] <request | KEY | slug | job-id>` · `approve <job-id>` · `rework <job-id> <note>` · `abandon <job-id>` · `status [--all]` · `watch [--all]` · `archive [--all] [--dry-run]` · `prune [--all] [--abandoned] [--dry-run]`
 
 $ARGUMENTS
 

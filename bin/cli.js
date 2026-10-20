@@ -347,14 +347,20 @@ function cmdOmoStarter(cwd, flags) {
   }
 }
 
-const FACTORY_USAGE = 'Usage: nitm-ai-dev-toolkit factory <status|watch|archive|prune> [--dir <path>] [--all] [--interval <ms>] [--dry-run] [--yes]';
+const FACTORY_USAGE = 'Usage: nitm-ai-dev-toolkit factory <status|watch|archive|prune> [--dir <path>] [--all] [--abandoned] [--interval <ms>] [--dry-run] [--yes]';
 const FACTORY_SUB_USAGE = {
   archive: 'Usage: nitm-ai-dev-toolkit factory archive [--dir <path>] [--all] [--dry-run]',
-  prune: 'Usage: nitm-ai-dev-toolkit factory prune [--dir <path>] [--all] [--dry-run] [--yes]',
+  prune: 'Usage: nitm-ai-dev-toolkit factory prune [--dir <path>] [--all] [--abandoned] [--dry-run] [--yes]',
 };
 
 function cmdFactory(cwd, flags) {
   const sub = flags._[1];
+  // --abandoned changes what prune deletes; elsewhere it would be a silent no-op, so refuse it.
+  if (flags.abandoned && sub !== 'prune') {
+    err('--abandoned is only for factory prune');
+    process.exitCode = 1;
+    return;
+  }
   if (sub === 'status') return factory.cmdFactoryStatus(cwd, flags);
   if (sub === 'watch') return factory.cmdFactoryWatch(cwd, flags);
   if (sub === 'archive' || sub === 'prune') {
@@ -383,6 +389,7 @@ function parseFlags(argv) {
     else if (a === '--all') flags.all = true;
     else if (a === '--dry-run') flags.dryRun = true;
     else if (a === '--yes') flags.yes = true;
+    else if (a === '--abandoned') flags.abandoned = true;
     else if (a === '--help' || a === '-h') flags.help = true;
     else if (a === '--dir' || a === '--interval') {
       const v = argv[++i];
@@ -451,12 +458,13 @@ Usage:
       --dry-run: list what would move, move nothing. Open jobs are never touched.
       Does not touch git or branches (/factory archive and /factory prune handle those).
 
-  npx nitm-ai-dev-toolkit factory prune [--dir <path>] [--all] [--dry-run] [--yes]
-      PERMANENTLY delete closed jobs (merged, abandoned) from factory/jobs/ and
-      factory/archive/. Same selection as archive (default: closed more than 7 days
-      ago; --all: every closed job). Without --yes it only lists what would be
-      deleted. --dry-run always only lists, even with --yes. Open jobs are never
-      touched. Deletes job folders only; git, docs and branches are not touched.
+  npx nitm-ai-dev-toolkit factory prune [--dir <path>] [--all] [--abandoned] [--dry-run] [--yes]
+      PERMANENTLY delete closed jobs from factory/jobs/ and factory/archive/.
+      Default: only merged jobs closed more than 7 days ago. --all: every merged job
+      (no age limit). --abandoned: also delete abandoned jobs (same age rule).
+      Without --yes it only lists what would be deleted. --dry-run always only
+      lists, even with --yes. Open jobs are never touched. Deletes job folders only;
+      git, docs and branches are not touched.
 
 Options:
   --env <env>  Optional. Limit the scaffold to ONE harness:
@@ -472,7 +480,9 @@ Options:
   --interval <ms>
                factory watch: refresh interval (default: 2000, minimum: 100)
   --all        factory status/watch: include closed and archived jobs
-               factory archive/prune: include every closed job, not just those older than 7 days
+               factory archive: include every closed job, not just those older than 7 days
+               factory prune: include every merged job, not just those older than 7 days
+  --abandoned  factory prune: also delete abandoned jobs (default: merged only)
   --dry-run    factory archive/prune: list only, change nothing
   --yes        factory prune: actually delete (without it, prune only lists)
   -h, --help   Show this help

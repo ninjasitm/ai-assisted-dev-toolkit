@@ -141,19 +141,23 @@ function loadJobs(dir) {
 }
 
 // Shared by `factory archive` and `factory prune`. Sorts the job folders in `dir`:
-//   candidates  closed jobs eligible under the rule (default: updatedAt more than
-//               `ageDays` before `now`; all: every closed job, even with no date)
+//   candidates  closed jobs in `stages` eligible under the rule (default: updatedAt more than
+//               `ageDays` before `now`; all: every such job, even with no date)
 //   skippedOpen open jobs (counted only, never touched)
+//   skippedAbandoned abandoned jobs left out because `stages` does not include them
 //   kept        closed jobs newer than `ageDays` (default mode only)
 //   skippedInvalid  unreadable job.json, or a closed job with no usable date in default mode
-function selectClosedJobs(dir, { all = false, now = Date.now(), ageDays = DEFAULT_AGE_DAYS } = {}) {
+// `stages` defaults to both closed stages (archive); prune passes ['merged'] unless --abandoned.
+function selectClosedJobs(dir, {
+  all = false, now = Date.now(), ageDays = DEFAULT_AGE_DAYS, stages = ['merged', 'abandoned'],
+} = {}) {
   let entries;
   try {
     entries = fs.readdirSync(dir, { withFileTypes: true });
   } catch (_) {
-    return { exists: false, candidates: [], skippedOpen: 0, kept: 0, skippedInvalid: [] };
+    return { exists: false, candidates: [], skippedOpen: 0, kept: 0, skippedAbandoned: 0, skippedInvalid: [] };
   }
-  const out = { exists: true, candidates: [], skippedOpen: 0, kept: 0, skippedInvalid: [] };
+  const out = { exists: true, candidates: [], skippedOpen: 0, kept: 0, skippedAbandoned: 0, skippedInvalid: [] };
   const ids = entries.filter((e) => e.isDirectory()).map((e) => e.name).sort();
   for (const id of ids) {
     const dirPath = path.join(dir, id);
@@ -164,6 +168,10 @@ function selectClosedJobs(dir, { all = false, now = Date.now(), ageDays = DEFAUL
     }
     if (!isClosed(raw)) {
       out.skippedOpen++;
+      continue;
+    }
+    if (!stages.includes(raw.stage)) {
+      if (raw.stage === 'abandoned') out.skippedAbandoned++;
       continue;
     }
     const ts = typeof raw.updatedAt === 'number' ? raw.updatedAt : Date.parse(raw.updatedAt);
