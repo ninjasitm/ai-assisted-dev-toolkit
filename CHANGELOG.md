@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Target release: **5.0.0 (major)**. `package.json` stays at 4.0.0 until release.
+## [5.0.0]
 
 ### Breaking
 
@@ -31,6 +31,7 @@ Target release: **5.0.0 (major)**. `package.json` stays at 4.0.0 until release.
 - Factory dashboard: `factory status` and `factory watch` hide closed jobs by default and print `N closed jobs hidden (--all to show)`. `--all` shows closed jobs and archived ones.
 - Scoped installs (`--env`) also copy `.agents/skills/`, `.claude/agents-snippets/`, `.claude/prompt-snippets/`, `.claude/rules-snippets/`, and `factory/`, the shared references every harness's wrappers use.
 - Templates named `_gitignore` install as `.gitignore`, because npm drops `.gitignore` files from packages.
+- Releases publish through npm trusted publishing (OIDC, with provenance) from `.github/workflows/publish.yml`, which now also does the auto patch bump and tag (`auto-patch-tag.yml` removed). The `NPM_TOKEN` secret is no longer used.
 
 ### Fixed
 

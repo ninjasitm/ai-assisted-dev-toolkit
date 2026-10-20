@@ -9,7 +9,7 @@ const { spawnSync } = require('child_process');
 
 // Exercise the actual calculation block only, with git stubbed: no tags, pushes,
 // GitHub API calls, or publishing. Collision tags can simulate a concurrent run.
-const workflow = fs.readFileSync(path.join(__dirname, '../.github/workflows/auto-patch-tag.yml'), 'utf8');
+const workflow = fs.readFileSync(path.join(__dirname, '../.github/workflows/publish.yml'), 'utf8');
 const block = workflow.match(/- name: Calculate next patch tag[\s\S]*?run: \|\n([\s\S]*?)\n      - name:/)[1]
   .replace(/^          /gm, '');
 
