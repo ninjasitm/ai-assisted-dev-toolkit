@@ -36,6 +36,7 @@ This repository serves as a **template source** for AI development instructions 
 │   │   │   ├── rules/  # Agent behavior rules (ponytail, etc.)
 │   │   │   └── skills/ # Bundled skills (TDD, debugging, etc.)
 │   │   ├── docs/       # Documentation structure templates
+│   │   ├── factory/    # Opt-in factory pipeline (README, .gitignore)
 │   │   ├── templates/  # Reusable document templates
 │   │   ├── AGENTS.md   # AI agent context template
 │   │   └── README.md   # Project README template
@@ -59,6 +60,7 @@ This repository serves as a **template source** for AI development instructions 
 │       ├── apps/       # App-specific templates
 │       ├── packages/   # Package-specific templates
 │       ├── docs/       # Documentation structure templates
+│       ├── factory/    # Opt-in factory pipeline (README, .gitignore)
 │       ├── templates/  # Reusable document templates
 │       └── AGENTS.md   # Monorepo agent context
 │
@@ -172,8 +174,11 @@ npx nitm-ai-dev-toolkit patch
 # Inspect the install: missing files and unresolved placeholders
 npx nitm-ai-dev-toolkit doctor
 
-# Upgrade to the latest published version
+# Upgrade to the latest published version: adds missing files and keeps your existing ones
 npx nitm-ai-dev-toolkit upgrade
+
+# Also overwrite existing files with the latest templates (back up customisations first)
+npx nitm-ai-dev-toolkit upgrade --force
 
 # Scaffold the oh-my-opencode-slim starter (delegates to `npx nitm-opencode-starter install`)
 npx nitm-ai-dev-toolkit omo-slim-starter install
@@ -214,7 +219,7 @@ Follow official V2 [migration](https://opencode.ai/v2/docs/migrate-v1), [config]
 
 ### Native Codex
 
-- `--env codex` includes `.codex/`, `.agents/`, and shared context, plus `.github/instructions/` and `.claude/rules-snippets/` solely to supply the standards linked from `AGENTS.md` and those standards' wrapper source content. It does not install other harness command, agent, or config directories. These reference files neither establish Copilot/Claude use nor load automatically as Codex rules; other harness scopes are unchanged.
+- `--env codex` includes `.codex/`, `.agents/`, and shared context, plus `.github/instructions/` solely to supply the standards linked from `AGENTS.md`. The shared `.claude/rules-snippets/` standards are installed in every scope, so those standards' wrapper source content is present too. It does not install other harness command, agent, or config directories. These reference files neither establish Copilot/Claude use nor load automatically as Codex rules; other harness scopes are unchanged.
 - Codex reads `AGENTS.md` and discovers `.agents/skills/*/SKILL.md` natively. Monorepos can use more-specific nested `AGENTS.md` files for app/package guidance. Linked standards are references to read as needed, not automatically loaded Claude/Copilot rules.
 - The optional `.codex/config.toml` is deliberately comment-only: it preserves the user's inherited defaults. Codex loads project config only after the user explicitly trusts the project; the toolkit does not grant trust or set model/provider, approval, sandbox, security, or feature overrides.
 - For manual copies without `.nitm/`, provide `.claude/prompt-snippets/bootstrap.md` to Codex directly. For incremental AI-guided merges, provide `.claude/prompt-snippets/bootstrap-patch.md` as a task document; the CLI `patch` command only adds missing files.
@@ -238,6 +243,7 @@ Templates use `{{PLACEHOLDER}}` syntax for values you need to customize. The boo
 | `{{PACKAGE_MANAGER}}`     | Package manager           | `npm`, `composer`, `dotnet`, `pip`, `bundler`, `go`, `cargo`, `maven` |
 | `{{FILE_EXTENSION}}`      | File extension            | `ts`, `php`, `cs`, `py`, `rb`, `go`, `rs`, `java`                     |
 | `{{DEV_PORT}}`            | Development server port   | `3000`, `8000`, `5000`                                                |
+| `{{DEV_PORT_FLAG}}`       | Flag or env var that sets the dev port | `--port 3000`, `PORT=3000`                                |
 | `{{DEPLOY_PLATFORM}}`     | Deployment target         | `Vercel`, `AWS`, `Azure`, `Heroku`                                    |
 | `{{DATABASE}}`            | Database/ORM              | `Prisma`, `Eloquent`, `EF Core`, `SQLAlchemy`, `ActiveRecord`         |
 | `{{TEST_FRAMEWORK}}`      | Testing framework         | `Vitest`, `PHPUnit`, `xUnit`, `pytest`, `RSpec`, `JUnit`              |
@@ -260,6 +266,7 @@ Templates use `{{PLACEHOLDER}}` syntax for values you need to customize. The boo
 | Placeholder           | Description          | Example                                             |
 | --------------------- | -------------------- | --------------------------------------------------- |
 | `{{INSTALL_COMMAND}}` | Install dependencies | `npm install`, `composer install`, `dotnet restore` |
+| `{{SETUP_COMMAND}}`   | Install command      | `npm install`, `composer install`, `dotnet restore` |
 | `{{DEV_COMMAND}}`     | Run dev server       | `npm run dev`, `php artisan serve`, `dotnet watch`  |
 | `{{BUILD_COMMAND}}`   | Build for production | `npm run build`, `dotnet publish`                   |
 | `{{TEST_COMMAND}}`    | Run tests            | `npm test`, `./vendor/bin/phpunit`, `dotnet test`   |
@@ -290,6 +297,17 @@ Templates use `{{PLACEHOLDER}}` syntax for values you need to customize. The boo
 | `{{DOCS_CONTENT_DIR}}`      | Docs app content path      | `content/docs/`, `pages/`, `src/content/`               |
 | `{{APP_3}}`                 | Third app name             | `web`, `marketing`, `landing`                           |
 | `{{PROJECT_STRUCTURE}}`     | Full project structure     | (Generated tree diagram)                                |
+
+### Factory Placeholders
+
+Used by the opt-in factory (`.agents/skills/factory/SKILL.md` and `.claude/agents-snippets/factory-*.md`).
+
+| Placeholder                 | Description                                                                                 | Example                  |
+| --------------------------- | ------------------------------------------------------------------------------------------- | ------------------------ |
+| `{{DEFAULT_BRANCH}}`        | Branch factory jobs start from and merge into                                               | `main`, `master`         |
+| `{{FACTORY_PORT_BASE}}`     | Base dev-server port. Job `n` uses `base + 10n` for the builder, `+1` for ux, and `+2` for ui | `5100`                   |
+| `{{APPROVAL_MODE}}`         | `human` stops at `awaiting-human`; `auto` merges on approval                                | `human`, `auto`          |
+| `{{FACTORY_REVIEW_LENSES}}` | Review lenses to run. `ux` and `ui` need browser tooling                                    | `code, security`         |
 
 ## Supported Ecosystems
 
@@ -616,6 +634,43 @@ The bundled skills complement custom agents:
 - **`writing-plans`** — Creating the plans that Feature Builder and TDD agents execute
 - **`test-driven-development`** — The TDD methodology that Red/Green/Refactor agents implement
 
+## Factory (opt-in, v5)
+
+The factory is an opt-in pipeline for feature-sized work. One orchestrator takes a feature through spec → plan gate → build → review → approve → merge. Each job belongs to a feature folder, `docs/features/<KEY>-<slug>/` (or `docs/features/<slug>/` before a ticket exists), which holds `spec.md` and, for large work, a slim `tasks.md`. Job state lives under `factory/jobs/<NNN-slug>/`, and each job builds in its own git worktree on branch `factory/<id>` (or in place on the job's branch, when you ask for `--in-place`).
+
+It runs alongside Feature Builder and TDD and does not replace them. Nothing runs until you invoke `/factory`. Quick fixes stay direct.
+
+- **Agents:** `factory-spec-writer`, `factory-builder`, `factory-reviewer-code`, `factory-reviewer-security`, `factory-reviewer-ux`, `factory-reviewer-ui`, and `factory-approver`. Wrappers ship for Claude Code, GitHub Copilot, Cursor, and OpenCode. Codex uses the orchestrator skill only.
+- **Setup and reference:** [`src/repo/factory/README.md`](src/repo/factory/README.md) (the monorepo copy is in `src/monorepo/factory/`). The installer copies `factory/` into your project.
+
+| Command | What it does |
+| --- | --- |
+| `/factory <feature request>` | Intake: reads the project and the features it touches, asks only the glaring questions, then asks you to continue or change the answers. Nothing is created before you continue |
+| `/factory start <KEY \| slug \| job-id>` | Pick up an existing feature folder by ticket key or slug, or resume its open job (for example one waiting at a gate). Add `--in-place` only for a new job |
+| `/factory approve <job-id>` | Merge a job waiting for you (`awaiting-human` or `needs-human`); on a `merged` job, move its tickets to Done |
+| `/factory rework <job-id> <note>` | Restart the builder with your note and a fresh retry budget |
+| `/factory status [--all]` | Summarize open jobs (read-only). Closed jobs are hidden unless `--all` |
+| `/factory watch [--all]` | Show the status table here, then print the command to run the live view in your terminal (read-only). Closed jobs are hidden unless `--all` |
+| `/factory archive [--all] [--dry-run]` | Move closed jobs (`merged` or `abandoned`) from `factory/jobs/` to `factory/archive/`. By default only jobs not updated for 7 days move. `--dry-run` moves nothing. Open jobs never move |
+| `/factory prune [--all] [--dry-run]` | Permanently delete closed jobs from `factory/jobs/` and `factory/archive/`, after one confirmation. Same selection as archive. Open jobs and `docs/features/` are never touched |
+
+**Two gates are mandatory.** Every job stops at `awaiting-spec` after the spec, and at `awaiting-plan` after the plan. At the spec gate you confirm the spec or request changes. At the plan gate you review the tasks, the size, the tracking proposal, and the build mode, then confirm or request changes. Leave either gate for later with `/factory start <job-id>`. Nothing is ticketed or built before you confirm the plan.
+
+**The builder also writes `qa.md`.** It lists how to run the feature, numbered manual checks tied to the acceptance criteria, and what the automated tests do not cover. The orchestrator shows it before approval as suggested checks. It is not a gate.
+
+**The approval gate is on by default.** With `{{APPROVAL_MODE}}` set to `human`, an approved job stops at `awaiting-human` until you run `/factory approve <job-id>`. Set `{{APPROVAL_MODE}}` to `auto` to merge on approval instead. The approver still escalates changes to auth, payments, migrations, and similar high-risk areas. Merges are local, and the factory never pushes.
+
+Check jobs from a terminal:
+
+```bash
+npx nitm-ai-dev-toolkit factory status [--all]        # one-shot table of open jobs (--all: closed too)
+npx nitm-ai-dev-toolkit factory watch [--all]         # live view: ↑/↓ to select, Enter to open, q to quit
+npx nitm-ai-dev-toolkit factory archive [--all] [--dry-run]   # move closed jobs to factory/archive/
+npx nitm-ai-dev-toolkit factory prune [--all] [--dry-run]     # list closed jobs to delete; add --yes to delete them
+```
+
+`status` and `watch` read `factory/jobs/*/job.json`, write nothing, and hide closed jobs unless `--all` is passed. `archive` moves closed jobs and touches no git state. `prune` permanently deletes closed jobs from both folders, after you confirm. Neither touches open jobs or `docs/features/`. The factory's placeholders are listed under [Factory Placeholders](#factory-placeholders).
+
 ## AI Agent Skills
 
 Enhance your AI agents with specialized capabilities using the **Agent Skills** open format. Skills are folders of instructions, scripts, and resources that agents can discover and use to perform tasks more accurately and efficiently.
@@ -693,7 +748,7 @@ Skills are installed to `{.cursor|.agents|.github}/skills/` and automatically av
 
 ### Bundled Universal Skills
 
-This toolkit includes **32 pre-installed universal skills** in the `.agents/skills/` folder. These skills are copied automatically when you set up your project and require **no additional installation**.
+This toolkit includes **33 pre-installed universal skills** in the `.agents/skills/` folder. These skills are copied automatically when you set up your project and require **no additional installation**.
 
 | Skill                              | Description                                                                                          |
 | ---------------------------------- | ---------------------------------------------------------------------------------------------------- |
@@ -702,6 +757,7 @@ This toolkit includes **32 pre-installed universal skills** in the `.agents/skil
 | **verification-before-completion** | Quality checks before claiming work is done. Evidence before assertions, always.                     |
 | **writing-plans**                  | Creating clear implementation plans before coding.                                                   |
 | **executing-plans**                | Following through on implementation plans systematically.                                            |
+| **factory**                        | Opt-in spec-to-merge feature pipeline with review lenses and an approval gate.                       |
 | **requesting-code-review**         | Best practices for requesting code reviews from teammates.                                           |
 | **receiving-code-review**          | Responding constructively to review feedback.                                                        |
 | **brainstorming**                  | Structured ideation and problem-solving sessions.                                                    |
@@ -893,7 +949,7 @@ After copying templates and installing additional skills, your project will have
     │   └── SKILL.md
     ├── verification-before-completion/
     │   └── SKILL.md
-    └── ... (32 skills total)
+    └── ... (33 skills total)
 
 .cursor/                  # or .github/ for GitHub Copilot
 ├── rules/                # IDE behavior rules (from this toolkit)

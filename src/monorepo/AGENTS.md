@@ -44,6 +44,21 @@ The [orient-to-recent-work](.agents/skills/orient-to-recent-work/SKILL.md) skill
 | `{{PACKAGE_SCOPE}}/{{PACKAGE_NAME_2}}` | {{PACKAGE_2_DESCRIPTION}} |
 | `{{PACKAGE_SCOPE}}/config`             | Shared configuration      |
 
+## Commands
+
+Root commands cover every app and package. Filtered commands run one workspace, where `<workspace>` is its package name. The filter syntax follows `{{PACKAGE_MANAGER}}` (pnpm and turbo `--filter`, npm `-w`, yarn `workspace`). `dev`, `test`, `lint`, and `build` are the workspace's script names. Default dev port for each app: its own `AGENTS.md`.
+
+| Task            | Root                | Filtered (one workspace)                         |
+| --------------- | ------------------- | ------------------------------------------------ |
+| Setup           | `{{SETUP_COMMAND}}` | n/a, setup runs once at the root                 |
+| Dev server      | `{{DEV_COMMAND}}`   | `{{PACKAGE_MANAGER}} --filter <workspace> dev`   |
+| Dev server port | `{{DEV_PORT_FLAG}}` | same flag on the filtered dev command            |
+| Test            | `{{TEST_COMMAND}}`  | `{{PACKAGE_MANAGER}} --filter <workspace> test`  |
+| Lint            | `{{LINT_COMMAND}}`  | `{{PACKAGE_MANAGER}} --filter <workspace> lint`  |
+| Build           | `{{BUILD_COMMAND}}` | `{{PACKAGE_MANAGER}} --filter <workspace> build` |
+
+`{{DEV_PORT_FLAG}}` is the flag or env var that sets the port; `<port>` is the port value.
+
 ## Project Management
 
 **Tracker:** {{ISSUE_TRACKER}}
@@ -149,6 +164,7 @@ For detailed standards on specific topics, refer to these skills in `.agents/ski
 | **Debugging**             | `systematic-debugging/SKILL.md`           | Debugging workflows                                  |
 | **Documentation**         | `project-documentation/SKILL.md`          | README, comments, ADRs, changelogs                   |
 | **Executing Plans**       | `executing-plans/SKILL.md`                | Following through on implementation plans            |
+| **Factory**               | `factory/SKILL.md`                        | Opt-in spec-to-merge feature pipeline                |
 | **Finishing Branches**    | `finishing-a-development-branch/SKILL.md` | Completing and merging branches                      |
 | **GitHub CLI**            | `gh-cli/SKILL.md`                         | GitHub Issues CLI command reference                  |
 | **GitLab CLI**            | `glab-cli/SKILL.md`                       | GitLab MRs, issues, pipelines CLI reference          |
@@ -348,13 +364,18 @@ Subagents are typically **agent-initiated** — the coordinator decides when to 
 
 > **Docs:** [VS Code Subagents](https://code.visualstudio.com/docs/copilot/agents/subagents) · [Cursor Subagents](https://cursor.com/docs/subagents)
 
+### Factory (opt-in)
+
+An optional file-driven pipeline for feature-sized work, alongside Feature Builder and TDD. Start it with `/factory <request>` in Claude Code, Copilot, Cursor, or OpenCode. The orchestrator reads the project and asks only the glaring questions before it creates anything, then asks you to continue or change the answers. Resume a feature with `/factory start <KEY | slug | job-id>`. Codex runs the orchestrator skill directly. Each job belongs to a feature folder in `docs/features/`, stops at a spec gate and a plan gate for your confirmation before any ticket or build, builds in its own git worktree unless you ask for `--in-place`, and moves its tickets when the project tracks them. The orchestrator is [.agents/skills/factory/SKILL.md](.agents/skills/factory/SKILL.md). Its seven agents are `factory-spec-writer`, `factory-builder`, `factory-reviewer-code`, `factory-reviewer-security`, `factory-reviewer-ux`, `factory-reviewer-ui`, and `factory-approver`, with wrappers in each harness's agents folder that point to the shared snippets in `.claude/agents-snippets/`. Setup, placeholders, and approval modes are in [factory/README.md](factory/README.md). Jobs name the affected apps and packages in their spec, and checks run for those with the filtered commands in [Commands](#commands).
+
 ## Documentation Requirements
 
 Documentation updates are **mandatory before committing** any feature or fix. See [`.github/instructions/documentation.instructions.md`](.github/instructions/documentation.instructions.md) for the full pre-commit checklist, templates, and AI agent directives.
 
 **Quick summary:**
 
-- Create or update `apps/{{APP_NAME}}/docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/` (spec + plan) for every feature
+- Create or update `apps/{{APP_NAME}}/docs/features/<feature>/` (spec + plan) for every feature, where `<feature>` is `<KEY>-<slug>` or `<slug>`
+- Features run through the factory pipeline live in root `docs/features/<feature>/` because the pipeline is root-scoped; other features stay in their app or package
 - Add fixes to the monthly log in `apps/{{APP_NAME}}/docs/fixes/{{YYYY-MM}}.md` (or a dedicated folder for complex fixes)
 - Use root `docs/` only for monorepo-wide concerns: `docs/architecture/`, `docs/integration/`, `docs/guides/`
 - Update `docs/api/`, `README.md`, and `CHANGELOG.md` when applicable

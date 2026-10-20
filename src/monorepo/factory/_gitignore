@@ -1,0 +1,5 @@
+# Factory runtime state: job folders, job.json, and reviews.
+# Working state, not history. README.md stays tracked.
+jobs/
+# Closed jobs moved by /factory archive. Same contents as jobs/.
+archive/

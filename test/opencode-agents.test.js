@@ -6,6 +6,41 @@ const test = require('node:test');
 // Explicit pre-migration fixtures, shared by the identical repo/monorepo agents.
 // Body expectations include every newline and the existing snippet reference.
 const fixtures = {
+  'factory-approver': [
+    'Factory Approver Agent',
+    'Decide whether a factory job is approved for merge or escalated to a human.',
+    'Decide whether a factory job is approved for merge or escalated to a human, checking history, final diff, a spot-checked criterion, a dry-run merge, and escalation triggers. Dispatched by the factory orchestrator.',
+  ],
+  'factory-builder': [
+    'Factory Builder Agent',
+    "Build a factory job's feature inside its git worktree, following TDD, and log results in build.md.",
+    "Build a factory job's feature inside its git worktree, following TDD, and log results in build.md. Runs in build, repair, or rework mode. Dispatched by the factory orchestrator.",
+  ],
+  'factory-reviewer-code': [
+    'Factory Reviewer (Code) Agent',
+    "Review a factory job's branch for correctness, simplicity, reuse, conventions, and docs, and run the project's checks.",
+    "Review a factory job's branch for correctness, simplicity, reuse, conventions, and docs, and run the project's checks. Dispatched by the factory orchestrator.",
+  ],
+  'factory-reviewer-security': [
+    'Factory Reviewer (Security) Agent',
+    "Audit a factory job's branch diff for security problems in a fresh context.",
+    "Audit a factory job's branch diff for security problems in a fresh context. Dispatched by the factory orchestrator.",
+  ],
+  'factory-reviewer-ui': [
+    'Factory Reviewer (UI) Agent',
+    "Review a factory job's feature at its build location for design-system consistency, spacing, typography, contrast, and responsive layout, without signing in or writing to real services.",
+    "Review a factory job's feature at its build location for design-system consistency, spacing, typography, contrast, and responsive layout, without signing in or writing to real services. Dispatched by the factory orchestrator.",
+  ],
+  'factory-reviewer-ux': [
+    'Factory Reviewer (UX) Agent',
+    "Review a factory job's feature at its build location for flows, states, copy, accessibility, and mobile, without signing in or writing to real services.",
+    "Review a factory job's feature at its build location for flows, states, copy, accessibility, and mobile, without signing in or writing to real services. Dispatched by the factory orchestrator.",
+  ],
+  'factory-spec-writer': [
+    'Factory Spec Writer Agent',
+    'Write a testable spec.md for a factory job from a feature request, after inspecting the real code.',
+    'Write a testable spec.md for a factory job from a feature request, after inspecting the real code. Dispatched by the factory orchestrator.',
+  ],
   'admin-portal': [
     'Admin Portal Specialist',
     'Build administrator portals with RBAC, system dashboards, reporting, analytics, and operational tooling.',

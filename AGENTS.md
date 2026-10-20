@@ -208,7 +208,7 @@ All templates use `{{PLACEHOLDER}}` syntax for customizable values:
 
 ## Bundled Skills
 
-The toolkit includes 32 pre-installed universal skills in `src/repo/.agents/skills/` and `src/monorepo/.agents/skills/`:
+The toolkit includes 33 pre-installed universal skills in `src/repo/.agents/skills/` and `src/monorepo/.agents/skills/`:
 
 | Skill                            | Purpose                                  |
 | -------------------------------- | ---------------------------------------- |
@@ -219,6 +219,7 @@ The toolkit includes 32 pre-installed universal skills in `src/repo/.agents/skil
 | `debugger`                       | General-purpose debugger skill           |
 | `dispatching-parallel-agents`    | Coordinating multiple AI agents          |
 | `executing-plans`                | Following through on plans               |
+| `factory`                        | Opt-in spec-to-merge feature pipeline    |
 | `finishing-a-development-branch` | Completing and merging branches          |
 | `gh-cli`                         | GitHub CLI helpers                       |
 | `glab-cli`                       | GitLab CLI helpers                       |

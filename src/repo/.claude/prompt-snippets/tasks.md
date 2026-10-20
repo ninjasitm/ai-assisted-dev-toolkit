@@ -1,6 +1,8 @@
-# Generate Task Breakdown
+# Generate Task Checklist
 
-Break down the implementation plan into executable tasks. This is the third step in the development lifecycle.
+Break the implementation plan into a slim task checklist. This is the third step in the development lifecycle.
+
+`tasks.md` is a checklist only. Acceptance criteria live in `spec.md`; approach, files, and effort live in `plan.md`. Do not repeat them here.
 
 ## Usage
 
@@ -9,138 +11,73 @@ Break down the implementation plan into executable tasks. This is the third step
 /tasks docs/features/user-authentication/tasks.md
 ```
 
-## Task Consolidation Rules (CRITICAL)
+## When Not to Create tasks.md
 
-Before creating tasks, apply these consolidation principles:
+Small work (1-2 steps) needs no `tasks.md`. Implement it directly.
+
+## Consolidation Rules (CRITICAL)
 
 ### Target Task Counts
 
-| Feature Complexity  | Total Tasks | Max Subtasks/Task |
-| ------------------- | ----------- | ----------------- |
-| Simple (< 4 hours)  | 2-3         | 0                 |
-| Medium (4-16 hours) | 3-5         | 2-4               |
-| Complex (16-40 hrs) | 5-8         | 3-6               |
-| Large (40+ hours)   | 8-12        | 5-10              |
+| Feature Complexity  | Total Tasks |
+| ------------------- | ----------- |
+| Simple (< 4 hours)  | 2-3         |
+| Medium (4-16 hours) | 3-5         |
+| Complex (16-40 hrs) | 5-8         |
+| Large (40+ hours)   | 8-12        |
 
-### Consolidation Principles
+### Principles
 
-- **Group by deliverable**: Combine work that ships together
-- **Merge related files**: Model + migration + factory = 1 task
-- **Bundle by layer**: All service layer work = 1 task (if related)
-- **Avoid micro-tasks**: Nothing under 1-2 hours as standalone
-- **Limit phases**: Combine Foundation + Implementation when small
+- **Group by deliverable**: combine work that ships together (model + migration + factory = 1 task)
+- **Bundle by layer or resource**: all service work for one area, all endpoints for one resource
+- **Avoid micro-tasks**: nothing under 1-2 hours standalone
+- **Limit phases**: combine Foundation + Implementation when small
 
-### Before Finalizing, Ask:
-
-1. Can any adjacent phases be combined?
-2. Are there tasks under 2 hours that should be merged?
-3. Would a developer naturally complete these together?
-4. Does each task represent meaningful progress?
+Before finalizing, ask: Can adjacent tasks merge? Would one developer naturally finish these together? Does each task show meaningful progress?
 
 ## Process
 
-1. **Load Context**:
-   - Read specification from `docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/spec.md`
-   - Read plan from `docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/plan.md`
-   - Review `AGENTS.md` for project patterns
+1. **Load context**: `docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/spec.md`, `plan.md`, and `AGENTS.md` (project patterns).
 
-2. **Generate Consolidated Task Breakdown**:
+2. **Write `docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/tasks.md`** in the format below.
 
-   Create `docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/tasks.md` with phases (combine where appropriate):
+3. **Report**: tasks file path, task count, number of `[P]` tasks, and the consolidation note ("Combined X items into Y tasks"). Next step: `/implement-feature`, or `/assign-tasks` to create tickets.
 
-   ### Phase 1: Foundation & Setup (combine into 1 task)
-   - Database schema changes, migrations, seeders
-   - Type definitions and interfaces
-   - Base models and validators
-   - Configuration and dependencies
+## Task Line Format
 
-   ### Phase 2: Core Implementation (group by feature area)
-   - Core functionality grouped by component
-   - API endpoints or components (CRUD together)
-   - Business logic and services
+```markdown
+# Tasks: {{ISSUE_ID}}-{{FEATURE_NAME}}
 
-   ### Phase 3: Testing (1 task per major component)
-   - Unit tests for component
-   - Integration tests for feature
-   - E2E tests (if applicable)
+- [ ] T1 Schema + migration for sessions — PROJ-124
+- [ ] T2 Login/logout endpoints [P]
+- [ ] T3 Login form + error states [P]
+```
 
-   ### Phase 4: Polish & Documentation (combine into 1 task)
-   - Error handling improvements
-   - Performance optimization
-   - Documentation updates
+Each task is one line:
 
-3. **Consolidated Task Format**:
+- **Checkbox** `- [ ]`. Tick to `- [x]` once the task is implemented and reviewed.
+- **ID** `T<n>`, sequential, in dependency order.
+- **Description**: short and deliverable-focused (what ships, not how). No file lists, effort, or acceptance criteria.
+- **`[P]`** only when the task can run in parallel (different files, no shared state). Omit otherwise.
+- **` — <ticket key>`** appended after an em dash once a ticket exists. Written by `/assign-tasks`; never added before the ticket is created.
+- **Sub-bullets** only when a task truly needs them (rare).
 
-   ```markdown
-   ### T001: [Consolidated Task Name]
+Ordering: setup before implementation; tests before or alongside code (TDD); core before integration; polish last. Tasks that touch the same files run sequentially and are never `[P]`.
 
-   **Phase**: [Foundation/Implementation/Testing/Polish]
-   **Estimated Effort**: [Hours - aim for 2-8 hours per task]
-   **Parallel**: [Yes/No]
+## Anti-Patterns
 
-   **Scope** (what this task covers):
+❌ One task per file, per CRUD operation, or split into "Create X" / "Configure X" / "Test X"
+❌ Standalone setup tasks under 1 hour
 
-   - [Component/feature 1]
-   - [Component/feature 2]
-   - [Related component 3]
-
-   **Files to Create/Modify**:
-
-   - `{{SRC_DIR}}/path/to/file.{{FILE_EXTENSION}}`
-   - `{{SRC_DIR}}/path/to/related.{{FILE_EXTENSION}}`
-   - `{{TEST_DIR}}/path/to/test.{{FILE_EXTENSION}}`
-
-   **Acceptance Criteria**:
-
-   - [ ] All components implemented
-   - [ ] Tests passing
-   - [ ] No type/lint errors
-
-   **Subtasks** (only if task > 8 hours):
-
-   - [ ] Subtask 1
-   - [ ] Subtask 2
-   ```
-
-4. **Task Ordering Rules**:
-   - Setup before implementation
-   - Tests before or alongside code (TDD)
-   - Core before integration
-   - Everything before polish
-
-5. **Parallel Execution**:
-   - Mark parallelizable tasks with `[P]`
-   - Different feature areas = can be parallel
-   - Same files = sequential
-
-6. **Report Completion**:
-   - Tasks file path
-   - **Consolidated task count** (should be 3-7)
-   - Estimated total effort
-   - **Consolidation note**: "Combined X items into Y tasks"
-   - Ready for `/implement` command
-
-## Anti-Patterns to Avoid
-
-❌ **Don't create separate tasks for**:
-
-- Each individual file
-- "Create X" then "Configure X" then "Test X"
-- Setup tasks under 1 hour
-- Each CRUD operation separately
-
-✅ **Do combine into single tasks**:
-
-- All database work for an entity
-- All API endpoints for a resource
-- All configuration/setup work
-- Related service layer methods
+✅ All database work for an entity
+✅ All API endpoints for a resource
+✅ All configuration and setup for the feature
 
 ## Orchestrator Dispatch Guide
 
-When this task list is used by `/implement-feature` or `/implement`:
+When this list is used by `/implement-feature` or `/implement`:
 
-- **Parallel [P] tasks**: Dispatch one subagent per `[P]` task concurrently using `dispatching-parallel-agents` skill
-- **Sequential tasks**: Execute in dependency order, one subagent per task using `subagent-driven-development` skill
-- **Domain routing**: Match each task to the appropriate specialist agent (Backend Architect, Frontend Developer, API Specialist, etc.)
-- **Review gate**: Every task must pass a Reviewer agent before being marked complete
+- **`[P]` tasks**: dispatch one subagent per task concurrently, using `dispatching-parallel-agents`
+- **Other tasks**: execute in dependency order, one subagent per task, using `subagent-driven-development`
+- **Domain routing**: match each task to a specialist (Backend Architect, Frontend Developer, API Specialist, etc.)
+- **Review gate**: every task passes a Reviewer before it is ticked `[x]`

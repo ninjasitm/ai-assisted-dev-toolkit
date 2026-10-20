@@ -9,6 +9,9 @@
 const fs = require('fs');
 const path = require('path');
 const { execSync, spawnSync } = require('child_process');
+const factory = require('./factory-watch.js');
+const factoryArchive = require('./factory-archive.js');
+const factoryPrune = require('./factory-prune.js');
 
 const PKG_ROOT = path.join(__dirname, '..');
 const SRC_DIR = path.join(PKG_ROOT, 'src');
@@ -16,13 +19,13 @@ const SRC_DIR = path.join(PKG_ROOT, 'src');
 // Platform config dirs per harness. Claude and Codex share `.agents` (universal skills).
 const ENV_DIRS = {
   claude: ['.claude', '.agents'],
-  codex: ['.codex', '.agents', path.join('.github', 'instructions'), path.join('.claude', 'rules-snippets')],
+  codex: ['.codex', '.agents', path.join('.github', 'instructions')],
   copilot: ['.github', '.vscode'],
   cursor: ['.cursor'],
   // Shared reference sources, not other harnesses' active config/agent wrappers.
   opencode: ['.opencode', path.join('.agents', 'skills'),
     path.join('.claude', 'agents-snippets'), path.join('.claude', 'prompt-snippets'),
-    path.join('.claude', 'rules-snippets'), path.join('.github', 'instructions')],
+    path.join('.github', 'instructions')],
 };
 const ENV_INFO = {
   claude: { name: 'Claude Code', command: '/bootstrap (Claude Code command in .claude/commands/)' },
@@ -33,8 +36,17 @@ const ENV_INFO = {
 };
 // Files/dirs copied for every environment (shared across harnesses).
 const SHARED_ROOT = ['AGENTS.md', 'README.md', 'CLAUDE.md', '.mcp.json'];
-const SHARED_DIRS = ['docs', 'templates', 'hooks'];
-
+// `factory` is the job queue every harness reads and writes, so it is shared.
+// Agent/skill bodies and prompt snippets are referenced by wrappers in every harness
+// (e.g. `.claude/agents-snippets/*` from Cursor and Copilot agents), so they are shared too.
+// `.claude/rules-snippets` is linked the same way from every harness's rules and instructions.
+// Only `.agents/skills` is shared: `.agents/rules` is Claude/Codex ambient config.
+const SHARED_DIRS = ['docs', 'templates', 'hooks', 'factory', path.join('.agents', 'skills'),
+  path.join('.claude', 'agents-snippets'), path.join('.claude', 'prompt-snippets'),
+  path.join('.claude', 'rules-snippets')];
+// npm drops `.gitignore` files from packages, so templates ship them as `_gitignore`
+// and install them under the real name.
+const TEMPLATE_RENAMES = { '_gitignore': '.gitignore' };
 const C = {
   reset: '\x1b[0m',
   cyan: '\x1b[36m',
@@ -85,6 +97,12 @@ function templateFiles(type) {
   return files;
 }
 
+// Path a template file is installed to (see TEMPLATE_RENAMES).
+function installName(rel) {
+  const renamed = TEMPLATE_RENAMES[path.basename(rel)];
+  return renamed ? path.join(path.dirname(rel), renamed) : rel;
+}
+
 // Restrict the file set to the chosen environment (shared + that env's dirs).
 function scopeFiles(files, env) {
   if (!env || !ENV_DIRS[env]) return files;
@@ -105,7 +123,8 @@ function copyMissing(type, cwd, force, env) {
   let skipped = 0;
   for (const rel of files) {
     const from = path.join(src, rel);
-    const to = path.join(cwd, rel);
+    const dest = installName(rel);
+    const to = path.join(cwd, dest);
     if (fs.existsSync(to) && !force) {
       skipped++;
       continue;
@@ -130,7 +149,8 @@ function conflicts(type, cwd, env) {
   const files = scopeFiles(templateFiles(type), env);
   const out = [];
   for (const rel of files) {
-    if (fs.existsSync(path.join(cwd, rel))) out.push(rel);
+    const dest = installName(rel);
+    if (fs.existsSync(path.join(cwd, dest))) out.push(dest);
   }
   return out;
 }
@@ -219,14 +239,25 @@ function cmdPatch(cwd, flags) {
   return { copied, skipped };
 }
 
+// Placeholders the agent fills per task or feature at runtime, so they are not bootstrap leftovers.
+const RUNTIME_PLACEHOLDERS = new Set(['ISSUE_ID', 'ISSUE_KEY', 'FEATURE_NAME', 'NAME']);
+// `templates/` ships blank forms whose placeholders are meant to stay until a feature is written.
+const PLACEHOLDER_EXEMPT_DIR = 'templates';
+
+function hasUnresolvedPlaceholder(content) {
+  const names = content.match(/\{\{[A-Z][A-Z0-9_]*\}\}/g) || [];
+  return names.some((name) => !RUNTIME_PLACEHOLDERS.has(name.slice(2, -2)));
+}
+
 function scanPlaceholders(cwd, relFiles) {
   const found = [];
   for (const rel of relFiles) {
+    if (path.normalize(rel).split(path.sep)[0] === PLACEHOLDER_EXEMPT_DIR) continue;
     const p = path.join(cwd, rel);
     if (!fs.existsSync(p)) continue;
     try {
       const content = fs.readFileSync(p, 'utf8');
-      if (/\{\{[A-Z_]+\}\}/.test(content)) found.push(rel);
+      if (hasUnresolvedPlaceholder(content)) found.push(rel);
     } catch (_) { /* ignore */ }
   }
   return found;
@@ -234,7 +265,7 @@ function scanPlaceholders(cwd, relFiles) {
 
 function cmdDoctor(cwd, flags) {
   const type = detectType(cwd, flags);
-  const files = scopeFiles(templateFiles(type), flags.env);
+  const files = scopeFiles(templateFiles(type), flags.env).map(installName);
   const missingFiles = [];
   let present = 0;
   for (const rel of files) {
@@ -261,6 +292,16 @@ function cmdDoctor(cwd, flags) {
   return result;
 }
 
+// Upgrade runs the latest package in patch mode: missing files are added and existing
+// (possibly customised) files are kept. Only an explicit --force reaches `install --force`.
+function upgradeArgs(flags) {
+  const force = Boolean(flags && flags.force);
+  const args = ['--yes', 'nitm-ai-dev-toolkit@latest', force ? 'install' : 'patch'];
+  if (force) args.push('--force');
+  if (flags && flags.env) args.push('--env', flags.env);
+  return args;
+}
+
 function cmdUpgrade(cwd, flags) {
   let latest;
   try {
@@ -275,17 +316,17 @@ function cmdUpgrade(cwd, flags) {
   } catch (_) {
     cur = 'unknown';
   }
-  if (latest === cur) {
-    ok(`Already on latest version (${cur}).`);
-    return;
+  if (latest === cur) info(`Already on latest version (${cur}); refreshing missing files and the handoff.`);
+  else info(`New version available: ${latest} (current ${cur}).`);
+  if (flags && flags.force) {
+    warn('--force: existing files will be overwritten with the latest templates. Back up your customisations first.');
+  } else {
+    info('Adding missing files only; your existing files are kept. Pass --force to overwrite them.');
   }
-  info(`New version available: ${latest} (current ${cur}).`);
   info('Upgrading via latest package...');
-  const args = ['--yes', 'nitm-ai-dev-toolkit@latest', 'install', '--force'];
-  if (flags && flags.env) args.push('--env', flags.env);
-  const r = spawnSync('npx', args, { cwd, stdio: 'inherit', timeout: 120000 });
+  const r = spawnSync('npx', upgradeArgs(flags), { cwd, stdio: 'inherit', timeout: 120000 });
   if (r.error) { err('Upgrade failed: ' + r.error.message); return; }
-  if (r.status === 0) ok('Upgrade complete.');
+  if (r.status === 0) ok('Upgrade complete. Hand off to your AI agent with .nitm/BOOTSTRAP.md to finish setup.');
   else err('Upgrade failed.');
 }
 
@@ -306,6 +347,32 @@ function cmdOmoStarter(cwd, flags) {
   }
 }
 
+const FACTORY_USAGE = 'Usage: nitm-ai-dev-toolkit factory <status|watch|archive|prune> [--dir <path>] [--all] [--interval <ms>] [--dry-run] [--yes]';
+const FACTORY_SUB_USAGE = {
+  archive: 'Usage: nitm-ai-dev-toolkit factory archive [--dir <path>] [--all] [--dry-run]',
+  prune: 'Usage: nitm-ai-dev-toolkit factory prune [--dir <path>] [--all] [--dry-run] [--yes]',
+};
+
+function cmdFactory(cwd, flags) {
+  const sub = flags._[1];
+  if (sub === 'status') return factory.cmdFactoryStatus(cwd, flags);
+  if (sub === 'watch') return factory.cmdFactoryWatch(cwd, flags);
+  if (sub === 'archive' || sub === 'prune') {
+    const extra = flags._.slice(2);
+    if (extra.length) {
+      err(`Unknown option for factory ${sub}: ${extra[0]}`);
+      err(FACTORY_SUB_USAGE[sub]);
+      process.exitCode = 1;
+      return;
+    }
+    return sub === 'archive'
+      ? factoryArchive.cmdFactoryArchive(cwd, flags)
+      : factoryPrune.cmdFactoryPrune(cwd, flags);
+  }
+  err(FACTORY_USAGE);
+  process.exitCode = 1;
+}
+
 function parseFlags(argv) {
   const flags = { _: [] };
   for (let i = 0; i < argv.length; i++) {
@@ -313,7 +380,20 @@ function parseFlags(argv) {
     if (a === '--monorepo') flags.monorepo = true;
     else if (a === '--repo') flags.repo = true;
     else if (a === '--force' || a === '-f') flags.force = true;
+    else if (a === '--all') flags.all = true;
+    else if (a === '--dry-run') flags.dryRun = true;
+    else if (a === '--yes') flags.yes = true;
     else if (a === '--help' || a === '-h') flags.help = true;
+    else if (a === '--dir' || a === '--interval') {
+      const v = argv[++i];
+      if (v === undefined || v.startsWith('--')) throw new Error(`${a} requires a value`);
+      flags[a.slice(2)] = v;
+    } else if (a.startsWith('--dir=') || a.startsWith('--interval=')) {
+      const eq = a.indexOf('=');
+      const v = a.slice(eq + 1);
+      if (!v) throw new Error(`${a.slice(0, eq)}= requires a value`);
+      flags[a.slice(2, eq)] = v;
+    }
     else if (a === '--env') {
       const v = argv[++i];
       if (v === undefined || v.startsWith('--')) throw new Error('--env requires a value (e.g. --env claude)');
@@ -341,8 +421,10 @@ Usage:
       Add only missing template files (never overwrites existing ones), then
       re-emit the bootstrap handoff so your AI agent can finish configuration.
 
-  npx nitm-ai-dev-toolkit upgrade
-      Upgrade to the latest published version (re-scaffolds via @latest).
+  npx nitm-ai-dev-toolkit upgrade [--env <env>] [--force]
+      Upgrade to the latest published version. Like \`patch\`, adds missing files and
+      keeps your existing ones, then re-emits the bootstrap handoff. --force also
+      overwrites existing files with the latest templates (back up customisations first).
 
   npx nitm-ai-dev-toolkit doctor [--monorepo|--repo] [--env <env>]
       Inspect the current install: missing files, unresolved {{PLACEHOLDER}}
@@ -351,6 +433,30 @@ Usage:
   npx nitm-ai-dev-toolkit omo-slim-starter install
       Run \`npx nitm-opencode-starter install\` to scaffold the oh-my-opencode-slim
       starter (published to npm). Falls back to printing the command if unavailable.
+
+  npx nitm-ai-dev-toolkit factory status [--dir <path>] [--all]
+      Print one table of factory jobs (factory/jobs/<NNN-slug>/job.json), then exit.
+      Closed jobs (merged, abandoned) are hidden and counted; --all shows them,
+      plus archived jobs from factory/archive/ (marked [archived]).
+      Read-only. Run /factory <feature> in your agent to create jobs.
+
+  npx nitm-ai-dev-toolkit factory watch [--dir <path>] [--interval <ms>] [--all]
+      Live terminal view of factory jobs. ↑/↓ or j/k select, Enter opens a job's
+      markdown files, q quits. Closed jobs are hidden unless --all.
+      Not a TTY? Behaves like \`factory status\`.
+
+  npx nitm-ai-dev-toolkit factory archive [--dir <path>] [--all] [--dry-run]
+      Move closed jobs (merged, abandoned) from factory/jobs/ to factory/archive/.
+      Default: only jobs closed more than 7 days ago. --all: every closed job.
+      --dry-run: list what would move, move nothing. Open jobs are never touched.
+      Does not touch git or branches (/factory archive and /factory prune handle those).
+
+  npx nitm-ai-dev-toolkit factory prune [--dir <path>] [--all] [--dry-run] [--yes]
+      PERMANENTLY delete closed jobs (merged, abandoned) from factory/jobs/ and
+      factory/archive/. Same selection as archive (default: closed more than 7 days
+      ago; --all: every closed job). Without --yes it only lists what would be
+      deleted. --dry-run always only lists, even with --yes. Open jobs are never
+      touched. Deletes job folders only; git, docs and branches are not touched.
 
 Options:
   --env <env>  Optional. Limit the scaffold to ONE harness:
@@ -361,26 +467,34 @@ Options:
                file directly (no native /bootstrap command is provided).
   --monorepo   Force monorepo template
   --repo       Force single-repo template
-  --force      Overwrite existing files
+  --force      Overwrite existing files (install, upgrade). patch never overwrites
+  --dir <path> factory: jobs directory (default: ./factory/jobs)
+  --interval <ms>
+               factory watch: refresh interval (default: 2000, minimum: 100)
+  --all        factory status/watch: include closed and archived jobs
+               factory archive/prune: include every closed job, not just those older than 7 days
+  --dry-run    factory archive/prune: list only, change nothing
+  --yes        factory prune: actually delete (without it, prune only lists)
   -h, --help   Show this help
 `);
 }
 
 function main() {
-  const flags = parseFlags(process.argv.slice(2));
-  if (flags.help) {
-    usage();
-    return;
-  }
-  const cmd = flags._[0];
   const cwd = process.cwd();
   try {
+    const flags = parseFlags(process.argv.slice(2));
+    if (flags.help) {
+      usage();
+      return;
+    }
+    const cmd = flags._[0];
     switch (cmd) {
       case 'install': return cmdInstall(cwd, flags);
       case 'patch': return cmdPatch(cwd, flags);
       case 'upgrade': return cmdUpgrade(cwd, flags);
       case 'doctor': return cmdDoctor(cwd, flags);
       case 'omo-slim-starter': return cmdOmoStarter(cwd, flags);
+      case 'factory': return cmdFactory(cwd, flags);
       default:
         if (cmd) err(`Unknown command: ${cmd}`);
         usage();
@@ -397,6 +511,7 @@ module.exports = {
   detectType,
   scopeFiles,
   templateFiles,
+  installName,
   copyMissing,
   scanPlaceholders,
   envHeader,
@@ -406,7 +521,9 @@ module.exports = {
   cmdPatch,
   cmdDoctor,
   cmdUpgrade,
+  upgradeArgs,
   cmdOmoStarter,
+  cmdFactory,
   ENV_DIRS,
   SHARED_ROOT,
   SHARED_DIRS,

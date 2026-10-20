@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+Target release: **5.0.0 (major)**. `package.json` stays at 4.0.0 until release.
+
+### Breaking
+
+- `/tasks` now writes a slim `tasks.md`: one checklist line per task (checkbox, ID, short description, optional `[P]`, optional ` — <ticket key>`). Details stay in `spec.md` and `plan.md`. `/assign-tasks` and `/implement-feature` read the slim lines and write ticket keys back after the em dash. Existing `tasks.md` files are not rewritten; re-run `/tasks` on a feature to convert one.
+- `upgrade` no longer overwrites your files. It used to run `install --force`. It now adds missing files and keeps existing ones (`patch` semantics), then re-emits the bootstrap handoff. Overwriting needs an explicit `upgrade --force`, which prints a warning first. Scripts that relied on `upgrade` to refresh templates must add `--force`.
+
+### Added
+
+- Factory pipeline (opt-in): `/factory <request>` takes a feature through intake, spec gate, plan gate, build, parallel lens reviews, approval, and local merge, with subcommands `start`, `approve`, `rework`, `status`, and `watch`. Nothing runs until `/factory` is invoked. Job state lives in `factory/jobs/`, which is git-ignored. Entry points ship for Claude Code, GitHub Copilot, Cursor, and OpenCode; Codex uses the orchestrator skill `.agents/skills/factory/SKILL.md`.
+- Factory gates and intake: intake reads `AGENTS.md`, related features in `docs/features/`, and the code it touches, asks at most five glaring questions, and saves the answers to `intake.md`. Every job stops at `awaiting-spec` and `awaiting-plan` in every approval mode, and nothing is ticketed or built before the operator confirms the plan. Change requests are saved as `spec-<k>.md` or `plan-<k>.md`.
+- Factory feature folders and tracking: each job belongs to `docs/features/<KEY>-<slug>/` (or `docs/features/<slug>/` before a ticket exists). `job.json` records `feature_dir`, `issue_key`, `size`, `tracking`, and `worktree`. Large work with a documented tracker creates tickets through `/assign-tasks`, writes their keys onto `tasks.md`, and moves them through In Progress, In Review, and Done. Done only follows `/factory approve`.
+- Factory builds run in a git worktree on `factory/<id>`. `--in-place` builds in the main checkout instead, and only from a clean default branch with no other in-place job open. The builder writes `qa.md` with suggested checks, printed before approval; it never gates anything.
+- Factory agents: `factory-spec-writer`, `factory-builder`, `factory-reviewer-code`, `factory-reviewer-security`, `factory-reviewer-ux`, `factory-reviewer-ui`, and `factory-approver`, with shared snippets in `.claude/agents-snippets/`. Their OpenCode wrappers use native V2 `permissions`.
+- `factory/` template folder (README, `_gitignore`) installed by default. CLI `factory status` (one-shot table) and `factory watch` (live view) are read-only over `factory/jobs/*/job.json`; `abandoned` jobs are shown as closed.
+- Factory `/factory archive [--all] [--dry-run]` moves closed jobs (`merged` or `abandoned`) from `factory/jobs/` to `factory/archive/`. By default only jobs last updated more than 7 days ago move. `--all` moves every closed job, and open jobs never move. CLI `factory archive` makes the same moves. `/factory archive` also asks before deleting an archived abandoned job's branch and worktree, and never pushes. Archived jobs are not resumable (`/factory start` says they are closed), and their ids count toward job numbering until a prune removes them.
+- Factory `/factory prune [--all] [--dry-run]` permanently deletes closed jobs (`merged` or `abandoned`) from `factory/jobs/` and `factory/archive/`, with the same selection as archive. It lists the candidates, asks once in chat, and deletes only after a yes. It then asks, per abandoned branch, whether to delete the branch and its worktree, as archive does. Open jobs and `docs/features/` are never touched. CLI `factory prune` lists by default and deletes with `--yes`.
+- Link checks in `test/links.test.js`: every relative markdown link and `@path` import in `src/repo` and `src/monorepo` must resolve, and so must every scoped install (each `--env` × layout).
+
+### Changed
+
+- Factory dashboard: `factory status` and `factory watch` hide closed jobs by default and print `N closed jobs hidden (--all to show)`. `--all` shows closed jobs and archived ones.
+- Scoped installs (`--env`) also copy `.agents/skills/`, `.claude/agents-snippets/`, `.claude/prompt-snippets/`, `.claude/rules-snippets/`, and `factory/`, the shared references every harness's wrappers use.
+- Templates named `_gitignore` install as `.gitignore`, because npm drops `.gitignore` files from packages.
+
+### Fixed
+
+- Scoped Cursor, Copilot, and OpenCode installs no longer leave dangling links: `.claude/rules-snippets/` is now shared by every scope, since Cursor rules link there.
+- Scoped installs share only `.agents/skills/`, so Claude/Codex ambient rules in `.agents/rules/` no longer appear in Cursor, Copilot, or OpenCode installs.
+- `doctor` placeholder scan matches names with digits (for example `{{DB2_HOST}}`), skips `templates/` blank forms, and ignores runtime-only placeholders (`ISSUE_ID`, `ISSUE_KEY`, `FEATURE_NAME`, `NAME`), so a bootstrapped project can report clean.
+- `.cursor/rules/orient-to-recent-work.mdc` skill link now resolves (`../` → `../../`).
+
+## [4.0.0]
+
 ### Migration
 
 - Toolkit v4 / package 4.0.0 requires native OpenCode V2 for OpenCode use; oh-my-opencode-slim >=3.0.0 requires OpenCode >=2.0.7. Native host config uses plural maps, ordered permissions, skill directories, and `mcp.servers`. Back up V1 (converted files are incompatible with it), preserve user/global settings and Slim's separate strict schema, leave the external starter unchanged, and activate on the next run/restart. Config `instructions` are ignored, ambient `AGENTS.md` works, `@refs` require explicit reads, and `request.body.temperature` is preserved but not currently sent by the runner. Preserve `lsp: true`; use project checks, not unavailable V2 LSP tools. Plugin/runtime integration is untested; publishing has not been executed.
@@ -118,5 +152,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Documentation structure templates (`docs/features/`, `docs/fixes/`)
 - Monthly fix log template
 
-[Unreleased]: https://github.com/ninjasitm/ai-assisted-dev-toolkit/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/ninjasitm/ai-assisted-dev-toolkit/compare/v4.0.0...HEAD
+[4.0.0]: https://github.com/ninjasitm/ai-assisted-dev-toolkit/compare/v3.0.23...v4.0.0
 [0.1.0]: https://github.com/ninjasitm/ai-assisted-dev-toolkit/releases/tag/v0.1.0

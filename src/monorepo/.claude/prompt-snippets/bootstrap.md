@@ -49,19 +49,28 @@ You are helping to bootstrap AI instructions for this monorepo by analyzing the 
 
 2. **Infer Root-Level Variables**:
 
-   | Variable                  | How to Infer                                       |
-   | ------------------------- | -------------------------------------------------- |
-   | `{{PROJECT_NAME}}`        | Root config name or directory name                 |
-   | `{{PROJECT_DESCRIPTION}}` | Root config description                            |
-   | `{{LANGUAGE}}`            | Detected ecosystem                                 |
-   | `{{PACKAGE_MANAGER}}`     | Lock file or config (pnpm, composer, dotnet, etc.) |
-   | `{{BUILD_SYSTEM}}`        | Build tool (Turborepo, Nx, MSBuild, Maven, etc.)   |
-   | `{{DEFAULT_BRANCH}}`      | Git config or assume "main"                        |
-   | `{{TEST_FRAMEWORK}}`      | Common test framework across packages              |
-   | `{{ISSUE_TRACKER}}`       | Detected project management tool                   |
-   | `{{PM_URL}}`              | Project management URL (if applicable)             |
-   | `{{PROJECT_KEY}}`         | Project/workspace ID (if applicable)               |
-   | `{{PM_ISSUE_KEY}}`        | Issue key format (e.g., PROJ-###, #42)             |
+   | Variable                    | How to Infer                                                                                                                                    |
+   | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+   | `{{PROJECT_NAME}}`          | Root config name or directory name                                                                                                              |
+   | `{{PROJECT_DESCRIPTION}}`   | Root config description                                                                                                                         |
+   | `{{LANGUAGE}}`              | Detected ecosystem                                                                                                                              |
+   | `{{PACKAGE_MANAGER}}`       | Lock file or config (pnpm, composer, dotnet, etc.)                                                                                              |
+   | `{{SETUP_COMMAND}}`         | Root install from the lock file (`pnpm install --frozen-lockfile`, `npm ci`, `yarn install --immutable`); a root `setup` script wins if present |
+   | `{{BUILD_SYSTEM}}`          | Build tool (Turborepo, Nx, MSBuild, Maven, etc.)                                                                                                |
+   | `{{DEFAULT_BRANCH}}`        | `git symbolic-ref --short refs/remotes/origin/HEAD`, minus `origin/`; else `main`                                                               |
+   | `{{TEST_FRAMEWORK}}`        | Common test framework across packages                                                                                                           |
+   | `{{DEV_COMMAND}}`           | Root dev script or task (`turbo run dev`, `nx run-many -t serve`)                                                                               |
+   | `{{DEV_PORT_FLAG}}`         | Port flag or env var the root dev command passes to apps (`--port <port>`, `PORT=<port>`); check each app config. Ask if none                   |
+   | `{{TEST_COMMAND}}`          | Root test script or task (`turbo run test`, `nx run-many -t test`)                                                                              |
+   | `{{LINT_COMMAND}}`          | Root lint script or task (`turbo run lint`, `nx run-many -t lint`)                                                                              |
+   | `{{BUILD_COMMAND}}`         | Root build script or task (`turbo run build`, `nx run-many -t build`)                                                                           |
+   | `{{ISSUE_TRACKER}}`         | Detected project management tool                                                                                                                |
+   | `{{PM_URL}}`                | Project management URL (if applicable)                                                                                                          |
+   | `{{PROJECT_KEY}}`           | Project/workspace ID (if applicable)                                                                                                            |
+   | `{{PM_ISSUE_KEY}}`          | Issue key format (e.g., PROJ-###, #42)                                                                                                          |
+   | `{{FACTORY_PORT_BASE}}`     | Default `5100`                                                                                                                                  |
+   | `{{APPROVAL_MODE}}`         | Default `human`                                                                                                                                 |
+   | `{{FACTORY_REVIEW_LENSES}}` | Default `code, security`; add `ux, ui` only if the project has a UI and a browser tool is configured (for example a browser MCP server)         |
 
 3. **Analyze Apps**:
 

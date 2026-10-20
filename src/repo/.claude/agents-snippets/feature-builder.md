@@ -34,7 +34,7 @@ For each feature request:
 
 When dispatching a specialist subagent, provide:
 
-1. Full task description and acceptance criteria
+1. Full task description (the `tasks.md` line) and the acceptance criteria from `spec.md` that it covers
 2. Relevant file paths and patterns from the codebase
 3. Related tasks already completed (for context)
 4. Testing expectations

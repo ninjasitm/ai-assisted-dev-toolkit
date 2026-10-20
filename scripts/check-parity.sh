@@ -260,6 +260,47 @@ check_section_match "AGENTS.md repo ↔ monorepo" \
   "src/repo/AGENTS.md" "src/monorepo/AGENTS.md" "Project Management"
 
 echo ""
+echo "=== Factory Parity ==="
+echo ""
+
+# Adapted files (SKILL.md, spec-writer/builder/reviewer-code/reviewer-ux/reviewer-ui
+# snippets, factory/README.md) differ by design and are intentionally not checked.
+for agent in spec-writer builder reviewer-code reviewer-security reviewer-ux reviewer-ui approver; do
+  check_identical "claude-agent: factory-$agent repo ↔ monorepo" \
+    "src/repo/.claude/agents/factory-$agent.agent.md" \
+    "src/monorepo/.claude/agents/factory-$agent.agent.md"
+  check_identical "cursor-agent: factory-$agent repo ↔ monorepo" \
+    "src/repo/.cursor/agents/factory-$agent.agent.md" \
+    "src/monorepo/.cursor/agents/factory-$agent.agent.md"
+  check_identical "github-agent: factory-$agent repo ↔ monorepo" \
+    "src/repo/.github/agents/factory-$agent.agent.md" \
+    "src/monorepo/.github/agents/factory-$agent.agent.md"
+  check_identical "opencode-agent: factory-$agent repo ↔ monorepo" \
+    "src/repo/.opencode/agents/factory-$agent.md" \
+    "src/monorepo/.opencode/agents/factory-$agent.md"
+done
+
+for snippet in approver reviewer-security; do
+  check_identical "agents-snippet: factory-$snippet repo ↔ monorepo" \
+    "src/repo/.claude/agents-snippets/factory-$snippet.md" \
+    "src/monorepo/.claude/agents-snippets/factory-$snippet.md"
+done
+
+check_identical "claude-command: factory repo ↔ monorepo" \
+  "src/repo/.claude/commands/factory.md" "src/monorepo/.claude/commands/factory.md"
+check_identical "prompt-snippet: factory repo ↔ monorepo" \
+  "src/repo/.claude/prompt-snippets/factory.md" "src/monorepo/.claude/prompt-snippets/factory.md"
+check_identical "cursor-command: factory repo ↔ monorepo" \
+  "src/repo/.cursor/commands/factory.md" "src/monorepo/.cursor/commands/factory.md"
+check_identical "opencode-command: factory repo ↔ monorepo" \
+  "src/repo/.opencode/commands/factory.md" "src/monorepo/.opencode/commands/factory.md"
+check_identical "github-prompt: factory repo ↔ monorepo" \
+  "src/repo/.github/prompts/factory.prompt.md" "src/monorepo/.github/prompts/factory.prompt.md"
+
+check_identical "factory-state: _gitignore repo ↔ monorepo" \
+  "src/repo/factory/_gitignore" "src/monorepo/factory/_gitignore"
+
+echo ""
 echo "=== Orphaned References ==="
 echo ""
 

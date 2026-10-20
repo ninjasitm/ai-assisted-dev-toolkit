@@ -147,8 +147,34 @@ test('install: --env cursor scaffolds only cursor + shared', () => {
   const d = tmp();
   cli.cmdInstall(d, { env: 'cursor' });
   assert.ok(fs.existsSync(path.join(d, '.cursor')), '.cursor present');
-  assert.ok(!fs.existsSync(path.join(d, '.claude')), '.claude absent');
+  assert.ok(!fs.existsSync(path.join(d, '.claude', 'agents')), '.claude/agents absent');
+  assert.ok(!fs.existsSync(path.join(d, '.claude', 'commands')), '.claude/commands absent');
+  assert.ok(fs.existsSync(path.join(d, '.claude', 'agents-snippets')), 'shared .claude/agents-snippets present');
   assert.ok(fs.existsSync(path.join(d, 'AGENTS.md')), 'shared AGENTS.md present');
+});
+
+for (const type of ['repo', 'monorepo']) {
+  for (const env of ['copilot', 'cursor', 'opencode', 'codex']) {
+    test(`install: --env ${env} ${type} copies the shared factory skill and agent snippets`, () => {
+      const d = tmp();
+      cli.cmdInstall(d, { [type]: true, env });
+      for (const rel of [
+        path.join('.agents', 'skills', 'factory', 'SKILL.md'),
+        path.join('.claude', 'agents-snippets', 'factory-builder.md'),
+        path.join('.claude', 'prompt-snippets', 'factory.md'),
+      ]) {
+        assert.ok(fs.existsSync(path.join(d, rel)), `${rel} present`);
+      }
+      assert.equal(cli.cmdDoctor(d, { [type]: true, env }).missingFiles.length, 0);
+    });
+  }
+}
+
+test('install: --env cursor copies the shared factory/ folder', () => {
+  const d = tmp();
+  cli.cmdInstall(d, { env: 'cursor' });
+  assert.ok(fs.existsSync(path.join(d, 'factory', 'README.md')), 'factory README present');
+  assert.ok(fs.existsSync(path.join(d, 'factory', '.gitignore')), 'factory .gitignore present');
 });
 
 test('install: --force overwrites modified files', () => {
@@ -206,6 +232,54 @@ test('patch: ensures files present and re-emits handoff', () => {
   assert.ok(fs.existsSync(path.join(d, '.nitm', 'BOOTSTRAP.md')), 'handoff present');
 });
 
+test('upgrade: default args use patch (add-missing only), never install --force', () => {
+  assert.deepEqual(cli.upgradeArgs({}), ['--yes', 'nitm-ai-dev-toolkit@latest', 'patch']);
+  assert.deepEqual(cli.upgradeArgs({ env: 'cursor' }),
+    ['--yes', 'nitm-ai-dev-toolkit@latest', 'patch', '--env', 'cursor']);
+});
+
+test('upgrade: only an explicit --force reaches install --force', () => {
+  assert.deepEqual(cli.upgradeArgs({ force: true }),
+    ['--yes', 'nitm-ai-dev-toolkit@latest', 'install', '--force']);
+  assert.deepEqual(cli.upgradeArgs({ force: true, env: 'opencode' }),
+    ['--yes', 'nitm-ai-dev-toolkit@latest', 'install', '--force', '--env', 'opencode']);
+});
+
+test('scanPlaceholders: matches digits in names', () => {
+  const d = tmp();
+  fs.writeFileSync(path.join(d, 'sample.md'), 'Host: {{DB2_HOST}}');
+  assert.deepEqual(cli.scanPlaceholders(d, ['sample.md']), ['sample.md']);
+});
+
+test('scanPlaceholders: runtime-only placeholders are not unresolved bootstrap values', () => {
+  const d = tmp();
+  fs.writeFileSync(path.join(d, 'sample.md'), 'Issue {{ISSUE_KEY}} / {{ISSUE_ID}}: {{FEATURE_NAME}} {{NAME}}');
+  assert.deepEqual(cli.scanPlaceholders(d, ['sample.md']), []);
+});
+
+test('scanPlaceholders: templates/ blanks keep their placeholders by design', () => {
+  const d = tmp();
+  fs.mkdirSync(path.join(d, 'templates'));
+  fs.writeFileSync(path.join(d, 'templates', 'feature-spec.template.md'), '# {{PROJECT_NAME}}');
+  assert.deepEqual(cli.scanPlaceholders(d, [path.join('templates', 'feature-spec.template.md')]), []);
+});
+
+test('doctor: templates/ blanks keep placeholders but are never listed as unresolved', () => {
+  const d = tmp();
+  cli.cmdInstall(d, { env: 'claude' });
+  const blanks = fs.readdirSync(path.join(d, 'templates'))
+    .filter((f) => /\{\{[A-Z]/.test(fs.readFileSync(path.join(d, 'templates', f), 'utf8')));
+  assert.ok(blanks.length > 0, 'templates/ ships placeholders');
+  const res = cli.cmdDoctor(d, { env: 'claude' });
+  assert.ok(res.placeholders.every((f) => !f.startsWith('templates' + path.sep)), 'templates/ excluded');
+});
+
+test('install: --env cursor copies the shared rules-snippets that cursor rules link to', () => {
+  const d = tmp();
+  cli.cmdInstall(d, { env: 'cursor' });
+  assert.ok(fs.existsSync(path.join(d, '.claude', 'rules-snippets')), 'rules-snippets present');
+});
+
 test('patch: never overwrites existing files', () => {
   const d = tmp();
   cli.cmdInstall(d, {});
@@ -213,6 +287,33 @@ test('patch: never overwrites existing files', () => {
   fs.writeFileSync(f, 'changed-by-user');
   cli.cmdPatch(d, { force: true });
   assert.equal(fs.readFileSync(f, 'utf8'), 'changed-by-user');
+});
+
+test('factory: install --force refreshes factory files (no user-owned exceptions)', () => {
+  const d = tmp();
+  cli.cmdInstall(d, {});
+  const readme = path.join(d, 'factory', 'README.md');
+  fs.writeFileSync(readme, 'changed-by-user');
+  cli.cmdInstall(d, { force: true });
+  assert.notEqual(fs.readFileSync(readme, 'utf8'), 'changed-by-user', 'factory README refreshed');
+});
+
+test('factory: .gitignore is installed under its real name (npm drops .gitignore from packages)', () => {
+  const d = tmp();
+  cli.cmdInstall(d, { env: 'claude' });
+  assert.equal(cli.installName(path.join('factory', '_gitignore')), path.join('factory', '.gitignore'));
+  assert.equal(cli.installName(path.join('factory', '.gitignore')), path.join('factory', '.gitignore'));
+  assert.equal(cli.installName('AGENTS.md'), 'AGENTS.md');
+  assert.match(fs.readFileSync(path.join(d, 'factory', '.gitignore'), 'utf8'), /jobs\//);
+  assert.equal(cli.cmdDoctor(d, { env: 'claude' }).missingFiles.length, 0);
+});
+
+test('factory: doctor reports a missing factory file as a warning list, not a throw', () => {
+  const d = tmp();
+  cli.cmdInstall(d, {});
+  fs.rmSync(path.join(d, 'factory', 'README.md'));
+  const res = cli.cmdDoctor(d, {});
+  assert.deepEqual(res.missingFiles, [path.join('factory', 'README.md')]);
 });
 
 test('parseFlags: parses env, monorepo, force, positional', () => {
@@ -246,25 +347,28 @@ test('scopeFiles: Codex keeps bounded shared standards without changing other sc
     path.join('.github', 'instructions', 'patterns.instructions.md'),
     path.join('.claude', 'rules-snippets', 'patterns.md'),
     '.claude/a.md', '.cursor/a.md', '.github/a.md', '.vscode/a.json', '.opencode/a.md'];
-  assert.deepEqual(cli.ENV_DIRS.codex, ['.codex', '.agents',
-    path.join('.github', 'instructions'), path.join('.claude', 'rules-snippets')]);
+  assert.deepEqual(cli.ENV_DIRS.codex, ['.codex', '.agents', path.join('.github', 'instructions')]);
   assert.deepEqual(cli.scopeFiles(files, 'codex'), files.slice(0, 6));
-  assert.deepEqual(cli.SHARED_DIRS, ['docs', 'templates', 'hooks']);
+  assert.deepEqual(cli.SHARED_DIRS, ['docs', 'templates', 'hooks', 'factory', path.join('.agents', 'skills'),
+    path.join('.claude', 'agents-snippets'), path.join('.claude', 'prompt-snippets'),
+    path.join('.claude', 'rules-snippets')]);
   assert.deepEqual(cli.ENV_DIRS.claude, ['.claude', '.agents']);
   assert.deepEqual(cli.ENV_DIRS.copilot, ['.github', '.vscode']);
   assert.deepEqual(cli.ENV_DIRS.cursor, ['.cursor']);
   assert.deepEqual(cli.ENV_DIRS.opencode, ['.opencode', path.join('.agents', 'skills'),
     path.join('.claude', 'agents-snippets'), path.join('.claude', 'prompt-snippets'),
-    path.join('.claude', 'rules-snippets'), path.join('.github', 'instructions')]);
+    path.join('.github', 'instructions')]);
   for (const env of ['claude', 'copilot', 'cursor', 'opencode']) {
     assert.ok(!cli.scopeFiles(files, env).includes('.codex/config.toml'));
   }
-  assert.ok(!cli.scopeFiles(files, 'claude').includes(files[4]));
-  assert.ok(!cli.scopeFiles(files, 'copilot').includes(files[5]));
-  for (const env of ['cursor']) {
-    assert.ok(!cli.scopeFiles(files, env).includes(files[4]));
-    assert.ok(!cli.scopeFiles(files, env).includes(files[5]));
+  // rules-snippets are linked from every harness, so every scope keeps them.
+  for (const env of ['claude', 'copilot', 'cursor', 'opencode', 'codex']) {
+    assert.ok(cli.scopeFiles(files, env).includes(files[5]), `${env} keeps shared rules-snippets`);
   }
+  // `.github/instructions` belongs to copilot and to the shared codex/opencode standards.
+  assert.ok(!cli.scopeFiles(files, 'claude').includes(files[4]));
+  assert.ok(cli.scopeFiles(files, 'copilot').includes(files[4]));
+  assert.ok(!cli.scopeFiles(files, 'cursor').includes(files[4]));
 });
 
 test('scopeFiles: nested Codex standards match normalized directory boundaries only', () => {
@@ -283,7 +387,7 @@ test('scopeFiles: OpenCode reference dependencies stay within exact directory bo
   const kept = ['.opencode/opencode.jsonc', '.agents/skills/x/SKILL.md',
     '.claude/agents-snippets/x.md', '.claude/prompt-snippets/x.md',
     '.claude/rules-snippets/x.md', '.github/instructions/x.instructions.md', 'hooks/ponytail-config.js'];
-  const excluded = ['.agents/other.md', '.agents/skills-extra/x.md', '.claude/settings.json',
+  const excluded = ['.agents/other.md', '.agents/skills-extra/x.md', '.agents/rules/ponytail.md', '.claude/settings.json',
     '.claude/agents/x.md', '.claude/commands/x.md', '.claude/rules/x.md',
     '.claude/agents-snippets-extra/x.md', '.claude/prompt-snippets/../commands/x.md',
     '.github/agents/x.md', '.github/instructions-extra/x.md', '.codex/config.toml'];
@@ -397,7 +501,8 @@ for (const type of ['repo', 'monorepo']) {
       assert.ok(fs.existsSync(path.join(d, rel)), `${rel} present`);
     }
     assert.deepEqual(fs.readdirSync(path.join(d, '.github')), ['instructions']);
-    assert.deepEqual(fs.readdirSync(path.join(d, '.claude')), ['rules-snippets']);
+    assert.deepEqual(fs.readdirSync(path.join(d, '.claude')).sort(),
+      ['agents-snippets', 'prompt-snippets', 'rules-snippets']);
     for (const dir of ['.vscode', '.cursor', '.opencode']) {
       assert.ok(!fs.existsSync(path.join(d, dir)), `${dir} absent`);
     }
