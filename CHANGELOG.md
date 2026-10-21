@@ -12,7 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Factory runs on the native `planner`, `implementer`, and `reviewer` agents instead of seven `factory-*` agents. Each role's Factory rules (outputs, evidence, verdict format, escalation triggers) moved into role briefs in `.agents/skills/factory/roles/`. Reviewers and the approver return their report, and the orchestrator saves it as `round-<N>/review-<lens>.md` or `decision.md`. The gates, verdicts, approval rules, and rework flow are unchanged.
-- `doctor` lists the removed `factory-*` files as stale toolkit files (matched by path and content hash) and never deletes them.
+- `doctor` lists the removed `factory-*` files as stale toolkit files (matched by path and content hash) and never deletes them. The OpenCode `factory-*` agents also match their 5.0.0 hashes, not only 5.0.1.
+- Factory dispatch states that the role brief overrides the dispatched agent's default output format and file-writing rules, and the reply's first line follows the brief.
+- The Claude `planner` agent gets `Glob` and `Bash(*)` (plan mode deletes a stale `tasks.md`); `implementer` and `reviewer` get `Glob`.
 
 ### Removed
 

@@ -638,3 +638,18 @@ test('stale: a leftover factory-builder agent from 5.0.0 is reported by doctor a
   assert.equal(patched.exitCode, 0);
   assert.ok(fs.existsSync(leftover), 'stale file is left in place');
 });
+
+test('stale: a leftover 5.0.0 OpenCode factory-approver agent is reported by doctor', (t) => {
+  const d = tmp(t);
+  run(() => cli.cmdInstall(d, { repo: true }));
+  const rel = '.opencode/agents/factory-approver.md';
+  const fixture = path.join(__dirname, 'data', 'factory-approver-5.0.0.opencode.fixture');
+  const leftover = path.join(d, ...rel.split('/'));
+  fs.mkdirSync(path.dirname(leftover), { recursive: true });
+  fs.copyFileSync(fixture, leftover);
+  assert.ok(cli.KNOWN_HISTORICAL[rel].includes(sha(fixture)), 'fixture matches the 5.0.0 hash');
+
+  const doc = run(() => cli.cmdDoctor(d, { repo: true }));
+  assert.deepEqual(doc.result.stale, [path.join(...rel.split('/'))]);
+  assert.ok(fs.existsSync(leftover), 'stale file is left in place');
+});

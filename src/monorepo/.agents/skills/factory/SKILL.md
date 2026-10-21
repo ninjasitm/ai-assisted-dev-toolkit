@@ -602,7 +602,7 @@ The age rule is the same as Archive: by default only jobs whose `updatedAt` is m
 
 Dispatch with the paths block first, then the task line, then the role brief and the files to read. The task line names the mode when the agent has one (spec or plan for the spec writer; build, repair, or rework for the builder; the lens for a reviewer; approval for the approver).
 
-Factory adds no agents of its own. Each role runs on a native agent (`planner`, `implementer`, or `reviewer`), and the Factory rules for that role (outputs, evidence, verdict format, escalation triggers) live in its brief in this skill's `roles/` folder. Every dispatch tells the agent to read the matching brief first.
+Factory adds no agents of its own. Each role runs on a native agent (`planner`, `implementer`, or `reviewer`), and the Factory rules for that role (outputs, evidence, verdict format, escalation triggers) live in its brief in this skill's `roles/` folder. Every dispatch tells the agent to read the matching brief first. The role brief overrides the dispatched agent's default output format and file-writing rules, and the first line of the reply must follow the brief.
 
 | Role | Native agent | Task line | Brief | Fresh context | Output |
 | --- | --- | --- | --- | --- | --- |
