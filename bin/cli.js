@@ -8,13 +8,15 @@
 
 const fs = require('fs');
 const path = require('path');
-const { execSync, spawnSync } = require('child_process');
+const crypto = require('crypto');
+const { execFileSync, spawnSync } = require('child_process');
 const factory = require('./factory-watch.js');
 const factoryArchive = require('./factory-archive.js');
 const factoryPrune = require('./factory-prune.js');
 
 const PKG_ROOT = path.join(__dirname, '..');
 const SRC_DIR = path.join(PKG_ROOT, 'src');
+const PKG_NAME = 'nitm-ai-dev-toolkit';
 
 // Platform config dirs per harness. Claude and Codex share `.agents` (universal skills).
 const ENV_DIRS = {
@@ -47,6 +49,40 @@ const SHARED_DIRS = ['docs', 'templates', 'hooks', 'factory', path.join('.agents
 // npm drops `.gitignore` files from packages, so templates ship them as `_gitignore`
 // and install them under the real name.
 const TEMPLATE_RENAMES = { '_gitignore': '.gitignore' };
+
+// Files the CLI writes in the target repo besides template files.
+const VERSION_FILE = '.toolkit-version';
+const NITM_DIR = '.nitm';
+const HANDOFF_FILE = path.join(NITM_DIR, 'BOOTSTRAP.md');
+const CONFIG_FILE = path.join(NITM_DIR, 'toolkit.json');
+const MANIFEST_FILE = path.join(NITM_DIR, 'manifest.json');
+const BACKUP_DIR = path.join(NITM_DIR, 'backups');
+
+// Groups for --exclude / --only. Explicit closed lists: nothing is detected from the stack.
+const HARNESS_GROUPS = Object.keys(ENV_DIRS);
+const FEATURE_GROUPS = ['factory', 'prisma', 'bkt-cli', 'gh-cli', 'glab-cli', 'acli', 'linear-cli'];
+const SELECTABLE_GROUPS = [...HARNESS_GROUPS, ...FEATURE_GROUPS];
+// Top-level dirs owned by one harness. SHARED_ROOT, SHARED_DIRS, `.agents/*` and
+// `.github/instructions` are shared, so they carry no harness group.
+const HARNESS_OWNED = {
+  '.codex': 'codex', '.cursor': 'cursor', '.vscode': 'copilot', '.github': 'copilot',
+  '.opencode': 'opencode', '.claude': 'claude',
+};
+
+// Known historical template hashes (sha256 of the installed file), by target path.
+// Doctor and patch report stale copies that match; they never delete anything.
+// `.opencode/plugins/ponytail.mjs`: the src/repo and src/monorepo template copy shipped
+// through 3.0.23 (git 3.0.23:src/repo/.opencode/plugins/ponytail.mjs), removed in 4.0.0 (f57f44d).
+// test/data/ponytail-3.0.23.mjs.fixture holds that exact content.
+const KNOWN_HISTORICAL = {
+  '.opencode/plugins/ponytail.mjs': ['3ca6fe6e560da71109af7e40ed04ca47aa22219e4c9edf674bf895acadce8605'],
+};
+
+// First release with --dry-run, --exclude and --only. `upgrade` refuses a dry run below it (older
+// releases would write), and refuses a selection below it (older releases would ignore it).
+const DRY_RUN_UPGRADE_MIN = '5.0.1';
+const VERSION_RE = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/;
+
 const C = {
   reset: '\x1b[0m',
   cyan: '\x1b[36m',
@@ -58,6 +94,24 @@ function info(m) { console.log(`${C.cyan}•${C.reset} ${m}`); }
 function ok(m) { console.log(`${C.green}✓${C.reset} ${m}`); }
 function warn(m) { console.log(`${C.yellow}!${C.reset} ${m}`); }
 function err(m) { console.log(`${C.red}✗${C.reset} ${m}`); }
+
+function sha256(buf) { return crypto.createHash('sha256').update(buf).digest('hex'); }
+function fileHash(p) { return sha256(fs.readFileSync(p)); }
+function readJson(p) {
+  try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch (_) { return null; }
+}
+function packageVersion() {
+  return JSON.parse(fs.readFileSync(path.join(PKG_ROOT, 'package.json'), 'utf8')).version;
+}
+function writeText(cwd, rel, text) {
+  const to = path.join(cwd, rel);
+  fs.mkdirSync(path.dirname(to), { recursive: true });
+  fs.writeFileSync(to, text);
+}
+// 'unchanged' when the file already holds exactly `text`, otherwise 'write'.
+function writeState(p, text) {
+  return fs.existsSync(p) && fs.readFileSync(p, 'utf8') === text ? 'unchanged' : 'write';
+}
 
 function detectType(cwd, flags) {
   if (flags.monorepo) return 'monorepo';
@@ -116,44 +170,174 @@ function scopeFiles(files, env) {
   });
 }
 
-function copyMissing(type, cwd, force, env) {
-  const src = path.join(SRC_DIR, type);
-  const files = scopeFiles(templateFiles(type), env);
-  let copied = 0;
-  let skipped = 0;
-  for (const rel of files) {
-    const from = path.join(src, rel);
-    const dest = installName(rel);
-    const to = path.join(cwd, dest);
-    if (fs.existsSync(to) && !force) {
-      skipped++;
-      continue;
+// ---- Group selection (--exclude / --only) ----
+
+function inDir(rel, dir) {
+  return rel === dir || rel.startsWith(dir + path.sep);
+}
+
+// The harness that owns a file, or null when the file is shared.
+function harnessOf(rel) {
+  const n = path.normalize(rel);
+  if (SHARED_ROOT.includes(n) || SHARED_DIRS.some((d) => inDir(n, path.normalize(d)))) return null;
+  if (inDir(n, path.join('.github', 'instructions'))) return null;
+  return HARNESS_OWNED[n.split(path.sep)[0]] || null;
+}
+
+// Feature groups a file belongs to: a path segment or its file stem equals the group name
+// (factory/, .agents/skills/gh-cli/, prisma-migrations.md, factory-builder.md).
+function featuresOf(rel) {
+  const n = path.normalize(rel);
+  const segments = n.split(path.sep).map((s) => s.replace(/^\./, ''));
+  const stem = path.basename(n).split('.')[0];
+  return FEATURE_GROUPS.filter((g) => segments.includes(g) || stem === g || stem.startsWith(g + '-'));
+}
+
+function groupsOf(rel) {
+  const harness = harnessOf(rel);
+  return harness ? [harness, ...featuresOf(rel)] : featuresOf(rel);
+}
+
+// Selection = { exclude, only } as lists of group names. Shared (untagged) files are always kept.
+// Exclude drops files in any listed group. Only keeps tagged files in a listed group.
+function selectionKeeps(rel, sel) {
+  if (!sel) return true;
+  const groups = groupsOf(rel);
+  if (groups.some((g) => sel.exclude.includes(g))) return false;
+  if (sel.only.length && groups.length && !groups.some((g) => sel.only.includes(g))) return false;
+  return true;
+}
+
+function normalizeSelection(input) {
+  const sel = { exclude: [], only: [] };
+  for (const key of ['exclude', 'only']) {
+    const list = (input && input[key]) || [];
+    if (!Array.isArray(list)) throw new Error(`${key} must be a list of group names`);
+    for (const g of list) {
+      if (!SELECTABLE_GROUPS.includes(g)) {
+        throw new Error(`Unknown group "${g}" for --${key}. Valid groups: ${SELECTABLE_GROUPS.join(', ')}`);
+      }
     }
+    sel[key] = [...new Set(list)].sort();
+  }
+  return sel;
+}
+
+function splitGroups(value) {
+  return value.split(',').map((s) => s.trim()).filter(Boolean);
+}
+
+// A missing saved config means no selection. One that exists but does not parse is an error:
+// treating it as empty would let patch add files the user excluded.
+function readConfigOrThrow(cwd) {
+  const p = path.join(cwd, CONFIG_FILE);
+  if (!fs.existsSync(p)) return null;
+  try {
+    return JSON.parse(fs.readFileSync(p, 'utf8'));
+  } catch (ex) {
+    throw new Error(`${CONFIG_FILE} exists but is not valid JSON (${ex.message}). Fix or remove it; nothing was written.`);
+  }
+}
+
+// Explicit --exclude/--only replace the saved selection; without them the saved one applies.
+function resolveSelection(cwd, flags) {
+  const hasExclude = flags.exclude !== undefined;
+  const hasOnly = flags.only !== undefined;
+  if (hasExclude && hasOnly) throw new Error('Use either --exclude or --only, not both');
+  if (hasExclude || hasOnly) {
+    return { selection: normalizeSelection({ exclude: flags.exclude, only: flags.only }), explicit: true };
+  }
+  return { selection: normalizeSelection(readConfigOrThrow(cwd)), explicit: false };
+}
+
+function configText(sel) {
+  return JSON.stringify({ exclude: sel.exclude, only: sel.only }, null, 2) + '\n';
+}
+
+// ---- Planning ----
+
+// The path that blocks writing `dest` (an ancestor that is a file, or `dest` itself as a directory).
+function blockerOf(cwd, dest) {
+  const parts = path.normalize(dest).split(path.sep);
+  for (let i = 1; i <= parts.length; i++) {
+    const p = path.join(cwd, ...parts.slice(0, i));
+    if (!fs.existsSync(p)) return null;
+    const isDir = fs.statSync(p).isDirectory();
+    if (i < parts.length && !isDir) return parts.slice(0, i).join(path.sep);
+    if (i === parts.length && isDir) return dest;
+  }
+  return null;
+}
+
+// One entry per template file the command touches.
+//   add:       missing in the target
+//   overwrite: install --force on an existing file
+//   skip:      patch keeps an existing file (identical or user-changed)
+//   conflict:  install without --force on an existing file, or a path blocked by a file/dir of another type
+function planFiles(type, cwd, { mode, force, env, selection }) {
+  const rels = scopeFiles(templateFiles(type), env).filter((rel) => selectionKeeps(rel, selection));
+  return rels.map((rel) => {
+    const dest = installName(rel);
+    const from = path.join(SRC_DIR, type, rel);
+    const hash = fileHash(from);
+    const blocker = blockerOf(cwd, dest);
+    if (blocker) return { rel: dest, from, hash, action: 'conflict', reason: `blocked by ${blocker}` };
+    const to = path.join(cwd, dest);
+    if (!fs.existsSync(to)) return { rel: dest, from, hash, action: 'add', same: false };
+    const same = fileHash(to) === hash;
+    if (mode === 'install' && !force) return { rel: dest, from, hash, action: 'conflict', reason: 'exists', same };
+    if (mode === 'install') return { rel: dest, from, hash, action: 'overwrite', same };
+    return { rel: dest, from, hash, action: 'skip', same, reason: same ? 'identical' : 'kept, differs from template' };
+  });
+}
+
+function countActions(plan) {
+  const counts = { add: 0, overwrite: 0, skip: 0, conflict: 0 };
+  for (const e of plan) counts[e.action]++;
+  return counts;
+}
+
+function applyPlan(cwd, plan) {
+  let copied = 0;
+  for (const e of plan) {
+    if (e.action !== 'add' && e.action !== 'overwrite') continue;
+    const to = path.join(cwd, e.rel);
     try {
       fs.mkdirSync(path.dirname(to), { recursive: true });
-    } catch (e) {
-      if (e.code !== 'EEXIST') throw new Error(`Failed to create directory for ${rel}: ${e.message}`);
+    } catch (ex) {
+      throw new Error(`Failed to create directory for ${e.rel}: ${ex.message}`);
     }
     try {
-      fs.copyFileSync(from, to);
-    } catch (e) {
-      throw new Error(`Failed to copy ${rel}: ${e.message}`);
+      fs.copyFileSync(e.from, to);
+    } catch (ex) {
+      throw new Error(`Failed to copy ${e.rel}: ${ex.message}`);
     }
     copied++;
   }
-  return { copied, skipped, total: files.length };
+  return copied;
 }
 
 // Files the scaffold would write that already exist in the target repo.
 function conflicts(type, cwd, env) {
-  const files = scopeFiles(templateFiles(type), env);
-  const out = [];
-  for (const rel of files) {
-    const dest = installName(rel);
-    if (fs.existsSync(path.join(cwd, dest))) out.push(dest);
-  }
-  return out;
+  return planFiles(type, cwd, { mode: 'install', force: false, env, selection: null })
+    .filter((e) => e.action === 'conflict')
+    .map((e) => e.rel);
 }
+
+function printPlan(plan) {
+  const c = countActions(plan);
+  info(`Dry run, nothing will be written: ${c.add} add, ${c.overwrite} overwrite, ${c.skip} skip, ${c.conflict} conflict.`);
+  const sections = [['add', 'Would add'], ['overwrite', 'Would overwrite'],
+    ['skip', 'Would skip (existing, kept)'], ['conflict', 'Conflicts']];
+  for (const [action, label] of sections) {
+    const list = plan.filter((e) => e.action === action);
+    if (!list.length) continue;
+    console.log(`  ${label} (${list.length}):`);
+    for (const e of list) console.log(`     - ${e.rel}${e.reason ? ` (${e.reason})` : ''}`);
+  }
+}
+
+// ---- Handoff, version, manifest, selection (the files written besides templates) ----
 
 function envHeader(type, env) {
   if (!env || !ENV_INFO[env]) {
@@ -188,14 +372,129 @@ function envHeader(type, env) {
   ].join('\n');
 }
 
-function handoff(type, cwd, env) {
+function handoffContent(type, env) {
   const bootSrc = path.join(SRC_DIR, type, '.claude', 'prompt-snippets', 'bootstrap.md');
-  const nitmDir = path.join(cwd, '.nitm');
-  fs.mkdirSync(nitmDir, { recursive: true });
-  const header = envHeader(type, env);
-  let body = '';
-  if (fs.existsSync(bootSrc)) body = fs.readFileSync(bootSrc, 'utf8');
-  fs.writeFileSync(path.join(nitmDir, 'BOOTSTRAP.md'), header + '\n\n' + body);
+  const body = fs.existsSync(bootSrc) ? fs.readFileSync(bootSrc, 'utf8') : '';
+  return envHeader(type, env) + '\n\n' + body;
+}
+
+// create | unchanged | replace. A replaced handoff is backed up first, never lost.
+function handoffState(cwd, content) {
+  const p = path.join(cwd, HANDOFF_FILE);
+  if (!fs.existsSync(p)) return 'create';
+  return fs.readFileSync(p, 'utf8') === content ? 'unchanged' : 'replace';
+}
+
+// Copies the current handoff to a new backup name. Existing backups are never overwritten:
+// COPYFILE_EXCL fails on a taken name and we retry with a numeric suffix.
+function backupHandoff(cwd) {
+  const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+  fs.mkdirSync(path.join(cwd, BACKUP_DIR), { recursive: true });
+  for (let n = 0; ; n++) {
+    const rel = path.join(BACKUP_DIR, `BOOTSTRAP.${stamp}${n ? `-${n}` : ''}.md`);
+    try {
+      fs.copyFileSync(path.join(cwd, HANDOFF_FILE), path.join(cwd, rel), fs.constants.COPYFILE_EXCL);
+      return rel;
+    } catch (ex) {
+      if (ex.code !== 'EEXIST') throw ex;
+    }
+  }
+}
+
+function readManifest(cwd) {
+  const m = readJson(path.join(cwd, MANIFEST_FILE));
+  return m && m.files && typeof m.files === 'object' ? m : { files: {} };
+}
+
+// Manifest keys are template paths written with '/'. Anything absolute or escaping the target is ignored.
+function safeManifestPath(key) {
+  const rel = String(key).replace(/\\/g, '/');
+  if (path.posix.isAbsolute(rel) || path.win32.isAbsolute(rel) || rel.split('/').includes('..')) return null;
+  return rel;
+}
+
+function manifestText(files) {
+  const sorted = Object.fromEntries(Object.keys(files).sort().map((k) => [k, files[k]]));
+  return JSON.stringify({ toolkit: packageVersion(), files: sorted }, null, 2) + '\n';
+}
+
+// The toolkit version this project was scaffolded or patched with, against the package version.
+function toolkitVersionStatus(cwd) {
+  const pkg = packageVersion();
+  const p = path.join(cwd, VERSION_FILE);
+  const installed = fs.existsSync(p) ? fs.readFileSync(p, 'utf8').trim() : null;
+  const status = installed === null ? 'missing' : installed === pkg ? 'match' : 'mismatch';
+  return { installed, package: pkg, status };
+}
+
+// Known historical toolkit files still on disk. Matched by path AND content hash, so user files never match.
+// Reported only. Nothing is deleted.
+function findStale(cwd, type) {
+  const current = new Set(templateFiles(type).map(installName));
+  const stale = [];
+  for (const [key, hashes] of Object.entries(KNOWN_HISTORICAL)) {
+    const rel = path.join(...key.split('/'));
+    const p = path.join(cwd, rel);
+    if (current.has(rel) || !fs.existsSync(p) || !fs.statSync(p).isFile()) continue;
+    if (hashes.includes(fileHash(p))) stale.push(rel);
+  }
+  return stale;
+}
+
+// Manifest-owned files whose content no longer matches what the toolkit recorded (edited by the user).
+function customizedOwned(cwd) {
+  const out = [];
+  for (const [key, hash] of Object.entries(readManifest(cwd).files)) {
+    const rel = safeManifestPath(key);
+    if (rel === null) continue;
+    const p = path.join(cwd, ...rel.split('/'));
+    if (fs.existsSync(p) && fs.statSync(p).isFile() && fileHash(p) !== hash) out.push(rel);
+  }
+  return out;
+}
+
+// Everything install/patch writes besides template files. Writes only when not dryRun.
+function recordState(cwd, { type, env, plan, selection, explicit, dryRun }) {
+  const content = handoffContent(type, env);
+  const handoff = handoffState(cwd, content);
+  const versionText = packageVersion() + '\n';
+  const version = writeState(path.join(cwd, VERSION_FILE), versionText);
+  const files = { ...readManifest(cwd).files };
+  for (const e of plan) {
+    if (e.action === 'add' || e.action === 'overwrite' || (e.action === 'skip' && e.same)) {
+      files[e.rel.split(path.sep).join('/')] = e.hash;
+    }
+  }
+  const manifest = manifestText(files);
+  const manifestState = writeState(path.join(cwd, MANIFEST_FILE), manifest);
+  const config = explicit ? writeState(path.join(cwd, CONFIG_FILE), configText(selection)) : null;
+  const state = { handoff, version, manifest: manifestState, config, backup: null };
+  if (dryRun) return state;
+  if (config === 'write') writeText(cwd, CONFIG_FILE, configText(selection));
+  if (handoff === 'replace') state.backup = backupHandoff(cwd);
+  if (handoff !== 'unchanged') writeText(cwd, HANDOFF_FILE, content);
+  if (version === 'write') writeText(cwd, VERSION_FILE, versionText);
+  if (manifestState === 'write') writeText(cwd, MANIFEST_FILE, manifest);
+  return state;
+}
+
+function printDryState(s) {
+  const handoffWord = { create: 'create', replace: 'replace (old copy backed up)', unchanged: 'no change' }[s.handoff];
+  const word = (x) => (x === 'unchanged' ? 'no change' : 'write');
+  info('Would also:');
+  console.log(`    - ${HANDOFF_FILE}: ${handoffWord}`);
+  console.log(`    - ${VERSION_FILE}: ${word(s.version)}`);
+  console.log(`    - ${MANIFEST_FILE}: ${word(s.manifest)}`);
+  if (s.config !== null) console.log(`    - ${CONFIG_FILE}: ${word(s.config)} (selection persisted for later patch)`);
+}
+
+function printStale(stale) {
+  if (!stale.length) return;
+  warn(`${stale.length} stale toolkit file(s) left in place (not deleted; remove by hand if unwanted):`);
+  stale.forEach((f) => console.log('     - ' + f));
+}
+
+function printHandoff(env, state) {
   if (env && ENV_INFO[env]) {
     info(`Scaffold complete (tailored to ${ENV_INFO[env].name}). Hand off to your AI agent:`);
     console.log(`    Bootstrap entry point: ${ENV_INFO[env].command}`);
@@ -208,41 +507,89 @@ function handoff(type, cwd, env) {
     console.log('       Other harnesses also have bootstrap commands; Codex uses the handoff file directly.');
   }
   console.log('    2. Run `npx nitm-ai-dev-toolkit doctor' + (env ? ` --env ${env}` : '') + '` to verify the install.');
+  if (state.handoff === 'unchanged') info(`${HANDOFF_FILE} already up to date (not rewritten).`);
+  if (state.backup) info(`Previous ${HANDOFF_FILE} differed; backed up to ${state.backup}.`);
 }
+
+// ---- Commands ----
 
 function cmdInstall(cwd, flags) {
   const type = detectType(cwd, flags);
   if (flags.env && !ENV_DIRS[flags.env]) warn(`Unknown --env "${flags.env}"; scaffolding all environments.`);
   info(`Detected project type: ${type}` + (flags.env ? `, environment: ${flags.env}` : ''));
-  const cf = conflicts(type, cwd, flags.env);
-  if (cf.length && !flags.force) {
-    err(`Install aborted: ${cf.length} file(s) already exist in this project.`);
-    cf.slice(0, 20).forEach((f) => console.log('     - ' + f));
-    if (cf.length > 20) console.log(`     ...and ${cf.length - 20} more.`);
+  const { selection, explicit } = resolveSelection(cwd, flags);
+  const plan = planFiles(type, cwd, { mode: 'install', force: flags.force, env: flags.env, selection });
+  const counts = countActions(plan);
+  const cf = plan.filter((e) => e.action === 'conflict');
+  const existing = cf.filter((e) => e.reason === 'exists');
+  const blocked = cf.filter((e) => e.reason !== 'exists');
+
+  if (flags.dryRun) {
+    printPlan(plan);
+    printDryState(recordState(cwd, { type, env: flags.env, plan, selection, explicit, dryRun: true }));
+    if (cf.length) process.exitCode = 1;
+    return { copied: 0, skipped: 0, conflicts: cf.length, dryRun: true, planned: counts };
+  }
+  if (blocked.length) {
+    err(`Install aborted: ${blocked.length} path(s) are blocked by a file or directory of another type.`);
+    blocked.slice(0, 20).forEach((e) => console.log(`     - ${e.rel} (${e.reason})`));
+    throw new Error('install: path type conflicts block writes');
+  }
+  if (existing.length) {
+    err(`Install aborted: ${existing.length} file(s) already exist in this project.`);
+    existing.slice(0, 20).forEach((e) => console.log('     - ' + e.rel));
+    if (existing.length > 20) console.log(`     ...and ${existing.length - 20} more.`);
     console.log('');
     info('To overwrite them, re-run with --force.');
     info('To keep your changes and only add missing files, run: npx nitm-ai-dev-toolkit patch');
     throw new Error('install: conflicting files exist (use --force to overwrite)');
   }
-  const { copied, skipped } = copyMissing(type, cwd, flags.force, flags.env);
-  ok(`Copied ${copied} file(s), skipped ${skipped} existing.`);
-  handoff(type, cwd, flags.env);
-  return { copied, skipped, conflicts: cf.length };
+  const copied = applyPlan(cwd, plan);
+  ok(`Copied ${copied} file(s), skipped ${counts.skip} existing.`);
+  printHandoff(flags.env, recordState(cwd, { type, env: flags.env, plan, selection, explicit, dryRun: false }));
+  return { copied, skipped: counts.skip, conflicts: 0, dryRun: false, planned: counts };
 }
 
 function cmdPatch(cwd, flags) {
   const type = detectType(cwd, flags);
+  const { selection, explicit } = resolveSelection(cwd, flags);
   // patch never overwrites existing files, even with --force (data-loss guard)
-  const { copied, skipped } = copyMissing(type, cwd, false, flags.env);
-  ok(`Ensured files present: ${copied} added, ${skipped} already there.`);
-  handoff(type, cwd, flags.env);
-  return { copied, skipped };
+  const plan = planFiles(type, cwd, { mode: 'patch', env: flags.env, selection });
+  const counts = countActions(plan);
+  const conflictEntries = plan.filter((e) => e.action === 'conflict');
+  const stale = findStale(cwd, type);
+
+  if (flags.dryRun) {
+    printPlan(plan);
+    printStale(stale);
+    printDryState(recordState(cwd, { type, env: flags.env, plan, selection, explicit, dryRun: true }));
+    if (conflictEntries.length) process.exitCode = 1;
+    return { copied: 0, skipped: counts.skip, conflicts: conflictEntries.length, stale, dryRun: true, planned: counts };
+  }
+  const copied = applyPlan(cwd, plan);
+  ok(`Ensured files present: ${copied} added, ${counts.skip} already there.`);
+  if (conflictEntries.length) {
+    err(`${conflictEntries.length} path(s) could not be written (blocked by a file or directory of another type):`);
+    conflictEntries.forEach((e) => console.log(`     - ${e.rel} (${e.reason})`));
+    process.exitCode = 1;
+  }
+  printStale(stale);
+  printHandoff(flags.env, recordState(cwd, { type, env: flags.env, plan, selection, explicit, dryRun: false }));
+  return { copied, skipped: counts.skip, conflicts: conflictEntries.length, stale, dryRun: false, planned: counts };
 }
 
 // Placeholders the agent fills per task or feature at runtime, so they are not bootstrap leftovers.
 const RUNTIME_PLACEHOLDERS = new Set(['ISSUE_ID', 'ISSUE_KEY', 'FEATURE_NAME', 'NAME']);
-// `templates/` ships blank forms whose placeholders are meant to stay until a feature is written.
-const PLACEHOLDER_EXEMPT_DIR = 'templates';
+// Placeholders are intentional in these: `templates/` and `docs/` ship blank forms and reference
+// docs; bootstrap*.md, constitution.md and create-skill.md document placeholder syntax.
+const PLACEHOLDER_EXEMPT_DIRS = ['templates', 'docs'];
+const PLACEHOLDER_EXEMPT_FILES = [/^bootstrap.*\.md$/, /^constitution\.md$/, /^create-skill\.md$/];
+
+function placeholderExempt(rel) {
+  const n = path.normalize(rel);
+  return PLACEHOLDER_EXEMPT_DIRS.includes(n.split(path.sep)[0])
+    || PLACEHOLDER_EXEMPT_FILES.some((re) => re.test(path.basename(n)));
+}
 
 function hasUnresolvedPlaceholder(content) {
   const names = content.match(/\{\{[A-Z][A-Z0-9_]*\}\}/g) || [];
@@ -252,7 +599,7 @@ function hasUnresolvedPlaceholder(content) {
 function scanPlaceholders(cwd, relFiles) {
   const found = [];
   for (const rel of relFiles) {
-    if (path.normalize(rel).split(path.sep)[0] === PLACEHOLDER_EXEMPT_DIR) continue;
+    if (placeholderExempt(rel)) continue;
     const p = path.join(cwd, rel);
     if (!fs.existsSync(p)) continue;
     try {
@@ -265,7 +612,10 @@ function scanPlaceholders(cwd, relFiles) {
 
 function cmdDoctor(cwd, flags) {
   const type = detectType(cwd, flags);
-  const files = scopeFiles(templateFiles(type), flags.env).map(installName);
+  const { selection, explicit } = resolveSelection(cwd, flags);
+  const files = scopeFiles(templateFiles(type), flags.env)
+    .filter((rel) => selectionKeeps(rel, selection))
+    .map(installName);
   const missingFiles = [];
   let present = 0;
   for (const rel of files) {
@@ -273,7 +623,11 @@ function cmdDoctor(cwd, flags) {
     else missingFiles.push(rel);
   }
   const placeholders = scanPlaceholders(cwd, files);
-  const result = { type, present, missingFiles, placeholders };
+  const version = toolkitVersionStatus(cwd);
+  const stale = findStale(cwd, type);
+  const customized = customizedOwned(cwd);
+  const result = { type, present, missingFiles, placeholders, version, stale, customized,
+    selection, selectionSource: explicit ? 'flags' : CONFIG_FILE };
 
   console.log('');
   if (missingFiles.length === 0) ok(`All ${present} template files present.`);
@@ -281,59 +635,175 @@ function cmdDoctor(cwd, flags) {
     warn(`${missingFiles.length} missing file(s):`);
     missingFiles.forEach((f) => console.log('     - ' + f));
   }
+  if (selection.exclude.length || selection.only.length) {
+    info(`Selection (${result.selectionSource}): exclude [${selection.exclude.join(', ')}], only [${selection.only.join(', ')}].`);
+  }
+  if (version.status === 'match') ok(`${VERSION_FILE} ${version.installed} matches toolkit ${version.package}.`);
+  else if (version.status === 'missing') warn(`${VERSION_FILE} is missing (toolkit ${version.package}). Run patch to record it.`);
+  else warn(`${VERSION_FILE} is ${version.installed}, toolkit is ${version.package}. Run upgrade or patch to record it.`);
   if (placeholders.length === 0) ok('No unresolved {{PLACEHOLDER}} values found.');
   else {
     warn(`${placeholders.length} file(s) still contain {{PLACEHOLDER}} values (AI handoff replaces these):`);
     placeholders.slice(0, 20).forEach((f) => console.log('     - ' + f));
     if (placeholders.length > 20) console.log(`     ...and ${placeholders.length - 20} more.`);
   }
+  printStale(stale);
+  if (customized.length) info(`${customized.length} toolkit-installed file(s) differ from the install record (your edits; kept).`);
   console.log('');
   info('Run your AI agent on .nitm/BOOTSTRAP.md to finish configuration, then re-run doctor.');
   return result;
 }
 
-// Upgrade runs the latest package in patch mode: missing files are added and existing
+// ---- Upgrade ----
+
+// Semver-style ordering: X-anything sorts below X. Prerelease identifiers compare per semver
+// (numeric identifiers numerically, below alphanumeric ones; a shorter set sorts first).
+function compareVersions(a, b) {
+  const split = (v) => {
+    const i = v.indexOf('-');
+    return { core: (i < 0 ? v : v.slice(0, i)).split('.').map(Number), pre: i < 0 ? null : v.slice(i + 1) };
+  };
+  const x = split(a);
+  const y = split(b);
+  for (let i = 0; i < 3; i++) {
+    if (x.core[i] !== y.core[i]) return x.core[i] - y.core[i];
+  }
+  if (x.pre === y.pre) return 0;
+  if (x.pre === null) return 1;
+  if (y.pre === null) return -1;
+  const ax = x.pre.split('.');
+  const ay = y.pre.split('.');
+  for (let i = 0; i < Math.max(ax.length, ay.length); i++) {
+    if (ax[i] === undefined) return -1;
+    if (ay[i] === undefined) return 1;
+    const nx = /^\d+$/.test(ax[i]);
+    const ny = /^\d+$/.test(ay[i]);
+    if (nx && ny) {
+      if (Number(ax[i]) !== Number(ay[i])) return Number(ax[i]) - Number(ay[i]);
+    } else if (nx !== ny) {
+      return nx ? -1 : 1;
+    } else if (ax[i] !== ay[i]) {
+      return ax[i] < ay[i] ? -1 : 1;
+    }
+  }
+  return 0;
+}
+
+function currentVersion() {
+  try { return packageVersion(); } catch (_) { return 'unknown'; }
+}
+
+// `upgrade [version]`, `upgrade nitm-ai-dev-toolkit@<version>` or `upgrade --version <version>`.
+// Returns undefined when no version was given (the latest published release is used).
+function parseUpgradeTarget(flags) {
+  const positional = (flags._ || []).slice(1);
+  if (positional.length > 1) throw new Error(`Unknown option for upgrade: ${positional[1]}`);
+  if (positional.length && flags.version !== undefined) {
+    throw new Error('Give the version once: as an argument or with --version');
+  }
+  let v = flags.version !== undefined ? flags.version : positional[0];
+  if (v === undefined) return undefined;
+  if (v.startsWith(PKG_NAME + '@')) v = v.slice(PKG_NAME.length + 1);
+  if (!VERSION_RE.test(v)) {
+    throw new Error(`Pin an exact version such as 5.0.1 (got "${v}"). Leave it out to use the latest published release.`);
+  }
+  return v;
+}
+
+// `spec` is only ever `nitm-ai-dev-toolkit` or `nitm-ai-dev-toolkit@<version>`, and the version is
+// checked by the anchored VERSION_RE before this runs (parseUpgradeTarget and resolveUpgradeVersion).
+// That makes the Windows shell path safe: npm.cmd needs a shell, and nothing reaching it can carry
+// shell metacharacters. Everywhere else the call uses argv with no shell.
+function npmQuery(spec, field) {
+  const args = ['view', spec, field];
+  const opts = { encoding: 'utf8', timeout: 60000, stdio: 'pipe' };
+  try {
+    if (process.platform === 'win32') return execFileSync('npm.cmd', args, { ...opts, shell: true });
+    return execFileSync('npm', args, opts);
+  } catch (_) {
+    throw new Error('Could not reach npm to resolve the version (are you online?).');
+  }
+}
+
+// Resolves the exact published version to install. Never returns a range or `latest`.
+function resolveUpgradeVersion(requested, npmView = npmQuery) {
+  // Validation comes first: no npm call may see a version that failed VERSION_RE.
+  if (requested) {
+    if (!VERSION_RE.test(requested)) throw new Error(`Pin an exact version such as 5.0.1 (got "${requested}").`);
+    const published = npmView(`${PKG_NAME}@${requested}`, 'version').split('\n')
+      .map((line) => line.trim().split(/\s+/).pop().replace(/^'|'$/g, ''));
+    if (!published.includes(requested)) throw new Error(`${PKG_NAME}@${requested} is not published on npm.`);
+    return requested;
+  }
+  const latest = npmView(PKG_NAME, 'dist-tags.latest').trim();
+  if (!VERSION_RE.test(latest)) throw new Error(`npm returned no usable latest version ("${latest}").`);
+  return latest;
+}
+
+// Upgrade runs the pinned package in patch mode: missing files are added and existing
 // (possibly customised) files are kept. Only an explicit --force reaches `install --force`.
-function upgradeArgs(flags) {
+function upgradeArgs(flags, version) {
+  if (!version) throw new Error('upgradeArgs needs a resolved, pinned version');
   const force = Boolean(flags && flags.force);
-  const args = ['--yes', 'nitm-ai-dev-toolkit@latest', force ? 'install' : 'patch'];
+  const args = ['--yes', `${PKG_NAME}@${version}`, force ? 'install' : 'patch'];
   if (force) args.push('--force');
   if (flags && flags.env) args.push('--env', flags.env);
+  if (flags && flags.exclude !== undefined) args.push('--exclude', flags.exclude.join(','));
+  if (flags && flags.only !== undefined) args.push('--only', flags.only.join(','));
+  if (flags && flags.dryRun) args.push('--dry-run');
   return args;
 }
 
-function cmdUpgrade(cwd, flags) {
-  let latest;
-  try {
-    latest = execSync('npm view nitm-ai-dev-toolkit version', { encoding: 'utf8', timeout: 60000, stdio: 'pipe' }).trim();
-  } catch (_) {
-    err('Could not reach npm to check for updates (are you online?).');
-    return;
+function cmdUpgrade(cwd, flags, deps = {}) {
+  const requested = parseUpgradeTarget(flags);
+  // Reads the effective selection first: a corrupt saved config or a combined --exclude/--only stops here.
+  const { selection, explicit } = resolveSelection(cwd, flags);
+  const target = resolveUpgradeVersion(requested, deps.npmView || npmQuery);
+  info(`Resolved ${PKG_NAME}@${target} (installed toolkit: ${currentVersion()}).`);
+  const selectionActive = selection.exclude.length > 0 || selection.only.length > 0;
+  if (flags.dryRun && compareVersions(target, DRY_RUN_UPGRADE_MIN) < 0) {
+    throw new Error(`--dry-run needs ${PKG_NAME} >= ${DRY_RUN_UPGRADE_MIN}; ${target} has no dry run and would write. Pin a newer version.`);
   }
-  let cur;
-  try {
-    cur = JSON.parse(fs.readFileSync(path.join(PKG_ROOT, 'package.json'), 'utf8')).version;
-  } catch (_) {
-    cur = 'unknown';
+  if (compareVersions(target, DRY_RUN_UPGRADE_MIN) < 0 && selectionActive) {
+    const saved = explicit ? 'the --exclude/--only you passed' : `the selection saved in ${CONFIG_FILE}`;
+    throw new Error(`${PKG_NAME}@${target} predates --exclude/--only and would ignore ${saved}. `
+      + `Pin ${DRY_RUN_UPGRADE_MIN} or later, or clear the selection with --exclude "" (and no --only).`);
   }
-  if (latest === cur) info(`Already on latest version (${cur}); refreshing missing files and the handoff.`);
-  else info(`New version available: ${latest} (current ${cur}).`);
-  if (flags && flags.force) {
-    warn('--force: existing files will be overwritten with the latest templates. Back up your customisations first.');
+  // An explicit empty selection clears the saved one. The pinned run cannot do this, so clear it here.
+  if (compareVersions(target, DRY_RUN_UPGRADE_MIN) < 0 && explicit && !flags.dryRun) {
+    const text = configText(selection);
+    if (writeState(path.join(cwd, CONFIG_FILE), text) === 'write') writeText(cwd, CONFIG_FILE, text);
+  }
+  if (flags.force) warn('--force: existing files will be overwritten with the latest templates. Back up your customisations first.');
+  else info('Adding missing files only; your existing files are kept. Pass --force to overwrite them.');
+  info(`Running pinned ${PKG_NAME}@${target}${flags.dryRun ? ' (dry run, nothing written)' : ''}...`);
+  const run = deps.spawn || spawnSync;
+  const r = run('npx', upgradeArgs(flags, target), { cwd, stdio: 'inherit', timeout: 120000 });
+  if (r.error) {
+    err('Upgrade failed: ' + r.error.message);
+    process.exitCode = 1;
+    return { version: target, status: null };
+  }
+  if (r.status === 0) {
+    ok(flags.dryRun ? 'Dry run complete; nothing was written.' : 'Upgrade complete. Hand off to your AI agent with .nitm/BOOTSTRAP.md to finish setup.');
+  } else if (flags.dryRun && r.status === 1) {
+    err('Upgrade dry run found conflicts (exit 1); nothing was written. Resolve them, then re-run.');
+    process.exitCode = 1;
   } else {
-    info('Adding missing files only; your existing files are kept. Pass --force to overwrite them.');
+    err('Upgrade failed.');
+    process.exitCode = 1;
   }
-  info('Upgrading via latest package...');
-  const r = spawnSync('npx', upgradeArgs(flags), { cwd, stdio: 'inherit', timeout: 120000 });
-  if (r.error) { err('Upgrade failed: ' + r.error.message); return; }
-  if (r.status === 0) ok('Upgrade complete. Hand off to your AI agent with .nitm/BOOTSTRAP.md to finish setup.');
-  else err('Upgrade failed.');
+  return { version: target, status: r.status };
 }
 
 function cmdOmoStarter(cwd, flags) {
   const sub = flags._[1];
   if (sub !== 'install') {
     err('Usage: nitm-ai-dev-toolkit omo-slim-starter install');
+    return;
+  }
+  if (flags.dryRun) {
+    info(`Dry run: would run \`npx --yes nitm-opencode-starter install\` in ${cwd}. Nothing was run.`);
     return;
   }
   info('Delegating to the published starter: npx nitm-opencode-starter install');
@@ -391,17 +861,23 @@ function parseFlags(argv) {
     else if (a === '--yes') flags.yes = true;
     else if (a === '--abandoned') flags.abandoned = true;
     else if (a === '--help' || a === '-h') flags.help = true;
-    else if (a === '--dir' || a === '--interval') {
+    else if (a === '--dir' || a === '--interval' || a === '--version') {
       const v = argv[++i];
       if (v === undefined || v.startsWith('--')) throw new Error(`${a} requires a value`);
       flags[a.slice(2)] = v;
-    } else if (a.startsWith('--dir=') || a.startsWith('--interval=')) {
+    } else if (a.startsWith('--dir=') || a.startsWith('--interval=') || a.startsWith('--version=')) {
       const eq = a.indexOf('=');
       const v = a.slice(eq + 1);
       if (!v) throw new Error(`${a.slice(0, eq)}= requires a value`);
       flags[a.slice(2, eq)] = v;
-    }
-    else if (a === '--env') {
+    } else if (a === '--exclude' || a === '--only') {
+      const v = argv[++i];
+      if (v === undefined || v.startsWith('--')) throw new Error(`${a} requires a value (e.g. ${a} factory,prisma)`);
+      flags[a.slice(2)] = splitGroups(v);
+    } else if (a.startsWith('--exclude=') || a.startsWith('--only=')) {
+      const eq = a.indexOf('=');
+      flags[a.slice(2, eq)] = splitGroups(a.slice(eq + 1));
+    } else if (a === '--env') {
       const v = argv[++i];
       if (v === undefined || v.startsWith('--')) throw new Error('--env requires a value (e.g. --env claude)');
       flags.env = v;
@@ -419,23 +895,28 @@ function usage() {
   console.log(`nitm-ai-dev-toolkit — scaffold AI agent config into any repo, then hand off to your AI agent.
 
 Usage:
-  npx nitm-ai-dev-toolkit install [--monorepo|--repo] [--env <claude|codex|copilot|cursor|opencode>] [--force]
+  npx nitm-ai-dev-toolkit install [--monorepo|--repo] [--env <claude|codex|copilot|cursor|opencode>] [--force] [--dry-run] [--exclude <groups>|--only <groups>]
       Scaffold AI config into the current repo (auto-detects repo vs monorepo),
       tailored to your harness, then hand off to your AI agent to run the bootstrap flow.
       If files already exist, install aborts (use --force to overwrite, or \`patch\` to add missing).
+      --dry-run lists adds, overwrites, skips and conflicts; writes nothing; exits 1 if there are conflicts.
 
-  npx nitm-ai-dev-toolkit patch [--monorepo|--repo] [--env <env>]
+  npx nitm-ai-dev-toolkit patch [--monorepo|--repo] [--env <env>] [--exclude <groups>|--only <groups>] [--dry-run]
       Add only missing template files (never overwrites existing ones), then
       re-emit the bootstrap handoff so your AI agent can finish configuration.
+      A given --exclude/--only is saved to .nitm/toolkit.json and used by later patch/doctor runs.
 
-  npx nitm-ai-dev-toolkit upgrade [--env <env>] [--force]
-      Upgrade to the latest published version. Like \`patch\`, adds missing files and
-      keeps your existing ones, then re-emits the bootstrap handoff. --force also
-      overwrites existing files with the latest templates (back up customisations first).
+  npx nitm-ai-dev-toolkit upgrade [version] [--env <env>] [--force] [--dry-run] [--exclude <groups>|--only <groups>]
+      Upgrade to a pinned version: the given one (\`upgrade 5.0.1\`, \`upgrade nitm-ai-dev-toolkit@5.0.1\`,
+      or \`--version 5.0.1\`) or the latest published release, resolved and printed before anything runs.
+      Like \`patch\`, adds missing files and keeps your existing ones, then re-emits the bootstrap handoff.
+      --force also overwrites existing files with the latest templates (back up customisations first).
+      --dry-run runs the pinned version's dry run (needs ${DRY_RUN_UPGRADE_MIN} or newer).
 
   npx nitm-ai-dev-toolkit doctor [--monorepo|--repo] [--env <env>]
       Inspect the current install: missing files, unresolved {{PLACEHOLDER}}
-       values.
+       values, .toolkit-version against the toolkit version, and stale toolkit files
+       (reported, never deleted).
 
   npx nitm-ai-dev-toolkit omo-slim-starter install
       Run \`npx nitm-opencode-starter install\` to scaffold the oh-my-opencode-slim
@@ -473,9 +954,25 @@ Options:
                Ask your agent to read and follow .nitm/BOOTSTRAP.md.
                Other harnesses also have bootstrap commands; Codex uses the handoff
                file directly (no native /bootstrap command is provided).
+  --exclude <groups>
+               Comma-separated groups to leave out (install, patch, upgrade, doctor).
+               Harnesses: claude | codex | copilot | cursor | opencode.
+               Features: factory | prisma | bkt-cli | gh-cli | glab-cli | acli | linear-cli.
+               Harness groups keep the shared files (AGENTS.md, docs/, hooks/, shared skills
+               and snippets). Feature groups apply everywhere, including factory/ and shared
+               skills such as .agents/skills/gh-cli. Pass --exclude "" to clear the saved selection.
+               Cannot be combined with --only.
+  --only <groups>
+               Keep only the listed groups. Untagged shared files are still kept, as with --exclude.
+               Same group names as --exclude. Cannot be combined with --exclude.
   --monorepo   Force monorepo template
   --repo       Force single-repo template
   --force      Overwrite existing files (install, upgrade). patch never overwrites
+  --dry-run    install/patch/upgrade: list what would change, write nothing.
+               omo-slim-starter install: print the command only
+               factory archive/prune: list only, change nothing
+  --version <v>
+               upgrade: pinned version to install (exact, e.g. 5.0.1)
   --dir <path> factory: jobs directory (default: ./factory/jobs)
   --interval <ms>
                factory watch: refresh interval (default: 2000, minimum: 100)
@@ -483,7 +980,6 @@ Options:
                factory archive: include every closed job, not just those older than 7 days
                factory prune: include every merged job, not just those older than 7 days
   --abandoned  factory prune: also delete abandoned jobs (default: merged only)
-  --dry-run    factory archive/prune: list only, change nothing
   --yes        factory prune: actually delete (without it, prune only lists)
   -h, --help   Show this help
 `);
@@ -522,19 +1018,33 @@ module.exports = {
   scopeFiles,
   templateFiles,
   installName,
-  copyMissing,
+  planFiles,
+  conflicts,
   scanPlaceholders,
   envHeader,
-  conflicts,
   parseFlags,
+  selectionKeeps,
+  normalizeSelection,
+  findStale,
+  toolkitVersionStatus,
+  readManifest,
   cmdInstall,
   cmdPatch,
   cmdDoctor,
   cmdUpgrade,
   upgradeArgs,
+  parseUpgradeTarget,
+  resolveUpgradeVersion,
+  compareVersions,
+  DRY_RUN_UPGRADE_MIN,
   cmdOmoStarter,
   cmdFactory,
   ENV_DIRS,
   SHARED_ROOT,
   SHARED_DIRS,
+  KNOWN_HISTORICAL,
+  VERSION_FILE,
+  HANDOFF_FILE,
+  CONFIG_FILE,
+  MANIFEST_FILE,
 };

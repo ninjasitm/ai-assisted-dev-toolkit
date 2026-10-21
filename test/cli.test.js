@@ -41,9 +41,11 @@ function assertOpenCodeReferences(d, type) {
     let linkedSources = 0;
     for (const rel of wrappers) {
       const content = fs.readFileSync(path.join(d, rel), 'utf8');
-      const imports = [...content.matchAll(/^@(\.claude\/(?:agents|prompt|rules)-snippets\/[^\s]+)$/gm)];
-      linkedSources += imports.length;
-      for (const [, target] of imports) {
+      // OpenCode V2 does not expand `@path` imports: wrappers use the explicit "Read and follow" form.
+      assert.doesNotMatch(content, /@\.claude\//, `${rel}: bare @.claude/ import`);
+      const refs = [...content.matchAll(/Read and follow `(\.claude\/[^`\s]+)`/g)];
+      linkedSources += refs.length;
+      for (const [, target] of refs) {
         assert.ok(fs.readFileSync(path.join(d, target), 'utf8').length > 0, `${rel}: ${target} readable`);
       }
     }
@@ -56,7 +58,8 @@ function assertOpenCodeReferences(d, type) {
   }
   const config = JSON.parse(fs.readFileSync(path.join(d, '.opencode/opencode.jsonc'), 'utf8')
     .replace(/^\s*\/\/.*$/gm, ''));
-  assert.ok(config.plugins.includes('@dietrichgebert/ponytail@4.12.0'), 'upstream Ponytail registered');
+  assert.equal(config.plugins.some((plugin) => plugin.includes('ponytail')), false,
+    'Ponytail is installed globally by the operator, not registered in the template');
   for (const extension of ['js', 'mjs', 'ts']) {
     assert.equal(fs.existsSync(path.join(d, '.opencode/plugins', `ponytail.${extension}`)), false);
   }
@@ -233,16 +236,21 @@ test('patch: ensures files present and re-emits handoff', () => {
 });
 
 test('upgrade: default args use patch (add-missing only), never install --force', () => {
-  assert.deepEqual(cli.upgradeArgs({}), ['--yes', 'nitm-ai-dev-toolkit@latest', 'patch']);
-  assert.deepEqual(cli.upgradeArgs({ env: 'cursor' }),
-    ['--yes', 'nitm-ai-dev-toolkit@latest', 'patch', '--env', 'cursor']);
+  assert.deepEqual(cli.upgradeArgs({}, '5.0.1'), ['--yes', 'nitm-ai-dev-toolkit@5.0.1', 'patch']);
+  assert.deepEqual(cli.upgradeArgs({ env: 'cursor' }, '5.0.1'),
+    ['--yes', 'nitm-ai-dev-toolkit@5.0.1', 'patch', '--env', 'cursor']);
 });
 
 test('upgrade: only an explicit --force reaches install --force', () => {
-  assert.deepEqual(cli.upgradeArgs({ force: true }),
-    ['--yes', 'nitm-ai-dev-toolkit@latest', 'install', '--force']);
-  assert.deepEqual(cli.upgradeArgs({ force: true, env: 'opencode' }),
-    ['--yes', 'nitm-ai-dev-toolkit@latest', 'install', '--force', '--env', 'opencode']);
+  assert.deepEqual(cli.upgradeArgs({ force: true }, '5.0.1'),
+    ['--yes', 'nitm-ai-dev-toolkit@5.0.1', 'install', '--force']);
+  assert.deepEqual(cli.upgradeArgs({ force: true, env: 'opencode' }, '5.0.1'),
+    ['--yes', 'nitm-ai-dev-toolkit@5.0.1', 'install', '--force', '--env', 'opencode']);
+});
+
+test('upgrade: never runs an unpinned package spec', () => {
+  assert.throws(() => cli.upgradeArgs({}), /pinned version/);
+  assert.ok(!cli.upgradeArgs({ force: true, dryRun: true }, '5.0.1').some((a) => a.includes('@latest')));
 });
 
 test('scanPlaceholders: matches digits in names', () => {
@@ -440,7 +448,8 @@ for (const type of ['repo', 'monorepo']) {
     captureOutput(() => cli.cmdInstall(d, { [type]: true, force: true, env: 'opencode' }));
     const config = JSON.parse(fs.readFileSync(path.join(d, '.opencode/opencode.jsonc'), 'utf8')
       .replace(/^\s*\/\/.*$/gm, ''));
-    assert.ok(config.plugins.includes('@dietrichgebert/ponytail@4.12.0'));
+    assert.equal(config.plugins.some((plugin) => plugin.includes('ponytail')), false,
+      'install must not add Ponytail to project config');
     for (const [file, content] of Object.entries(plugins)) {
       assert.equal(fs.readFileSync(path.join(pluginDir, file), 'utf8'), content,
         `${file} must not be deleted automatically by install --force`);
