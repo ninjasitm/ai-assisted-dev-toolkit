@@ -76,6 +76,42 @@ const HARNESS_OWNED = {
 // test/data/ponytail-3.0.23.mjs.fixture holds that exact content.
 const KNOWN_HISTORICAL = {
   '.opencode/plugins/ponytail.mjs': ['3ca6fe6e560da71109af7e40ed04ca47aa22219e4c9edf674bf895acadce8605'],
+  // factory-* agents and their snippets, removed in 5.1.0 (repo and monorepo versions of each file).
+  '.claude/agents/factory-spec-writer.agent.md': ['7d12cd197d71cd52d31d4e17f756abd984c012c786cff8c23465b637e2c1cb30'],
+  '.cursor/agents/factory-spec-writer.agent.md': ['03c70de3a9b570972ff14e5dcd946b22948fb216e075452df46ccd4f4bd457cf'],
+  '.github/agents/factory-spec-writer.agent.md': ['76f87fe65a7a552f4645d67b375c464943fe2d92bcbfac4a91d8880cb726b4b2'],
+  '.opencode/agents/factory-spec-writer.md': ['591ba39990f2037f0093b2aaf5a178c269c5b4d723a8dcf61a6a3cbb350ce1cc'],
+  '.claude/agents-snippets/factory-spec-writer.md': ['cdb34e0195981008c0962df78bcdbe2c53e04ef930e0d1d456e02162d4553528', '4644730e83f4ae5eb7b5b8b78021cb9cd9db81bdbc32fcfb745251a8326343b0'],
+  '.claude/agents/factory-builder.agent.md': ['8cc3434f6ee7e1a24098f15428f0810bfe0421288992b1bf4783d4304e0ee999'],
+  '.cursor/agents/factory-builder.agent.md': ['4e14b4588baf99bc98437bf85ce3fc67bf94a30fa0243c7e7cf67c716e75a852'],
+  '.github/agents/factory-builder.agent.md': ['1f7998713df8f5163ea231ce37103cd8be5f757ffa8b8145888dbc889a202807'],
+  '.opencode/agents/factory-builder.md': ['d35fde702d4e8f3876f5f3bbe3b1dd5c16b0f20b375a9b6c6ad0508e0a8b773e'],
+  '.claude/agents-snippets/factory-builder.md': ['08b757399ebb72b57df279cd47a9a681e285e9615151bc6354b58ceab12f45a3', '5526e25aee44ebcce73c868a65ad61221b63575466eb25f05c1f98cce5c1c36b'],
+  '.claude/agents/factory-reviewer-code.agent.md': ['b61ff8ec33b5f0fc9890046e15d6e0886d45e9a472602e75d362537a4ef8f181'],
+  '.cursor/agents/factory-reviewer-code.agent.md': ['303e314cdeb6637e6d76adc257a65095a14ff7b578f7dc8e653ccb804ce1c4ea'],
+  '.github/agents/factory-reviewer-code.agent.md': ['cd729889637f543d79d4daf9e09df07633ff66835c0412dddb5443a729bdd278'],
+  '.opencode/agents/factory-reviewer-code.md': ['bbe16860782736a8389dfb94647dfc4fb0cae1ad46617d34f4e896df29d73489'],
+  '.claude/agents-snippets/factory-reviewer-code.md': ['92a1726bdec0d94222b08654fa8db481e1710163fd06f439019ab737bdae55c8', '44097bf782912e34eb1d0946cb9ed42be8753fea13036db8edcbb9524b7be8b2'],
+  '.claude/agents/factory-reviewer-security.agent.md': ['7685bb4a2433c7069bdf6f48b7264f46febfe905cd0a8315dd7cefeae2d77add'],
+  '.cursor/agents/factory-reviewer-security.agent.md': ['8bfce3dfbaab8d4a9d7d2b9ec2fd067214028bd8578a53af3ae0933898b0cb2e'],
+  '.github/agents/factory-reviewer-security.agent.md': ['96f0e8697dabb0567b67426214809de870e06df30c1058a4753ac3bf13cff456'],
+  '.opencode/agents/factory-reviewer-security.md': ['55895e193aec20ffcb42a7c12553116f777c91db97e107f240ab15db0d85a7c0'],
+  '.claude/agents-snippets/factory-reviewer-security.md': ['8a4c5a411e47d5b1e50b18d40d177e931cc6bf20a96dfb4286a39719f863b37d'],
+  '.claude/agents/factory-reviewer-ux.agent.md': ['4ff8769a04fcfee2214243b5f1099e69f8fefc8760261321c1cbeb9ab796cb85'],
+  '.cursor/agents/factory-reviewer-ux.agent.md': ['00155aabea522cfa0f20a2c03d194e374958130ec8fc8bb88210ab6f2185fcfa'],
+  '.github/agents/factory-reviewer-ux.agent.md': ['2965a81ebf7d455e07c9270fc5066480e34c8168c552d0fab6602b826caaed8d'],
+  '.opencode/agents/factory-reviewer-ux.md': ['7175b4b5ca713a8b15c0909c84eb2bb6e29630ffeb90157f9e2df9b6a62a6649'],
+  '.claude/agents-snippets/factory-reviewer-ux.md': ['a16b188d275f3fba1527b3ef510f61ea3bada11594488720146a8560b17efb98', '6e114305e5d18b284d7f9ececa6b64d6f06c5a272ec2651dcdaea74e81e95554'],
+  '.claude/agents/factory-reviewer-ui.agent.md': ['1107289a1429c795a7c9a8c16426692ca62593483c0ff8b6863a96de166f1cfc'],
+  '.cursor/agents/factory-reviewer-ui.agent.md': ['388b66c8368d642ccbdcb35c55a0c994d510d85b9c04b3f926806d0c1bf824de'],
+  '.github/agents/factory-reviewer-ui.agent.md': ['97aed62c6716fa96834985704dc0e34850842cbd92ceaa987acd70f42769e3dc'],
+  '.opencode/agents/factory-reviewer-ui.md': ['b1e1a5544df1cdd54fedf0a65fd54007600e29ec54a423055858780b363c6d60'],
+  '.claude/agents-snippets/factory-reviewer-ui.md': ['7399863904241ab875cfb7862c683b1135eb4f8027a4a422e377b016007f7bf5', '0142ec37dc2306320d613b58505c31852c02f502b80c6070ff72b5eb77d8b2e1'],
+  '.claude/agents/factory-approver.agent.md': ['2de2420de55a72268f24672a92a4df0d78e133b14a9ccf62ab4e2b0b8f1c090c'],
+  '.cursor/agents/factory-approver.agent.md': ['5bc3df10f0784804bcd54fe4a3de60c6116c55d34eb85bc5be0f1417613bc25c'],
+  '.github/agents/factory-approver.agent.md': ['2a061b34802eb9b5396b76d139bbea5dd21dd89b3e5af06cf09c53c7f6897d94'],
+  '.opencode/agents/factory-approver.md': ['62dbfb689025bf79a2e8f86f7a5afb52a73e07e677ff384d26301d494c3ba21f'],
+  '.claude/agents-snippets/factory-approver.md': ['cacf515a661d25120824d38a81ef2a5753c3bfc5fce8732728cbdd394dda6857'],
 };
 
 // First release with --dry-run, --exclude and --only. `upgrade` refuses a dry run below it (older
@@ -185,7 +221,7 @@ function harnessOf(rel) {
 }
 
 // Feature groups a file belongs to: a path segment or its file stem equals the group name
-// (factory/, .agents/skills/gh-cli/, prisma-migrations.md, factory-builder.md).
+// (factory/, .agents/skills/gh-cli/, prisma-migrations.md).
 function featuresOf(rel) {
   const n = path.normalize(rel);
   const segments = n.split(path.sep).map((s) => s.replace(/^\./, ''));

@@ -263,29 +263,24 @@ echo ""
 echo "=== Factory Parity ==="
 echo ""
 
-# Adapted files (SKILL.md, spec-writer/builder/reviewer-code/reviewer-ux/reviewer-ui
-# snippets, factory/README.md) differ by design and are intentionally not checked.
-for agent in spec-writer builder reviewer-code reviewer-security reviewer-ux reviewer-ui approver; do
-  check_identical "claude-agent: factory-$agent repo ↔ monorepo" \
-    "src/repo/.claude/agents/factory-$agent.agent.md" \
-    "src/monorepo/.claude/agents/factory-$agent.agent.md"
-  check_identical "cursor-agent: factory-$agent repo ↔ monorepo" \
-    "src/repo/.cursor/agents/factory-$agent.agent.md" \
-    "src/monorepo/.cursor/agents/factory-$agent.agent.md"
-  check_identical "github-agent: factory-$agent repo ↔ monorepo" \
-    "src/repo/.github/agents/factory-$agent.agent.md" \
-    "src/monorepo/.github/agents/factory-$agent.agent.md"
-  check_identical "opencode-agent: factory-$agent repo ↔ monorepo" \
-    "src/repo/.opencode/agents/factory-$agent.md" \
-    "src/monorepo/.opencode/agents/factory-$agent.md"
+# Role briefs are adapted per template (spec, build, review-code, review-ux and review-ui
+# differ), so those only need to exist in both. review-security and approve are identical.
+for role in spec build review-code review-security review-ux review-ui approve; do
+  for layout in repo monorepo; do
+    if [[ ! -f "src/$layout/.agents/skills/factory/roles/$role.md" ]]; then
+      printf "${RED}MISSING${NC} src/%s/.agents/skills/factory/roles/%s.md\n" "$layout" "$role"
+      ((errors += 1))
+    fi
+  done
 done
+check_identical "role brief: review-security repo ↔ monorepo" \
+  "src/repo/.agents/skills/factory/roles/review-security.md" \
+  "src/monorepo/.agents/skills/factory/roles/review-security.md"
+check_identical "role brief: approve repo ↔ monorepo" \
+  "src/repo/.agents/skills/factory/roles/approve.md" \
+  "src/monorepo/.agents/skills/factory/roles/approve.md"
 
-for snippet in approver reviewer-security; do
-  check_identical "agents-snippet: factory-$snippet repo ↔ monorepo" \
-    "src/repo/.claude/agents-snippets/factory-$snippet.md" \
-    "src/monorepo/.claude/agents-snippets/factory-$snippet.md"
-done
-
+# Adapted files (SKILL.md, role briefs, factory/README.md) differ by design and are only checked above.
 check_identical "claude-command: factory repo ↔ monorepo" \
   "src/repo/.claude/commands/factory.md" "src/monorepo/.claude/commands/factory.md"
 check_identical "prompt-snippet: factory repo ↔ monorepo" \

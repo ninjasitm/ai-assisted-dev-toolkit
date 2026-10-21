@@ -11,14 +11,14 @@ argument-hint: "[--in-place] <feature request> | start [--in-place] <request | K
 
 | Agent | When to use |
 |-------|-------------|
-| `factory-spec-writer` | Spec stage (`spec` mode) writes `spec.md`; plan stage (`plan` mode) writes `plan.md` and `tasks.md` |
-| `factory-builder` | Build, repair, and rework: writes `build.md` in the job folder; its code goes in the build location |
-| `factory-reviewer-code` | Review round, `code` lens |
-| `factory-reviewer-security` | Review round, `security` lens |
-| `factory-reviewer-ux` | Review round, `ux` lens (opt-in) |
-| `factory-reviewer-ui` | Review round, `ui` lens (opt-in) |
-| `factory-approver` | Approval gate: writes `decision.md` |
+| `planner` | Spec writer. Spec stage (`spec` mode) writes `spec.md`; plan stage (`plan` mode) writes `plan.md` and `tasks.md`. Brief: `.agents/skills/factory/roles/spec.md` |
+| `implementer` | Builder. Build, repair, and rework: writes `build.md` in the job folder; its code goes in the build location. Brief: `.agents/skills/factory/roles/build.md` |
+| `reviewer` | Code reviewer. Review round, `code` lens. Brief: `.agents/skills/factory/roles/review-code.md` |
+| `reviewer` | Security reviewer, fresh context. Review round, `security` lens. Brief: `.agents/skills/factory/roles/review-security.md` |
+| `reviewer` | UX reviewer. Review round, `ux` lens (opt-in). Brief: `.agents/skills/factory/roles/review-ux.md` |
+| `reviewer` | UI reviewer. Review round, `ui` lens (opt-in). Brief: `.agents/skills/factory/roles/review-ui.md` |
+| `reviewer` | Approver, fresh context. Approval gate: returns the decision, which the orchestrator saves as `decision.md`. Brief: `.agents/skills/factory/roles/approve.md` |
 
-Dispatch each agent by its kebab-case name, as in the first column. Copilot may show a display name; pick the agent with that name.
+Dispatch each native agent by the name in the first column, and tell it to read the brief in the last column first. Reviewers and the approver return their report, and the orchestrator saves it. Copilot may show a display name; pick the agent with that name.
 
 Follow the prompt defined in [.claude/prompt-snippets/factory.md](../prompt-snippets/factory.md).

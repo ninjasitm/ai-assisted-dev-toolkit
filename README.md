@@ -222,7 +222,7 @@ For existing targets, back up and obtain approval before removing only known obs
 
 | Setting | Native V2 form |
 | --- | --- |
-| Agents | `agents`, JSON `system` (Markdown body for file agents), `request.body.temperature`, model `provider/model#variant` |
+| Agents | `agents`, JSON `system` (Markdown body for file agents), model `provider/model#variant` |
 | Permissions | Ordered `permissions` with `action`, `resource`, `effect`; `shell`/`subagent` actions; last match wins |
 | Commands | `commands`; delegated commands use `subagent` |
 | Plugins | `plugins`; options use `{ "package": "…", "options": {} }` |
@@ -231,7 +231,7 @@ For existing targets, back up and obtain approval before removing only known obs
 
 Follow official V2 [migration](https://opencode.ai/v2/docs/migrate-v1), [config](https://opencode.ai/v2/docs/config), [agents](https://opencode.ai/v2/docs/agents), and [plugins](https://opencode.ai/v2/docs/build/plugins) docs. The published `https://opencode.ai/config.json` schema may describe V1; it is not native V2 validation authority.
 
-**Runtime limits:** Ambient `AGENTS.md` works. Config `instructions` entries load only when the runtime injects them (OpenChamber does; other hosts may not), so do not rely on them: write explicit "Read and follow" wrappers regardless. `@refs` are ordinary text, not automatic attachments: agents must read referenced snippets explicitly. `request.body.temperature` remains in config, but the current runner does not send it. Plugin/runtime integration has not been tested. Preserve `lsp: true`, but V2 currently exposes no LSP tools or diagnostics: use project lint/typecheck/compiler commands.
+**Runtime limits:** Ambient `AGENTS.md` works. Config `instructions` entries load only when the runtime injects them (OpenChamber does; other hosts may not), so do not rely on them: write explicit "Read and follow" wrappers regardless. `@refs` are ordinary text, not automatic attachments: agents must read referenced snippets explicitly. Do not set a temperature; the current runner does not send one. Plugin/runtime integration has not been tested. Preserve `lsp: true`, but V2 currently exposes no LSP tools or diagnostics: use project lint/typecheck/compiler commands.
 
 `--env opencode` includes minimal shared references for wrappers and AGENTS-linked standards without activating other harnesses. Merge, don't clobber: back up V1, preserve models/providers and user/global plugins, and ask before changes. Native-converted files are **incompatible with V1**. Activate on the next run/restart, then check behavior with the installed V2 runtime. `doctor` checks scaffold files/placeholders, not runtime behavior; do not substitute a V1 API/schema fetch or claim checks that were not run.
 
@@ -318,7 +318,7 @@ Templates use `{{PLACEHOLDER}}` syntax for values you need to customize. The boo
 
 ### Factory Placeholders
 
-Used by the opt-in factory (`.agents/skills/factory/SKILL.md` and `.claude/agents-snippets/factory-*.md`).
+Used by the opt-in factory (`.agents/skills/factory/SKILL.md` and `.agents/skills/factory/roles/*.md`).
 
 | Placeholder                 | Description                                                                                 | Example                  |
 | --------------------------- | ------------------------------------------------------------------------------------------- | ------------------------ |
@@ -660,7 +660,7 @@ The factory is an opt-in pipeline for feature-sized work. One orchestrator takes
 
 It runs alongside Feature Builder and TDD and does not replace them. Nothing runs until you invoke `/factory`. Quick fixes stay direct.
 
-- **Agents:** `factory-spec-writer`, `factory-builder`, `factory-reviewer-code`, `factory-reviewer-security`, `factory-reviewer-ux`, `factory-reviewer-ui`, and `factory-approver`. Wrappers ship for Claude Code, GitHub Copilot, Cursor, and OpenCode. Codex uses the orchestrator skill only.
+- **Agents:** `planner` (spec and plan), `implementer` (build, repair, and rework), and `reviewer` (the code, security, ux, and ui lenses, and approval, each in the mode its dispatch names). The native agents ship for Claude Code, GitHub Copilot, Cursor, and OpenCode. Each role's Factory rules are in `.agents/skills/factory/roles/`. Codex runs those briefs directly.
 - **Setup and reference:** [`src/repo/factory/README.md`](src/repo/factory/README.md) (the monorepo copy is in `src/monorepo/factory/`). The installer copies `factory/` into your project.
 
 | Command | What it does |

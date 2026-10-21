@@ -593,3 +593,48 @@ test('regression: install without --force leaves existing file content unchanged
   assert.throws(() => run(() => cli.cmdInstall(d, { repo: true })), /conflicting files/);
   assert.equal(fs.readFileSync(path.join(d, 'AGENTS.md'), 'utf8'), 'my own agents file\n');
 });
+
+// ---- removed factory-* agents (5.1.0): flagged as stale, never deleted ----
+
+const FACTORY_FIXTURE = path.join(__dirname, 'data', 'factory-builder.agent.md');
+const REMOVED_FACTORY = ['spec-writer', 'builder', 'reviewer-code', 'reviewer-security', 'reviewer-ux', 'reviewer-ui', 'approver']
+  .flatMap(name => [
+    `.claude/agents/factory-${name}.agent.md`,
+    `.cursor/agents/factory-${name}.agent.md`,
+    `.github/agents/factory-${name}.agent.md`,
+    `.opencode/agents/factory-${name}.md`,
+    `.claude/agents-snippets/factory-${name}.md`,
+  ]);
+
+test('removed factory-* files are known historical files, one set per harness path', () => {
+  assert.equal(REMOVED_FACTORY.length, 35);
+  for (const key of REMOVED_FACTORY) assert.ok(cli.KNOWN_HISTORICAL[key], `${key} is known historical`);
+  assert.equal(Object.keys(cli.KNOWN_HISTORICAL).filter(key => key.includes('factory-')).length, 35);
+});
+
+test('removed factory-* files are not shipped by either template', () => {
+  for (const type of ['repo', 'monorepo']) {
+    for (const key of REMOVED_FACTORY) {
+      assert.ok(!fs.existsSync(path.join(SRC, type, ...key.split('/'))), `${type}/${key} must not ship`);
+    }
+  }
+});
+
+test('stale: a leftover factory-builder agent from 5.0.0 is reported by doctor and patch, never deleted', (t) => {
+  const d = tmp(t);
+  run(() => cli.cmdInstall(d, { repo: true }));
+  const rel = '.claude/agents/factory-builder.agent.md';
+  const leftover = path.join(d, ...rel.split('/'));
+  fs.mkdirSync(path.dirname(leftover), { recursive: true });
+  fs.copyFileSync(FACTORY_FIXTURE, leftover);
+  assert.ok(cli.KNOWN_HISTORICAL[rel].includes(sha(FACTORY_FIXTURE)), 'fixture matches the 5.0.0 hash');
+
+  const doc = run(() => cli.cmdDoctor(d, { repo: true }));
+  assert.deepEqual(doc.result.stale, [path.join(...rel.split('/'))]);
+  assert.match(doc.out, /stale toolkit file/);
+
+  const patched = run(() => cli.cmdPatch(d, { repo: true }));
+  assert.deepEqual(patched.result.stale, [path.join(...rel.split('/'))]);
+  assert.equal(patched.exitCode, 0);
+  assert.ok(fs.existsSync(leftover), 'stale file is left in place');
+});
