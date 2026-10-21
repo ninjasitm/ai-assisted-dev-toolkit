@@ -1,9 +1,6 @@
 ---
 description: "Write failing tests that define expected behavior. Part of the TDD red-green-refactor cycle."
 mode: subagent
-request:
-  body:
-    temperature: 0.1
 permissions:
   - action: edit
     resource: "*"

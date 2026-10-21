@@ -1,9 +1,6 @@
 ---
 description: "Design APIs, databases, and server-side architecture. Use for scalable backend systems, data modeling, caching strategies, system design, and infrastructure decisions."
 mode: subagent
-request:
-  body:
-    temperature: 0.1
 permissions:
   - action: edit
     resource: "*"

@@ -1,9 +1,6 @@
 ---
 description: "Implement code changes for a specific task. Follow TDD, write tests alongside code, and self-review before reporting completion."
 mode: subagent
-request:
-  body:
-    temperature: 0.1
 permissions:
   - action: edit
     resource: "*"
