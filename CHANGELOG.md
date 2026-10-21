@@ -9,6 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [5.1.0] - 2026-10-21
 
+### Changed
+
+- Factory runs on the native `planner`, `implementer`, and `reviewer` agents instead of seven `factory-*` agents. Each role's Factory rules (outputs, evidence, verdict format, escalation triggers) moved into role briefs in `.agents/skills/factory/roles/`. Reviewers and the approver return their report, and the orchestrator saves it as `round-<N>/review-<lens>.md` or `decision.md`. The gates, verdicts, approval rules, and rework flow are unchanged.
+- `doctor` lists the removed `factory-*` files as stale toolkit files (matched by path and content hash) and never deletes them.
+
+### Removed
+
+- The seven `factory-*` agents (spec writer, builder, code, security, ux, and ui reviewers, approver) and their `.claude/agents-snippets/` prompts, from `.claude/agents/`, `.cursor/agents/`, `.github/agents/`, `.opencode/agents/`, and `.claude/agents-snippets/` in both templates.
+- `request.body.temperature` from every OpenCode agent file, and the AGENTS.md guidance that set it. The current OpenCode runner does not send it.
+
+### Migration
+
+- Run `patch` in each installed project, then run `doctor`. It lists the old `factory-*` files as stale. Check each listed file, then delete it by hand. Doctor does not delete anything.
+
+## [5.0.1] - 2026-10-21
+
 ### Added
 
 - `patch --dry-run`, persisted `--exclude`/`--only` selections in `.nitm/toolkit.json`, version pinning for `upgrade <version>`/`--version`, and `.toolkit-version` plus `.nitm/manifest.json` state tracking. `doctor` now reports version mismatches, stale files without deleting them, and supports a placeholder allowlist.
@@ -24,21 +40,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The template no longer registers the Ponytail OpenCode plugin (`@dietrichgebert/ponytail`); the operator installs it globally. Bootstrap may check for it and tell the operator to install it globally, but never adds it to project config.
 - `ponytail-review` permits `git diff`, `git status`, and `git show`. Document its Claude hooks as plugin-only.
 - Backfilled 4.0.1 and 3.0.x release notes.
-- Factory runs on the native `planner`, `implementer`, and `reviewer` agents instead of seven `factory-*` agents. Each role's Factory rules (outputs, evidence, verdict format, escalation triggers) moved into role briefs in `.agents/skills/factory/roles/`. Reviewers and the approver return their report, and the orchestrator saves it as `round-<N>/review-<lens>.md` or `decision.md`. The gates, verdicts, approval rules, and rework flow are unchanged.
-- `doctor` lists the removed `factory-*` files as stale toolkit files (matched by path and content hash) and never deletes them.
 
 ### Fixed
 
 - Removed stale "publishing not executed" and "4.x" wording.
-
-### Removed
-
-- The seven `factory-*` agents (spec writer, builder, code, security, ux, and ui reviewers, approver) and their `.claude/agents-snippets/` prompts, from `.claude/agents/`, `.cursor/agents/`, `.github/agents/`, `.opencode/agents/`, and `.claude/agents-snippets/` in both templates.
-- `request.body.temperature` from every OpenCode agent file, and the AGENTS.md guidance that set it. The current OpenCode runner does not send it.
-
-### Migration
-
-- Run `patch` in each installed project, then run `doctor`. It lists the old `factory-*` files as stale. Check each listed file, then delete it by hand. Doctor does not delete anything.
 
 ## [5.0.0]
 
