@@ -169,11 +169,11 @@ check_identical "cursor-rule: ponytail repo ↔ monorepo" \
   "src/monorepo/.cursor/rules/ponytail.mdc"
 
 for config in src/repo/.opencode/opencode.jsonc src/monorepo/.opencode/opencode.jsonc; do
-  if grep -Fq '"@dietrichgebert/ponytail@4.12.0"' "$config"; then
-    printf "${GREEN}  OK${NC}  upstream ponytail plugin: %s\n" "$config"
-  else
-    printf "${RED}MISSING${NC} upstream ponytail plugin: %s\n" "$config"
+  if grep -Fq 'ponytail' "$config"; then
+    printf "${RED}FOUND${NC} ponytail plugin registered in template (operator installs it globally): %s\n" "$config"
     ((errors += 1))
+  else
+    printf "${GREEN}  OK${NC}  ponytail plugin not registered: %s\n" "$config"
   fi
 done
 

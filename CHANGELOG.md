@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `patch --dry-run`, persisted `--exclude`/`--only` selections in `.nitm/toolkit.json`, version pinning for `upgrade <version>`/`--version`, and `.toolkit-version` plus `.nitm/manifest.json` state tracking. `doctor` now reports version mismatches, stale files without deleting them, and supports a placeholder allowlist.
+- Added `test/opencode-wrappers.test.js` to verify explicit "Read and follow" instructions in OpenCode wrappers.
+- Factory configuration now supports `{{FACTORY_FEATURE_PATHS}}` and `{{MERGE_MODE}}` (`local` or `push-mr`), per-workspace tests during monorepo merges, and `factory/worktree-bootstrap.md`.
+
+### Changed
+
+- `bootstrap-patch` resolves versions from `.toolkit-version`, tries `npm pack` with a no-`v` git-tag fallback, and gates supported OpenCode versions without a hard-coded major.
+- OpenCode wrappers replace bare `@.claude/` imports with explicit "Read and follow" instructions. Config `instructions` loading is runtime-dependent; wrappers no longer rely on it.
+- Legacy heading-style `tasks.md` assigns one ticket per heading without rewriting the file; task numbering starts at T1, and `implement-feature` ticks tasks only under the current heading.
+- CLI supports `--dry-run`, persisted file selection, exact-version upgrades (refusing `latest`), conditional `BOOTSTRAP.md` rewrites with backups, and toolkit version/manifest tracking.
+- The template no longer registers the Ponytail OpenCode plugin (`@dietrichgebert/ponytail`); the operator installs it globally. Bootstrap may check for it and tell the operator to install it globally, but never adds it to project config.
+- `ponytail-review` permits `git diff`, `git status`, and `git show`. Document its Claude hooks as plugin-only.
+- Backfilled 4.0.1 and 3.0.x release notes.
+
+### Fixed
+
+- Removed stale "publishing not executed" and "4.x" wording.
+
 ## [5.0.0]
 
 ### Breaking
@@ -39,6 +59,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Scoped installs share only `.agents/skills/`, so Claude/Codex ambient rules in `.agents/rules/` no longer appear in Cursor, Copilot, or OpenCode installs.
 - `doctor` placeholder scan matches names with digits (for example `{{DB2_HOST}}`), skips `templates/` blank forms, and ignores runtime-only placeholders (`ISSUE_ID`, `ISSUE_KEY`, `FEATURE_NAME`, `NAME`), so a bootstrapped project can report clean.
 - `.cursor/rules/orient-to-recent-work.mdc` skill link now resolves (`../` → `../../`).
+
+## [4.0.1] - 2026-10-20
+
+### Changed
+
+- Updated the package version for the patch release.
 
 ## [4.0.0]
 
@@ -127,6 +153,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Renamed `composition-api-component-structure` rule to `component-structure` across repo and monorepo templates
 - Comprehensive template review fixes: corrected `CLAUDE.md` `@import` paths (`prompt-snippets` → `rules-snippets`); fixed broken `../.agents/` skill links in `src/repo/AGENTS.md` and `src/monorepo/AGENTS.md`; updated README bundled-skills count to 32 and added `bkt-cli`/`glab-cli` rows; synced truncated monorepo rules-snippets (`agent-conduct`, `subagent-workflow`, `coding-standards`, `core-libraries`) to repo; converted inlined Cursor commands (`review-pr`, `review`, `commit-push`) to thin wrappers; aligned monorepo agent `tools:` names to Claude Code standard; fixed root `.opencode/commands` snippet imports; added missing `testing.md` rule and `component-structure.md` snippet; removed remaining `composition-api-component-structure` stale files
 - Agent tool permissions corrected across repo and monorepo templates: Planner gained write + terminal (Copilot `edit`/`runInTerminal`/`terminalLastCommand`, OpenCode `edit: allow, bash: allow`, Claude `Bash(*)`); Documenter gained `Edit` + `Bash(*)` and OpenCode `edit: allow, bash: allow`; Researcher (Claude) lost `Write` (read-only); Reviewer (Claude) lost `Write` and OpenCode gained `bash: allow` (read + terminal). Added Agent Tool & Permission Calibration step to both `bootstrap.md` files
+
+## [3.0.x]
+
+3.0.0 is not on npm; use git tag `3.0.0` (`git clone --depth 1 --branch 3.0.0 …`) or npm 3.0.15+ as a merge base.
+
+### Added
+
+- **3.0.0 (2026-06-09):** Shared Claude/Copilot instructions, prompt snippets, and expanded agent workflows.
+- **3.0.2 (2026-06-10):** `gh-cli` skill with PR review-thread resolution.
+- **3.0.7 (2026-06-22):** Ponytail skill bundle, template parity improvements, documentation pre-commit check, and `orient-to-recent-work` skill.
+- **3.0.13 (2026-07-10):** `bkt-cli` and `glab-cli` skills.
+- **3.0.15 (2026-07-11):** npm package and zero-dependency CLI for install, patch, upgrade, doctor, and starter setup; CLI tests and CI.
+- **3.0.23 (2026-09-30):** Codex added to default bootstrap.
+
+### Changed
+
+- **3.0.1–3.0.6 (2026-06-09–2026-06-12):** Aligned shared prompts/rules and command wrappers; improved OpenCode bootstrap validation, argument hints, placeholder conventions, template consistency, and agent guidance.
+- **3.0.8–3.0.14 (2026-07-06–2026-07-10):** Refined OpenCode/Cursor commands and agent templates; corrected CLI skill guidance, references, and cross-tool template consistency.
+- **3.0.18 (2026-07-11):** Allowed manual npm publishing through workflow dispatch.
+- **3.0.19–3.0.23 (2026-07-13–2026-09-30):** Improved release automation and PR-thread guidance; migrated OpenCode config to `.jsonc` and prevented plugin config overwrite.
 
 ## [0.1.0] - 2026-01-26
 

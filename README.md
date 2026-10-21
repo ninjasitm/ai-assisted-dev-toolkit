@@ -67,7 +67,7 @@ This repository serves as a **template source** for AI development instructions 
 ├── .cursor/            # This toolkit's own Cursor config
 ├── .github/            # This toolkit's own GitHub config
 ├── .opencode/          # This toolkit's own OpenCode config
-│   └── plugins/        # Other local OpenCode plugins (Ponytail uses upstream)
+│   └── plugins/        # Other local OpenCode plugins (Ponytail is installed globally)
 ├── hooks/              # Claude Code / Copilot activation hooks (ponytail, etc.)
 └── AGENTS.md           # This toolkit's agent context
 ```
@@ -180,17 +180,35 @@ npx nitm-ai-dev-toolkit upgrade
 # Also overwrite existing files with the latest templates (back up customisations first)
 npx nitm-ai-dev-toolkit upgrade --force
 
+# Preview install/patch/upgrade without writing (exits 1 on conflicts)
+npx nitm-ai-dev-toolkit patch --dry-run
+
+# Limit to some harnesses or features (saved to .nitm/toolkit.json; --exclude "" clears it)
+npx nitm-ai-dev-toolkit patch --exclude copilot,cursor
+npx nitm-ai-dev-toolkit patch --only claude,gh-cli
+
+# Pin an exact version (resolved and printed before anything runs)
+npx nitm-ai-dev-toolkit upgrade 5.0.1
+npx nitm-ai-dev-toolkit upgrade nitm-ai-dev-toolkit@5.0.1
+npx nitm-ai-dev-toolkit upgrade --version 5.0.1 --dry-run
+
 # Scaffold the oh-my-opencode-slim starter (delegates to `npx nitm-opencode-starter install`)
 npx nitm-ai-dev-toolkit omo-slim-starter install
 ```
+
+- **`--dry-run`** (install, patch, upgrade) lists adds, overwrites, skips, conflicts and the state files it would write, and writes nothing. Install and patch exit 1 if there are conflicts. `upgrade --dry-run` runs the pinned version's own dry run, so the target must be **5.0.1 or later**.
+- **`--exclude` / `--only`** take comma-separated groups. Harnesses: `claude`, `codex`, `copilot`, `cursor`, `opencode`. Features: `factory`, `prisma`, `bkt-cli`, `gh-cli`, `glab-cli`, `acli`, `linear-cli`. Shared files (AGENTS.md, `docs/`, `hooks/`, shared skills and snippets) are never excluded. The selection is saved to `.nitm/toolkit.json` and used by later install, patch and doctor runs; `--exclude ""` clears it.
+- **`upgrade <version>`**, **`upgrade nitm-ai-dev-toolkit@<version>`** and **`--version <version>`** pin an exact version. `latest`, dist-tags and version ranges are refused. Without a version, the latest published release is used.
+- **State files:** install, patch and upgrade write `.toolkit-version` (the installed package version) and `.nitm/manifest.json` (hashes of the files the toolkit wrote). `doctor` reports a `.toolkit-version` that differs from the package version, and lists stale toolkit files it recognises. It only reports them; it never deletes anything.
+- **`.nitm/BOOTSTRAP.md`** is rewritten only when its content differs. The previous copy is first saved to `.nitm/backups/`.
 
 After `install`, ask your AI agent to read and follow `.nitm/BOOTSTRAP.md`. Harnesses that supply a toolkit `/bootstrap` wrapper can also use it; **Codex has no native toolkit `/bootstrap` command**. Use `doctor` to verify the result.
 
 ### Native OpenCode V2 (toolkit 4.0.0)
 
-Toolkit v4 requires **OpenCode V2 (major >=2)** for OpenCode use; **oh-my-opencode-slim >=3.0.0** requires **OpenCode >=2.0.7**. All repo/monorepo bootstrap, patch, and upgrade flows run `opencode --version` before changes, accepting an optional leading `v`. V1 must stop before OpenCode customization/migration or marking toolkit 4.0.0: upgrade OpenCode or remain on toolkit 3.x. A missing CLI or unparseable version stops OpenCode steps and version marking until the user confirms/installs a supported version. Confirm harness use from runtime evidence or ask; scaffold directories are not proof. Other-harness-only setup is unaffected.
+Toolkit 4.0.0 and later require **OpenCode V2 (major >=2)** for OpenCode use; **oh-my-opencode-slim >=3.0.0** requires **OpenCode >=2.0.7**. All repo/monorepo bootstrap, patch, and upgrade flows run `opencode --version` before changes, accepting an optional leading `v`. V1 must stop before OpenCode customization/migration or marking toolkit 4.0.0: upgrade OpenCode or remain on toolkit 3.x. A missing CLI or unparseable version stops OpenCode steps and version marking until the user confirms/installs a supported version. Confirm harness use from runtime evidence or ask; scaffold directories are not proof. Other-harness-only setup is unaffected.
 
-Publishing 4.0.0 has not been executed. The external `nitm-opencode-starter` is a separate package, not automatically upgraded.
+The external `nitm-opencode-starter` is a separate package, not automatically upgraded.
 
 With user approval, merge this reproducible registration without replacing user/global plugins:
 
@@ -198,9 +216,9 @@ With user approval, merge this reproducible registration without replacing user/
 { "plugins": ["oh-my-opencode-slim@3.0.0"] }
 ```
 
-The toolkit root deliberately omits `plugins` to inherit user/global registrations; its existing upstream Ponytail registration is unchanged. Both target templates register the author's native V2 package `@dietrichgebert/ponytail@4.12.0` in their local `plugins` arrays, alongside `opencode-mem` and `@tarquinen/opencode-dcp@latest`; `opentmux` remains commented as V1-only. The local `ponytail.mjs` files are removed from the toolkit root and both templates; no local API port or bridge replaces them.
+The toolkit root deliberately omits `plugins` to inherit user/global registrations. Both target templates register `opencode-mem` and `@tarquinen/opencode-dcp@latest` in their local `plugins` arrays; `opentmux` remains commented as V1-only. The OpenCode Ponytail plugin (`@dietrichgebert/ponytail`) is installed globally by the operator; neither the toolkit root nor the templates register it. The local `ponytail.mjs` files are removed from the toolkit root and both templates; no local API port or bridge replaces them.
 
-For existing targets, back up and obtain approval before removing only known obsolete toolkit `.opencode/plugins/ponytail.js`, `.mjs`, or `.ts` copies. Preserve unrelated local plugins; merge/deduplicate upstream package registration locally where appropriate, without editing or overwriting global plugins. Native local plugins are discovered automatically, so do not register them twice. Slim's separate strict schema keeps its own `prompt`, `permission`, and `variant`: do not host-migrate plugin-owned fields. The root's no-`plugins` policy is specific to this toolkit repository, not target templates.
+For existing targets, back up and obtain approval before removing only known obsolete toolkit `.opencode/plugins/ponytail.js`, `.mjs`, or `.ts` copies. Preserve unrelated local plugins. Never add the Ponytail plugin to project config; if it is not installed globally, tell the operator to install it globally, without editing or overwriting global plugins. Native local plugins are discovered automatically. Slim's separate strict schema keeps its own `prompt`, `permission`, and `variant`: do not host-migrate plugin-owned fields. The root's no-`plugins` policy is specific to this toolkit repository, not target templates.
 
 | Setting | Native V2 form |
 | --- | --- |
@@ -213,7 +231,7 @@ For existing targets, back up and obtain approval before removing only known obs
 
 Follow official V2 [migration](https://opencode.ai/v2/docs/migrate-v1), [config](https://opencode.ai/v2/docs/config), [agents](https://opencode.ai/v2/docs/agents), and [plugins](https://opencode.ai/v2/docs/build/plugins) docs. The published `https://opencode.ai/config.json` schema may describe V1; it is not native V2 validation authority.
 
-**Runtime limits:** config `instructions` entries are accepted but not loaded; ambient `AGENTS.md` works. `@refs` are ordinary text, not automatic attachments: agents must read referenced snippets explicitly. `request.body.temperature` remains in config, but the current runner does not send it. Plugin/runtime integration has not been tested. Preserve `lsp: true`, but V2 currently exposes no LSP tools or diagnostics: use project lint/typecheck/compiler commands.
+**Runtime limits:** Ambient `AGENTS.md` works. Config `instructions` entries load only when the runtime injects them (OpenChamber does; other hosts may not), so do not rely on them: write explicit "Read and follow" wrappers regardless. `@refs` are ordinary text, not automatic attachments: agents must read referenced snippets explicitly. `request.body.temperature` remains in config, but the current runner does not send it. Plugin/runtime integration has not been tested. Preserve `lsp: true`, but V2 currently exposes no LSP tools or diagnostics: use project lint/typecheck/compiler commands.
 
 `--env opencode` includes minimal shared references for wrappers and AGENTS-linked standards without activating other harnesses. Merge, don't clobber: back up V1, preserve models/providers and user/global plugins, and ask before changes. Native-converted files are **incompatible with V1**. Activate on the next run/restart, then check behavior with the installed V2 runtime. `doctor` checks scaffold files/placeholders, not runtime behavior; do not substitute a V1 API/schema fetch or claim checks that were not run.
 
@@ -308,6 +326,8 @@ Used by the opt-in factory (`.agents/skills/factory/SKILL.md` and `.claude/agent
 | `{{FACTORY_PORT_BASE}}`     | Base dev-server port. Job `n` uses `base + 10n` for the builder, `+1` for ux, and `+2` for ui | `5100`                   |
 | `{{APPROVAL_MODE}}`         | `human` stops at `awaiting-human`; `auto` merges on approval                                | `human`, `auto`          |
 | `{{FACTORY_REVIEW_LENSES}}` | Review lenses to run. `ux` and `ui` need browser tooling                                    | `code, security`         |
+| `{{FACTORY_FEATURE_PATHS}}` | Comma-separated feature documentation paths; repo default is `docs/features`, monorepo default is `apps/*/docs/features, docs/features` | `docs/features` |
+| `{{MERGE_MODE}}`            | `local` merges locally (default); `push-mr` pushes and opens a merge request                | `local`, `push-mr`       |
 
 ## Supported Ecosystems
 
@@ -788,7 +808,7 @@ This toolkit includes **33 pre-installed universal skills** in the `.agents/skil
 
 **These skills are ready to use immediately after copying the templates.** No `npx -y skills add -a <agent> <owner/repo> --skill '*' --agent github-copilot cursor` commands needed.
 
-The **ponytail** skill bundle is an integrated optional skill set from [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) that adds YAGNI/stdlib/native/one-line/minimum discipline to your AI agents. It includes 6 skills, 6 commands, 7 activation hooks, and ambient agent rules. OpenCode uses the author's upstream `@dietrichgebert/ponytail@4.12.0` package, not a bundled local plugin. See [native setup](#native-opencode-v2-toolkit-400); scaffolding alone does not establish activation.
+The **ponytail** skill bundle is an integrated optional skill set from [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) that adds YAGNI/stdlib/native/one-line/minimum discipline to your AI agents. It includes 6 skills, 6 commands, 7 activation hooks, and ambient agent rules. OpenCode uses the author's upstream `@dietrichgebert/ponytail` package, installed globally by the operator, not a bundled local plugin. See [native setup](#native-opencode-v2-toolkit-400); scaffolding alone does not establish activation. The Claude Code hooks in `hooks/*.json` use `${CLAUDE_PLUGIN_ROOT}` and are plugin-only: they fire only when installed through the Ponytail plugin, not from project settings.
 
 ### Additional Recommended Skills
 

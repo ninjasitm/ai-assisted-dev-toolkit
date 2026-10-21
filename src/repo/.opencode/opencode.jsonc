@@ -11,8 +11,7 @@
 	],
 	"plugins": [
 		"opencode-mem",
-		"@tarquinen/opencode-dcp@latest",
-		"@dietrichgebert/ponytail@4.12.0"
+		"@tarquinen/opencode-dcp@latest"
 		// "opentmux": V1-only; enable only after it supports V2.
 	],
 	"lsp": true
