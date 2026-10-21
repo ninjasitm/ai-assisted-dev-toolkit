@@ -2,7 +2,7 @@
 
 Component structure and composition patterns.
 
-@.claude/rules-snippets/component-structure.md
+Read and follow `.claude/rules-snippets/component-structure.md` when these standards apply.
 
 ## Key points
 

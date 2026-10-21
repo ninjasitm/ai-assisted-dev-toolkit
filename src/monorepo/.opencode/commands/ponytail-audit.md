@@ -7,4 +7,4 @@ description: "Whole-repo audit for over-engineering. Scans entire codebase for w
 > **Recommended agent:** `oracle`
 > Whole-repo over-engineering analysis
 
-@.claude/prompt-snippets/ponytail-audit.md
+Read and follow `.claude/prompt-snippets/ponytail-audit.md` before executing this command.

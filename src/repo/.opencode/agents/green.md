@@ -17,4 +17,4 @@ permissions:
 
 Write minimal code to make failing tests pass. Part of the TDD red-green-refactor cycle.
 
-@.claude/agents-snippets/green.md
+Read and follow `.claude/agents-snippets/green.md` before performing this role.

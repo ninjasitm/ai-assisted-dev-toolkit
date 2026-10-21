@@ -13,4 +13,4 @@ description: "Generate release notes from git commits (web, git tag, or document
 
 $ARGUMENTS
 
-@.claude/prompt-snippets/release-notes.md
+Read and follow `.claude/prompt-snippets/release-notes.md` before executing this command.

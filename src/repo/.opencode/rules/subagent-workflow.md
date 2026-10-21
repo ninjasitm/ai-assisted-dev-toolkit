@@ -2,7 +2,7 @@
 
 Subagent workflow and orchestration patterns.
 
-@.claude/rules-snippets/subagent-workflow.md
+Read and follow `.claude/rules-snippets/subagent-workflow.md` when these standards apply.
 
 ## Key points
 

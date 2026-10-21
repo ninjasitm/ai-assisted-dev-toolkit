@@ -103,8 +103,8 @@ Before executing any task list, the orchestrator MUST run this analysis:
    - **Mixed** → Dispatch independent group in parallel, then continue sequential chain
 
 ```
-Example: 5 tasks → T001 (setup) → T002 [P] (backend API) + T003 [P] (frontend UI) + T004 [P] (docs) → T005 (integration tests)
-         Dispatch: T001 sequential → T002+T003+T004 parallel → T005 sequential
+Example: 5 tasks → T1 (setup) → T2 [P] (backend API) + T3 [P] (frontend UI) + T4 [P] (docs) → T5 (integration tests)
+         Dispatch: T1 sequential → T2+T3+T4 parallel → T5 sequential
 ```
 
 ## Quality Gates

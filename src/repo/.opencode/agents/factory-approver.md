@@ -17,4 +17,4 @@ permissions:
 
 Decide whether a factory job is approved for merge or escalated to a human.
 
-@.claude/agents-snippets/factory-approver.md
+Read and follow `.claude/agents-snippets/factory-approver.md` before performing this role.

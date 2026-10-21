@@ -20,4 +20,4 @@ permissions:
 
 Implement a feature using test-driven development with red-green-refactor cycle.
 
-@.claude/agents-snippets/tdd.md
+Read and follow `.claude/agents-snippets/tdd.md` before performing this role.

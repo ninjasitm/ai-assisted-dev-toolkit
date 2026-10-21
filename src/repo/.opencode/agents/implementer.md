@@ -17,4 +17,4 @@ permissions:
 
 Implement code changes for a specific task. Follow TDD, write tests alongside code, and self-review before reporting completion.
 
-@.claude/agents-snippets/implementer.md
+Read and follow `.claude/agents-snippets/implementer.md` before performing this role.

@@ -17,4 +17,4 @@ permissions:
 
 Review a factory job's feature at its build location for flows, states, copy, accessibility, and mobile, without signing in or writing to real services.
 
-@.claude/agents-snippets/factory-reviewer-ux.md
+Read and follow `.claude/agents-snippets/factory-reviewer-ux.md` before performing this role.

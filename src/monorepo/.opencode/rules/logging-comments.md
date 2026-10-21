@@ -2,7 +2,7 @@
 
 Logging identifiers and code comment conventions.
 
-@.claude/rules-snippets/logging-comments.md
+Read and follow `.claude/rules-snippets/logging-comments.md` when these standards apply.
 
 ## Key points
 

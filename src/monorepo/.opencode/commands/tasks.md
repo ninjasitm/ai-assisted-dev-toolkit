@@ -13,4 +13,4 @@ description: "Generate an actionable task list from a specification or plan"
 
 $ARGUMENTS
 
-@.claude/prompt-snippets/tasks.md
+Read and follow `.claude/prompt-snippets/tasks.md` before executing this command.

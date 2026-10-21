@@ -17,4 +17,4 @@ permissions:
 
 Review a factory job's feature at its build location for design-system consistency, spacing, typography, contrast, and responsive layout, without signing in or writing to real services.
 
-@.claude/agents-snippets/factory-reviewer-ui.md
+Read and follow `.claude/agents-snippets/factory-reviewer-ui.md` before performing this role.

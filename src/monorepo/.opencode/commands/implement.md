@@ -15,4 +15,4 @@ description: "Execute implementation tasks from a task list or specification"
 
 $ARGUMENTS
 
-@.claude/prompt-snippets/implement.md
+Read and follow `.claude/prompt-snippets/implement.md` before executing this command.

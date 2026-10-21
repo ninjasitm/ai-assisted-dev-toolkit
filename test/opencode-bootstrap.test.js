@@ -41,7 +41,7 @@ for (const [variant, flow, mutation] of [
 test('toolkit package stays on 4.x or later and READMEs require OpenCode V2', () => {
   assertToolkitV4(JSON.parse(read('package.json')).version);
   for (const file of ['README.md', 'src/repo/README.md', 'src/monorepo/README.md']) {
-    assert.match(read(file), /Toolkit v4 requires \*\*OpenCode V2/);
+    assert.match(read(file), /Toolkit 4\.0\.0 and later require \*\*OpenCode V2/);
   }
 });
 
@@ -83,19 +83,34 @@ for (const variant of ['repo', 'monorepo']) {
     assert.match(cleanup[1], /preserv[^\n]*(?:custom|project-specific)[^\n]*skills?/i);
   });
 
-  test(`${variant}/bootstrap-patch: doc contract pins and checks the fetched v4 source before merge`, () => {
+  test(`${variant}/bootstrap-patch: doc contract resolves versions and gates the fetched source before merge`, () => {
     const source = read(`src/${variant}/.claude/prompt-snippets/bootstrap-patch.md`);
     const fetch = source.match(/^\s*1\.\s+\*\*Fetch Latest Templates\*\*[^\n]*\n([\s\S]*?)(?=^\s*2\.\s+\*\*Inventory Current State)/m);
     assert.ok(fetch, 'source checks must precede inventory and merge');
-    const clones = [...fetch[1].matchAll(/\bgit clone[^\n]*/g)];
-    assert.ok(clones.length > 0, 'fetch must include the clone command');
-    for (const [clone] of clones) assert.match(clone, /--branch\s+v4\.x\b/);
-    assert.match(fetch[1], /(?:unavailable|fail(?:s|ed|ure)?)[^\n]*(?:stop|abort|exit)/i);
-    assert.match(fetch[1], /(?:no|never|do not)[^\n]*(?:fallback|fall back)/i);
-    assert.match(fetch[1], /package\.json/);
-    assert.match(fetch[1], /major[^\n]*(?:is not|!=)\s*`?4\b`?[^\n]*stop/i,
-      'read package.json and accept fetched major 4 only');
-    assert.match(fetch[1], /older than[^\n]*(?:installed|target)[^\n]*\.toolkit-version[^\n]*stop[^\n]*(?:without|before)[^\n]*(?:applying|merg)[^\n]*(?:marker|\.toolkit-version)/i,
+    const body = fetch[1];
+
+    // Version resolution: installed version comes from .toolkit-version, target is pinned or npm-latest.
+    assert.match(body, /installed version[^\n]*`\.toolkit-version`/i);
+    assert.match(body, /npm view nitm-ai-dev-toolkit version/);
+
+    // Fetch: npm pack is primary; git tag fallback uses the bare version (tags have no "v" prefix).
+    assert.match(body, /npm pack "?nitm-ai-dev-toolkit@<version>"?/);
+    const clones = [...body.matchAll(/\bgit clone[^\n]*/g)];
+    assert.ok(clones.length > 0, 'fetch must include a git clone fallback');
+    for (const [clone] of clones) assert.match(clone, /--branch\s+"<version>"/);
+    assert.doesNotMatch(body, /v<version>/, 'git tags have no "v" prefix');
+    assert.doesNotMatch(source, /v4\.x/, 'the v4.x branch must not be referenced');
+
+    // Availability and package.json reads still stop on failure and never fall back.
+    assert.match(body, /(?:unavailable|fail(?:s|ed|ure)?)[^\n]*(?:stop|abort|exit)/i);
+    assert.match(body, /(?:no|never|do not)[^\n]*(?:fallback|fall back)/i);
+    assert.match(body, /package\.json/);
+
+    // Gate: fetched == target, major >= installed, no downgrade. No literal major.
+    assert.match(body, /fetched version must equal the target version exactly/i);
+    assert.match(body, /major[^\n]*greater than or equal to[^\n]*installed[^\n]*\.toolkit-version/i);
+    assert.doesNotMatch(source, /major[^\n]*(?:is not|!=)\s*`?4\b/i, 'no literal major-4 stop');
+    assert.match(body, /older than[^\n]*(?:installed|target)[^\n]*\.toolkit-version[^\n]*stop[^\n]*(?:without|before)[^\n]*(?:applying|merg)[^\n]*(?:marker|\.toolkit-version)/i,
       'a downgrade must stop before merge or version marking');
   });
 }

@@ -2,7 +2,7 @@
 
 Project context and documentation references.
 
-@.claude/rules-snippets/project-context.md
+Read and follow `.claude/rules-snippets/project-context.md` when these standards apply.
 
 ## Key points
 

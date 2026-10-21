@@ -17,4 +17,4 @@ permissions:
 
 Build user interfaces, implement components, handle state management, and optimize frontend performance.
 
-@.claude/agents-snippets/frontend-developer.md
+Read and follow `.claude/agents-snippets/frontend-developer.md` before performing this role.

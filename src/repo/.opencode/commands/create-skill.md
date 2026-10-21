@@ -13,4 +13,4 @@ description: "Create a new agent skill following VS Code and agentskills.io spec
 
 $ARGUMENTS
 
-@.claude/prompt-snippets/create-skill.md
+Read and follow `.claude/prompt-snippets/create-skill.md` before executing this command.

@@ -1,12 +1,12 @@
 # Bootstrap Upgrade — Monorepo
 
-Upgrade this monorepo to toolkit 4.0.0, including native OpenCode V2 for confirmed OpenCode users. For pre-3.0 installations, also migrate inline content to snippet-based architecture. Only modify confirmed harness targets; preserve unrelated harness/Codex behavior.
+Upgrade this monorepo to toolkit <version> (the installed package version), including native OpenCode V2 for confirmed OpenCode users (toolkit 4.0.0 and later). For pre-3.0 installations, also migrate inline content to snippet-based architecture. Only modify confirmed harness targets; preserve unrelated harness/Codex behavior.
 
 ## OpenCode version preflight (before any changes)
 
 - Confirm OpenCode use from actual session/runtime evidence or ask the user; directory presence alone is not proof. If only other harnesses are used, skip this preflight and all OpenCode steps.
-- For confirmed OpenCode use, run `opencode --version` before any project writes. Trim output and parse numeric major/minor/patch components, accepting an optional leading `v`; toolkit 4.x requires `major >= 2`.
-- If OpenCode V1 (`major < 2`) is detected, **STOP** before customizing/migrating OpenCode files or writing `.toolkit-version` as `4.0.0`. Ask the user to upgrade OpenCode to V2 or remain on toolkit 3.x.
+- For confirmed OpenCode use, run `opencode --version` before any project writes. Trim output and parse numeric major/minor/patch components, accepting an optional leading `v`; toolkit 4.0.0 and later require `major >= 2`.
+- If OpenCode V1 (`major < 2`) is detected, **STOP** before customizing/migrating OpenCode files or writing `.toolkit-version` as 4.0.0 or later. Ask the user to upgrade OpenCode to V2 or remain on toolkit 3.x.
 - If the CLI is missing, fails, or output is unparseable, **STOP OpenCode steps** and leave the version marker unchanged; ask the user to confirm/install a supported OpenCode version, then rerun this check. Never assume V2.
 - If oh-my-opencode-slim >=3.0.0 is used or planned, require OpenCode >=2.0.7 (compare version components numerically); otherwise **STOP** before changes and ask to upgrade. Proceed only after this gate passes.
 
@@ -21,7 +21,7 @@ Read `.toolkit-version` and select the route before dispatching agents or changi
 
 ## OpenCode migration guardrails
 
-Back up V1; native-converted files are incompatible with V1. Preserve models/providers/user-global plugins. Templates register the author's native V2 package `@dietrichgebert/ponytail@4.12.0`; obsolete toolkit-local Ponytail copies are replaced only after backup and approval (Step 7), with no API port or bridge. Keep `opentmux` commented as V1-only. Only with approval, merge pinned `"plugins": ["oh-my-opencode-slim@3.0.0"]` locally without replacing other registrations. Slim's separate strict schema retains `prompt`/`permission`/`variant`; do not host-migrate it or silently upgrade the separate external starter. Activate on the next run/restart; plugin/runtime integration is untested and publishing 4.0.0 has not been executed.
+Back up V1; native-converted files are incompatible with V1. Preserve models/providers/user-global plugins. The OpenCode Ponytail plugin (`@dietrichgebert/ponytail`) is installed globally by the operator and is never registered by templates or project config; obsolete toolkit-local Ponytail copies are removed only after backup and approval (Step 7), with no API port or bridge. Keep `opentmux` commented as V1-only. Only with approval, merge pinned `"plugins": ["oh-my-opencode-slim@3.0.0"]` locally without replacing other registrations. Slim's separate strict schema retains `prompt`/`permission`/`variant`; do not host-migrate it or silently upgrade the separate external starter. Activate on the next run/restart; plugin/runtime integration is untested.
 
 ## Orchestrator Checkpoint
 
@@ -71,7 +71,7 @@ Back up V1; native-converted files are incompatible with V1. Preserve models/pro
 5. **Present summary and ask for confirmation**:
 
    ```markdown
-    ## 🔄 Monorepo Upgrade: toolkit v4.0.0
+    ## 🔄 Monorepo Upgrade: toolkit <version>
 
     **Selected route**: verified legacy | v3 native OpenCode
 
@@ -81,7 +81,7 @@ Back up V1; native-converted files are incompatible with V1. Preserve models/pro
     - Confirmed OpenCode only: merge native V2 host files and approved missing wrappers (Step 7)
     - Verified legacy only: approved hook installation and verified identical duplicate skill cleanup (Steps 8–10); preserve custom skills
     - Merge only applicable missing documentation and validate the selected route; v3 keeps existing snippet bodies/frontmatter unchanged
-   - Write `.toolkit-version` with `4.0.0` after the approved migration
+   - Keep the `.toolkit-version` the CLI writes (installed package version, 4.0.0 or later) after the approved migration
 
    ### Monorepo-specific changes
 
@@ -264,18 +264,17 @@ For the v3 route, merge only relevant native OpenCode host fields; preserve exis
      "$schema": "https://opencode.ai/config.json",
       "instructions": ["AGENTS.md", ".opencode/rules/*.md"],
       "skills": [".agents/skills"],
-      "plugins": ["@dietrichgebert/ponytail@4.12.0"],
       "lsp": true
    }
    ```
 
    Follow official V2 [migration](https://opencode.ai/v2/docs/migrate-v1), [config](https://opencode.ai/v2/docs/config), [agents](https://opencode.ai/v2/docs/agents), and [plugins](https://opencode.ai/v2/docs/build/plugins) docs. The published schema may describe V1; do not use it or a V1 API fetch as native V2 validation authority. Use `agents`/JSON `system` (Markdown bodies for file agents), `request.body.temperature`, ordered `permissions` (`action`/`resource`/`effect`, `shell`/`subagent`, last match wins), `commands`/`subagent`, `plugins` with `{ "package": "…", "options": {} }`, skill-directory arrays, and `mcp.servers` with inverse `disabled` and `timeout.catalog`/`timeout.execution`.
 
-   `instructions` entries are accepted but not loaded; ambient root/nested `AGENTS.md` works. `@refs` are ordinary text, not attachments: wrappers must explicitly tell agents to read referenced snippets. `request.body.temperature` remains in config, but the current runner does not send it. Preserve `lsp: true`; use workspace lint/typecheck/compiler commands (no current V2 LSP tools/diagnostics). `--env opencode` supplies minimal shared references without other harness activation. Verify using installed V2 after the next run/restart; report only checks actually run.
+   Ambient root/nested `AGENTS.md` works. `instructions` entries load only when the runtime injects them (OpenChamber does; other hosts may not), so do not rely on them: write explicit "Read and follow" wrappers regardless. `@refs` are ordinary text, not attachments: wrappers must explicitly tell agents to read referenced snippets. `request.body.temperature` remains in config, but the current runner does not send it. Preserve `lsp: true`; use workspace lint/typecheck/compiler commands (no current V2 LSP tools/diagnostics). `--env opencode` supplies minimal shared references without other harness activation. Verify using installed V2 after the next run/restart; report only checks actually run.
 
 2. **Replace obsolete toolkit Ponytail (backup and approval only)**:
    - Back up the local config and known obsolete toolkit-owned `.opencode/plugins/ponytail.js`, `.opencode/plugins/ponytail.mjs`, and `.opencode/plugins/ponytail.ts` copies; obtain approval before removing only those copies. Preserve unrelated local plugins.
-   - Merge/deduplicate the author's native V2 `@dietrichgebert/ponytail@4.12.0` package in the local `plugins` array where appropriate, preserving other registrations/options. Do not edit global config or overwrite global plugins. Keep `opentmux` commented as V1-only; do not copy local Ponytail source, port APIs, or introduce bridges. Native local discovery needs no duplicate explicit registration; runtime integration remains untested.
+   - The OpenCode Ponytail plugin (`@dietrichgebert/ponytail`) is installed globally by the operator. Never add or pin it in the local `plugins` array. Check whether it is installed globally; if not, tell the operator to install it globally. Do not edit global config or overwrite global plugins. Keep `opentmux` commented as V1-only; do not copy local Ponytail source, port APIs, or introduce bridges. Runtime integration remains untested.
 
 3. Create `.opencode/commands/*.md` — one thin wrapper per `.claude/commands/*.md`:
 
@@ -379,7 +378,7 @@ If `CLAUDE.md` is an applicable confirmed harness target, merge only missing rel
 
 ### Step 12: Create .toolkit-version File
 
-Write `4.0.0` to `.toolkit-version` only after the approved migration and OpenCode preflight pass (or OpenCode is confirmed out of scope).
+Keep the `.toolkit-version` value the CLI writes (the installed package version, 4.0.0 or later); do not write `4.0.0` by hand. Only after the approved migration and OpenCode preflight pass (or OpenCode is confirmed out of scope). If the file is missing, run `npx nitm-ai-dev-toolkit patch` to record it.
 
 ### Step 13: Validation
 
@@ -399,7 +398,7 @@ If `--verbose`: log each check result.
 Include only operations/checks actually performed for the selected route; omit legacy extraction/cleanup rows on v3 and never pre-mark skipped checks as passed.
 
 ```markdown
-## ✅ Monorepo Upgrade Complete: v4.0.0
+## ✅ Monorepo Upgrade Complete: toolkit <version>
 
 ### Build System: {{BUILD_SYSTEM}}
 
@@ -435,7 +434,7 @@ Include only operations/checks actually performed for the selected route; omit l
 | File                       | Purpose                    |
 | -------------------------- | -------------------------- |
 | `.opencode/opencode.jsonc` | OpenCode configuration     |
-| `.toolkit-version`         | Version tracking (`4.0.0`) |
+| `.toolkit-version`         | Version tracking (installed package version) |
 
 ### Validation Results
 
@@ -464,7 +463,7 @@ Include only operations/checks actually performed for the selected route; omit l
 
 ```bash
 git add -A
-git commit -m "chore: upgrade AI instructions to toolkit v4.0.0"
+git commit -m "chore: upgrade AI instructions to toolkit <version>"
 ```
 
 ## Error Handling

@@ -144,7 +144,7 @@ for (const layout of ['repo', 'monorepo']) {
         ]),
       ].join('\n');
       assert.equal(match[1], frontmatter);
-      const body = `\n# ${title}\n\n${summary}\n\n@.claude/agents-snippets/${name}.md\n`;
+      const body = `\n# ${title}\n\n${summary}\n\nRead and follow \`.claude/agents-snippets/${name}.md\` before performing this role.\n`;
       assert.deepEqual(Buffer.from(match[2]), Buffer.from(body), 'Markdown body must remain byte-for-byte unchanged');
     });
   }

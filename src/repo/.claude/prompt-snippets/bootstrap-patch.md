@@ -1,12 +1,12 @@
 # Bootstrap Patch
 
-Fetch supported toolkit v4.x templates from the ai-assisted-dev-toolkit repository's `v4.x` branch and merge updated, new, or missing guidance into this project.
+Fetch the published toolkit templates for the target version (4.0.0 or later) from npm or the ai-assisted-dev-toolkit repository's `<version>` git tag, and merge updated, new, or missing guidance into this project.
 
 ## OpenCode version preflight (before any changes)
 
 - Confirm OpenCode use from actual session/runtime evidence or ask the user; directory presence alone is not proof. If only other harnesses are used, skip this preflight and all OpenCode steps.
-- For confirmed OpenCode use, run `opencode --version` before any project writes. Trim output and parse numeric major/minor/patch components, accepting an optional leading `v`; toolkit 4.x requires `major >= 2`.
-- If OpenCode V1 (`major < 2`) is detected, **STOP** before customizing/migrating OpenCode files or writing `.toolkit-version` as `4.0.0`. Ask the user to upgrade OpenCode to V2 or remain on toolkit 3.x.
+- For confirmed OpenCode use, run `opencode --version` before any project writes. Trim output and parse numeric major/minor/patch components, accepting an optional leading `v`; toolkit 4.0.0 and later require `major >= 2`.
+- If OpenCode V1 (`major < 2`) is detected, **STOP** before customizing/migrating OpenCode files or writing `.toolkit-version` as 4.0.0 or later. Ask the user to upgrade OpenCode to V2 or remain on toolkit 3.x.
 - If the CLI is missing, fails, or output is unparseable, **STOP OpenCode steps** and leave the version marker unchanged; ask the user to confirm/install a supported OpenCode version, then rerun this check. Never assume V2.
 - If oh-my-opencode-slim >=3.0.0 is used or planned, require OpenCode >=2.0.7 (compare version components numerically); otherwise **STOP** before changes and ask to upgrade. Proceed only after this gate passes.
 
@@ -25,6 +25,8 @@ Fetch supported toolkit v4.x templates from the ai-assisted-dev-toolkit reposito
 /bootstrap-patch --category commands,prompts
 ```
 
+The CLI runs the same patch flow without an AI session: `npx nitm-ai-dev-toolkit patch --dry-run` previews changes, `--only <categories>` and `--exclude <categories>` narrow the scope, and `npx nitm-ai-dev-toolkit upgrade@<version>` (or `--version <version>`) pins the target version. Pinning a version does not skip the gates in Step 1.
+
 ## Process
 
 **Codex invocation and scope:** `/bootstrap-patch` is not a native Codex command. Ask Codex to read and follow this snippet as a task document. Identify the actual harness from session/runtime evidence or ask; scaffold directories do not prove use. Codex targets `AGENTS.md`, relevant nested instructions, `.agents/skills/`, and optional `.codex/config.toml`. Include `.github/instructions/` and `.claude/rules-snippets/` solely as AGENTS-linked standards and their wrapper sources for Codex-scoped installs, not automatically loaded rules or evidence of Copilot/Claude use. Only include other harness command, agent, and config categories when those harnesses are confirmed in use.
@@ -33,33 +35,38 @@ Fetch supported toolkit v4.x templates from the ai-assisted-dev-toolkit reposito
 
 1.  **Fetch Latest Templates**:
 
-    Fetch only the supported `v4.x` source branch:
+    **Resolve versions before any download.**
+    - **Installed version**: read `.toolkit-version` in the project root. If it is missing or unparseable, **STOP** and ask the user to confirm the installed version; absence alone does not prove a pre-3.0 installation.
+    - **Target version**: use the version the user pinned (`upgrade@<version>` or `--version <version>` in the CLI, or the version given to this task), validated as SemVer `X.Y.Z`. Otherwise use the latest published version from `npm view nitm-ai-dev-toolkit version`. If npm is unreachable or the output is unparseable, **STOP** and ask. Never guess a version.
+
+    **Fetch the matching release.** Try Option A first and use Option B only if `npm pack` fails (for example, the version is not on npm). Each download goes into a new, empty directory:
 
     ```bash
     set -e
-    TOOLKIT_TEMP=$(mktemp -d)
-    git clone --depth 1 --branch v4.x https://github.com/ninjasitm/ai-assisted-dev-toolkit.git "$TOOLKIT_TEMP"
+    TOOLKIT_TEMP=$(mktemp -d)   # removed in step 6
+    mkdir "$TOOLKIT_TEMP/pack" "$TOOLKIT_TEMP/unpacked"
+    # Option A (preferred): the published package, the same artifact users install
+    if (cd "$TOOLKIT_TEMP/pack" && npm pack "nitm-ai-dev-toolkit@<version>"); then
+      tar -xzf "$TOOLKIT_TEMP/pack/nitm-ai-dev-toolkit-<version>.tgz" -C "$TOOLKIT_TEMP/unpacked"
+      SOURCE_ROOT="$TOOLKIT_TEMP/unpacked/package"
+    else
+      # Option B (fallback): the git tag for that release (tags have no "v" prefix)
+      git clone --depth 1 --branch "<version>" https://github.com/ninjasitm/ai-assisted-dev-toolkit.git "$TOOLKIT_TEMP/git"
+      SOURCE_ROOT="$TOOLKIT_TEMP/git"
+    fi
     ```
 
-    **Source availability gate:** If the clone fails or `v4.x` is unavailable (for example, not yet published), **STOP** before diff/apply/version marking. Do not fall back to the default branch or V3, and do not push/publish a branch to unblock this task; ask for an approved available v4.x source.
+    **Source availability gate:** If both `npm pack` and the tag clone fail (the version is unpublished and the tag is missing), **STOP** before diff/apply/version marking. Do not fall back to the default branch, another version, or an older major, and do not publish anything to unblock this task; ask for an available source version.
 
-    Determine the correct source path based on project structure:
-    - **Single repo**: Use `$TOOLKIT_TEMP/src/repo/`
-    - **Monorepo**: Use `$TOOLKIT_TEMP/src/monorepo/`
+    Determine the correct source path based on project structure, under `$SOURCE_ROOT`:
+    - **Single repo**: `$SOURCE_ROOT/src/repo/`
+    - **Monorepo**: `$SOURCE_ROOT/src/monorepo/`
 
     Detection heuristic:
     - If `apps/` and `packages/` directories exist at root → monorepo
     - Otherwise → single repo
 
-    **Detect Toolkit Version:**
-
-    Check for a `.toolkit-version` file in the project root:
-    - If exists: Read the version string (e.g., `2.0.10`, `3.0.0`)
-    - If missing: Verify the installed version or legacy state with the user; absence alone does not prove a pre-3.0 installation
-
-    Read the toolkit's version from the `version` field in `$TOOLKIT_TEMP/package.json` to compare; `.toolkit-version` tracks the target project's installed version.
-
-    **Source version guard (before diff/apply/version marking):** Parse source/target versions as SemVer and compare them (major/minor/patch numerically). If the fetched package's major is not `4`, or its version is older than the target `.toolkit-version`, **STOP** without diffing, applying changes, or updating the marker. Unknown/unparseable versions must also **STOP** and ask rather than guess. Never auto-downgrade.
+    **Source version gate (before diff/apply/version marking):** Read the `version` field in `$SOURCE_ROOT/package.json` and parse it as SemVer. The fetched version must equal the target version exactly, its major must be greater than or equal to the installed major from `.toolkit-version`, and it must not be older than the installed `.toolkit-version`. If any check fails, or a version is unknown or unparseable, **STOP** without diffing, applying changes, or updating the marker. Never auto-downgrade, and never hard-code a major.
 
     **Version Comparison:**
     - **Same version**: No structural changes expected
@@ -102,9 +109,9 @@ Fetch supported toolkit v4.x templates from the ai-assisted-dev-toolkit reposito
 
     - Use `agents`/`system`, `request.body.temperature`, ordered `permissions` (`action`/`resource`/`effect`, `shell`/`subagent`, last match wins), `commands`/`subagent`, `plugins` with `{ "package": "…", "options": {} }`, skill-directory arrays, and `mcp.servers` with inverse `disabled` and `timeout.catalog`/`timeout.execution`.
     - The version preflight must pass before changes. Back up V1 before native conversion (converted files are incompatible with V1). Preserve models/providers/user-global plugins. Only with approval, merge `"plugins": ["oh-my-opencode-slim@3.0.0"]` locally. Slim's separate strict schema keeps `prompt`/`permission`/`variant`; do not host-migrate it or silently upgrade the separate external starter.
-    - **Ponytail replacement (plan here; apply after backup and approval in Step 5):** Remove only known obsolete toolkit-owned `.opencode/plugins/ponytail.js`, `.opencode/plugins/ponytail.mjs`, and `.opencode/plugins/ponytail.ts` copies. Preserve unrelated local plugins. Merge/deduplicate the author's native V2 `@dietrichgebert/ponytail@4.12.0` registration in the local `plugins` array where appropriate, retaining other registrations/options; do not edit global config. Keep `opentmux` commented as V1-only. Do not port local APIs or add bridges; runtime integration is untested. Native local discovery needs no duplicate registration.
-    - `instructions` entries are accepted but not loaded; ambient `AGENTS.md` works. `@refs` are ordinary text: explicitly read snippets. `request.body.temperature` remains in config, but the current runner does not send it. Preserve `lsp: true`; use project lint/typecheck/compiler commands (no V2 LSP tools/diagnostics currently).
-    - `--env opencode` supplies minimal shared references without other harness activation. Activate on the next run/restart and report only installed-V2 checks actually run, not assumed runtime validation. Publishing 4.0.0 has not been executed.
+    - **Obsolete Ponytail cleanup (plan here; apply after backup and approval in Step 5):** Remove only known obsolete toolkit-owned `.opencode/plugins/ponytail.js`, `.opencode/plugins/ponytail.mjs`, and `.opencode/plugins/ponytail.ts` copies. Preserve unrelated local plugins. The OpenCode Ponytail plugin is installed globally by the operator; never add it to project config. If it is not installed globally, tell the operator to install it globally. Do not edit global config. Keep `opentmux` commented as V1-only. Do not port local APIs or add bridges; runtime integration is untested.
+    - Ambient `AGENTS.md` works. `instructions` entries load only when the runtime injects them (OpenChamber does; other hosts may not), so do not rely on them: write explicit "Read and follow" wrappers regardless. `@refs` are ordinary text: explicitly read snippets. `request.body.temperature` remains in config, but the current runner does not send it. Preserve `lsp: true`; use project lint/typecheck/compiler commands (no V2 LSP tools/diagnostics currently).
+    - `--env opencode` supplies minimal shared references without other harness activation. Activate on the next run/restart and report only installed-V2 checks actually run, not assumed runtime validation.
 
 3.  **Diff Analysis** (parallelizable — dispatch one subagent per category):
 
@@ -175,8 +182,8 @@ Fetch supported toolkit v4.x templates from the ai-assisted-dev-toolkit reposito
       a. **New files**: Copy directly from template
       b. **Updated files (no customization)**: Replace with template version
       c. **Updated files (customized)**: Apply structural additions while preserving project values
-      d. **OpenCode plugins**: Apply only the approved Ponytail replacement above after backing up the known obsolete toolkit copies and local config; preserve all unrelated local/global plugins.
-      e. **Toolkit version**: Update `.toolkit-version` to the fetched toolkit version (`4.0.0` for this migration) only after the approved migration and OpenCode preflight pass (or OpenCode is confirmed out of scope).
+      d. **OpenCode plugins**: Apply only the approved obsolete Ponytail cleanup above after backing up the known obsolete toolkit copies and local config; preserve all unrelated local/global plugins. Never add Ponytail to project config.
+      e. **Toolkit version**: Keep the `.toolkit-version` value the CLI writes for the verified target version (the installed package version, 4.0.0 or later; never hard-coded) only after the approved migration and OpenCode preflight pass (or OpenCode is confirmed out of scope).
       f. **Git commit**: Stage and commit all changes with message:
       ```bash
       git add -A

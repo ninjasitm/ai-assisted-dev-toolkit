@@ -6,4 +6,4 @@ Commit and push changes to the AI-Assisted Development Toolkit.
 
 $ARGUMENTS
 
-@.claude/prompt-snippets/commit-push.md
+Read and follow `.claude/prompt-snippets/commit-push.md` before executing this command.

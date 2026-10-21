@@ -17,4 +17,4 @@ permissions:
 
 Design APIs, databases, and server-side architecture.
 
-@.claude/agents-snippets/backend-architect.md
+Read and follow `.claude/agents-snippets/backend-architect.md` before performing this role.

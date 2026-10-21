@@ -7,4 +7,4 @@ description: "Forces the laziest solution that actually works — YAGNI, stdlib,
 > **Recommended agent:** `fixer`
 > Apply YAGNI/stdlib discipline
 
-@.claude/prompt-snippets/ponytail.md
+Read and follow `.claude/prompt-snippets/ponytail.md` before executing this command.

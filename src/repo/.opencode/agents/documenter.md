@@ -17,4 +17,4 @@ permissions:
 
 Analyze codebases and create comprehensive documentation.
 
-@.claude/agents-snippets/documenter.md
+Read and follow `.claude/agents-snippets/documenter.md` before performing this role.

@@ -15,4 +15,4 @@ description: "Create an implementation plan from a feature specification or requ
 
 $ARGUMENTS
 
-@.claude/prompt-snippets/plan.md
+Read and follow `.claude/prompt-snippets/plan.md` before executing this command.

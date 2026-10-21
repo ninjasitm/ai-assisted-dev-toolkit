@@ -17,4 +17,4 @@ permissions:
 
 Build a factory job's feature inside its git worktree, following TDD, and log results in build.md.
 
-@.claude/agents-snippets/factory-builder.md
+Read and follow `.claude/agents-snippets/factory-builder.md` before performing this role.

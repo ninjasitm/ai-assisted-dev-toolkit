@@ -10,4 +10,4 @@ $ARGUMENTS
 
 If no target specified, review all templates in `src/repo/` and `src/monorepo/`.
 
-@.claude/prompt-snippets/review.md
+Read and follow `.claude/prompt-snippets/review.md` before executing this command.

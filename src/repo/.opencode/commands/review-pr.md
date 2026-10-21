@@ -13,6 +13,6 @@ description: "Review pull request for code quality and best practices"
 
 Conduct comprehensive code review for pull requests.
 
-@.claude/prompt-snippets/review-pr.md
+Read and follow `.claude/prompt-snippets/review-pr.md` before executing this command.
 
 $ARGUMENTS
