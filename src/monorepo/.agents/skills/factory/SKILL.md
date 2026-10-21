@@ -1,11 +1,11 @@
 ---
 name: factory
-description: Opt-in software factory for feature-sized work. Runs one job through intake questions, a spec gate, a plan gate, build in an isolated git worktree (or in place on request), parallel reviews by lens, approval, and a local merge. Feature docs live in docs/features/, job state in factory/jobs/, and tickets (when the project tracks them) follow the job. Invoked as /factory with a request (intake), start, approve, rework, abandon, status, watch, archive, or prune. Quick fixes stay direct.
+description: Opt-in software factory for feature-sized work. Runs one job through intake questions, a spec gate, a plan gate, build in an isolated git worktree (or in place on request), parallel reviews by lens, approval, and then a merge: local, or a merge request on the forge. Feature docs live in the feature folders, job state in factory/jobs/, and tickets (when the project tracks them) follow the job. Invoked as /factory with a request (intake), start, approve, rework, abandon, status, watch, archive, or prune. Quick fixes stay direct.
 ---
 
 # Factory (orchestrator)
 
-One orchestrator session runs a feature through intake → spec → plan → build → review → approve → merge. Agents get their context from files and each agent writes only its own file. You are the orchestrator: you ask the intake questions, dispatch agents, read their files, rewrite `job.json`, run the gates with the operator, handle tickets, and run the merge. You never write code, specs, plans, reviews, or `qa.md` yourself. Exceptions: you write `intake.md` from the operator's answers, `spec-<k>.md` and `plan-<k>.md` from the operator's change requests, `tasks.md` ticket keys, the feature folder rename and copy, the feature docs commit on the job branch, worktree and branch removal, the moves and branch deletions in Archive, `decision.md` with `ESCALATE` when retries run out, `merge-conflict.md` on a merge conflict, and `rework-<k>.md` from the user's note.
+One orchestrator session runs a feature through intake → spec → plan → build → review → approve → merge. Agents get their context from files and each agent writes only its own file. You are the orchestrator: you ask the intake questions, dispatch agents, read their files, rewrite `job.json`, run the gates with the operator, handle tickets, and run the merge. You never write code, specs, plans, reviews, or `qa.md` yourself. Exceptions: you write `intake.md` from the operator's answers, `spec-<k>.md` and `plan-<k>.md` from the operator's change requests, `tasks.md` ticket keys, the feature folder rename and copy, the feature docs commit on the job branch, worktree and branch removal, the moves and branch deletions in Archive, `decision.md` with `ESCALATE` when retries run out, `merge-conflict.md` on a merge conflict, `bootstrap.md` on a failed worktree bootstrap step, the push and merge request in `push-mr` mode (see Merge procedure), and `rework-<k>.md` from the user's note.
 
 The factory is opt-in and sits alongside Feature Builder and TDD. Nothing runs unless the user invokes `/factory`.
 
@@ -19,6 +19,8 @@ Bootstrap replaces these when it adopts the template. The names below have no br
 | FACTORY_PORT_BASE | Base dev-server port for job ports | `5100` |
 | APPROVAL_MODE | `human` stops at `awaiting-human`; `auto` merges on `APPROVE` | `human` |
 | FACTORY_REVIEW_LENSES | Comma list drawn from `code, security, ux, ui` | `code, security` |
+| FACTORY_FEATURE_PATHS | Feature-folder roots, comma list, relative to the repo root. A `*` matches one folder name. Intake, Start, and Status search every root. A new feature goes to the first root without `*`, or to a `*` root when its code sits in exactly one app (see Feature folders) | monorepo: `apps/*/docs/features, docs/features`; repo: `docs/features` |
+| MERGE_MODE | `local`: `--no-ff` merge on this machine, never pushed. `push-mr`: push `factory/<id>` and open a merge or pull request with the forge CLI; the forge merges. Any other value is `local` | `local` |
 
 ## When to use
 
@@ -32,20 +34,20 @@ Bootstrap replaces these when it adopts the template. The names below have no br
 | --- | --- |
 | `/factory [--in-place] <request>` | Intake (see Intake): read the project, ask only glaring questions, then continue as `start` |
 | `/factory start [--in-place] <request \| KEY \| slug \| job-id>` | Resolve the feature folder, or resume its open job (see Start). `--in-place` applies only to a new job |
-| `/factory approve <job-id>` | Merge a job in `awaiting-human` or `needs-human`; on a `merged` job, move its tickets to Done |
+| `/factory approve <job-id>` | Merge a job in `awaiting-human` or `needs-human` (`local`), or push it and open its merge request (`push-mr`, see Merge procedure). In `push-mr`, approving an `awaiting-human` job whose request is open finishes it once the forge has merged it. On a `merged` job, move its tickets to Done |
 | `/factory rework <job-id> <note>` | Write a rework note, start a fresh builder, reset the retry budget |
 | `/factory abandon <job-id>` | Close a job that will not continue. Nothing is merged. The worktree and branch are removed only when the branch has no unmerged commits (see Abandon) |
 | `/factory status [--all]` | Summarize open jobs from their `job.json` (read-only). Closed jobs are hidden unless `--all` (see Status) |
 | `/factory watch [--all]` | Show the status table, then the command for the live view to run in a terminal (read-only). `--all` as for status |
 | `/factory archive [--all] [--dry-run]` | Move closed jobs to `factory/archive/` (see Archive). Open jobs never move |
-| `/factory prune [--all] [--abandoned] [--dry-run]` | Permanently delete closed jobs from `factory/jobs/` and `factory/archive/` (see Prune). Open jobs and `docs/features/` are never touched |
+| `/factory prune [--all] [--abandoned] [--dry-run]` | Permanently delete closed jobs from `factory/jobs/` and `factory/archive/` (see Prune). Open jobs and feature folders are never touched |
 
 A first argument of `start`, `approve`, `rework`, `abandon`, `status`, `watch`, `archive`, or `prune` selects its row. Anything else is a request for intake. A bare job id that matches an existing `factory/jobs/<id>/` or `factory/archive/<id>/` is not a request: it goes to Start. An archived job is closed. `rework` and `abandon` refuse it. `approve` on an archived `merged` job only moves its tickets to Done, and merges nothing.
 
 ## Layout
 
 ```
-docs/features/<KEY>-<slug>/  tracked by the project; feature docs
+<feature root>/<KEY>-<slug>/  tracked by the project; feature docs (roots: {{FACTORY_FEATURE_PATHS}})
   spec.md                    spec-writer, spec mode (from the feature spec template)
   plan.md                    spec-writer, plan mode: approach, steps, and the **Size:** line
   tasks.md                   spec-writer, plan mode, large work only
@@ -53,6 +55,7 @@ docs/features/<KEY>-<slug>/  tracked by the project; feature docs
 factory/
   README.md                  setup and reference
   .gitignore                 ignores jobs/ and archive/
+  worktree-bootstrap.md      project-owned steps run in each new worktree (see Worktree)
   jobs/                      runtime state, ignored by git
     <NNN-slug>/
       job.json               orchestrator only; rewrite the whole file
@@ -63,13 +66,25 @@ factory/
       round-<N>/review-<lens>.md   one per configured lens
       decision.md            approver (or you, on escalation)
       merge-conflict.md      you, on a merge conflict (blocks approve)
+      bootstrap.md           you, on a failed worktree bootstrap step (blocks the build)
       rework-<k>.md          you, from the user's note
       main-copies/           feature docs moved aside at merge (see Merge procedure)
   archive/                   closed jobs moved here by /factory archive, ignored by git
     <NNN-slug>/              same layout as jobs/; never resumed
 ```
 
-`<KEY>` is an issue key in the project's issue key format (`^[A-Z][A-Z0-9]+-\d+$`, as in `PROJ-1234`, the format `AGENTS.md` documents). Without a ticket, the folder is `docs/features/<slug>/` and gets its key later if tracking starts. Feature folders always live in the repository root's `docs/features/`. In a monorepo they are not per app: `apps/<app>/docs/features/` is never used for factory jobs.
+`<KEY>` is an issue key in the project's issue key format (`^[A-Z][A-Z0-9]+-\d+$`, as in `PROJ-1234`, the format `AGENTS.md` documents). Without a ticket, the folder is `<root>/<slug>/` and gets its key later if tracking starts.
+
+### Feature folders
+
+Feature folders live under the roots in `{{FACTORY_FEATURE_PATHS}}`, relative to the repository root. Every root is searched. Where a new folder goes:
+
+- **Literal root** (no `*`): the first literal root is the home for cross-cutting features. In a single-package repo, that is the only root.
+- **Per-app root** (`apps/*/docs/features`): a new feature goes there when the request's code sits in exactly one app directory the glob matches. Intake or Start names that app, creates `apps/<app>/docs/features/` if it is missing, and says the chosen folder in chat before creating anything. Code in several apps, or none, goes to the first literal root.
+- **Existing folders** keep their place, wherever they were created. A feature is found by its folder name, not by its root.
+- **Feature-root excludes**: git pathspec excludes for the feature folders. For each root, `':(exclude,glob)<root>'`, so `apps/*/docs/features` becomes `':(exclude,glob)apps/*/docs/features'`. Wherever this skill says "feature-root excludes", use one per root.
+
+`job.json` records the chosen folder in `feature_dir`.
 
 ### job.json
 
@@ -86,6 +101,7 @@ factory/
   "branch": "factory/001-onboarding-bootstrap",
   "worktree": true,
   "worktree_path": "/abs/path/to/repo-factory/001-onboarding-bootstrap",
+  "mr": null,
   "failed_stage": null,
   "stage": "awaiting-plan",
   "round": 1,
@@ -105,10 +121,11 @@ factory/
 - `tracker_errors`: failed ticket transitions or creations, as short strings. Reported, never blocking.
 - `worktree`: `true` (default) builds in a git worktree. `false` builds in place in the main checkout (see In-place mode). Set when the job is created; changed only at the plan gate.
 - `worktree_path`: absolute path of the job's worktree, or `null` for an in-place job and before the build starts.
+- `mr`: URL of the merge or pull request opened in `push-mr` mode, or `null`. Set once; later approvals read its state (see Merge procedure).
 - `failed_stage`: `spec` or `plan` when the job is `needs-human` because its spec or plan agent failed, else `null`. `/factory start` reruns that stage (see Start).
 - `reviews` values are `pending`, `PASS`, or `CHANGES`.
 
-Stages, in order: `spec` (spec-writer running), `awaiting-spec` (spec gate), `plan` (plan writer running), `awaiting-plan` (plan gate), `build`, `review`, `approve`, `awaiting-human`, `merged`, `needs-human`. `abandoned` is set by `/factory abandon`, from any open stage. Set `updatedAt` on every write. Use `date -u +%Y-%m-%dT%H:%M:%SZ`.
+Stages, in order: `spec` (spec-writer running), `awaiting-spec` (spec gate), `plan` (plan writer running), `awaiting-plan` (plan gate), `build`, `review`, `approve`, `awaiting-human`, `merged`, `needs-human`. In `push-mr` mode, `awaiting-human` with `mr` set means the request is open on the forge and waiting for its merge. `abandoned` is set by `/factory abandon`, from any open stage. Set `updatedAt` on every write. Use `date -u +%Y-%m-%dT%H:%M:%SZ`.
 
 A job is **closed** when its stage is `merged` or `abandoned`. Every other job is **open**, and every open-job check in this skill uses that definition. Closed jobs that `/factory archive` moved to `factory/archive/` are archived (see Archive). A job **holds its build location** when it is open and has reached the build: its stage is `build`, `review`, `approve`, or `awaiting-human`, or `needs-human` with `failed_stage` `null`. A worktree job holds a worktree, and an in-place job holds the main checkout, for as long as it holds its build location.
 
@@ -116,10 +133,11 @@ A job is **closed** when its stage is `merged` or `abandoned`. Every other job i
 
 `/factory <request>` starts here. Intake writes nothing until its questions are answered, so the operator can answer before any folder, job, or spec exists.
 
-1. **Analyze, read-only.** Read the project's `AGENTS.md`. List `docs/features/` and read the title and Summary of each `spec.md` whose name or text matches the request's keywords, looking for related or overlapping features. Skim the code the request touches with glob and grep. Work out the feature folder the way Start steps 1 and 2 would, without creating anything.
+1. **Analyze, read-only.** Read the project's `AGENTS.md`. List every feature root in `{{FACTORY_FEATURE_PATHS}}` (a `*` root expands to the app folders that exist) and read the title and Summary of each `spec.md` whose name or text matches the request's keywords, looking for related or overlapping features. Skim the code the request touches with glob and grep, and note which app directories it sits in. Work out the feature folder the way Start steps 1 and 2 would, without creating anything.
 2. **Ask only glaring questions.** Ask at most five, in chat, as a numbered list, then wait. Ask only when one of these holds:
    - The scope is ambiguous: two readings lead to different specs.
-   - The request conflicts with or duplicates an existing feature in `docs/features/`.
+   - The request conflicts with or duplicates an existing feature in a feature root.
+   - A `*` root in `{{FACTORY_FEATURE_PATHS}}` applies, and the request's code sits in several apps or none, so the folder is not clear (see Feature folders). Ask which folder.
    - The target user, page, or system is missing.
    - No acceptance is implied: there is no way to tell when it is done.
 
@@ -143,8 +161,8 @@ Strip a leading `--in-place` first. It is a flag, not part of the argument. Then
 
 1. No argument: ask for a request, key, slug, or job id.
 2. A job id (`^\d{3,}-[a-z0-9-]+$`) with a folder at `factory/jobs/<id>/`: resume that job, or report that it is closed (see the resume table). A job id with a folder at `factory/archive/<id>/` is archived: say so and stop. Archived jobs are not resumable. To work on the feature again, `/factory start <slug or KEY>` creates a new job.
-3. An issue key (`^[A-Z][A-Z0-9]+-\d+$`): match `docs/features/<KEY>-*/` in the main checkout.
-4. A kebab slug (`^[a-z0-9]+(-[a-z0-9]+)*$`): match `docs/features/<slug>/` or `docs/features/<KEY>-<slug>/`, where `<KEY>` has the key format in step 3.
+3. An issue key (`^[A-Z][A-Z0-9]+-\d+$`): match `<root>/<KEY>-*/` in every feature root of the main checkout.
+4. A kebab slug (`^[a-z0-9]+(-[a-z0-9]+)*$`): match `<root>/<slug>/` or `<root>/<KEY>-<slug>/` in every feature root, where `<KEY>` has the key format in step 3.
 5. Anything else is a free-text request. Derive a 2–4 word kebab slug from it, then match as in step 4.
 
 ### 2. Resolve the feature folder
@@ -154,8 +172,8 @@ Whichever way the folder was found, the job's key is the `<KEY>` in its name (`P
 - **One match:** continue that feature. Its existing `spec.md`, `plan.md`, and `tasks.md` are inputs to the spec writer.
 - **Several matches:** list them and ask which one.
 - **None:**
-  - From a key: read the ticket title through the [issue-tracker](../issue-tracker/SKILL.md) skill (MCP first, CLI fallback). Derive a kebab slug from the title (lowercase, non-alphanumerics to `-`, at most 4 words). Create `docs/features/<KEY>-<slug>/`. If the ticket cannot be read, stop and ask for a slug. Do not guess.
-  - From a slug or free text: create `docs/features/<slug>/`.
+  - From a key: read the ticket title through the [issue-tracker](../issue-tracker/SKILL.md) skill (MCP first, CLI fallback). Derive a kebab slug from the title (lowercase, non-alphanumerics to `-`, at most 4 words). Create `<target>/<KEY>-<slug>/`, where `<target>` is the new-feature folder (see Feature folders). If the ticket cannot be read, stop and ask for a slug. Do not guess.
+  - From a slug or free text: create `<target>/<slug>/`, with the same `<target>`.
 
 ### 3. Resume or create the job
 
@@ -179,7 +197,7 @@ Resume by stage:
 | `awaiting-human` | Print the approver's rationale, the suggested checks from `qa.md` (see QA guidance), and the `/factory approve` command |
 | `needs-human`, `failed_stage` `spec` | Rerun the spec stage (see Spec), then show the spec gate |
 | `needs-human`, `failed_stage` `plan` | Rerun the plan stage (see Plan), then show the plan gate |
-| `needs-human`, otherwise | Print the reason from `decision.md`, `merge-conflict.md`, or `build.md`, and the options: rework, approve, or abandon |
+| `needs-human`, otherwise | Print the reason from `decision.md`, `merge-conflict.md`, `bootstrap.md`, or `build.md`, and the options: rework, approve, or abandon |
 | `abandoned` | Closed. Say so and stop. To work on the feature again, run `/factory start <slug or KEY>`, which creates a new job |
 | Archived (in `factory/archive/`, any stage) | Closed. Say so and stop (see Start step 1) |
 
@@ -267,7 +285,7 @@ Runs once, after the operator confirms the plan and before the build location is
 2. **Parent.** If `issue_key` is set, that ticket is the parent. Otherwise create the parent ticket. Set `issue_key` to its key.
 3. **Sub-tasks.** Run the `/assign-tasks` flow on the feature's `tasks.md`, with the issue-tracker skill's epic discovery and the flow's consolidation rules. Create one ticket per `tasks.md` line that has no key yet, under the parent.
 4. **Write keys.** Append ` — <KEY>` to each line as its ticket is created. Lines that already have a key are skipped.
-5. **Rename.** If the folder had no key, rename `docs/features/<slug>/` to `docs/features/<KEY>-<slug>/`. Use `git mv` when git tracks the folder, `mv` otherwise. Stop if the target exists. Then update `feature_dir` in `job.json`. The rename is committed on the job branch with the feature docs (see Feature docs commit).
+5. **Rename.** If the folder had no key, rename `<parent>/<slug>/` to `<parent>/<KEY>-<slug>/`, where `<parent>` is the feature root that holds it (the parent of `feature_dir`). Use `git mv` when git tracks the folder, `mv` otherwise. Stop if the target exists. Then update `feature_dir` in `job.json`. The rename is committed on the job branch with the feature docs (see Feature docs commit).
 
 If a ticket cannot be created, stop at `awaiting-plan`. Report the lines that have keys and the error, and record it in `tracker_errors`. The operator can fix the cause and run `/factory start <job-id>`, or switch tracking to `none`.
 
@@ -278,14 +296,23 @@ The default build location. Use the [using-git-worktrees](../using-git-worktrees
 - Branch `factory/<id>` from `{{DEFAULT_BRANCH}}`.
 - Path `../<repo-name>-factory/<id>/` relative to the main checkout, where `<repo-name>` is the basename of the main checkout. Record it in `worktree_path`.
 - Create it at the start of the build stage, after the plan gate and tracking. Reuse it if it exists (rework and repair).
-- Copy the job's `spec.md`, `plan.md`, and `tasks.md` (if any) from the main checkout's feature folder into the same relative path in the worktree. The builder ticks `tasks.md` there. Then make the feature docs commit (next section).
+- Copy the job's `spec.md`, `plan.md`, and `tasks.md` (if any) from the main checkout's feature folder into the same relative path in the worktree. The builder ticks `tasks.md` there. Then run the bootstrap (next subsection) and make the feature docs commit.
 - Job state stays in the main checkout's `factory/jobs/<id>/`, never in the worktree.
+
+### Worktree bootstrap
+
+Each new worktree needs its own setup: dependencies or vendored packages, local env files, and a database for the job. The project lists those steps in `factory/worktree-bootstrap.md`, one shell command per line, in order. Comment lines are notes, and the default file has no active steps. The project edits the file; this skill only runs it.
+
+- Run each step from the worktree root, after the copy above and before the feature docs commit. A reused worktree (rework, repair) reruns the steps, so they must be safe to run again.
+- Each step gets these variables: `FACTORY_JOB_ID` (the job id, for names such as a per-job database), `FACTORY_PORT_BUILDER` (the builder's dev-server port), `FACTORY_WORKTREE` (the worktree path), and `FACTORY_MAIN_CHECKOUT` (the main checkout, where ignored local files such as `.env` live).
+- A step that fails stops the build before the builder is dispatched. Write `bootstrap.md` in the job folder with the step, its exit code, and the last lines of its output; set stage `needs-human`. The worktree stays. The operator fixes the cause, then runs `/factory rework <id>`, which reruns the bootstrap before the builder. Delete `bootstrap.md` once every step passes.
+- In-place builds do not bootstrap. The main checkout is the environment, so run the steps by hand there if it lacks them.
 
 ## Feature docs commit
 
 Runs once the job's branch exists, in its build location (the worktree, or the main checkout for an in-place job), before the builder is dispatched. It puts the job's feature docs on the branch, so the main checkout can stay clean and the merge carries them:
 
-1. Remove the old unkeyed folder when the feature folder was renamed to its keyed name: `git rm -r -q --ignore-unmatch -- docs/features/<slug>`. Skip it when `feature_dir` is `docs/features/<slug>`.
+1. Remove the old unkeyed folder when the feature folder was renamed to its keyed name: `git rm -r -q --ignore-unmatch -- <parent>/<slug>`, where `<parent>` is the parent of `feature_dir`. Skip it when `feature_dir` is `<parent>/<slug>`.
 2. `git add -A -- <feature_dir>`.
 3. `git diff --cached --quiet || git commit -q -m "docs: feature docs for <id>"`. Nothing is committed when nothing is staged.
 
@@ -298,7 +325,7 @@ Used only when `worktree` is `false`: the operator asked for it with `--in-place
 Create the branch at build start, after the plan gate and tracking, only when all four checks pass. If one fails, stay at `awaiting-plan` and tell the operator which one:
 
 - The main checkout is on `{{DEFAULT_BRANCH}}`.
-- `git status --porcelain --untracked-files=no -- . ':(exclude)docs/features'` is empty. The feature docs are excluded because the spec writer and tracking write there, and the feature docs commit carries them onto the branch.
+- `git status --porcelain --untracked-files=no -- . <feature-root excludes>` is empty. The feature docs are excluded because the spec writer and tracking write there, and the feature docs commit carries them onto the branch.
 - No other job with `worktree` `false` is open (not `merged` or `abandoned`).
 - No job with `worktree` `true` holds its build location.
 
@@ -394,8 +421,9 @@ Tickets follow the job. The parent and every sub-task listed in `tasks.md` move 
 | --- | --- |
 | Build starts, including rework | In Progress |
 | Review round starts | In Review |
-| Human approves and the merge runs (`/factory approve`) | Done |
+| The merge completes: the local merge, or in `push-mr` the finish step after the forge merged the request (`/factory approve`) | Done |
 | `/factory approve` on a `merged` job (for example after `auto` merged it) | Done |
+| `push-mr` opens or updates the request | In Review (no change) |
 | `/factory abandon` | Left as they are. The report lists their keys |
 
 Rules:
@@ -419,7 +447,7 @@ Rules:
    <the user's note, verbatim>
    ```
 
-4. Set `round` to `N`, stage `build`. Move tracked tickets to In Progress. For an in-place job, switch the main checkout to `factory/<id>` if needed (see In-place mode). Dispatch a fresh `factory-builder` in rework mode. It reads the latest `rework-<k>.md` and rewrites `qa.md`. Wait for it. Then continue from step 6's status check on `build.md` (do not dispatch the builder again), and run review round `N` from step 7.
+4. Set `round` to `N`, stage `build`. Move tracked tickets to In Progress. For an in-place job, switch the main checkout to `factory/<id>` if needed (see In-place mode). For a worktree job, rerun the bootstrap first (see Worktree bootstrap); a failed step stops the rework the way it stops a build. Dispatch a fresh `factory-builder` in rework mode. It reads the latest `rework-<k>.md` and rewrites `qa.md`. Wait for it. Then continue from step 6's status check on `build.md` (do not dispatch the builder again), and run review round `N` from step 7.
 
 The new cycle starts with a fresh repair budget. Old rounds and reviews are kept, not overwritten.
 
@@ -448,11 +476,11 @@ Rules:
 3. Refuse unless the first line of `build.md` is exactly `STATUS: READY`. A job that failed before its build has no `build.md`: say so, and point to `/factory start <job-id>` (for a failed spec or plan step) or `/factory abandon <job-id>`.
 4. Refuse while `merge-conflict.md` exists in the job folder. The user resolves the conflict on the branch, then removes that file.
 5. Print the reason the job stopped before merging, so the user sees what they approve: the `ESCALATE` rationale in `decision.md`, the `Not verified` items, or the failed agent. For `awaiting-human`, print the approver's rationale.
-6. Run the merge procedure.
+6. Run the merge procedure for `{{MERGE_MODE}}`. In `push-mr`, a job with `mr` set takes the finish path there instead.
 
 ## Abandon
 
-`/factory abandon <job-id>` closes a job that will not continue, such as one stopped before its build or one the operator no longer wants. It merges nothing and pushes nothing.
+`/factory abandon <job-id>` closes a job that will not continue, such as one stopped before its build or one the operator no longer wants. It merges nothing and pushes nothing. If the job has `mr` set, the report gives its URL: abandon does not close the request, so the operator closes it on the forge.
 
 1. Refuse if the stage is already `merged` or `abandoned`. If an agent for the job may still be running (stage `spec`, `plan`, `build`, `review`, or `approve`), confirm with the operator in chat first, because the agent may still write its file.
 2. Set stage `abandoned`, `failed_stage` `null`, and `updatedAt`.
@@ -466,22 +494,44 @@ Rules:
 
 ## Merge procedure
 
+Mode: `{{MERGE_MODE}}`. Exactly `push-mr` runs the forge procedure, after the local merge below. Any other value runs the local merge, the default and the only mode that never pushes.
+
+### Local merge
+
 Local only. **Never push.** Never force-delete a branch or worktree.
 
-1. **Preconditions.** Worktree jobs: the main checkout is on `{{DEFAULT_BRANCH}}`. In-place jobs: the main checkout is on `factory/<id>`. For both, `git status --porcelain --untracked-files=no -- . ':(exclude)docs/features'` is empty. Feature docs are excluded here because step 3 reconciles them. Untracked files, including ignored `factory/jobs/**`, do not block. Worktree jobs also stop while another in-place job holds its build location (see Stages). Say which job it is: "In-place job `<id>` holds the main checkout; approve or abandon it first." If a precondition fails, stop and tell the user. Do not change the stage. For an in-place job, once the checks pass, run `git switch {{DEFAULT_BRANCH}}`. The branch stays in place.
+1. **Preconditions.** Worktree jobs: the main checkout is on `{{DEFAULT_BRANCH}}`. In-place jobs: the main checkout is on `factory/<id>`. For both, `git status --porcelain --untracked-files=no -- . <feature-root excludes>` is empty. Feature docs are excluded here, through the feature-root excludes, because step 3 reconciles them. Untracked files, including ignored `factory/jobs/**`, do not block. Worktree jobs also stop while another in-place job holds its build location (see Stages). Say which job it is: "In-place job `<id>` holds the main checkout; approve or abandon it first." If a precondition fails, stop and tell the user. Do not change the stage. For an in-place job, once the checks pass, run `git switch {{DEFAULT_BRANCH}}`. The branch stays in place.
 2. Record `PRE=$(git rev-parse HEAD)`.
-3. **Feature docs.** The branch already carries the job's feature docs (see Feature docs commit), so the main checkout's copies are set aside and its feature paths return to the `{{DEFAULT_BRANCH}}` state. Let `P` be `<feature_dir>`, plus `docs/features/<slug>` when that differs:
+3. **Feature docs.** The branch already carries the job's feature docs (see Feature docs commit), so the main checkout's copies are set aside and its feature paths return to the `{{DEFAULT_BRANCH}}` state. Let `P` be `<feature_dir>`, plus `<parent>/<slug>` (the parent of `feature_dir`) when that differs:
    - Copy each path that `git status --porcelain --untracked-files=all -- <P>` lists into `factory/jobs/<id>/main-copies/`, keeping its path. For a rename, copy the new path. Skip paths that no longer exist.
    - `git reset -q -- <P>`, then `git clean -fdq -- <P>`. This removes only the untracked copies made above.
    - If `git ls-tree -r --name-only {{DEFAULT_BRANCH}} -- <P>` lists files, `git checkout -- <P>` restores them.
 
    This is a move, not a delete. Git refuses a merge that would overwrite local or untracked files, so this step must come first.
 4. `git merge --no-ff factory/<id> -m "Merge factory/<id>: <feature>"`. On conflict run `git merge --abort`, copy the `main-copies/` files back to their paths, write `merge-conflict.md` in the job folder listing the conflicting files, set stage `needs-human`, and report them.
-5. Run the test command from `AGENTS.md` in the main checkout. On failure run `git reset --keep $PRE` (this undoes the merge), copy the `main-copies/` files back to their paths, set stage `needs-human`, and report the failing output. For an in-place job, the main checkout stays on `{{DEFAULT_BRANCH}}` and the branch stays for inspection.
+5. Run the test commands from `AGENTS.md`'s Commands table in the main checkout, scoped to the change. Map the paths in `git diff --name-only $PRE HEAD` to their apps and packages, and run the test command of each one. A changed shared package also runs the test command of every workspace that depends on it (the package manifests show which). Run the root test command too when the table lists one. On failure run `git reset --keep $PRE` (this undoes the merge), copy the `main-copies/` files back to their paths, set stage `needs-human`, and report the failing output. For an in-place job, the main checkout stays on `{{DEFAULT_BRANCH}}` and the branch stays for inspection.
 6. Worktree jobs: `git worktree remove <worktree>`, then `git branch -d factory/<id>`. In-place jobs: skip the worktree removal and run only `git branch -d factory/<id>`. `-d` refuses unless the branch is merged, which is the safety check. If either fails after the merge succeeded, do not undo the merge. Continue to step 7 and report the leftover worktree or branch path for the user to remove.
 7. Set stage `merged`. If the merge came from `/factory approve`, move the job's tickets to Done (if tracked). After an `auto` merge they stay In Review; tell the user to run `/factory approve <id>` to move them to Done. Report that the merge is local and was not pushed. Print the suggested checks (see QA guidance).
 
 On any `needs-human` outcome, leave the branch and worktree in place so the user can inspect them.
+
+### Push and merge request (`push-mr`)
+
+Runs in place of the local merge, when `{{MERGE_MODE}}` is `push-mr` and the approval is an `/factory approve` or an `auto` APPROVE. It pushes the branch and opens one merge request (GitLab) or pull request (GitHub). The forge's review and merge are the final gate, so nothing merges locally, the main checkout is not touched, and force-push is never used.
+
+1. **Forge and preconditions.** Pick the forge from `git remote get-url origin`: a GitHub host uses `gh`, a GitLab host uses `glab`. Stop and tell the operator if that CLI is missing or its auth check fails (`gh auth status` or `glab auth status`). The build location must have no tracked changes: `git -C <build location> status --porcelain --untracked-files=no` is empty. Do not change the stage on a failed precondition.
+2. **Test gate.** Run the test commands of the local merge, step 5, in the build location on the branch, before any push. A failure sets stage `needs-human`, reports the output, and pushes nothing.
+3. **Push.** `git -C <build location> push -u origin factory/<id>`. A rejected push stops here: set stage `needs-human` and report the message. Do not force.
+4. **Open the request, once.** Skip this step when `mr` is already set. Otherwise:
+   - GitHub: `gh pr create --base {{DEFAULT_BRANCH}} --head factory/<id> --title "<feature>" --body-file <job folder>/decision.md`
+   - GitLab: `glab mr create --source-branch factory/<id> --target-branch {{DEFAULT_BRANCH}} --title "<feature>" --description-file <job folder>/decision.md --yes`
+
+   Record the URL the command prints in `mr`. A failed command sets stage `needs-human` and reports the error. Nothing is recorded, and rerunning approve retries from step 1.
+5. **Stage.** Set stage `awaiting-human`. Tickets stay In Review. Print the request URL and say: "Review and merge it on the forge, then run `/factory approve <id>` to finish." Under `auto`, the same message applies: the forge merge stays the human gate.
+6. **Finish (`/factory approve` with `mr` set).** Run `git fetch origin`, then read the request's state: `gh pr view <mr> --json state --jq .state`, or `glab mr view <mr> --output json` and its `state` field. If the CLI's flags differ, check its `--help` first.
+   - **Merged:** a worktree job runs `git worktree remove <worktree_path>`. An in-place job runs `git switch {{DEFAULT_BRANCH}}` in the main checkout when it is on `factory/<id>`. Then `git branch -D factory/<id>`. This is the one place the local merge's `-d` rule does not apply: `-d` refuses after a squash merge, and the forge's merge is the proof. If the removal fails, keep what remains and report the path. Then set the main checkout's feature copies aside with local merge step 3, so the default branch's merged docs can arrive on pull, and tell the operator to pull `{{DEFAULT_BRANCH}}`. Set stage `merged`, move tickets to Done (if tracked), and report.
+   - **Open:** if `git rev-parse factory/<id>` differs from `git rev-parse origin/factory/<id>`, the job has commits the request lacks (for example after a rework). Run steps 2 and 3 to update it, and report that the request was updated. Otherwise report that it is still open, and stop. Nothing else changes.
+   - **Closed without merge:** keep stage `awaiting-human`, report it, and offer rework, reopening the request on the forge, or abandon.
 
 ## Status
 
@@ -496,7 +546,7 @@ Closed jobs (`merged` or `abandoned`) are hidden by default. Print one line in t
 | `plan` | Wait, or `/factory start <id>` to resume if the session ended |
 | `awaiting-plan` | `/factory start <id>` to review the plan and confirm it |
 | `build`, `review`, `approve` | Wait, or `/factory start <id>` to resume if the session ended |
-| `awaiting-human` | Review the branch and its `qa.md` (suggested checks, not a gate), then `/factory approve <id>` |
+| `awaiting-human` | Review the branch and its `qa.md` (suggested checks, not a gate), then `/factory approve <id>`. In `push-mr` with `mr` set: merge the request on the forge, then `/factory approve <id>` to finish. Print the request URL |
 | `needs-human` | Read the reason. A failed spec or plan step: `/factory start <id>` reruns it. After a build: `/factory rework <id> <note>` or `/factory approve <id>`. Either way, `/factory abandon <id>` closes the job |
 | `abandoned` | Nothing: the job is closed. To work on the feature again, `/factory start <slug or KEY>` creates a new job |
 | `merged` | Nothing, unless tickets are not Done yet: `/factory approve <id>` |
@@ -533,7 +583,7 @@ The live view needs an interactive terminal, which agent shells do not have, so 
 
 ## Prune
 
-`/factory prune [--all] [--abandoned] [--dry-run]` permanently deletes closed jobs from both `factory/jobs/` and `factory/archive/`. By default only `merged` jobs are deleted. `--abandoned` also deletes `abandoned` jobs. A pruned job cannot be recovered. It never deletes an open job, and it never touches `docs/features/`.
+`/factory prune [--all] [--abandoned] [--dry-run]` permanently deletes closed jobs from both `factory/jobs/` and `factory/archive/`. By default only `merged` jobs are deleted. `--abandoned` also deletes `abandoned` jobs. A pruned job cannot be recovered. It never deletes an open job, and it never touches a feature folder.
 
 The age rule is the same as Archive: by default only jobs whose `updatedAt` is more than 7 days ago, and `--all` drops the age limit. A job with no valid `updatedAt` is not selected. `--abandoned` adds `abandoned` jobs under the same rule. Without it, abandoned jobs are never selected, and the list counts the ones it kept.
 
