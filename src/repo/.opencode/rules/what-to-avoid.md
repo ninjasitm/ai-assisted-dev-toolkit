@@ -2,7 +2,7 @@
 
 Patterns and practices to avoid.
 
-@.claude/rules-snippets/what-to-avoid.md
+Read and follow `.claude/rules-snippets/what-to-avoid.md` when these standards apply.
 
 ## Key points
 

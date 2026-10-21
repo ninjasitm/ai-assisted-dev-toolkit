@@ -2,7 +2,7 @@
 
 Agent conduct and clarification rules for ambiguous requirements.
 
-@.claude/rules-snippets/agent-conduct.md
+Read and follow `.claude/rules-snippets/agent-conduct.md` when these standards apply.
 
 ## Key points
 

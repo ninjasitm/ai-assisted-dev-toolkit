@@ -2,7 +2,7 @@
 
 Core library and framework usage conventions.
 
-@.claude/rules-snippets/core-libraries.md
+Read and follow `.claude/rules-snippets/core-libraries.md` when these standards apply.
 
 ## Key points
 

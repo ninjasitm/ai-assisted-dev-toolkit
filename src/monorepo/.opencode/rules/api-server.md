@@ -2,7 +2,7 @@
 
 API and server-side development standards.
 
-@.claude/rules-snippets/api-server.md
+Read and follow `.claude/rules-snippets/api-server.md` when these standards apply.
 
 ## Key points
 

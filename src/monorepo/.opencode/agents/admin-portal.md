@@ -17,4 +17,4 @@ permissions:
 
 Build administrator portals with RBAC, system dashboards, reporting, analytics, and operational tooling.
 
-@.claude/agents-snippets/admin-portal.md
+Read and follow `.claude/agents-snippets/admin-portal.md` before performing this role.

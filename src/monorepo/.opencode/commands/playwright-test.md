@@ -13,4 +13,4 @@ description: "Run or create E2E tests using Playwright"
 
 $ARGUMENTS
 
-@.claude/prompt-snippets/playwright-test.md
+Read and follow `.claude/prompt-snippets/playwright-test.md` before executing this command.

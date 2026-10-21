@@ -13,6 +13,6 @@ description: "Review code for quality, consistency, and adherence to project pat
 
 Review code for quality, security, and adherence to project patterns.
 
-@.claude/prompt-snippets/review.md
+Read and follow `.claude/prompt-snippets/review.md` before executing this command.
 
 $ARGUMENTS

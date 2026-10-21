@@ -15,4 +15,4 @@ description: "Create a feature specification from a natural language description
 
 $ARGUMENTS
 
-@.claude/prompt-snippets/specify.md
+Read and follow `.claude/prompt-snippets/specify.md` before executing this command.

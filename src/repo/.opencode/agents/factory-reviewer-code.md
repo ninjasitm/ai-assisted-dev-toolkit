@@ -17,4 +17,4 @@ permissions:
 
 Review a factory job's branch for correctness, simplicity, reuse, conventions, and docs, and run the project's checks.
 
-@.claude/agents-snippets/factory-reviewer-code.md
+Read and follow `.claude/agents-snippets/factory-reviewer-code.md` before performing this role.

@@ -5,8 +5,8 @@ You are helping to bootstrap AI instructions for this monorepo by analyzing the 
 ## OpenCode version preflight (before any changes)
 
 - Confirm OpenCode use from actual session/runtime evidence or ask the user; directory presence alone is not proof. If only other harnesses are used, skip this preflight and all OpenCode steps.
-- For confirmed OpenCode use, run `opencode --version` before any project writes. Trim output and parse numeric major/minor/patch components, accepting an optional leading `v`; toolkit 4.x requires `major >= 2`.
-- If OpenCode V1 (`major < 2`) is detected, **STOP** before customizing/migrating OpenCode files or writing `.toolkit-version` as `4.0.0`. Ask the user to upgrade OpenCode to V2 or remain on toolkit 3.x.
+- For confirmed OpenCode use, run `opencode --version` before any project writes. Trim output and parse numeric major/minor/patch components, accepting an optional leading `v`; toolkit 4.0.0 and later require `major >= 2`.
+- If OpenCode V1 (`major < 2`) is detected, **STOP** before customizing/migrating OpenCode files or writing `.toolkit-version` as 4.0.0 or later. Ask the user to upgrade OpenCode to V2 or remain on toolkit 3.x.
 - If the CLI is missing, fails, or output is unparseable, **STOP OpenCode steps** and leave the version marker unchanged; ask the user to confirm/install a supported OpenCode version, then rerun this check. Never assume V2.
 - If oh-my-opencode-slim >=3.0.0 is used or planned, require OpenCode >=2.0.7 (compare version components numerically); otherwise **STOP** before changes and ask to upgrade. Proceed only after this gate passes.
 
@@ -68,9 +68,9 @@ You are helping to bootstrap AI instructions for this monorepo by analyzing the 
    | `{{PM_URL}}`                | Project management URL (if applicable)                                                                                                          |
    | `{{PROJECT_KEY}}`           | Project/workspace ID (if applicable)                                                                                                            |
    | `{{PM_ISSUE_KEY}}`          | Issue key format (e.g., PROJ-###, #42)                                                                                                          |
-   | `{{FACTORY_PORT_BASE}}`     | Default `5100`                                                                                                                                  |
-   | `{{APPROVAL_MODE}}`         | Default `human`                                                                                                                                 |
-   | `{{FACTORY_REVIEW_LENSES}}` | Default `code, security`; add `ux, ui` only if the project has a UI and a browser tool is configured (for example a browser MCP server)         |
+   | `{{FACTORY_PORT_BASE}}`     | Only if Factory is installed. Default `5100`                                                                                                                                  |
+   | `{{APPROVAL_MODE}}`         | Only if Factory is installed. Default `human`                                                                                                                                 |
+   | `{{FACTORY_REVIEW_LENSES}}` | Only if Factory is installed. Default `code, security`; add `ux, ui` only if the project has a UI and a browser tool is configured (for example a browser MCP server)         |
 
 3. **Analyze Apps**:
 
@@ -180,23 +180,23 @@ You are helping to bootstrap AI instructions for this monorepo by analyzing the 
 
    - After the version preflight passes, use `agents`/JSON `system` (Markdown bodies for file agents), `request.body.temperature`, ordered `permissions` (`action`/`resource`/`effect`, `shell`/`subagent`, last match wins), `commands`/`subagent`, `plugins` with `{ "package": "…", "options": {} }`, skill-directory arrays, and `mcp.servers` with inverse `disabled` and `timeout.catalog`/`timeout.execution`.
    - Back up V1; native-converted files are incompatible with V1. Merge rather than clobber models/providers/user-global plugins. Only with approval, merge pinned `"plugins": ["oh-my-opencode-slim@3.0.0"]` locally. Slim's separate strict schema retains `prompt`/`permission`/`variant`; do not host-migrate it or silently upgrade the separate external starter.
-   - Templates register the author's native V2 package `@dietrichgebert/ponytail@4.12.0` locally; no local Ponytail source is bundled or ported. Keep `opentmux` commented as V1-only. Native local discovery needs no duplicate registration; do not introduce API ports or bridges or claim tested runtime integration.
-   - Config `instructions` entries are not loaded; ambient root/nested `AGENTS.md` works. `@refs` are ordinary text: explicitly read snippets. `request.body.temperature` remains in config, but the current runner does not send it. Preserve `lsp: true`; use workspace lint/typecheck/compiler commands (no V2 LSP tools/diagnostics currently).
-   - `--env opencode` supplies minimal shared references without other harness activation. Activate on the next run/restart; report only checks actually run with installed V2. Scaffold/placeholder checks are not runtime validation; publishing 4.0.0 has not been executed.
+   - The OpenCode Ponytail plugin (`@dietrichgebert/ponytail`, the author's native V2 package) is installed globally by the operator. Templates do not register or pin it, and no local Ponytail source is bundled or ported. Keep `opentmux` commented as V1-only. Do not introduce API ports or bridges or claim tested runtime integration.
+   - Ambient root/nested `AGENTS.md` works. Config `instructions` entries load only when the runtime injects them (OpenChamber does; other hosts may not), so do not rely on them: write explicit "Read and follow" wrappers regardless. `@refs` are ordinary text: explicitly read snippets. `request.body.temperature` remains in config, but the current runner does not send it. Preserve `lsp: true`; use workspace lint/typecheck/compiler commands (no V2 LSP tools/diagnostics currently).
+   - `--env opencode` supplies minimal shared references without other harness activation. Activate on the next run/restart; report only checks actually run with installed V2. Scaffold/placeholder checks are not runtime validation.
 
    **Ponytail pre-activation cleanup (confirmed OpenCode use only):**
 
    1. In this bootstrap flow, inspect `.opencode/plugins/ponytail.js`, `.opencode/plugins/ponytail.mjs`, and `.opencode/plugins/ponytail.ts` for existing-target leftovers. Verify obsolete toolkit ownership from contents/provenance, not filename alone; absent paths need no deletion. Preserve unrelated/custom plugins and global config.
    2. Back up the local config and verified obsolete toolkit copies, obtain explicit removal approval, then remove ONLY those copies. Do not automatically delete files in the CLI or remove custom plugins.
-   3. With approval, merge/deduplicate upstream `@dietrichgebert/ponytail@4.12.0` registration locally where appropriate, preserving other registrations/options and leaving global config untouched. No API port or bridge.
+   3. Never add `@dietrichgebert/ponytail` to project `.opencode/opencode.jsonc`. Check whether it is installed globally; if not, tell the operator to install it globally and leave global and project config untouched. No API port or bridge.
    4. If any present copy's ownership or safe removal is unverified, or required removal approval is denied, **STOP OpenCode activation and migration completion**; leave `.toolkit-version` unchanged and report blocked, not complete. Proceed/restart only after this gate passes; runtime integration remains untested.
 
    **Create Toolkit Version File:**
 
-   Create a `.toolkit-version` file in the project root with the current toolkit version only after the OpenCode preflight and Ponytail cleanup gate pass (or OpenCode is confirmed out of scope):
+Confirm `.toolkit-version` in the project root. The CLI writes it on install and patch with the installed package version. For toolkit 4.0.0 or later, keep the value the CLI wrote; do not write it by hand or overwrite it with a hard-coded version. If it is missing, run `npx nitm-ai-dev-toolkit patch` only after the OpenCode preflight and Ponytail cleanup gate pass (or OpenCode is confirmed out of scope). Expected form:
 
    ```
-    4.0.0
+<installed package version, for example 5.0.0>
    ```
 
    This file enables `bootstrap-patch` to detect version changes and apply migrations automatically.

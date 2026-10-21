@@ -11,6 +11,6 @@ description: "Commit and push changes with conventional commit messages"
 
 Commit and push changes using conventional commit format.
 
-@.claude/prompt-snippets/commit-push.md
+Read and follow `.claude/prompt-snippets/commit-push.md` before executing this command.
 
 $ARGUMENTS

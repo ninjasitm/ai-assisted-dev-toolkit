@@ -17,4 +17,4 @@ permissions:
 
 Break down feature requests into implementation tasks. Read specifications, analyze codebase patterns, and produce structured plans with dependencies.
 
-@.claude/agents-snippets/planner.md
+Read and follow `.claude/agents-snippets/planner.md` before performing this role.

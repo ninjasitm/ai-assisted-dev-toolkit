@@ -17,4 +17,4 @@ permissions:
 
 Improve code quality and structure while keeping all tests passing. Part of the TDD red-green-refactor cycle.
 
-@.claude/agents-snippets/refactor.md
+Read and follow `.claude/agents-snippets/refactor.md` before performing this role.

@@ -2,7 +2,7 @@
 
 Structured logging standards and best practices.
 
-@.claude/rules-snippets/logging.md
+Read and follow `.claude/rules-snippets/logging.md` when these standards apply.
 
 ## Key points
 

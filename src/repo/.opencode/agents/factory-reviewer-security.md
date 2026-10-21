@@ -17,4 +17,4 @@ permissions:
 
 Audit a factory job's branch diff for security problems in a fresh context.
 
-@.claude/agents-snippets/factory-reviewer-security.md
+Read and follow `.claude/agents-snippets/factory-reviewer-security.md` before performing this role.

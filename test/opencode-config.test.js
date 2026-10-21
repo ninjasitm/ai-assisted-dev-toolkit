@@ -20,7 +20,6 @@ const skills = ['.agents/skills', '.claude/skills'];
 const plugins = [
   'opencode-mem',
   '@tarquinen/opencode-dcp@latest',
-  '@dietrichgebert/ponytail@4.12.0',
 ];
 
 for (const [name, file, template] of [
@@ -35,6 +34,10 @@ for (const [name, file, template] of [
     if (template) {
       assert.match(source, /\/\/ "opentmux": V1-only/);
       assert.doesNotMatch(source, /ponytail.*omitted|local V2 plugin owns/);
+      // The OpenCode Ponytail plugin is installed globally by the operator, never registered here.
+      assert.doesNotMatch(source, /ponytail/i);
+      assert.equal(config.plugins.some((plugin) => plugin.includes('ponytail')), false,
+        'template must not register the Ponytail OpenCode plugin');
     }
 
     assert.ok(Array.isArray(config.skills), 'skills must use the native V2 array');

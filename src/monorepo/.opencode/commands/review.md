@@ -13,6 +13,6 @@ description: "Conduct code review for files or features"
 
 Review code for quality, security, and adherence to project patterns.
 
-@.claude/prompt-snippets/review.md
+Read and follow `.claude/prompt-snippets/review.md` before executing this command.
 
 $ARGUMENTS

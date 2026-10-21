@@ -15,4 +15,4 @@ description: "Bootstrap AI instructions by inferring project details and customi
 
 $ARGUMENTS
 
-@.claude/prompt-snippets/bootstrap.md
+Read and follow `.claude/prompt-snippets/bootstrap.md` before executing this command.

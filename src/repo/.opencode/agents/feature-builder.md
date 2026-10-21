@@ -20,4 +20,4 @@ permissions:
 
 Coordinate end-to-end feature development using subagents for planning, implementation, and review.
 
-@.claude/agents-snippets/feature-builder.md
+Read and follow `.claude/agents-snippets/feature-builder.md` before performing this role.

@@ -2,7 +2,7 @@
 
 Version control and commit conventions.
 
-@.claude/rules-snippets/version-control.md
+Read and follow `.claude/rules-snippets/version-control.md` when these standards apply.
 
 ## Key points
 

@@ -17,4 +17,4 @@ permissions:
 
 Review code changes for correctness, code quality, security, and adherence to project patterns.
 
-@.claude/agents-snippets/reviewer.md
+Read and follow `.claude/agents-snippets/reviewer.md` before performing this role.

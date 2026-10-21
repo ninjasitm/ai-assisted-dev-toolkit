@@ -79,7 +79,9 @@ Implement a feature by completing tasks sequentially with proper tracking.
    git commit -m "feat({{SCOPE}}): {{DESCRIPTION}}"
    ```
 
-   f. **Mark Task Complete**: tick `- [x]` for the task in `tasks.md`
+   f. **Mark Task Complete**:
+   - Slim `tasks.md`: tick `- [x]` on the task's line
+   - Legacy `tasks.md`: tick `- [x]` only on checkboxes under the current task's heading (until the next heading). Never tick checkboxes under other headings. If that heading has no checkboxes, report "no checkboxes under <heading>; nothing ticked" and continue
 
 5. **Post-Implementation Review**:
    - Dispatch **Reviewer** agent on all changes before proceeding

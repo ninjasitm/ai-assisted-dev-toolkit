@@ -2,7 +2,7 @@
 
 UI accessibility and responsive design standards.
 
-@.claude/rules-snippets/ui-accessibility.md
+Read and follow `.claude/rules-snippets/ui-accessibility.md` when these standards apply.
 
 ## Key points
 

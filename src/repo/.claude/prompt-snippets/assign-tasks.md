@@ -50,11 +50,17 @@ When interacting with {{ISSUE_TRACKER}}, use MCP tools first (see the `issue-tra
 1. **Parse Document**:
    - Load the specified document (.md, .txt, .json)
    - Detect document structure (headers, lists, task categories)
-   - For `tasks.md`: each `- [ ]` line is one task. The text after the ID is the summary. A trailing ` — <KEY>` means a ticket already exists, so skip that line. Sub-bullets, if any, are subtasks
+   - For `tasks.md`, detect the format first:
+     - **Slim** (has `- [ ] T<n>` or `- [x] T<n>` lines): each such line is one task. The text after the ID is the summary. Sub-bullets, if any, are subtasks. A line already has a ticket only when it ends with ` — {{PROJECT_KEY}}-<digits>`; skip it then. Any other ` — ` suffix (e.g. ` — depends on T3`) is a note, not a key: keep the line
+     - **Legacy** (no slim lines; has `#{2,4} T<n>` headings, e.g. `## T01`, `### T001`): each `T<n>` heading is one task. Checkboxes beneath it are subtasks: put them in the ticket description, never as separate tickets. Skip a heading that contains `{{PROJECT_KEY}}-<digits>` anywhere (e.g. `## T001 (PROJ-256): …`); it already has a ticket
+     - **Mixed** (slim lines and legacy headings): treat as slim and say in the report that the headings were ignored
+     - **Neither**: treat as a requirement document
+     - Keys are always `{{PROJECT_KEY}}-<digits>`. Nothing else counts as a key
    - For requirement documents: extract task hierarchy: Epic → Story → Task → Subtask
 
 2. **Consolidate First** (BEFORE creating tickets):
-   - **A `tasks.md` from `/tasks` is pre-consolidated**: one line = one ticket. Only merge lines that are clearly one deliverable; do not re-split them
+   - **A slim `tasks.md` from `/tasks` is pre-consolidated**: one line = one ticket. Only merge lines that are clearly one deliverable; do not re-split them
+   - **A legacy `tasks.md` is not pre-consolidated**: one heading = one ticket. Never merge or re-split headings. If the count exceeds the Maximum Ticket Counts, stop and ask before creating anything
    - **Group related items** by component, feature area, or deliverable
    - **Merge small tasks** (< 2 SP) into related larger tasks
    - **Eliminate redundant subtasks** that are obvious steps
@@ -79,10 +85,12 @@ When interacting with {{ISSUE_TRACKER}}, use MCP tools first (see the `issue-tra
    - Set assignees, labels, and story points
    - Create dependency links where noted
    - Ticket description: the task summary plus the acceptance criteria from `spec.md` for that deliverable
-   - Write each ticket key back to its `tasks.md` line after the em dash (`- [ ] T1 Schema + migration — PROJ-124`)
+   - **Slim `tasks.md`**: append ` — <KEY>` at the end of the task's line, after any notes (`- [ ] T1 Schema + migration — PROJ-124`)
+   - **Legacy `tasks.md`**: never write back. Record heading → ticket key in the report instead
 
 6. **Generate Report**:
    - List all created tickets with IDs
+   - **Legacy `tasks.md`**: heading → ticket key mapping, plus headings skipped because they already had a key
    - Show hierarchy and relationships
    - Report total story points
    - **Consolidation summary**: "Merged X raw items into Y tickets"
@@ -152,6 +160,8 @@ Creating tickets...
 - Documentation updates across files
 
 ## Document Format Support
+
+**Legacy `tasks.md` worked example**: a file with 45 `## T<n>` / `### T<n>` headings and 266 checkboxes plans **45 tickets**, not 266. Each ticket's description lists that heading's checkboxes. If 2 headings already carry a `{{PROJECT_KEY}}-<digits>` key, plan 43. Do not modify the file; report the heading → key mapping.
 
 **Markdown Headers**:
 

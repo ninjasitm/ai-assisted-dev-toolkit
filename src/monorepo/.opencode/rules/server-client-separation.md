@@ -2,7 +2,7 @@
 
 Server and client code boundary enforcement.
 
-@.claude/rules-snippets/server-client-separation.md
+Read and follow `.claude/rules-snippets/server-client-separation.md` when these standards apply.
 
 ## Key points
 

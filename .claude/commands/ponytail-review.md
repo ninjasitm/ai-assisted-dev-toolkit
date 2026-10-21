@@ -1,6 +1,6 @@
 ---
 description: Review changes for over-engineering, what can be deleted
-allowed-tools: "Read, Grep"
+allowed-tools: "Read, Grep, Bash(git diff:*), Bash(git status:*), Bash(git show:*)"
 argument-hint: "no arguments required"
 ---
 

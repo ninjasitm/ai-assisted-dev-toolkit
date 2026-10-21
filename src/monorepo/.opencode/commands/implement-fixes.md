@@ -17,4 +17,4 @@ argument-hint: "bug description or fix requirements"
 
 $ARGUMENTS
 
-@.claude/prompt-snippets/implement-fixes.md
+Read and follow `.claude/prompt-snippets/implement-fixes.md` before executing this command.

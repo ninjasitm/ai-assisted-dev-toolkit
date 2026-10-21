@@ -15,4 +15,4 @@ description: "Create or update the project constitution defining core principles
 
 $ARGUMENTS
 
-@.claude/prompt-snippets/constitution.md
+Read and follow `.claude/prompt-snippets/constitution.md` before executing this command.

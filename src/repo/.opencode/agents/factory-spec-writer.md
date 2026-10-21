@@ -17,4 +17,4 @@ permissions:
 
 Write a testable spec.md for a factory job from a feature request, after inspecting the real code.
 
-@.claude/agents-snippets/factory-spec-writer.md
+Read and follow `.claude/agents-snippets/factory-spec-writer.md` before performing this role.

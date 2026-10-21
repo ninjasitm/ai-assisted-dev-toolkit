@@ -13,4 +13,4 @@ description: "Create {{ISSUE_TRACKER}} tickets from requirements or task files"
 
 $ARGUMENTS
 
-@.claude/prompt-snippets/assign-tasks.md
+Read and follow `.claude/prompt-snippets/assign-tasks.md` before executing this command.

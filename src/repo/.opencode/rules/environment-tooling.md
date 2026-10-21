@@ -2,7 +2,7 @@
 
 Environment and tooling configuration.
 
-@.claude/rules-snippets/environment-tooling.md
+Read and follow `.claude/rules-snippets/environment-tooling.md` when these standards apply.
 
 ## Key points
 

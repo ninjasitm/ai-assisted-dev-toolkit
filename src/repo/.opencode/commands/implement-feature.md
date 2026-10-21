@@ -15,4 +15,4 @@ description: "Implement a feature by completing tasks sequentially"
 
 $ARGUMENTS
 
-@.claude/prompt-snippets/implement-feature.md
+Read and follow `.claude/prompt-snippets/implement-feature.md` before executing this command.

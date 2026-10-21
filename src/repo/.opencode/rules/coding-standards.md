@@ -2,7 +2,7 @@
 
 Coding standards and language conventions.
 
-@.claude/rules-snippets/coding-standards.md
+Read and follow `.claude/rules-snippets/coding-standards.md` when these standards apply.
 
 ## Key points
 

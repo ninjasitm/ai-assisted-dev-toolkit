@@ -26,4 +26,4 @@ Subcommands: `[--in-place] <feature request>` · `start [--in-place] <request | 
 
 $ARGUMENTS
 
-@.claude/prompt-snippets/factory.md
+Read and follow `.claude/prompt-snippets/factory.md` before executing this command.

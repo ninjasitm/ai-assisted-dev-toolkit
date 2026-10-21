@@ -15,4 +15,4 @@ description: "Patch AI instructions by fetching updates from the toolkit repo an
 
 $ARGUMENTS
 
-@.claude/prompt-snippets/bootstrap-patch.md
+Read and follow `.claude/prompt-snippets/bootstrap-patch.md` before executing this command.

@@ -17,4 +17,4 @@ permissions:
 
 Write failing tests that define expected behavior. Part of the TDD red-green-refactor cycle.
 
-@.claude/agents-snippets/red.md
+Read and follow `.claude/agents-snippets/red.md` before performing this role.

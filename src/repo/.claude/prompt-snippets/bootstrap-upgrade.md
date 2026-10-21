@@ -1,12 +1,12 @@
-# Bootstrap Upgrade to v4.0
+# Bootstrap Upgrade to toolkit <version>
 
-Upgrade to toolkit 4.0.0, including native OpenCode V2 for confirmed OpenCode users. For pre-3.0 installations, also migrate inline content to snippet-based architecture and clean up duplicate skills. Only modify confirmed harness targets; preserve unrelated harness/Codex behavior.
+Upgrade to toolkit <version> (the installed package version), including native OpenCode V2 for confirmed OpenCode users (toolkit 4.0.0 and later). For pre-3.0 installations, also migrate inline content to snippet-based architecture and clean up duplicate skills. Only modify confirmed harness targets; preserve unrelated harness/Codex behavior.
 
 ## OpenCode version preflight (before any changes)
 
 - Confirm OpenCode use from actual session/runtime evidence or ask the user; directory presence alone is not proof. If only other harnesses are used, skip this preflight and all OpenCode steps.
-- For confirmed OpenCode use, run `opencode --version` before any project writes. Trim output and parse numeric major/minor/patch components, accepting an optional leading `v`; toolkit 4.x requires `major >= 2`.
-- If OpenCode V1 (`major < 2`) is detected, **STOP** before customizing/migrating OpenCode files or writing `.toolkit-version` as `4.0.0`. Ask the user to upgrade OpenCode to V2 or remain on toolkit 3.x.
+- For confirmed OpenCode use, run `opencode --version` before any project writes. Trim output and parse numeric major/minor/patch components, accepting an optional leading `v`; toolkit 4.0.0 and later require `major >= 2`.
+- If OpenCode V1 (`major < 2`) is detected, **STOP** before customizing/migrating OpenCode files or writing `.toolkit-version` as 4.0.0 or later. Ask the user to upgrade OpenCode to V2 or remain on toolkit 3.x.
 - If the CLI is missing, fails, or output is unparseable, **STOP OpenCode steps** and leave the version marker unchanged; ask the user to confirm/install a supported OpenCode version, then rerun this check. Never assume V2.
 - If oh-my-opencode-slim >=3.0.0 is used or planned, require OpenCode >=2.0.7 (compare version components numerically); otherwise **STOP** before changes and ask to upgrade. Proceed only after this gate passes.
 
@@ -21,7 +21,7 @@ Read `.toolkit-version` and select the route before dispatching agents or changi
 
 ## OpenCode migration guardrails
 
-Back up V1; native-converted files are incompatible with V1. Preserve models/providers/user-global plugins. Templates register the author's native V2 package `@dietrichgebert/ponytail@4.12.0`; obsolete toolkit-local Ponytail copies are replaced only after backup and approval (Step 7), with no API port or bridge. Keep `opentmux` commented as V1-only. Only with approval, merge pinned `"plugins": ["oh-my-opencode-slim@3.0.0"]` locally without replacing other registrations. Slim's separate strict schema retains `prompt`/`permission`/`variant`; do not host-migrate it or silently upgrade the separate external starter. Activate on the next run/restart; plugin/runtime integration is untested and publishing 4.0.0 has not been executed.
+Back up V1; native-converted files are incompatible with V1. Preserve models/providers/user-global plugins. The OpenCode Ponytail plugin (`@dietrichgebert/ponytail`) is installed globally by the operator and is never registered by templates or project config; obsolete toolkit-local Ponytail copies are removed only after backup and approval (Step 7), with no API port or bridge. Keep `opentmux` commented as V1-only. Only with approval, merge pinned `"plugins": ["oh-my-opencode-slim@3.0.0"]` locally without replacing other registrations. Slim's separate strict schema retains `prompt`/`permission`/`variant`; do not host-migrate it or silently upgrade the separate external starter. Activate on the next run/restart; plugin/runtime integration is untested.
 
 ## Usage
 
@@ -56,7 +56,7 @@ Run all checks before making any changes:
 3. **Confirm migration scope**:
 
    ```markdown
-   ## 🔄 Bootstrap Upgrade: toolkit v4.0.0
+   ## 🔄 Bootstrap Upgrade: toolkit <version>
 
     **Project type**: repo | monorepo
     **Current version**: <version or "none (legacy)">
@@ -68,7 +68,7 @@ Run all checks before making any changes:
     2.  Confirmed OpenCode only: merge native V2 host files and approved missing wrappers (Step 7)
     3.  Verified legacy only: approved hook installation and verified identical duplicate skill cleanup (Steps 8–10); preserve custom skills
     4.  Merge only applicable missing documentation and validate the selected route; v3 keeps existing snippet bodies/frontmatter unchanged
-    5.  Create `.toolkit-version` with `4.0.0` after the approved migration
+    5.  Keep the `.toolkit-version` the CLI writes (installed package version, 4.0.0 or later) after the approved migration
     6.  Commit all changes
 
    Proceed? (Y/n)
@@ -176,18 +176,17 @@ For the v3 route, merge only relevant native OpenCode host fields; preserve exis
      "$schema": "https://opencode.ai/config.json",
       "instructions": ["AGENTS.md", ".opencode/rules/*.md"],
       "skills": [".agents/skills"],
-      "plugins": ["@dietrichgebert/ponytail@4.12.0"],
       "lsp": true
    }
    ```
 
    Follow official V2 [migration](https://opencode.ai/v2/docs/migrate-v1), [config](https://opencode.ai/v2/docs/config), [agents](https://opencode.ai/v2/docs/agents), and [plugins](https://opencode.ai/v2/docs/build/plugins) docs. The published schema may describe V1; do not use it or a V1 API fetch as native V2 validation authority. Use `agents`/JSON `system` (Markdown bodies for file agents), `request.body.temperature`, ordered `permissions` (`action`/`resource`/`effect`, `shell`/`subagent`, last match wins), `commands`/`subagent`, `plugins` with `{ "package": "…", "options": {} }`, skill-directory arrays, and `mcp.servers` with inverse `disabled` and `timeout.catalog`/`timeout.execution`.
 
-   `instructions` entries are accepted but not loaded; ambient `AGENTS.md` works. `@refs` are ordinary text, not attachments: wrappers must explicitly tell agents to read referenced snippets. `request.body.temperature` remains in config, but the current runner does not send it. Preserve `lsp: true`; use project lint/typecheck/compiler commands (no current V2 LSP tools/diagnostics). `--env opencode` supplies minimal shared references without other harness activation. Verify using installed V2 after the next run/restart; report only checks actually run.
+   Ambient `AGENTS.md` works. `instructions` entries load only when the runtime injects them (OpenChamber does; other hosts may not), so do not rely on them: write explicit "Read and follow" wrappers regardless. `@refs` are ordinary text, not attachments: wrappers must explicitly tell agents to read referenced snippets. `request.body.temperature` remains in config, but the current runner does not send it. Preserve `lsp: true`; use project lint/typecheck/compiler commands (no current V2 LSP tools/diagnostics). `--env opencode` supplies minimal shared references without other harness activation. Verify using installed V2 after the next run/restart; report only checks actually run.
 
 2. **Replace obsolete toolkit Ponytail (backup and approval only)**:
    - Back up the local config and known obsolete toolkit-owned `.opencode/plugins/ponytail.js`, `.opencode/plugins/ponytail.mjs`, and `.opencode/plugins/ponytail.ts` copies; obtain approval before removing only those copies. Preserve unrelated local plugins.
-   - Merge/deduplicate the author's native V2 `@dietrichgebert/ponytail@4.12.0` package in the local `plugins` array where appropriate, preserving other registrations/options. Do not edit global config or overwrite global plugins. Keep `opentmux` commented as V1-only; do not copy local Ponytail source, port APIs, or introduce bridges. Native local discovery needs no duplicate explicit registration; runtime integration remains untested.
+   - The OpenCode Ponytail plugin (`@dietrichgebert/ponytail`) is installed globally by the operator. Never add or pin it in the local `plugins` array. Check whether it is installed globally; if not, tell the operator to install it globally. Do not edit global config or overwrite global plugins. Keep `opentmux` commented as V1-only; do not copy local Ponytail source, port APIs, or introduce bridges. Runtime integration remains untested.
 
 3. **Create wrappers with explicit snippet-read instructions** — one file per snippet:
 
@@ -252,12 +251,13 @@ If `CLAUDE.md` is an applicable confirmed harness target and a thin redirect to 
 
 See existing `CLAUDE.md` in the toolkit template (`src/repo/CLAUDE.md`) for the exact format.
 
-### 12. Create `.toolkit-version` File
+### 12. Check `.toolkit-version` File
 
 Only after the approved migration and OpenCode preflight pass (or OpenCode is confirmed out of scope):
 
 ```bash
-echo "4.0.0" > .toolkit-version
+# Keep the value the CLI wrote (the installed package version). If it is missing, record it with the CLI:
+npx nitm-ai-dev-toolkit patch
 ```
 
 ### 13. Validation
@@ -277,13 +277,13 @@ If `--verbose`: log each check result with file paths.
 
 ### 14. Generate Upgrade Report
 
-Output the report to stdout (and optionally to `docs/upgrade-report-v4.md`). Include only operations/checks actually performed for the selected route; omit legacy extraction/cleanup rows on v3 and never pre-mark skipped checks as passed:
+Output the report to stdout (and optionally to `docs/upgrade-report-<version>.md`). Include only operations/checks actually performed for the selected route; omit legacy extraction/cleanup rows on v3 and never pre-mark skipped checks as passed:
 
 ```markdown
 ## 🚀 Bootstrap Upgrade Report
 
 **From**: detected installed version (include inline extraction only for pre-3.0)
-**To**: 4.0.0 (native V2 for confirmed OpenCode use; snippet conversion only for verified legacy)
+**To**: <version> (toolkit 4.0.0 or later; native V2 for confirmed OpenCode use; snippet conversion only for verified legacy)
 **Selected route**: verified legacy | v3 native OpenCode
 **Date**: {{DATE}}
 **Dry run**: yes | no
@@ -317,7 +317,7 @@ Output the report to stdout (and optionally to `docs/upgrade-report-v4.md`). Inc
 
 ### Files Created
 
-- `.toolkit-version` — 4.0.0
+- `.toolkit-version` — installed package version (written by the CLI)
 
 ### Validation
 
@@ -337,7 +337,7 @@ If not `--dry-run`, stage and commit all changes:
 
 ```bash
 git add -A
-git commit -m "chore: upgrade AI instructions to toolkit v4.0.0"
+git commit -m "chore: upgrade AI instructions to toolkit <version>"
 ```
 
 If `--dry-run`: skip commit, note in report: "Dry run — no changes committed."

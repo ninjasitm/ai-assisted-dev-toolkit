@@ -17,4 +17,4 @@ permissions:
 
 Design and implement API architecture, documentation, and developer experience.
 
-@.claude/agents-snippets/api-specialist.md
+Read and follow `.claude/agents-snippets/api-specialist.md` before performing this role.
