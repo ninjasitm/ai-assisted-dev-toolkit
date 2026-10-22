@@ -5,7 +5,7 @@ description: Opt-in software factory for feature-sized work. Runs one job throug
 
 # Factory (orchestrator)
 
-One orchestrator session runs a feature through intake → spec → plan → build → review → approve → merge. Agents get their context from files and each agent writes only its own file. You are the orchestrator: you ask the intake questions, dispatch agents, read their files, rewrite `job.json`, run the gates with the operator, handle tickets, and run the merge. You never write code, specs, plans, reviews, or `qa.md` yourself. Exceptions: you write `intake.md` from the operator's answers, `spec-<k>.md` and `plan-<k>.md` from the operator's change requests, `tasks.md` ticket keys, the feature folder rename and copy, the feature docs commit on the job branch, worktree and branch removal, the moves and branch deletions in Archive, `decision.md` with `ESCALATE` when retries run out, `merge-conflict.md` on a merge conflict, `bootstrap.md` on a failed worktree bootstrap step, the push and merge request in `push-mr` mode (see Merge procedure), and `rework-<k>.md` from the user's note.
+One orchestrator session runs a feature through intake → spec → plan → build → review → approve → merge. Agents get their context from files. Builders and spec writers write their own files; reviewers and the approver return their report, and you save it (see Subagent dispatch). You are the orchestrator: you ask the intake questions, dispatch agents, read their files, rewrite `job.json`, run the gates with the operator, handle tickets, and run the merge. You never write code, specs, plans, reviews, or `qa.md` yourself. Exceptions: you write `intake.md` from the operator's answers, `spec-<k>.md` and `plan-<k>.md` from the operator's change requests, `tasks.md` ticket keys, the feature folder rename and copy, the feature docs commit on the job branch, worktree and branch removal, the moves and branch deletions in Archive, the review files and `decision.md` from the reviewers' and approver's replies (see Subagent dispatch), and `decision.md` with `ESCALATE` when retries run out, `merge-conflict.md` on a merge conflict, `bootstrap.md` on a failed worktree bootstrap step, the push and merge request in `push-mr` mode (see Merge procedure), and `rework-<k>.md` from the user's note.
 
 The factory is opt-in and sits alongside Feature Builder and TDD. Nothing runs unless the user invokes `/factory`.
 
@@ -187,13 +187,13 @@ Resume by stage:
 
 | Stage | Resume action |
 | --- | --- |
-| `spec` | Rerun `factory-spec-writer` in spec mode, then show the spec gate |
+| `spec` | Rerun `planner` in spec mode (brief `roles/spec.md`), then show the spec gate |
 | `awaiting-spec` | Show the spec gate |
-| `plan` | Rerun `factory-spec-writer` in plan mode, then show the plan gate |
+| `plan` | Rerun `planner` in plan mode (brief `roles/spec.md`), then show the plan gate |
 | `awaiting-plan` | Show the plan gate |
-| `build` | Rerun `factory-builder` in the mode the files call for: rework if a `rework-<k>.md` is newer than `build.md`, repair if the last review round has `CHANGES`, otherwise build |
+| `build` | Rerun `implementer` (brief `roles/build.md`) in the mode the files call for: rework if a `rework-<k>.md` is newer than `build.md`, repair if the last review round has `CHANGES`, otherwise build |
 | `review` | Rerun the review round `round` |
-| `approve` | Rerun `factory-approver` |
+| `approve` | Rerun the approval (`reviewer` in approval mode, brief `roles/approve.md`) |
 | `awaiting-human` | Print the approver's rationale, the suggested checks from `qa.md` (see QA guidance), and the `/factory approve` command |
 | `needs-human`, `failed_stage` `spec` | Rerun the spec stage (see Spec), then show the spec gate |
 | `needs-human`, `failed_stage` `plan` | Rerun the plan stage (see Plan), then show the plan gate |
@@ -216,7 +216,7 @@ A job with no work started (stage before `build`, so no build has begun and no `
 
 ## Spec
 
-Set stage `spec`. Dispatch `factory-spec-writer` in spec mode with the paths block, the feature request, and the feature folder. It writes `spec.md`. If `intake.md` is in the paths block, the spec writer reads it, and the operator's answers win over the request text where they conflict. Wait for `spec.md` (see Harness notes). Set stage `awaiting-spec` and show the spec gate.
+Set stage `spec`. Dispatch `planner` in spec mode (brief `roles/spec.md`) with the paths block, the feature request, and the feature folder. It writes `spec.md`. If `intake.md` is in the paths block, the spec writer reads it, and the operator's answers win over the request text where they conflict. Wait for `spec.md` (see Harness notes). Set stage `awaiting-spec` and show the spec gate.
 
 ## Spec gate (mandatory)
 
@@ -232,13 +232,13 @@ Then ask in chat, as a numbered choice:
 Handle the answer:
 
 - **Confirm** → continue to Plan. If decision items are still open, do not continue: list them and ask again.
-- **Request changes:** write the operator's text verbatim to `spec-<k>.md` in the job folder (`k` = next free index). Set stage `spec`, rerun `factory-spec-writer` in spec mode with the paths block and `spec-<k>.md`. It updates `spec.md`. Set stage `awaiting-spec` and show the gate again. The spec writer records each answered decision as `[DECIDED] <answer>`.
+- **Request changes:** write the operator's text verbatim to `spec-<k>.md` in the job folder (`k` = next free index). Set stage `spec`, rerun `planner` in spec mode (brief `roles/spec.md`) with the paths block and `spec-<k>.md`. It updates `spec.md`. Set stage `awaiting-spec` and show the gate again. The spec writer records each answered decision as `[DECIDED] <answer>`.
 
 If the session ends at this gate, `/factory start <job-id|slug|KEY>` shows it again (see Start).
 
 ## Plan
 
-Set stage `plan`. Dispatch `factory-spec-writer` in plan mode with the paths block, and `plan-<k>.md` when a plan change request is pending. It writes `plan.md` in the feature folder, and `tasks.md` for large work (or removes a stale `tasks.md` when the plan is small). It does not change `spec.md`.
+Set stage `plan`. Dispatch `planner` in plan mode (brief `roles/spec.md`) with the paths block, and `plan-<k>.md` when a plan change request is pending. It writes `plan.md` in the feature folder, and `tasks.md` for large work (or removes a stale `tasks.md` when the plan is small). It does not change `spec.md`.
 
 Read the `**Size:**` line of `plan.md`:
 
@@ -270,7 +270,7 @@ Then ask in chat, as a numbered choice:
 Handle the answer:
 
 - **Confirm** with size known → continue to Tracking. If size is still `unclear`, ask again.
-- **Request changes:** write the operator's text verbatim to `plan-<k>.md` (`k` = next free index). Set stage `plan`, rerun `factory-spec-writer` in plan mode with the paths block and `plan-<k>.md`. Show the gate again. If the change touches the spec itself, send it through the spec gate instead: write it to `spec-<k>.md`, rerun spec mode, show the spec gate, then plan again.
+- **Request changes:** write the operator's text verbatim to `plan-<k>.md` (`k` = next free index). Set stage `plan`, rerun `planner` in plan mode (brief `roles/spec.md`) with the paths block and `plan-<k>.md`. Show the gate again. If the change touches the spec itself, send it through the spec gate instead: write it to `spec-<k>.md`, rerun spec mode, show the spec gate, then plan again.
 - **Change size only:** the operator's answer to choice 3 sets `size` in `job.json`. The plan does not change.
 - **Change tracking only:** update `tracking` in `job.json`. Do not rerun the spec writer.
 - **Change build mode only:** update `worktree` in `job.json`. Do not rerun the spec writer. In-place is checked when the build starts (see In-place mode).
@@ -360,28 +360,28 @@ PATHS
 - Ports: builder <p>, ux <p+1>, ui <p+2>
 ```
 
-Agents read their inputs and write their one output file by these absolute paths. The spec-writer works in the main-checkout feature folder. Reviewers and the approver read the spec and plan there. The builder reads them there and ticks `tasks.md` in the build location's copy. Reviewers read `qa.md` at the paths block's `qa.md` line, for context only.
+Agents read their inputs by these absolute paths. Builders and spec writers write their output files there; reviewers and the approver return their report instead (see Subagent dispatch). The spec-writer works in the main-checkout feature folder. Reviewers and the approver read the spec and plan there. The builder reads them there and ticks `tasks.md` in the build location's copy. Reviewers read `qa.md` at the paths block's `qa.md` line, for context only.
 
 ## Loop
 
 Let `N` be the current round, starting at `1` for a new job.
 
-1. **Spec.** Dispatch `factory-spec-writer` in spec mode (see Spec).
+1. **Spec.** Dispatch `planner` in spec mode (brief `roles/spec.md`) (see Spec).
 2. **Spec gate.** Show the gate and wait for the operator's confirmation (see Spec gate). Do not continue until the operator confirms.
-3. **Plan.** Dispatch `factory-spec-writer` in plan mode (see Plan). Set stage `awaiting-plan`.
+3. **Plan.** Dispatch `planner` in plan mode (brief `roles/spec.md`) (see Plan). Set stage `awaiting-plan`.
 4. **Plan gate.** Show the gate and wait for the operator's confirmation (see Plan gate). Do not continue until the operator confirms.
 5. **Tracking and build location.** Run Tracking if `tracking` is `tracked`. Create the build location: the worktree and its copy of the feature docs (see Worktree), or the in-place branch (see In-place mode). Set `worktree_path` if a worktree was made. Set stage `build`. Move any tracked tickets to In Progress (see Ticket lifecycle).
-6. **Build.** Dispatch `factory-builder` in build mode. Wait (see Harness notes), then read the first line of `build.md`:
+6. **Build.** Dispatch `implementer` (brief `roles/build.md`) in build mode. Wait (see Harness notes), then read the first line of `build.md`:
    - `STATUS: READY` → continue.
    - `STATUS: BLOCKED` → stage `needs-human`. Tell the user the reason from `build.md`. Stop.
    - Anything else → treat as BLOCKED with reason "builder wrote no valid status".
 7. **Review round N.** Set stage `review`, `round` to `N`, and every configured lens to `pending` in `reviews`. Move tracked tickets to In Review. Dispatch the lenses from `{{FACTORY_REVIEW_LENSES}}` in two stages, each with the paths block:
-   - **Stage A:** `code` → `factory-reviewer-code` and `security` → `factory-reviewer-security`. Dispatch both in one parallel batch (one message with multiple agent calls) when the harness can.
-   - **Stage B:** `ux` → `factory-reviewer-ux` and `ui` → `factory-reviewer-ui`, the browser lenses. Start them only after every stage A review is written. The code reviewer's build runs in the shared build location and would clobber the browser lenses' dev servers. The two browser lenses use separate ports and may run in parallel with each other.
+   - **Stage A:** `code` → `reviewer` (brief `roles/review-code.md`) and `security` → `reviewer`, in fresh context (brief `roles/review-security.md`). Dispatch both in one parallel batch (one message with multiple agent calls) when the harness can.
+   - **Stage B:** `ux` → `reviewer` (brief `roles/review-ux.md`) and `ui` → `reviewer` (brief `roles/review-ui.md`), the browser lenses. Start them only after every stage A review is written. The code reviewer's build runs in the shared build location and would clobber the browser lenses' dev servers. The two browser lenses use separate ports and may run in parallel with each other.
 
    If the harness cannot dispatch in parallel, run the lenses one at a time, in the order above.
 
-   Wait for every `round-N/review-<lens>.md` (see Harness notes). Each must have a first line `VERDICT: PASS` or `VERDICT: CHANGES`. A reviewer that returns without a valid file is re-dispatched alone, once. If it still fails, stage `needs-human`. Never resume the builder during a review round. Update `reviews` from the verdicts.
+   Wait for every reviewer's reply, and save each as `round-N/review-<lens>.md` (see Harness notes). Each must have a first line `VERDICT: PASS` or `VERDICT: CHANGES`. A reviewer whose reply has no valid first line is re-dispatched alone, once. If it still fails, stage `needs-human`. Never resume the builder during a review round. Update `reviews` from the verdicts.
 8. **Verdicts.** Check in this order:
    - Any blocking item titled `Not verified:`, from any lens: no repair. Stage `needs-human`. Tell the user the `Not verified` items. Stop.
    - Any `CHANGES`, and the cycle has used fewer than 3 review rounds: run a builder repair (below) with `Round` set to `N`, the round just reviewed. Then set `N` to `N + 1` and go to step 7.
@@ -389,14 +389,14 @@ Let `N` be the current round, starting at `1` for a new job.
    - All `PASS`: go to step 9.
 
    A review cycle is the rounds since the job started, or since the latest `rework-<k>.md` (see Rework). "Third review round of the cycle" means two repairs have already been made in this cycle. The rework note records where its cycle starts.
-9. **Approve.** Set stage `approve`. Dispatch `factory-approver` with the paths block. Wait for `decision.md` (see Harness notes). Its first line must be `APPROVE` or `ESCALATE`. If the line is missing or invalid, re-dispatch once, then stage `needs-human`.
+9. **Approve.** Set stage `approve`. Dispatch `reviewer` in approval mode (brief `roles/approve.md`, fresh context) with the paths block. Wait for the approver's reply and save it as `decision.md` (see Harness notes). Its first line must be `APPROVE` or `ESCALATE`. If the line is missing or invalid, re-dispatch once, then stage `needs-human`.
    - `ESCALATE` → stage `needs-human`. Tell the user the rationale. Stop.
    - `APPROVE` and `{{APPROVAL_MODE}}` is exactly `auto` → run the merge procedure.
    - `APPROVE` otherwise: stage `awaiting-human`. Print the suggested checks (see QA guidance). Tell the user to run `/factory approve <id>` after reviewing the branch. Stop. Any value other than exactly `auto` is treated as `human`.
 
 ### Repair
 
-Dispatch `factory-builder` in repair mode with the paths block, where `Round` is the round just reviewed (the `N` from step 7, before it increments). It reads `spec.md`, `plan.md`, `build.md`, and `round-<Round>/review-*.md`. It must address every `CHANGES` item or justify it in `build.md`. It also rewrites `qa.md`. Wait for `build.md` (see Harness notes) and check its first line again (step 6 rules).
+Dispatch `implementer` (brief `roles/build.md`) in repair mode with the paths block, where `Round` is the round just reviewed (the `N` from step 7, before it increments). It reads `spec.md`, `plan.md`, `build.md`, and `round-<Round>/review-*.md`. It must address every `CHANGES` item or justify it in `build.md`. It also rewrites `qa.md`. Wait for `build.md` (see Harness notes) and check its first line again (step 6 rules).
 
 ### Builder continuity
 
@@ -410,7 +410,7 @@ Either way the builder runs only between reviews, never during one.
 ### Failures
 
 - Missing or unreadable `AGENTS.md` commands → stop and ask the user to add them. Do not guess commands.
-- An agent that finishes without its expected file → re-dispatch that agent once, then `needs-human`. For a spec or plan agent, set `failed_stage` to `spec` or `plan` with it.
+- An agent that finishes without its expected output (a file, or for a reviewer or the approver, a reply with a valid first line) → re-dispatch that agent once, then `needs-human`. For a spec or plan agent, set `failed_stage` to `spec` or `plan` with it.
 - An agent that times out is not re-dispatched (see Harness notes).
 
 ## Ticket lifecycle
@@ -447,7 +447,7 @@ Rules:
    <the user's note, verbatim>
    ```
 
-4. Set `round` to `N`, stage `build`. Move tracked tickets to In Progress. For an in-place job, switch the main checkout to `factory/<id>` if needed (see In-place mode). For a worktree job, rerun the bootstrap first (see Worktree bootstrap); a failed step stops the rework the way it stops a build. Dispatch a fresh `factory-builder` in rework mode. It reads the latest `rework-<k>.md` and rewrites `qa.md`. Wait for it. Then continue from step 6's status check on `build.md` (do not dispatch the builder again), and run review round `N` from step 7.
+4. Set `round` to `N`, stage `build`. Move tracked tickets to In Progress. For an in-place job, switch the main checkout to `factory/<id>` if needed (see In-place mode). For a worktree job, rerun the bootstrap first (see Worktree bootstrap); a failed step stops the rework the way it stops a build. Dispatch a fresh `implementer` (brief `roles/build.md`) in rework mode. It reads the latest `rework-<k>.md` and rewrites `qa.md`. Wait for it. Then continue from step 6's status check on `build.md` (do not dispatch the builder again), and run review round `N` from step 7.
 
 The new cycle starts with a fresh repair budget. Old rounds and reviews are kept, not overwritten.
 
@@ -600,30 +600,46 @@ The age rule is the same as Archive: by default only jobs whose `updatedAt` is m
 
 ## Subagent dispatch
 
-Dispatch with the paths block first, then the task line, then the files to read. The task line names the mode when the agent has one (spec or plan for the spec writer; build, repair, or rework for the builder). The dispatch primitive is the Claude Agent tool, the Copilot `agent` tool, or the harness's own subagent mechanism elsewhere.
+Dispatch with the paths block first, then the task line, then the role brief and the files to read. The task line names the mode when the agent has one (spec or plan for the spec writer; build, repair, or rework for the builder; the lens for a reviewer; approval for the approver).
 
-Each harness has its own wrappers. Every wrapper points to its snippet in `.claude/agents-snippets/`:
+Factory adds no agents of its own. Each role runs on a native agent (`planner`, `implementer`, or `reviewer`), and the Factory rules for that role (outputs, evidence, verdict format, escalation triggers) live in its brief in this skill's `roles/` folder. Every dispatch tells the agent to read the matching brief first. The role brief overrides the dispatched agent's default output format and file-writing rules, and the first line of the reply must follow the brief.
 
-| Harness | Agent wrappers | Entry point |
+| Role | Native agent | Task line | Brief | Fresh context | Output |
+| --- | --- | --- | --- | --- | --- |
+| Spec writer | `planner` | `spec` or `plan` mode | `roles/spec.md` | no | writes `spec.md`, or `plan.md` and `tasks.md` |
+| Builder | `implementer` | `build`, `repair`, or `rework` mode | `roles/build.md` | no | writes `build.md` and `qa.md` |
+| Code reviewer | `reviewer` | lens `code` | `roles/review-code.md` | no | returns its review |
+| Security reviewer | `reviewer` | lens `security` | `roles/review-security.md` | yes | returns its review |
+| UX reviewer | `reviewer` | lens `ux` | `roles/review-ux.md` | no | returns its review |
+| UI reviewer | `reviewer` | lens `ui` | `roles/review-ui.md` | no | returns its review |
+| Approver | `reviewer` | `approval` mode | `roles/approve.md` | yes | returns its decision |
+
+Reviewers and the approver return their report in their final reply and do not write files. You save the reply: the review as `round-<N>/review-<lens>.md`, the decision as `decision.md`. The first line of the reply is the verdict or decision, and that is what you check.
+
+Each harness dispatches the native agent by name:
+
+| Harness | How to dispatch | Entry point |
 | --- | --- | --- |
-| Claude Code | `.claude/agents/factory-*.agent.md` | `.claude/commands/factory.md` |
-| GitHub Copilot | `.github/agents/factory-*.agent.md` | `.github/prompts/factory.prompt.md` |
-| Cursor | `.cursor/agents/factory-*.agent.md` | `.cursor/commands/factory.md` |
-| OpenCode | `.opencode/agents/factory-*.md` | `.opencode/commands/factory.md` |
-| Codex | none | this skill |
+| Claude Code | the Agent tool, naming the agent | `.claude/commands/factory.md` |
+| GitHub Copilot | the `agent` tool, naming the agent | `.github/prompts/factory.prompt.md` |
+| Cursor | the agent by name from `.cursor/agents` | `.cursor/commands/factory.md` |
+| OpenCode | the agent by name from `.opencode/agents` | `.opencode/commands/factory.md` |
+| Codex | none: run the brief directly | this skill |
 
-Codex has no wrappers. Run each `.claude/agents-snippets/factory-*.md` as a delegated or fresh session, passing the paths block first. If the harness gives you one session only, use single-session mode (see Harness notes).
+Codex has no agent files. Run each role brief directly, as a delegated or fresh session, passing the paths block first. If the harness gives you one session only, use single-session mode (see Harness notes).
 
-Dispatch each agent by its kebab-case name, for example `factory-builder`. Copilot may show a display name in its agent list; pick the agent with that name.
+In OpenCode with the Slim plugin, `oracle` (security or approval) and `designer` (ux or ui) are optional alternatives to the native agents. Use them only if you have configured them as edit-denied reviewers. The native agents above are the default.
+
+Copilot may show a display name in its agent list; pick the agent with the name above.
 
 ## Harness notes
 
-The loop is the same in every harness. Use a parallel lens batch where the harness offers one, otherwise run the lenses in order. If dispatch is background-only, poll each expected file for a valid first line until the timeout, then apply Failures. Builder resume is under Builder continuity; wrappers are under Subagent dispatch.
+The loop is the same in every harness. Use a parallel lens batch where the harness offers one, otherwise run the lenses in order. If dispatch is background-only, poll each expected file for a valid first line until the timeout, then apply Failures. A reviewer or approver reply arrives as its result; check its first line the same way. Builder resume is under Builder continuity; agent names are under Subagent dispatch.
 
 - **Timeout.** The default is 15 minutes per agent. The operator can set another value for one run by saying so in the request, for example `timeout 30 min`.
 - **A timed-out agent is never re-dispatched.** It may still be running, and a second run could write the same file. Stage `needs-human` with the reason "`<agent>` timed out after `<N>` min; it may still be running". For a spec or plan agent, also set `failed_stage`. Tell the operator to check the job folder and the build location, and to confirm the agent has stopped, before `/factory start` or `/factory rework`.
 
-**Single-session mode (Codex).** Codex has no wrappers, so one session plays every role. The orchestrator switches roles one at a time. For each agent it reads only that role's snippet and input files, writes only that role's output, and keeps the same write boundaries. The rule "never write code" applies per role: as orchestrator it writes only orchestrator files, and it writes code only as the builder, and only in the build location. Lenses run in order (stage A, then stage B). The security reviewer judges the diff, not the builder's account. A timed-out role is handled as above; a role that ends without its file is re-run once, then `needs-human`.
+**Single-session mode (Codex).** Codex has no agent files, so one session plays every role. The orchestrator switches roles one at a time. For each role it reads only that role's brief and input files, writes only that role's output (a reviewer or the approver returns its report, and you save it), and keeps the same write boundaries. The rule "never write code" applies per role: as orchestrator it writes only orchestrator files, and it writes code only as the builder, and only in the build location. Lenses run in order (stage A, then stage B). The security reviewer judges the diff, not the builder's account. A timed-out role is handled as above; a role that ends without its file is re-run once, then `needs-human`.
 
 ## Limits
 

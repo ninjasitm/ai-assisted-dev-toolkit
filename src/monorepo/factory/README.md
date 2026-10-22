@@ -4,14 +4,14 @@ A file-driven pipeline for feature-sized work. One orchestrator session runs a f
 
 The factory is **opt-in**. It sits alongside Feature Builder and TDD and changes nothing they do. Nothing runs until you invoke `/factory`. Quick fixes stay direct.
 
-Orchestrator: [.agents/skills/factory/SKILL.md](../.agents/skills/factory/SKILL.md). Its agents have wrappers in `.claude/agents/`, `.github/agents/`, `.cursor/agents/`, and `.opencode/agents/`. See [Harnesses](#harnesses).
+Orchestrator: [.agents/skills/factory/SKILL.md](../.agents/skills/factory/SKILL.md). It runs on the native `planner`, `implementer`, and `reviewer` agents, and its role briefs live in `.agents/skills/factory/roles/`. See [Harnesses](#harnesses).
 
 ## Install
 
 1. **Install it.** The toolkit installer copies this folder into your project root as `factory/`.
 2. **Document your commands in `AGENTS.md`.** Agents read setup, dev, test, lint, and build commands from there, and the dev command must document how to pass a port (a flag or an env var). In a monorepo, document the root commands and the filtered form for each app and package, for example `--filter=<app>`. Without them the factory stops and asks you. Edit `factory/worktree-bootstrap.md` for the setup each new worktree needs (see Build location).
-3. **Replace the placeholders** below in `.agents/skills/factory/SKILL.md` and `.claude/agents-snippets/factory-*.md`. Bootstrap does this when it runs.
-4. **Commit** `factory/README.md`, `factory/.gitignore`, and the factory agents and skill. Runtime state is ignored (see Layout). Feature docs in the feature folders are committed with the code.
+3. **Replace the placeholders** below in `.agents/skills/factory/SKILL.md` and `.agents/skills/factory/roles/*.md`. Bootstrap does this when it runs.
+4. **Commit** `factory/README.md`, `factory/.gitignore`, and the factory skill with its role briefs. Runtime state is ignored (see Layout). Feature docs in the feature folders are committed with the code.
 5. **Run it** from your harness: `/factory <feature request>` to start from a request, or `/factory start <KEY | slug | job-id>` to pick up an existing feature. See [Harnesses](#harnesses) for each entry point.
 
 ## Placeholders
@@ -47,15 +47,17 @@ There is no queue. Start each feature with a request, a ticket key, or a slug.
 
 ## Harnesses
 
-The orchestrator and agents are the same in every harness. Each harness has its own entry point and agent wrappers. Every wrapper points to the shared snippets in `.claude/agents-snippets/`.
+The orchestrator and agents are the same in every harness. Each harness has its own entry point. Every role runs on a native agent: `planner` for the spec writer, `implementer` for the builder, and `reviewer` for each review lens and the approver, with the lens or approval mode named in the dispatch. The role briefs in `.agents/skills/factory/roles/` hold the Factory rules.
 
-| Harness | Entry point | Agent wrappers |
+| Harness | Entry point | Native agents |
 | --- | --- | --- |
 | Claude Code | `/factory` (`.claude/commands/factory.md`) | `.claude/agents/` |
 | GitHub Copilot | `/factory` prompt (`.github/prompts/factory.prompt.md`) | `.github/agents/` |
 | Cursor | `/factory` (`.cursor/commands/factory.md`) | `.cursor/agents/` |
 | OpenCode | `/factory` (`.opencode/commands/factory.md`) | `.opencode/agents/` |
-| Codex | The factory skill (`.agents/skills/factory/SKILL.md`) | None. Runs the snippets directly, one role at a time in one session (see Harness notes in SKILL.md) |
+| Codex | The factory skill (`.agents/skills/factory/SKILL.md`) | None. Runs each role brief directly, one role at a time in one session (see Harness notes in SKILL.md) |
+
+In OpenCode with the Slim plugin, `oracle` and `designer` are optional alternatives to `reviewer`, if you configure them as edit-denied. The default is the native agents.
 
 ## Feature folders and sizing
 
@@ -142,15 +144,15 @@ The parent and every sub-task move together. The orchestrator uses the project's
 ## How a job runs
 
 1. **Intake.** For `/factory <request>`, the orchestrator reads the project and asks only the glaring questions. You answer them, then choose to continue or change the answers. Nothing is created before you continue.
-2. **Spec.** `factory-spec-writer` inspects the code and writes `spec.md` with numbered acceptance criteria.
+2. **Spec.** `planner` (spec mode) inspects the code and writes `spec.md` with numbered acceptance criteria.
 3. **Spec gate.** You confirm the spec, or request changes.
-4. **Plan.** `factory-spec-writer` in plan mode writes `plan.md` (with the size) and `tasks.md` for large work.
+4. **Plan.** `planner` in plan mode writes `plan.md` (with the size) and `tasks.md` for large work.
 5. **Plan gate.** You confirm the plan, or request changes. Nothing is ticketed or built before you confirm.
 6. **Tickets and build location.** If tracked, the parent and sub-tasks are created and their keys are written into `tasks.md`. The folder is renamed to carry the key. Then a builder gets its own git worktree on branch `factory/<id>` (bootstrapped first, see Build location), or the in-place branch. The job's feature docs are committed on that branch.
 7. **Build.** The builder follows TDD, ticks `tasks.md` as it completes tasks, writes `build.md`, and writes `qa.md`.
-8. **Review.** Every configured lens reviews the branch, writing `round-N/review-<lens>.md` with `VERDICT: PASS` or `VERDICT: CHANGES`.
+8. **Review.** Every configured lens reviews the branch, and each reviewer's report is saved as `round-N/review-<lens>.md` with `VERDICT: PASS` or `VERDICT: CHANGES`.
 9. **Repair.** Any `CHANGES` sends the builder back to fix it. Two repairs at most, so three review rounds. Then the job escalates to you.
-10. **Approve.** `factory-approver` writes `decision.md` with `APPROVE` or `ESCALATE`.
+10. **Approve.** `reviewer` in approval mode (fresh context) returns `APPROVE` or `ESCALATE`, and the orchestrator writes it to `decision.md`.
 11. **Merge.** `local` mode: local only, never pushed. `push-mr` mode: push and open the request, then finish on the second approve (see Merge modes). `--no-ff` merge, the test commands for the affected apps and packages, then the worktree (if any) and branch are removed. Feature docs in the main checkout are set aside first (copies in `main-copies/`), so the merge brings in the branch's committed copies.
 
 Jobs that escalate (`needs-human`) keep their branch and worktree so you can inspect them. Use `/factory rework` or `/factory approve` to continue.

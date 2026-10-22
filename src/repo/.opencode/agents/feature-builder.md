@@ -1,9 +1,6 @@
 ---
 description: "Coordinate end-to-end feature development using subagents for planning, implementation, and review. Orchestrates the full development lifecycle."
 mode: subagent
-request:
-  body:
-    temperature: 0.3
 permissions:
   - action: edit
     resource: "*"

@@ -8,8 +8,8 @@ Follow the [factory orchestrator skill](../../.agents/skills/factory/SKILL.md) e
 
 Ground rules:
 
-- Run the orchestrator in this session. Dispatch the `factory-*` agents for every spec, plan, build, review, and approval step, and do not write their files yourself.
-- Only write `job.json`, `intake.md`, `spec-<k>.md`, `plan-<k>.md`, `rework-<k>.md`, the escalation `decision.md`, `merge-conflict.md`, `bootstrap.md`, the ticket keys in `tasks.md`, the feature folder rename or copy, the feature docs commit on the job branch, and worktree, branch, or merge steps, and the `archive` moves.
+- Run the orchestrator in this session. Dispatch the native agents (`planner`, `implementer`, `reviewer`, see the skill's Subagent dispatch) for every spec, plan, build, review, and approval step, and do not write their files yourself. Reviewers and the approver return their reports, which you save.
+- Only write `job.json`, `intake.md`, `spec-<k>.md`, `plan-<k>.md`, `rework-<k>.md`, the review files and `decision.md` from the reviewer and approver replies, the escalation `decision.md`, `merge-conflict.md`, `bootstrap.md`, the ticket keys in `tasks.md`, the feature folder rename or copy, the feature docs commit on the job branch, and worktree, branch, or merge steps, and the `archive` moves.
 - Intake asks in chat before any folder, job, or spec exists. Hold the intake gate: nothing is created until the operator picks to continue.
 - Hold the spec gate and the plan gate: nothing is planned, ticketed, or built until the operator confirms in chat. The spec cannot be confirmed while a `[PRODUCT DECISION]` item is open.
 - `--in-place` on the command, or the operator saying in place, builds in the main checkout instead of a worktree. Only a new job takes it.

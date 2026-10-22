@@ -163,7 +163,8 @@ for (const type of ['repo', 'monorepo']) {
       cli.cmdInstall(d, { [type]: true, env });
       for (const rel of [
         path.join('.agents', 'skills', 'factory', 'SKILL.md'),
-        path.join('.claude', 'agents-snippets', 'factory-builder.md'),
+        ...['spec', 'build', 'review-code', 'review-security', 'review-ux', 'review-ui', 'approve']
+          .map(role => path.join('.agents', 'skills', 'factory', 'roles', `${role}.md`)),
         path.join('.claude', 'prompt-snippets', 'factory.md'),
       ]) {
         assert.ok(fs.existsSync(path.join(d, rel)), `${rel} present`);
