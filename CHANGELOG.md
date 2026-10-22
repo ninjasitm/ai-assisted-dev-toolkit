@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.1.1] - 2026-10-21
+
+### Fixed
+
+- Factory worktrees are created in `.worktrees/<id>/` at the repo root (the git root in a monorepo) instead of a sibling `../<repo>-factory/<id>/` folder outside the repo. The factory ensures `.worktrees/` is git-ignored.
+
 ## [5.1.0] - 2026-10-21
 
 ### Changed
