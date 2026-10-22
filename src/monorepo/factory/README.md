@@ -99,6 +99,8 @@ Any value other than exactly `auto` is treated as `human`.
 
 By default each job builds in its own git worktree on branch `factory/<id>`, so the main checkout stays free. A job's `job.json` records this in `worktree` (`true`) and the worktree path in `worktree_path`. Worktrees live in `.worktrees/<id>/` at the git root; the factory adds `.worktrees/` to `.gitignore` if it is missing.
 
+Tools that do not honor `.gitignore` (Jest/Vitest test discovery, ESLint, `tsc`, workspace globs) should exclude `.worktrees/`. The local merge runs tests in the main checkout while other job worktrees may still exist.
+
 ### Worktree bootstrap
 
 Before the builder starts in a new worktree, the factory runs the steps listed in `factory/worktree-bootstrap.md`: one shell command per line, in order, from the worktree root. Typical steps install dependencies or vendored packages, copy `.env` from the main checkout, and create or migrate a database for the job. The file ships with no active steps, so edit it for your project. Each step receives `FACTORY_JOB_ID`, `FACTORY_PORT_BUILDER`, `FACTORY_WORKTREE`, and `FACTORY_MAIN_CHECKOUT`.

@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Factory worktrees are created in `.worktrees/<id>/` at the repo root (the git root in a monorepo) instead of a sibling `../<repo>-factory/<id>/` folder outside the repo. The factory ensures `.worktrees/` is git-ignored.
+- The `using-git-worktrees` skill uses only `.worktrees/` for project-local worktrees (the non-hidden `worktrees/` alternative is removed), expands `$HOME` in the global path, and commits the `.gitignore` change on the default branch. The Factory skill states that the worktree folder is named by the job id, not the branch, and that `factory/worktree-bootstrap.md` replaces the worktree skill's setup and baseline-test steps. The Factory README notes that tools ignoring `.gitignore` should exclude `.worktrees/`.
 
 ## [5.1.0] - 2026-10-21
 
