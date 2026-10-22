@@ -841,5 +841,12 @@ test('factory skill puts worktrees in .worktrees/ and never outside the repo', (
     assert.ok(skill.includes('.worktrees/<id>'), tpl + ': uses .worktrees/<id>');
     assert.ok(!/\.\.\/<repo-name>/.test(skill), tpl + ': no sibling ../ worktree path');
     assert.ok(!skill.includes('-factory/<id>'), tpl + ': no <repo>-factory path');
+    assert.ok(skill.includes('named by the job id'), tpl + ': folder named by job id');
+    assert.ok(/worktree-bootstrap\.md` replaces the worktree skill's project-setup and baseline-test/.test(skill), tpl + ': bootstrap replaces setup/baseline');
+    const wt = fs.readFileSync(path.join(__dirname, '..', 'src', tpl, '.agents', 'skills', 'using-git-worktrees', 'SKILL.md'), 'utf8');
+    assert.ok(!wt.includes('ls -d worktrees'), tpl + ': worktree skill has no worktrees/ check');
+    assert.ok(!wt.includes('.worktrees|worktrees'), tpl + ': worktree skill has no worktrees/ case');
+    assert.ok(!/check-ignore -q worktrees/.test(wt), tpl + ': worktree skill has no worktrees/ ignore check');
+    assert.ok(!wt.includes('"~/'), tpl + ': worktree skill has no quoted tilde path');
   }
 });

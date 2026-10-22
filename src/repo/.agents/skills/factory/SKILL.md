@@ -294,7 +294,8 @@ If a ticket cannot be created, stop at `awaiting-plan`. Report the lines that ha
 The default build location. Follow the [using-git-worktrees](../using-git-worktrees/SKILL.md) skill. Factory always takes its project-local `.worktrees/` default and never the global `~/.worktrees` option, without asking.
 
 - Branch `factory/<id>` from `{{DEFAULT_BRANCH}}`.
-- Path `.worktrees/<id>/` at the root of the main checkout (inside the repo folder). Record its absolute path in `worktree_path`.
+- Path `.worktrees/<id>/` at the root of the main checkout (inside the repo folder). The folder is named by the job id, never by the branch: branch `factory/<id>` must not produce `.worktrees/factory/<id>`. Record its absolute path in `worktree_path`.
+- `factory/worktree-bootstrap.md` replaces the worktree skill's project-setup and baseline-test steps. Factory does not run those.
 - Before the first worktree, run that skill's `.gitignore` check. If it had to add `.worktrees/`, commit that on `{{DEFAULT_BRANCH}}` or tell the operator to.
 - Create it at the start of the build stage, after the plan gate and tracking. Reuse it if it exists (rework and repair).
 - Copy the job's `spec.md`, `plan.md`, and `tasks.md` (if any) from the main checkout's feature folder into the same relative path in the worktree. The builder ticks `tasks.md` there. Then run the bootstrap (next subsection) and make the feature docs commit.

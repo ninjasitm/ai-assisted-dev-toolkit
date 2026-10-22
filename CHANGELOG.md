@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.1.2] - 2026-10-21
+
+### Fixed
+
+- The `using-git-worktrees` skill uses only `.worktrees/` for project-local worktrees (the non-hidden `worktrees/` alternative is removed), expands `$HOME` in the global path, and commits the `.gitignore` change on the default branch. The Factory skill states that the worktree folder is named by the job id, not the branch, and that `factory/worktree-bootstrap.md` replaces the worktree skill's setup and baseline-test steps. The Factory README notes that tools ignoring `.gitignore` should exclude `.worktrees/`.
+
 ## [5.1.1] - 2026-10-21
 
 ### Fixed

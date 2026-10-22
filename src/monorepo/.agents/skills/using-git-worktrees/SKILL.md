@@ -37,11 +37,10 @@ Follow this priority order:
 
 ```bash
 # Check in priority order
-ls -d .worktrees 2>/dev/null     # Preferred (hidden)
-ls -d worktrees 2>/dev/null      # Alternative
+ls -d .worktrees 2>/dev/null
 ```
 
-**If found:** Use that directory. If both exist, `.worktrees` wins.
+**If found:** Use that directory.
 
 ### 2. Check Project Configuration
 
@@ -67,21 +66,21 @@ Which would you prefer?
 
 ## Safety Verification
 
-### For Project-Local Directories (.worktrees or worktrees)
+### For Project-Local Directories (.worktrees)
 
 **MUST verify directory is ignored before creating worktree:**
 
 ```bash
 # Check if directory is ignored (respects local, global, and system gitignore)
-git check-ignore -q .worktrees 2>/dev/null || git check-ignore -q worktrees 2>/dev/null
+git check-ignore -q .worktrees 2>/dev/null
 ```
 
 **If NOT ignored:**
 
 Fix immediately before proceeding:
 
-1. Add appropriate line to .gitignore
-2. Commit the change
+1. Add `.worktrees/` to .gitignore
+2. Commit the change on the default branch
 3. Proceed with worktree creation
 
 **Why critical:** Prevents accidentally committing worktree contents to repository.
@@ -103,11 +102,11 @@ project=$(basename "$(git rev-parse --show-toplevel)")
 ```bash
 # Determine full path
 case $LOCATION in
-  .worktrees|worktrees)
+  .worktrees)
     path="$LOCATION/$BRANCH_NAME"
     ;;
   ~/.worktrees/*)
-    path="~/.worktrees/$project/$BRANCH_NAME"
+    path="$HOME/.worktrees/$project/$BRANCH_NAME"
     ;;
 esac
 
@@ -164,8 +163,6 @@ Ready to implement <feature-name>
 | Situation                  | Action                          |
 | -------------------------- | ------------------------------- |
 | `.worktrees/` exists       | Use it (verify ignored)         |
-| `worktrees/` exists        | Use it (verify ignored)         |
-| Both exist                 | Use `.worktrees/`               |
 | Neither exists             | Check project config → Ask user |
 | Directory not ignored      | Add to .gitignore + commit      |
 | Tests fail during baseline | Report failures + ask           |
