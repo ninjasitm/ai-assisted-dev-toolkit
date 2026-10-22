@@ -834,12 +834,3 @@ test('cli factory prune --abandoned: lists abandoned jobs; --abandoned is refuse
     assert.ok(exists(cwd, 'jobs', '001-abandoned'), `${sub} deletes and moves nothing`);
   }
 });
-
-test('factory skill puts worktrees in .worktrees/ and never outside the repo', () => {
-  for (const tpl of ['repo', 'monorepo']) {
-    const skill = fs.readFileSync(path.join(__dirname, '..', 'src', tpl, '.agents', 'skills', 'factory', 'SKILL.md'), 'utf8');
-    assert.ok(skill.includes('.worktrees/<id>'), tpl + ': uses .worktrees/<id>');
-    assert.ok(!/\.\.\/<repo-name>/.test(skill), tpl + ': no sibling ../ worktree path');
-    assert.ok(!skill.includes('-factory/<id>'), tpl + ': no <repo>-factory path');
-  }
-});

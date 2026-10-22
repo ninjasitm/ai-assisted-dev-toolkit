@@ -97,7 +97,7 @@ Any value other than exactly `auto` is treated as `human`.
 
 ## Build location
 
-By default each job builds in its own git worktree on branch `factory/<id>`, so the main checkout stays free. A job's `job.json` records this in `worktree` (`true`) and the worktree path in `worktree_path`. Worktrees live in `.worktrees/<id>/` at the git root; the factory adds `.worktrees/` to `.gitignore` if it is missing.
+By default each job builds in its own git worktree on branch `factory/<id>`, so the main checkout stays free. A job's `job.json` records this in `worktree` (`true`) and the worktree path in `worktree_path`.
 
 ### Worktree bootstrap
 
