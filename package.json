@@ -1,6 +1,6 @@
 {
   "name": "nitm-ai-dev-toolkit",
-  "version": "5.1.0",
+  "version": "5.1.1",
   "description": "Scaffold AI agent config (Cursor, GitHub Copilot, Claude Code, OpenCode, Codex) into any repo, then hand off to your AI agent to finish setup.",
   "bin": {
     "nitm-ai-dev-toolkit": "bin/cli.js"

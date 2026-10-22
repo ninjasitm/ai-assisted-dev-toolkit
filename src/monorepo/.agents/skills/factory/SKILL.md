@@ -100,7 +100,7 @@ Feature folders live under the roots in `{{FACTORY_FEATURE_PATHS}}`, relative to
   "tracker_errors": [],
   "branch": "factory/001-onboarding-bootstrap",
   "worktree": true,
-  "worktree_path": "/abs/path/to/repo-factory/001-onboarding-bootstrap",
+  "worktree_path": "/abs/path/to/repo/.worktrees/001-onboarding-bootstrap",
   "mr": null,
   "failed_stage": null,
   "stage": "awaiting-plan",
@@ -291,10 +291,11 @@ If a ticket cannot be created, stop at `awaiting-plan`. Report the lines that ha
 
 ## Worktree
 
-The default build location. Use the [using-git-worktrees](../using-git-worktrees/SKILL.md) skill for its safety checks only. Its directory selection does not apply: the path below overrides it. Never edit `.gitignore` for the worktree.
+The default build location. Follow the [using-git-worktrees](../using-git-worktrees/SKILL.md) skill. Factory always takes its project-local `.worktrees/` default and never the global `~/.worktrees` option, without asking.
 
 - Branch `factory/<id>` from `{{DEFAULT_BRANCH}}`.
-- Path `../<repo-name>-factory/<id>/` relative to the main checkout, where `<repo-name>` is the basename of the main checkout. Record it in `worktree_path`.
+- Path `.worktrees/<id>/` at the root of the main checkout (the git root, inside the repo folder). Record its absolute path in `worktree_path`.
+- Before the first worktree, run that skill's `.gitignore` check. If it had to add `.worktrees/`, commit that on `{{DEFAULT_BRANCH}}` or tell the operator to.
 - Create it at the start of the build stage, after the plan gate and tracking. Reuse it if it exists (rework and repair).
 - Copy the job's `spec.md`, `plan.md`, and `tasks.md` (if any) from the main checkout's feature folder into the same relative path in the worktree. The builder ticks `tasks.md` there. Then run the bootstrap (next subsection) and make the feature docs commit.
 - Job state stays in the main checkout's `factory/jobs/<id>/`, never in the worktree.
@@ -350,7 +351,7 @@ PATHS
 - Main checkout (absolute): <abs>
 - Job folder (absolute): <abs>/factory/jobs/<id>
 - Feature folder (absolute, main checkout): <abs>/<feature_dir>
-- Worktree (absolute): <abs>/../<repo-name>-factory/<id>   (in-place: the main checkout)
+- Worktree (absolute): <abs>/.worktrees/<id>   (in-place: the main checkout)
 - Feature folder in worktree (absolute): <worktree>/<feature_dir>   (in-place: the main checkout's)
 - qa.md (absolute, build location): <worktree>/<feature_dir>/qa.md
 - Branch: factory/<id>
