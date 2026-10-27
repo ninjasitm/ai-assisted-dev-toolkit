@@ -9,3 +9,7 @@ description: "Review currently staged files before committing"
 |-------|-------------|
 | `reviewer` | Standard pre-commit review — correctness, style, patterns |
 | `oracle` | Complex staged change — trade-offs, security, scalability |
+
+Read and follow `.claude/prompt-snippets/review-staged.md` before executing this command.
+
+$ARGUMENTS
