@@ -177,7 +177,8 @@ npx nitm-ai-dev-toolkit doctor
 # Upgrade to the latest published version: applies the same plan as patch, keeps your edits
 npx nitm-ai-dev-toolkit upgrade
 
-# Also overwrite existing files with the latest templates (back up customisations first)
+# Also runs `install --force`, which overwrites locally changed files with the latest templates (back up customisations first).
+# `patch` never overwrites a locally changed file, with or without --force.
 npx nitm-ai-dev-toolkit upgrade --force
 
 # Preview install/patch/upgrade without writing (exits 1 on conflicts)
@@ -198,7 +199,7 @@ npx nitm-ai-dev-toolkit omo-slim-starter install
 
 - **`--dry-run`** (install, patch, upgrade) lists adds, overwrites, skips, conflicts and the state files it would write, and writes nothing. Install and patch exit 1 if there are conflicts. `upgrade --dry-run` runs the pinned version's own dry run, so the target must be **5.0.1 or later**.
 - **`--exclude` / `--only`** take comma-separated groups. Harnesses: `claude`, `codex`, `copilot`, `cursor`, `opencode`. Features: `factory`, `prisma`, `bkt-cli`, `gh-cli`, `glab-cli`, `acli`, `linear-cli`. Shared files (AGENTS.md, `docs/`, `hooks/`, shared skills and snippets) are never excluded. The selection is saved to `.nitm/toolkit.json` and used by later install, patch and doctor runs; `--exclude ""` clears it.
-- **`upgrade <version>`**, **`upgrade nitm-ai-dev-toolkit@<version>`** and **`--version <version>`** pin an exact version. `latest`, dist-tags and version ranges are refused. Without a version, the latest published release is used.
+- **`upgrade <version>`**, **`upgrade nitm-ai-dev-toolkit@<version>`** and **`--version <version>`** pin an exact version. `latest`, dist-tags and version ranges are refused. Without a version, the latest published release is used. While `.nitm/retired.json` has entries or a `trackers` override, `upgrade` refuses targets older than 5.2.0.
 - **State files:** install, patch and upgrade write `.toolkit-version` (the installed package version) and `.nitm/manifest.json` (hashes of the files the toolkit wrote). `doctor` reports a `.toolkit-version` that differs from the package version, and lists stale toolkit files it recognises. It only reports them; it never deletes anything.
 - **`.nitm/BOOTSTRAP.md`** is rewritten only when its content differs. The previous copy is first saved to `.nitm/backups/`.
 
@@ -230,7 +231,7 @@ Retire what a project does not use by recording it in `.nitm/retired.json`. Writ
 }
 ```
 
-A directory path retires every file under it. `install`, `patch` and `upgrade` never re-add a retired path, and `doctor` lists it as retired rather than missing. The CLI never writes this file. A malformed file stops the command before anything is written.
+A directory path retires every file under it. `install` and `patch` never re-add a retired path. `upgrade` does not either, but only when the target ships this support (5.2.0 or later): while the file has entries or a `trackers` override, `upgrade` refuses older targets. `doctor` lists a retired path as retired rather than missing. Matching is exact and case-sensitive (`AGENTS.md` is not `agents.md`). `./`, doubled and inner `/` are normalised, and paths must stay inside the project (`..` and absolute paths are refused). The CLI never writes this file. A malformed file stops the command before anything is written.
 
 Harness wrappers (`.claude/`, `.cursor/`, `.github/`, `.opencode/`) are thin: frontmatter, a title, a link to the snippet in `.claude/*-snippets/`, at most five key points, and optionally one short summary line. Agent-dispatch tables are activation metadata. Policy lives only in the snippets. `doctor` and `patch` list wrappers that inline policy or diverge from their snippet, and propose moving the content into the snippet. They never change those wrappers.
 
