@@ -90,6 +90,36 @@ test('retiredFor: a retired file or directory covers only its own paths, not sim
   assert.equal(relevance.retiredFor('.agents/skills/superpowers/SKILL.md', entries), null);
 });
 
+test('readRetired: ./, doubled and inner-dot slashes are normalised to the canonical path', (t) => {
+  const d = tmp(t);
+  writeRetired(d, { retired: [
+    { path: './AGENTS.md', reason: 'x', date: '2026-10-27' },
+    { path: '.claude//commands/review-pr.md/', reason: 'x', date: '2026-10-27' },
+    { path: 'a/./b.md', reason: 'x', date: '2026-10-27' },
+  ] });
+  assert.deepEqual(relevance.readRetired(d).entries.map((e) => e.path),
+    ['AGENTS.md', '.claude/commands/review-pr.md', 'a/b.md']);
+});
+
+test('retiredFor: a retired path written in a non-canonical form still covers the template file', (t) => {
+  const d = tmp(t);
+  writeRetired(d, { retired: [
+    { path: './AGENTS.md', reason: 'x', date: '2026-10-27' },
+    { path: '.claude//commands', reason: 'x', date: '2026-10-27' },
+  ] });
+  const { entries } = relevance.readRetired(d);
+  assert.ok(relevance.retiredFor('AGENTS.md', entries));
+  assert.ok(relevance.retiredFor(path.join('.claude', 'commands', 'review-pr.md').split(path.sep).join('/'), entries));
+});
+
+test('readRetired: normalising never lets a path climb out of the project', (t) => {
+  for (const bad of ['../x.md', 'a/../../x.md', 'a/../b.md', '/abs/x.md', './../x.md']) {
+    const d = tmp(t);
+    writeRetired(d, { retired: [{ path: bad, reason: 'x', date: '2026-10-27' }] });
+    assert.throws(() => relevance.readRetired(d), /relative path/, bad);
+  }
+});
+
 // ---- topics and relevance ----
 
 test('topicOf: tracker skills, tool-named files, MCP templates and generic files', () => {

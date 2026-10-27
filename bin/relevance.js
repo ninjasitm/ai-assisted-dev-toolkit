@@ -71,11 +71,16 @@ function readText(p) {
 
 // ---- retirement list ----
 
+// Canonical form: forward slashes, no leading ./, no doubled or inner / segments, no trailing /. Climbing
+// segments and absolute paths are refused on the raw input, before normalising could fold them away.
 function safeRetiredPath(value, where) {
-  const rel = typeof value === 'string' ? value.replace(/\\/g, '/').replace(/\/+$/, '') : '';
-  const bad = !rel || rel === '.' || path.posix.isAbsolute(rel) || path.win32.isAbsolute(rel)
-    || rel.split('/').includes('..');
-  if (bad) throw new Error(`${where}.path must be a relative path inside the project (got ${JSON.stringify(value)})`);
+  const raw = typeof value === 'string' ? value.replace(/\\/g, '/') : '';
+  const absolute = path.posix.isAbsolute(raw) || path.win32.isAbsolute(raw);
+  const climbs = raw.split('/').includes('..');
+  const rel = raw ? path.posix.normalize(raw).replace(/^(\.\/)+/, '').replace(/\/+$/, '') : '';
+  if (!rel || rel === '.' || absolute || climbs) {
+    throw new Error(`${where}.path must be a relative path inside the project (got ${JSON.stringify(value)})`);
+  }
   return rel;
 }
 
