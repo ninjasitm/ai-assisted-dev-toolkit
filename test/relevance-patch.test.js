@@ -96,6 +96,20 @@ test('patch: a retired directory covers every file under it', (t) => {
   assert.ok(doc.retired.some((r) => r.rel === path.join('.agents', 'skills', 'using-superpowers', 'SKILL.md')));
 });
 
+test('patch: retired paths written as ./x or with doubled slashes are never re-added', (t) => {
+  const d = tmp(t);
+  run(() => cli.cmdInstall(d, { repo: true }));
+  fs.rmSync(path.join(d, 'AGENTS.md'));
+  fs.rmSync(path.join(d, REVIEW_PR));
+  writeRetired(d, { retired: [
+    { path: './AGENTS.md', reason: 'kept out by hand', date: '2026-10-27' },
+    { path: '.claude//commands/review-pr.md', reason: 'no PR review command', date: '2026-10-27' },
+  ] });
+  run(() => cli.cmdPatch(d, { repo: true }));
+  assert.equal(fs.existsSync(path.join(d, 'AGENTS.md')), false);
+  assert.equal(fs.existsSync(path.join(d, REVIEW_PR)), false);
+});
+
 test('install: a retired path is not restored by install --force', (t) => {
   const d = tmp(t);
   run(() => cli.cmdInstall(d, { repo: true }));
@@ -164,12 +178,18 @@ test('patch: empty MCP templates are not added to a project without servers', (t
   assert.equal(doc.missingFiles.includes('.mcp.json'), false);
 });
 
-test('patch: a locally changed file is reported and never overwritten, even with --force', (t) => {
+test('patch --force: a locally changed file is planned for review, and its bytes and mtime stay untouched', (t) => {
   const d = tmp(t);
   run(() => cli.cmdInstall(d, { repo: true }));
-  fs.writeFileSync(path.join(d, 'AGENTS.md'), 'my own agents file');
+  const file = path.join(d, 'AGENTS.md');
+  fs.writeFileSync(file, 'my own agents file');
+  const old = new Date('2001-01-01T00:00:00Z');
+  fs.utimesSync(file, old, old);
   const patched = run(() => cli.cmdPatch(d, { repo: true, force: true }));
-  assert.equal(fs.readFileSync(path.join(d, 'AGENTS.md'), 'utf8'), 'my own agents file');
+  assert.equal(fs.readFileSync(file, 'utf8'), 'my own agents file');
+  assert.equal(fs.statSync(file).mtimeMs, old.getTime(), 'no write happened');
+  assert.ok(patched.result.planned.review >= 1);
+  assert.equal(patched.result.planned.overwrite, 0);
   assert.match(patched.out, /Needs review \(not written\) \(\d+\):\n[\s\S]*- AGENTS\.md \(kept, differs from template\)/);
 });
 
@@ -193,10 +213,90 @@ test('patch: a file the toolkit wrote and the user never changed is updated to t
   assert.equal(JSON.parse(fs.readFileSync(manifestPath, 'utf8')).files['AGENTS.md'], sha(template));
 });
 
-test('patch: prints the plan before it writes', (t) => {
+test('patch: the plan is printed before the first file is written', (t) => {
   const d = tmp(t);
-  const out = run(() => cli.cmdPatch(d, { repo: true })).out;
-  assert.ok(out.indexOf('Plan:') >= 0 && out.indexOf('Plan:') < out.indexOf('Patched:'), out);
+  const events = [];
+  const log = console.log;
+  const copy = fs.copyFileSync;
+  const write = fs.writeFileSync;
+  console.log = (...args) => events.push(`log:${args.join(' ')}`);
+  fs.copyFileSync = (...args) => { events.push('write'); return copy(...args); };
+  fs.writeFileSync = (...args) => { events.push('write'); return write(...args); };
+  try {
+    cli.cmdPatch(d, { repo: true });
+  } finally {
+    console.log = log;
+    fs.copyFileSync = copy;
+    fs.writeFileSync = write;
+  }
+  const planAt = events.findIndex((e) => e.startsWith('log:') && e.includes('Plan:'));
+  const firstWrite = events.indexOf('write');
+  assert.ok(planAt >= 0, 'plan printed');
+  assert.ok(firstWrite > planAt, `first write (${firstWrite}) comes after the plan (${planAt})`);
+  assert.ok(events.includes('write'), 'files were written after the plan');
+});
+
+// ---- upgrade: retirement guard (upgrade hands off to the pinned version's patch) ----
+
+const UPGRADE = (version, extra = {}) => ({ _: ['upgrade'], version, ...extra });
+
+function upgradeDeps(published) {
+  const calls = [];
+  return {
+    calls,
+    deps: {
+      npmView: () => `${published}\n`,
+      spawn: (cmd, args) => { calls.push({ cmd, args }); return { status: 0 }; },
+    },
+  };
+}
+
+test('upgrade: a malformed retirement list stops before the npm lookup, the run and any write', (t) => {
+  const d = tmp(t);
+  run(() => cli.cmdInstall(d, { repo: true }));
+  fs.writeFileSync(path.join(d, '.nitm', 'retired.json'), '{ "retired": [');
+  const before = snapshot(d);
+  const { deps, calls } = upgradeDeps('5.0.1');
+  assert.throws(() => run(() => cli.cmdUpgrade(d, UPGRADE('5.0.1', { exclude: ['factory'] }), deps)), /not valid JSON/);
+  assert.equal(calls.length, 0);
+  assert.deepEqual(snapshot(d), before, 'the saved selection was not written either');
+});
+
+test('upgrade: refuses a target older than retirement support while the list has entries, dry run included', (t) => {
+  const d = tmp(t);
+  writeRetired(d, { retired: [{ path: 'factory/README.md', reason: 'factory not used', date: '2026-10-27' }] });
+  const before = snapshot(d);
+  for (const extra of [{}, { dryRun: true }]) {
+    const { deps, calls } = upgradeDeps('5.1.2');
+    assert.throws(() => run(() => cli.cmdUpgrade(d, UPGRADE('5.1.2', extra), deps)),
+      new RegExp(`predates retirement support.*Pin ${cli.RELEVANCE_MIN} or later`));
+    assert.equal(calls.length, 0);
+  }
+  assert.deepEqual(snapshot(d), before);
+});
+
+test('upgrade: a tracker override alone also triggers the version gate', (t) => {
+  const d = tmp(t);
+  writeRetired(d, { trackers: ['github'] });
+  const { deps, calls } = upgradeDeps('5.1.2');
+  assert.throws(() => run(() => cli.cmdUpgrade(d, UPGRADE('5.1.2'), deps)), /predates retirement support/);
+  assert.equal(calls.length, 0);
+});
+
+test('upgrade: a target that ships retirement support runs its own patch', (t) => {
+  const d = tmp(t);
+  writeRetired(d, { retired: [{ path: 'factory/README.md', reason: 'factory not used', date: '2026-10-27' }] });
+  const { deps, calls } = upgradeDeps(cli.RELEVANCE_MIN);
+  run(() => cli.cmdUpgrade(d, UPGRADE(cli.RELEVANCE_MIN), deps));
+  assert.equal(calls.length, 1);
+  assert.ok(calls[0].args.includes('patch'), calls[0].args.join(' '));
+});
+
+test('upgrade: without a retirement list an older target is not refused (unchanged behaviour)', (t) => {
+  const d = tmp(t);
+  const { deps, calls } = upgradeDeps('5.1.2');
+  run(() => cli.cmdUpgrade(d, UPGRADE('5.1.2'), deps));
+  assert.equal(calls.length, 1);
 });
 
 test('doctor and patch: an inlined harness wrapper is reported and left unchanged', (t) => {

@@ -119,6 +119,10 @@ const KNOWN_HISTORICAL = {
 // First release with --dry-run, --exclude and --only. `upgrade` refuses a dry run below it (older
 // releases would write), and refuses a selection below it (older releases would ignore it).
 const DRY_RUN_UPGRADE_MIN = '5.0.1';
+// First release whose patch and install honour .nitm/retired.json and the relevance plan. Upgrade refuses
+// older targets while that file has entries or a tracker override, because those targets would ignore it.
+// Set to the version that ships this change; keep in step with the CHANGELOG [Unreleased] release.
+const RELEVANCE_MIN = '5.2.0';
 const VERSION_RE = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/;
 
 const C = {
@@ -905,8 +909,15 @@ function cmdUpgrade(cwd, flags, deps = {}) {
   const requested = parseUpgradeTarget(flags);
   // Reads the effective selection first: a corrupt saved config or a combined --exclude/--only stops here.
   const { selection, explicit } = resolveSelection(cwd, flags);
+  // A malformed retirement list stops here too, before the npm lookup and before any write.
+  const retired = relevance.readRetired(cwd);
   const target = resolveUpgradeVersion(requested, deps.npmView || npmQuery);
   info(`Resolved ${PKG_NAME}@${target} (installed toolkit: ${currentVersion()}).`);
+  const retirementActive = retired.entries.length > 0 || retired.trackers !== undefined;
+  if (retirementActive && compareVersions(target, RELEVANCE_MIN) < 0) {
+    throw new Error(`${PKG_NAME}@${target} predates retirement support and would re-add the paths and tracker `
+      + `choices recorded in ${relevance.RETIRED_FILE}. Pin ${RELEVANCE_MIN} or later.`);
+  }
   const selectionActive = selection.exclude.length > 0 || selection.only.length > 0;
   if (flags.dryRun && compareVersions(target, DRY_RUN_UPGRADE_MIN) < 0) {
     throw new Error(`--dry-run needs ${PKG_NAME} >= ${DRY_RUN_UPGRADE_MIN}; ${target} has no dry run and would write. Pin a newer version.`);
@@ -1188,6 +1199,7 @@ module.exports = {
   resolveUpgradeVersion,
   compareVersions,
   DRY_RUN_UPGRADE_MIN,
+  RELEVANCE_MIN,
   cmdOmoStarter,
   cmdFactory,
   ENV_DIRS,
