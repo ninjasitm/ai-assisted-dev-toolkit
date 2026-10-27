@@ -13,6 +13,7 @@ const { execFileSync, spawnSync } = require('child_process');
 const factory = require('./factory-watch.js');
 const factoryArchive = require('./factory-archive.js');
 const factoryPrune = require('./factory-prune.js');
+const relevance = require('./relevance.js');
 
 const PKG_ROOT = path.join(__dirname, '..');
 const SRC_DIR = path.join(PKG_ROOT, 'src');
@@ -118,6 +119,10 @@ const KNOWN_HISTORICAL = {
 // First release with --dry-run, --exclude and --only. `upgrade` refuses a dry run below it (older
 // releases would write), and refuses a selection below it (older releases would ignore it).
 const DRY_RUN_UPGRADE_MIN = '5.0.1';
+// First release whose patch and install honour .nitm/retired.json and the relevance plan. Upgrade refuses
+// older targets while that file has entries or a tracker override, because those targets would ignore it.
+// Set to the version that ships this change; keep in step with the CHANGELOG [Unreleased] release.
+const RELEVANCE_MIN = '5.2.0';
 const VERSION_RE = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/;
 
 const C = {
@@ -306,30 +311,66 @@ function blockerOf(cwd, dest) {
   return null;
 }
 
-// One entry per template file the command touches.
-//   add:       missing in the target
-//   overwrite: install --force on an existing file
-//   skip:      patch keeps an existing file (identical or user-changed)
-//   conflict:  install without --force on an existing file, or a path blocked by a file/dir of another type
-function planFiles(type, cwd, { mode, force, env, selection }) {
+// One entry per template file the command touches. `action`:
+//   add:        missing in the target and applies to this project (patch)
+//   update:     patch refreshes a file the toolkit wrote and the user never changed (manifest hash matches)
+//   overwrite:  install --force on an existing file
+//   skip:       identical to the template, already current
+//   review:     locally changed, or missing while relevance is undecided; kept and reported, never overwritten
+//   irrelevant: does not apply to this project (missing: not added; present: kept, reported)
+//   retired:    listed in .nitm/retired.json; never added, updated or overwritten
+//   conflict:   install without --force on an existing file, or a path blocked by a file/dir of another type
+// `retired` and `facts` may be passed in; otherwise they are read from the project.
+function planFiles(type, cwd, { mode, force, env, selection, retired, facts }) {
+  const retiredConfig = retired || relevance.readRetired(cwd);
+  const projectFacts = mode === 'patch' ? (facts || relevance.detectProject(cwd, retiredConfig)) : null;
+  const manifest = mode === 'patch' ? readManifest(cwd).files : {};
   const rels = scopeFiles(templateFiles(type), env).filter((rel) => selectionKeeps(rel, selection));
   return rels.map((rel) => {
     const dest = installName(rel);
     const from = path.join(SRC_DIR, type, rel);
     const hash = fileHash(from);
+    const key = dest.split(path.sep).join('/');
+    const retirement = relevance.retiredFor(key, retiredConfig.entries);
+    if (retirement) {
+      return { rel: dest, from, hash, action: 'retired', reason: `${retirement.reason} (retired ${retirement.date})` };
+    }
     const blocker = blockerOf(cwd, dest);
     if (blocker) return { rel: dest, from, hash, action: 'conflict', reason: `blocked by ${blocker}` };
     const to = path.join(cwd, dest);
-    if (!fs.existsSync(to)) return { rel: dest, from, hash, action: 'add', same: false };
-    const same = fileHash(to) === hash;
-    if (mode === 'install' && !force) return { rel: dest, from, hash, action: 'conflict', reason: 'exists', same };
-    if (mode === 'install') return { rel: dest, from, hash, action: 'overwrite', same };
-    return { rel: dest, from, hash, action: 'skip', same, reason: same ? 'identical' : 'kept, differs from template' };
+    if (mode === 'install') {
+      if (!fs.existsSync(to)) return { rel: dest, from, hash, action: 'add', same: false };
+      const same = fileHash(to) === hash;
+      if (!force) return { rel: dest, from, hash, action: 'conflict', reason: 'exists', same };
+      return { rel: dest, from, hash, action: 'overwrite', same };
+    }
+    return patchEntry({ dest, from, hash, to, key, facts: projectFacts, manifest });
   });
 }
 
+// Patch decision for one template file that is not retired and not blocked.
+function patchEntry({ dest, from, hash, to, key, facts, manifest }) {
+  const relevant = relevance.relevanceOf(key, facts);
+  if (!fs.existsSync(to)) {
+    if (relevant.status === 'add') return { rel: dest, from, hash, action: 'add', same: false };
+    return { rel: dest, from, hash, action: relevant.status === 'review' ? 'review' : 'irrelevant', reason: relevant.reason };
+  }
+  const local = fileHash(to);
+  const same = local === hash;
+  if (relevant.status === 'irrelevant') {
+    return { rel: dest, from, hash, action: 'irrelevant', same, present: true, reason: relevant.reason };
+  }
+  if (same) return { rel: dest, from, hash, action: 'skip', same: true, reason: 'identical' };
+  if (relevant.status === 'add' && manifest[key] === local) {
+    return { rel: dest, from, hash, action: 'update', same: false, reason: 'unchanged since the toolkit wrote it' };
+  }
+  return { rel: dest, from, hash, action: 'review', same: false, reason: 'kept, differs from template' };
+}
+
+const PLAN_ACTIONS = ['add', 'update', 'overwrite', 'skip', 'review', 'irrelevant', 'retired', 'conflict'];
+
 function countActions(plan) {
-  const counts = { add: 0, overwrite: 0, skip: 0, conflict: 0 };
+  const counts = Object.fromEntries(PLAN_ACTIONS.map((a) => [a, 0]));
   for (const e of plan) counts[e.action]++;
   return counts;
 }
@@ -337,7 +378,7 @@ function countActions(plan) {
 function applyPlan(cwd, plan) {
   let copied = 0;
   for (const e of plan) {
-    if (e.action !== 'add' && e.action !== 'overwrite') continue;
+    if (!['add', 'update', 'overwrite'].includes(e.action)) continue;
     const to = path.join(cwd, e.rel);
     try {
       fs.mkdirSync(path.dirname(to), { recursive: true });
@@ -361,17 +402,44 @@ function conflicts(type, cwd, env) {
     .map((e) => e.rel);
 }
 
-function printPlan(plan) {
+const PLAN_SECTIONS = [
+  ['add', 'Would add'],
+  ['update', 'Would update (unchanged since the toolkit wrote them; template changed)'],
+  ['overwrite', 'Would overwrite'],
+  ['review', 'Needs review (not written)'],
+  ['irrelevant', 'Not relevant to this project (not written)'],
+  ['retired', 'Retired (never re-added)'],
+  ['conflict', 'Conflicts'],
+];
+
+// The plan is shown before any write: what is added, updated, held back and why.
+function printPlan(plan, dryRun) {
   const c = countActions(plan);
-  info(`Dry run, nothing will be written: ${c.add} add, ${c.overwrite} overwrite, ${c.skip} skip, ${c.conflict} conflict.`);
-  const sections = [['add', 'Would add'], ['overwrite', 'Would overwrite'],
-    ['skip', 'Would skip (existing, kept)'], ['conflict', 'Conflicts']];
-  for (const [action, label] of sections) {
-    const list = plan.filter((e) => e.action === action);
+  const summary = `${c.add} add, ${c.update} update, ${c.overwrite} overwrite, ${c.review} need review, `
+    + `${c.irrelevant} not relevant, ${c.retired} retired, ${c.skip} already current, ${c.conflict} conflict.`;
+  info(dryRun ? `Dry run, nothing will be written: ${summary}` : `Plan: ${summary}`);
+  for (const [action, label] of PLAN_SECTIONS) {
+    // Present files that do not apply are kept silently here; doctor lists them as retirement candidates.
+    const list = plan.filter((e) => e.action === action && !(action === 'irrelevant' && e.present));
     if (!list.length) continue;
     console.log(`  ${label} (${list.length}):`);
     for (const e of list) console.log(`     - ${e.rel}${e.reason ? ` (${e.reason})` : ''}`);
   }
+}
+
+function printFacts(facts) {
+  const yn = (v) => (v ? 'yes' : 'no');
+  const tracker = facts.trackers === null
+    ? `not detected (set "trackers" in ${relevance.RETIRED_FILE})`
+    : `${facts.trackers.join(', ') || 'none'} (${facts.trackerSource})`;
+  info(`Project facts: tracker ${tracker}; Playwright ${yn(facts.playwright)}; Prisma ${yn(facts.prisma)}; UI ${yn(facts.ui)}.`);
+}
+
+// Harness wrappers that inline policy or diverge from their snippet. Reported only; nothing is moved.
+function printWrappers(wrappers) {
+  if (!wrappers.length) return;
+  warn(`${wrappers.length} harness wrapper(s) inline policy or diverge from their snippet. Propose moving the content into the snippet and keeping the wrapper a thin link (nothing changed):`);
+  wrappers.forEach((w) => console.log(`     - ${w.rel} (${w.status}: ${w.reason})`));
 }
 
 // ---- Handoff, version, manifest, selection (the files written besides templates) ----
@@ -498,7 +566,7 @@ function recordState(cwd, { type, env, plan, selection, explicit, dryRun }) {
   const version = writeState(path.join(cwd, VERSION_FILE), versionText);
   const files = { ...readManifest(cwd).files };
   for (const e of plan) {
-    if (e.action === 'add' || e.action === 'overwrite' || (e.action === 'skip' && e.same)) {
+    if (['add', 'update', 'overwrite'].includes(e.action) || (e.action === 'skip' && e.same)) {
       files[e.rel.split(path.sep).join('/')] = e.hash;
     }
   }
@@ -562,7 +630,7 @@ function cmdInstall(cwd, flags) {
   const blocked = cf.filter((e) => e.reason !== 'exists');
 
   if (flags.dryRun) {
-    printPlan(plan);
+    printPlan(plan, true);
     printDryState(recordState(cwd, { type, env: flags.env, plan, selection, explicit, dryRun: true }));
     if (cf.length) process.exitCode = 1;
     return { copied: 0, skipped: 0, conflicts: cf.length, dryRun: true, planned: counts };
@@ -587,32 +655,41 @@ function cmdInstall(cwd, flags) {
   return { copied, skipped: counts.skip, conflicts: 0, dryRun: false, planned: counts };
 }
 
+// Classifies every template file against the project, shows the plan, then writes only add and update
+// entries. Existing files that differ are reported, never overwritten (not even with --force).
 function cmdPatch(cwd, flags) {
   const type = detectType(cwd, flags);
   const { selection, explicit } = resolveSelection(cwd, flags);
-  // patch never overwrites existing files, even with --force (data-loss guard)
-  const plan = planFiles(type, cwd, { mode: 'patch', env: flags.env, selection });
+  const retired = relevance.readRetired(cwd);
+  const facts = relevance.detectProject(cwd, retired);
+  const plan = planFiles(type, cwd, { mode: 'patch', env: flags.env, selection, retired, facts });
   const counts = countActions(plan);
   const conflictEntries = plan.filter((e) => e.action === 'conflict');
   const stale = findStale(cwd, type);
+  const wrappers = relevance.auditWrappers(cwd, plan);
 
   if (flags.dryRun) {
-    printPlan(plan);
+    printFacts(facts);
+    printPlan(plan, true);
+    printWrappers(wrappers);
     printStale(stale);
     printDryState(recordState(cwd, { type, env: flags.env, plan, selection, explicit, dryRun: true }));
     if (conflictEntries.length) process.exitCode = 1;
-    return { copied: 0, skipped: counts.skip, conflicts: conflictEntries.length, stale, dryRun: true, planned: counts };
+    return { copied: 0, skipped: counts.skip, conflicts: conflictEntries.length, stale, wrappers, facts, dryRun: true, planned: counts };
   }
+  printFacts(facts);
+  printPlan(plan, false);
   const copied = applyPlan(cwd, plan);
-  ok(`Ensured files present: ${copied} added, ${counts.skip} already there.`);
+  ok(`Patched: ${copied} file(s) written, ${counts.skip} already current, ${counts.review} kept for review.`);
   if (conflictEntries.length) {
     err(`${conflictEntries.length} path(s) could not be written (blocked by a file or directory of another type):`);
     conflictEntries.forEach((e) => console.log(`     - ${e.rel} (${e.reason})`));
     process.exitCode = 1;
   }
+  printWrappers(wrappers);
   printStale(stale);
   printHandoff(flags.env, recordState(cwd, { type, env: flags.env, plan, selection, explicit, dryRun: false }));
-  return { copied, skipped: counts.skip, conflicts: conflictEntries.length, stale, dryRun: false, planned: counts };
+  return { copied, skipped: counts.skip, conflicts: conflictEntries.length, stale, wrappers, facts, dryRun: false, planned: counts };
 }
 
 // Placeholders the agent fills per task or feature at runtime, so they are not bootstrap leftovers.
@@ -647,30 +724,67 @@ function scanPlaceholders(cwd, relFiles) {
   return found;
 }
 
+// Read-only. Missing means a file that applies to the project and is absent. Retired paths, files that do
+// not apply, and files whose relevance is still undecided are reported in their own sections.
 function cmdDoctor(cwd, flags) {
   const type = detectType(cwd, flags);
   const { selection, explicit } = resolveSelection(cwd, flags);
-  const files = scopeFiles(templateFiles(type), flags.env)
-    .filter((rel) => selectionKeeps(rel, selection))
-    .map(installName);
+  const retired = relevance.readRetired(cwd);
+  const facts = relevance.detectProject(cwd, retired);
+  const plan = planFiles(type, cwd, { mode: 'patch', env: flags.env, selection, retired, facts });
+  const retiredFiles = [];
+  const notRelevant = [];
+  const undecided = [];
   const missingFiles = [];
+  const files = [];
   let present = 0;
-  for (const rel of files) {
-    if (fs.existsSync(path.join(cwd, rel))) present++;
-    else missingFiles.push(rel);
+  for (const e of plan) {
+    if (e.action === 'retired') {
+      retiredFiles.push({ rel: e.rel, reason: e.reason, present: fs.existsSync(path.join(cwd, e.rel)) });
+      continue;
+    }
+    files.push(e.rel);
+    if (fs.existsSync(path.join(cwd, e.rel))) {
+      present++;
+      if (e.action === 'irrelevant') notRelevant.push(e.rel);
+    } else if (e.action === 'irrelevant') {
+      continue;
+    } else if (e.action === 'review') {
+      undecided.push({ rel: e.rel, reason: e.reason });
+    } else {
+      missingFiles.push(e.rel);
+    }
   }
   const placeholders = scanPlaceholders(cwd, files);
   const version = toolkitVersionStatus(cwd);
   const stale = findStale(cwd, type);
   const customized = customizedOwned(cwd);
-  const result = { type, present, missingFiles, placeholders, version, stale, customized,
-    selection, selectionSource: explicit ? 'flags' : CONFIG_FILE };
+  const wrappers = relevance.auditWrappers(cwd, plan);
+  const result = { type, present, missingFiles, undecided, retired: retiredFiles, notRelevant, wrappers, facts,
+    placeholders, version, stale, customized, selection, selectionSource: explicit ? 'flags' : CONFIG_FILE };
 
   console.log('');
-  if (missingFiles.length === 0) ok(`All ${present} template files present.`);
-  else {
+  printFacts(facts);
+  if (missingFiles.length === 0 && undecided.length === 0) ok(`All ${present} template files present.`);
+  if (missingFiles.length) {
     warn(`${missingFiles.length} missing file(s):`);
     missingFiles.forEach((f) => console.log('     - ' + f));
+  }
+  if (undecided.length) {
+    warn(`${undecided.length} file(s) not installed because relevance is undecided (run patch --dry-run for the reason):`);
+    undecided.forEach((u) => console.log(`     - ${u.rel} (${u.reason})`));
+  }
+  if (retiredFiles.length) {
+    info(`${retiredFiles.length} retired path(s), never re-added (${relevance.RETIRED_FILE}):`);
+    retiredFiles.forEach((r) => console.log(`     - ${r.rel} (${r.reason})${r.present ? ' [still on disk, kept]' : ''}`));
+  }
+  if (notRelevant.length) {
+    info(`${notRelevant.length} present file(s) do not apply to this project. Consider retiring them in ${relevance.RETIRED_FILE} (kept as is):`);
+    notRelevant.forEach((f) => console.log('     - ' + f));
+  }
+  if (wrappers.length) {
+    warn(`${wrappers.length} harness wrapper(s) inline policy or diverge from their snippet (nothing changed):`);
+    wrappers.forEach((w) => console.log(`     - ${w.rel} (${w.status}: ${w.reason})`));
   }
   if (selection.exclude.length || selection.only.length) {
     info(`Selection (${result.selectionSource}): exclude [${selection.exclude.join(', ')}], only [${selection.only.join(', ')}].`);
@@ -795,8 +909,15 @@ function cmdUpgrade(cwd, flags, deps = {}) {
   const requested = parseUpgradeTarget(flags);
   // Reads the effective selection first: a corrupt saved config or a combined --exclude/--only stops here.
   const { selection, explicit } = resolveSelection(cwd, flags);
+  // A malformed retirement list stops here too, before the npm lookup and before any write.
+  const retired = relevance.readRetired(cwd);
   const target = resolveUpgradeVersion(requested, deps.npmView || npmQuery);
   info(`Resolved ${PKG_NAME}@${target} (installed toolkit: ${currentVersion()}).`);
+  const retirementActive = retired.entries.length > 0 || retired.trackers !== undefined;
+  if (retirementActive && compareVersions(target, RELEVANCE_MIN) < 0) {
+    throw new Error(`${PKG_NAME}@${target} predates retirement support and would re-add the paths and tracker `
+      + `choices recorded in ${relevance.RETIRED_FILE}. Pin ${RELEVANCE_MIN} or later.`);
+  }
   const selectionActive = selection.exclude.length > 0 || selection.only.length > 0;
   if (flags.dryRun && compareVersions(target, DRY_RUN_UPGRADE_MIN) < 0) {
     throw new Error(`--dry-run needs ${PKG_NAME} >= ${DRY_RUN_UPGRADE_MIN}; ${target} has no dry run and would write. Pin a newer version.`);
@@ -812,7 +933,7 @@ function cmdUpgrade(cwd, flags, deps = {}) {
     if (writeState(path.join(cwd, CONFIG_FILE), text) === 'write') writeText(cwd, CONFIG_FILE, text);
   }
   if (flags.force) warn('--force: existing files will be overwritten with the latest templates. Back up your customisations first.');
-  else info('Adding missing files only; your existing files are kept. Pass --force to overwrite them.');
+  else info('Applying the patch plan: adds files that apply and updates files you never changed; edited files are kept. Pass --force to overwrite them.');
   info(`Running pinned ${PKG_NAME}@${target}${flags.dryRun ? ' (dry run, nothing written)' : ''}...`);
   const run = deps.spawn || spawnSync;
   const r = run('npx', upgradeArgs(flags, target), { cwd, stdio: 'inherit', timeout: 120000 });
@@ -939,8 +1060,11 @@ Usage:
       --dry-run lists adds, overwrites, skips and conflicts; writes nothing; exits 1 if there are conflicts.
 
   npx nitm-ai-dev-toolkit patch [--monorepo|--repo] [--env <env>] [--exclude <groups>|--only <groups>] [--dry-run]
-      Add only missing template files (never overwrites existing ones), then
-      re-emit the bootstrap handoff so your AI agent can finish configuration.
+      Classify every template file against the project, print the plan, then write it: add
+      files that apply, update files you never changed. Files that differ from the template are
+      kept and listed for review; files that do not apply (other trackers, Playwright, Prisma,
+      empty MCP configs) and retired paths (.nitm/retired.json) are never added. Harness wrappers
+      that inline policy are reported, not changed. Then re-emit the bootstrap handoff.
       A given --exclude/--only is saved to .nitm/toolkit.json and used by later patch/doctor runs.
 
   npx nitm-ai-dev-toolkit upgrade [version] [--env <env>] [--force] [--dry-run] [--exclude <groups>|--only <groups>]
@@ -951,9 +1075,10 @@ Usage:
       --dry-run runs the pinned version's dry run (needs ${DRY_RUN_UPGRADE_MIN} or newer).
 
   npx nitm-ai-dev-toolkit doctor [--monorepo|--repo] [--env <env>]
-      Inspect the current install: missing files, unresolved {{PLACEHOLDER}}
-       values, .toolkit-version against the toolkit version, and stale toolkit files
-       (reported, never deleted).
+      Inspect the current install (read-only): missing files, retired paths (.nitm/retired.json,
+       never counted as missing), files that do not apply to the project, files whose relevance is
+       undecided, harness wrappers that inline policy, unresolved {{PLACEHOLDER}} values,
+       .toolkit-version against the toolkit version, and stale toolkit files (reported, never deleted).
 
   npx nitm-ai-dev-toolkit omo-slim-starter install
       Run \`npx nitm-opencode-starter install\` to scaffold the oh-my-opencode-slim
@@ -1074,6 +1199,7 @@ module.exports = {
   resolveUpgradeVersion,
   compareVersions,
   DRY_RUN_UPGRADE_MIN,
+  RELEVANCE_MIN,
   cmdOmoStarter,
   cmdFactory,
   ENV_DIRS,
@@ -1084,4 +1210,10 @@ module.exports = {
   HANDOFF_FILE,
   CONFIG_FILE,
   MANIFEST_FILE,
+  RETIRED_FILE: relevance.RETIRED_FILE,
+  readRetired: relevance.readRetired,
+  detectProject: relevance.detectProject,
+  relevanceOf: relevance.relevanceOf,
+  auditWrappers: relevance.auditWrappers,
+  countActions,
 };
