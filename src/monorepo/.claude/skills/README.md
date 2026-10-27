@@ -1,6 +1,6 @@
 # Claude Code Skills
 
-This folder is for skills installed via `npx -y skills add -a claude-code <owner/repo> --skill '*'`.
+This folder is for skills installed via `npx -y skills add -a claude-code <owner/repo> --skill <confirmed name>`.
 
 ## About Skills
 
@@ -12,10 +12,10 @@ Install skills from [skills.sh](https://skills.sh/) using the `-a claude-code` f
 
 ```bash
 # For Claude Code only
-npx -y skills add -a claude-code <owner/repo> --skill '*'
+npx -y skills add -a claude-code <owner/repo> --skill <confirmed name>
 
 # For multiple agents (e.g., Claude Code + GitHub Copilot)
-npx -y skills add -a claude-code -a github-copilot <owner/repo> --skill '*'
+npx -y skills add -a claude-code -a github-copilot <owner/repo> --skill <confirmed name>
 ```
 
 **Tip:** The skills CLI automatically detects installed agents. If you omit `-a claude-code`, you'll be prompted to choose from detected agents.
@@ -37,14 +37,14 @@ Universal workflow skills are pre-installed in `.agents/skills/`. These include:
 
 ```bash
 # Frontend skills
-npx -y skills add -a claude-code onmax/nuxt-skills --skill '*'
-npx -y skills add -a claude-code vercel-labs/agent-skills --skill '*'
+npx -y skills add -a claude-code onmax/nuxt-skills --skill vue
+npx -y skills add -a claude-code vercel-labs/agent-skills --skill vercel-react-best-practices
 
 # Security skills
-npx -y skills add -a claude-code trailofbits/skills --skill '*'
+npx -y skills add -a claude-code trailofbits/skills --skill <confirmed name>
 
 # Framework-specific
-npx -y skills add -a claude-code better-auth/skills --skill '*'
+npx -y skills add -a claude-code better-auth/skills --skill <confirmed name>
 ```
 
 See the main README.md for a full list of recommended skills.

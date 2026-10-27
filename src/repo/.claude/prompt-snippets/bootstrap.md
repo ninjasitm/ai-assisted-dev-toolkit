@@ -27,6 +27,28 @@ Analyze the project structure and customize AI instruction templates for this co
 - Codex MCP uses native `[mcp_servers.name]` TOML, not `.mcp.json`. Treat other harness MCP templates as references only; do not activate servers, copy credentials, or install hooks automatically.
 - Update and audit only confirmed harness targets. For Codex-only setup, `AGENTS.md`, `.agents/skills/`, and `.codex/config.toml` are the native targets. `--env codex` also includes `.github/instructions/` and `.claude/rules-snippets/` solely as AGENTS-linked standards and their wrapper sources, not automatically loaded rules or evidence of Copilot/Claude use; other harness command, agent, and config directories are excluded. The remaining tool-specific examples below are conditional.
 
+## Thin Wrapper Policy
+
+Canonical policy lives only in `.claude/rules-snippets/`, `.claude/prompt-snippets/`, and `.claude/agents-snippets/`. Every harness wrapper (`.claude/{rules,commands,agents}/`, `.cursor/{rules,commands,agents}/`, `.github/{instructions,prompts,agents}/`, `.opencode/{rules,commands,agents}/`, and Codex and Copilot entry files) is a thin link to its snippet: frontmatter, a title, the link line, at most five key points, and optionally one short summary line. Its agent-dispatch table is activation metadata and may stay.
+
+- **Create or change policy in the snippet first, then the wrapper.** Never write a wrapper with a copy of the policy, and never let a wrapper diverge from its snippet.
+- **Skills that restate a snippet's policy point to the snippet** (or, where the skill is the source, the snippet points to the skill). Keep one source of policy text.
+- **Existing wrappers that inline policy or diverge from their snippet** are reported (`npx nitm-ai-dev-toolkit doctor` lists them). Propose moving the content into the snippet and reducing the wrapper to a link. Change nothing without the operator's approval.
+
+## Relevance and Retirement
+
+The template ships files for every stack, tracker and test tool. Decide what applies to this project; do not copy the whole template.
+
+- **Relevance comes from the project:** the tracker (git origin host, or `"trackers"` in `.nitm/retired.json`), Playwright, Prisma, the UI framework, and whether MCP servers are configured. `npx nitm-ai-dev-toolkit patch --dry-run` prints each template file's classification with its reason (add, update, needs review, not relevant, retired). Use that plan; do not copy template files by hand.
+- **Retire what does not apply** by recording it in `.nitm/retired.json` after the operator agrees, with a reason and date:
+
+  ```json
+  { "retired": [{ "path": ".agents/skills/linear-cli", "reason": "GitHub Issues is the tracker", "date": "2026-10-27" }] }
+  ```
+
+  A directory path retires every file under it. Patch and upgrade never re-add retired paths, and doctor reports them as retired, not missing. Never delete files to retire them; that removes nothing from the template.
+- **Override tracker detection** with `"trackers": ["github"]` (or `[]` for none) when the git origin does not name the tracker, for example a Linear project hosted on GitHub.
+
 ## Process
 
 > **Merge, don't clobber.** If a target file already exists and carries project-specific content — customized agents, rules, skills, or `{{PLACEHOLDER}}` values already replaced — preserve it. Add missing structure; never overwrite a customized file with template defaults. When a template change conflicts with an existing customization, merge the addition and flag it for the user rather than replacing the file. For incremental updates after the first bootstrap, prefer `/bootstrap-patch`, which is purpose-built for meticulous merging.
@@ -503,13 +525,18 @@ Before recommending skills, identify the running harness from session/runtime in
 - Example: confirmed Cursor and Copilot → `-a cursor -a github-copilot`
 - If no harness is confirmed, ask before installing (or let the CLI prompt); do not infer from scaffold directories
 
-### Step 7: AI Agent Skills Recommendation
+### Step 7: AI Agent Skills by Need
 
-Based on detected ecosystem and frameworks, recommend relevant skills from [skills.sh](https://skills.sh/) and [agentskills.io](https://agentskills.io/).
+Recommend skills from [skills.sh](https://skills.sh/) and [agentskills.io](https://agentskills.io/) only for needs this project has: its tracker, framework, language, and test tooling. Never install a whole repository with `--skill '*'`. The toolkit already ships the core workflow skills (TDD, debugging, planning, review) in `.agents/skills/`, so do not recommend them again.
+
+**Rules for every recommendation:**
+- One named skill per install (`--skill <name>`). Confirm the name exists in its source repository first (its README or skill listing). If you cannot confirm it, leave that install out and say so.
+- List the detected need next to each skill. Recommend nothing without a need.
+- Install nothing before the operator approves that skill. Approving one skill does not approve the others.
 
 **Important:** Use the detected agent flags from Step 6 in all `npx skills add` commands. This prevents creating unnecessary configurations for agents the user doesn't have installed.
 
-**Core Skills (Always Recommend):**
+**Generic workflow skills (optional; the toolkit already ships equivalents):**
 
 | Skill Repository           | Purpose                                                    |
 | -------------------------- | ---------------------------------------------------------- |
@@ -531,9 +558,9 @@ This template bundles issue tracker skills in `.agents/skills/`. Verify the corr
 
 1. **Map tracker → expected CLI skill:** Jira → `acli`, GitHub Issues → `gh-cli`, Linear → `linear-cli`
 2. **Verify presence:** Check `.agents/skills/issue-tracker/SKILL.md` and `.agents/skills/{expected-cli}/SKILL.md` exist
-3. **Warn on mismatch:** If a *different* CLI skill is present, warn the user and offer to prune
-4. **Prune unused CLI skills:** On confirmation, delete mismatched skill directory and update AGENTS.md Skills table
-5. **If missing:** Warn and offer to copy from the template bundle
+3. **Warn on mismatch:** If a *different* CLI skill is present, warn the user and offer to retire it in `.nitm/retired.json` (the patch plan then leaves it out)
+4. **Remove only with approval:** Deleting a skill directory needs explicit approval, a backup copy, and an updated AGENTS.md Skills table. Retiring it (step 3) needs no deletion
+5. **If missing:** `patch --dry-run` shows whether the matching CLI skill applies; add it only when the operator approves
 
 **Framework-Specific Skills:**
 
@@ -566,13 +593,13 @@ This template bundles issue tracker skills in `.agents/skills/`. Verify the corr
 | React              | `vercel-labs/agent-skills`            | `npx -y skills add {{AGENT_FLAGS}} vercel-labs/agent-skills --skill "vercel-react-best-practices"`     |
 | Vue                | `onmax/nuxt-skills` (vue)             | `npx -y skills add {{AGENT_FLAGS}} onmax/nuxt-skills --skill "vue"`                                    |
 | Nuxt               | `onmax/nuxt-skills` (nuxt)            | `npx -y skills add {{AGENT_FLAGS}} onmax/nuxt-skills --skill "nuxt"`                                   |
-| Expo               | `expo/skills`                         | `npx -y skills add {{AGENT_FLAGS}} expo/skills --skill '*'` |
-| TypeScript         | `pproenca/dot-skills` (typescript)    | `npx -y skills add {{AGENT_FLAGS}} pproenca/dot-skills --skill '*'` |
-| Advanced Types     | `wshobson/agents` (ts-advanced-types) | `npx -y skills add {{AGENT_FLAGS}} wshobson/agents --skill '*'` |
+| Expo               | `expo/skills`                         | `npx -y skills add {{AGENT_FLAGS}} expo/skills --skill <name confirmed in the repository>` |
+| TypeScript         | `pproenca/dot-skills` (typescript)    | `npx -y skills add {{AGENT_FLAGS}} pproenca/dot-skills --skill "typescript"` |
+| Advanced Types     | `wshobson/agents` (ts-advanced-types) | `npx -y skills add {{AGENT_FLAGS}} wshobson/agents --skill "ts-advanced-types"` |
 
 **Skill Creation for Unsupported Frameworks:**
 
-Use `npx -y skills add {{AGENT_FLAGS}} anthropics/skills --skill '*'` (includes `skill-creator`) to create custom skills.
+To create a custom skill for an unsupported framework, install only `skill-creator` from `anthropics/skills`: `npx -y skills add {{AGENT_FLAGS}} anthropics/skills --skill "skill-creator"`.
 
 **Present Recommendation:**
 
@@ -584,12 +611,10 @@ Using flags: {{AGENT_FLAGS}}
 
 Based on your project ({{FRAMEWORK}}/{{LANGUAGE}}):
 
-### Core Skills (recommended for all projects)
+### Approved installs (none until the operator approves each one)
 
 ```bash
-npx -y skills add {{AGENT_FLAGS}} obra/superpowers --skill '*'
-npx -y skills add {{AGENT_FLAGS}} trailofbits/skills --skill '*'
-npx -y skills add {{AGENT_FLAGS}} softaworks/agent-toolkit --skill '*'
+npx -y skills add {{AGENT_FLAGS}} <owner/repo> --skill <confirmed name>   # one line per approved skill
 `````
 
 ### Issue Tracker Skills (bundled — {{ISSUE_TRACKER}})
@@ -597,7 +622,7 @@ npx -y skills add {{AGENT_FLAGS}} softaworks/agent-toolkit --skill '*'
 ```
 ✅ .agents/skills/issue-tracker/SKILL.md (shared strategy)
 ✅ Matching CLI reference: .agents/skills/acli/SKILL.md, .agents/skills/gh-cli/SKILL.md, or .agents/skills/linear-cli/SKILL.md
-⚠️ Prune any issue-tracker CLI skills that do not match {{ISSUE_TRACKER}} (if any)
+⚠️ Retire any issue-tracker CLI skills that do not match {{ISSUE_TRACKER}} (if any; record them in .nitm/retired.json)
 ```
 
 ````
@@ -605,12 +630,12 @@ npx -y skills add {{AGENT_FLAGS}} softaworks/agent-toolkit --skill '*'
 ### Framework-Specific Skills
 
 ```bash
-npx -y skills add {{AGENT_FLAGS}} {{FRAMEWORK_SKILL_REPO}} --skill '*'
+npx -y skills add {{AGENT_FLAGS}} {{FRAMEWORK_SKILL_REPO}} --skill <confirmed name>
 ```
 
-### Install All?
+### Approve Each Skill
 
-Would you like to install these skills now? (Y/n)
+Install only the skills named here, nothing else. Which of these should be installed? (name each one, or none)
 
 ````
 
@@ -662,7 +687,7 @@ Populate this example with only files actually changed and skills actually insta
 6. Create custom skills at https://agentskills.io/specification
 ```
 
-### Step 8: Skills Review & Cleanup
+### Step 8: Skill Review & Retirement
 
 After bootstrap completion, review all installed skills for relevance:
 
@@ -710,22 +735,18 @@ After bootstrap completion, review all installed skills for relevance:
 | php               | PHP patterns     | No PHP files found - TypeScript project   |
 | swift-development | SwiftUI patterns | No iOS/Swift code detected                |
 
-### 🚫 Remove Unnecessary Skills?
+### 🚫 Retire Unnecessary Skills?
 
 These skills don't match your detected tech stack and may clutter AI context.
 
-Remove flagged skills? (Y/n)
+Retire flagged skills? (Y/n)
 ```
 
 **On Confirmation:**
 
 ```bash
-# Remove unnecessary skills
-rm -rf .github/skills/django-expert/
-rm -rf .cursor/skills/php/
-rm -rf .github/skills/swift-development/
-
-# Update AGENTS.md to remove references
+# Retire each approved skill in .nitm/retired.json (see Relevance and Retirement); patch then leaves it out.
+# Delete a directory only after separate approval and a backup, then update the AGENTS.md references.
 ```
 
 **Post-Cleanup Report:**
@@ -733,7 +754,7 @@ rm -rf .github/skills/swift-development/
 ```markdown
 ## ✅ Skill Cleanup Complete
 
-Removed {{N}} unnecessary skills:
+Retired {{N}} unnecessary skills (recorded in .nitm/retired.json):
 
 - django-expert
 - php
@@ -801,9 +822,11 @@ Create recommended instructions? (Y/n)
 
 **On Confirmation (only if Copilot is confirmed in use):**
 
-Generate missing Copilot instruction files with appropriate templates; skip creation for a Codex-only audit even when shared reference standards are present:
+Write the policy of each missing Copilot instruction into `.claude/rules-snippets/<name>.md` first, then create `.github/instructions/<name>.instructions.md` as a thin wrapper (see Thin Wrapper Policy); skip creation for a Codex-only audit even when shared reference standards are present:
 
 **Copilot Example: Framework Instruction Template (only if confirmed in use)**
+
+The body below is the shared snippet, `.claude/rules-snippets/<name>.md`. Write it there first. The `.github/instructions/<name>.instructions.md` file is then a thin wrapper: its frontmatter, a title, a link to the snippet, and at most five key points. Never copy this body into the wrapper.
 
 ```markdown
 ---

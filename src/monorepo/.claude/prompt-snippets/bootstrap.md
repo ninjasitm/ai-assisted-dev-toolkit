@@ -20,6 +20,28 @@ You are helping to bootstrap AI instructions for this monorepo by analyzing the 
 - Codex MCP uses native `[mcp_servers.name]` TOML, not `.mcp.json`. Treat other harness MCP templates as references only; do not activate servers, copy credentials, or install hooks automatically.
 - Update and audit only confirmed harness targets. For Codex-only setup, the native targets are root/nested `AGENTS.md`, `.agents/skills/`, and `.codex/config.toml`. `--env codex` also includes `.github/instructions/` and `.claude/rules-snippets/` solely as AGENTS-linked standards and their wrapper sources, not automatically loaded rules or evidence of Copilot/Claude use; other harness command, agent, and config directories are excluded. Tool-specific steps below are conditional.
 
+## Thin Wrapper Policy
+
+Canonical policy lives only in `.claude/rules-snippets/`, `.claude/prompt-snippets/`, and `.claude/agents-snippets/`. Every harness wrapper (`.claude/{rules,commands,agents}/`, `.cursor/{rules,commands,agents}/`, `.github/{instructions,prompts,agents}/`, `.opencode/{rules,commands,agents}/`, and Codex and Copilot entry files) is a thin link to its snippet: frontmatter, a title, the link line, at most five key points, and optionally one short summary line. Its agent-dispatch table is activation metadata and may stay.
+
+- **Create or change policy in the snippet first, then the wrapper.** Never write a wrapper with a copy of the policy, and never let a wrapper diverge from its snippet.
+- **Skills that restate a snippet's policy point to the snippet** (or, where the skill is the source, the snippet points to the skill). Keep one source of policy text.
+- **Existing wrappers that inline policy or diverge from their snippet** are reported (`npx nitm-ai-dev-toolkit doctor` lists them). Propose moving the content into the snippet and reducing the wrapper to a link. Change nothing without the operator's approval.
+
+## Relevance and Retirement
+
+The template ships files for every stack, tracker and test tool. Decide what applies to this monorepo and each app; do not copy the whole template.
+
+- **Relevance comes from the project:** the tracker (git origin host, or `"trackers"` in `.nitm/retired.json`), Playwright, Prisma, the UI framework (read from the root and `apps/*`, `packages/*` package manifests), and whether MCP servers are configured. `npx nitm-ai-dev-toolkit patch --dry-run` prints each template file's classification with its reason (add, update, needs review, not relevant, retired). Use that plan; do not copy template files by hand.
+- **Retire what does not apply** by recording it in `.nitm/retired.json` after the operator agrees, with a reason and date:
+
+  ```json
+  { "retired": [{ "path": ".agents/skills/linear-cli", "reason": "GitHub Issues is the tracker", "date": "2026-10-27" }] }
+  ```
+
+  A directory path retires every file under it. Patch and upgrade never re-add retired paths, and doctor reports them as retired, not missing. Never delete files to retire them.
+- **Override tracker detection** with `"trackers": ["github"]` (or `[]` for none) when the git origin does not name the tracker.
+
 ## Your Task
 
 1. **Analyze the Monorepo**:
@@ -333,11 +355,16 @@ Present the replacements and confirm before applying.
 
 10. **Recommend and Install AI Agent Skills**:
 
-Based on detected ecosystem and frameworks, recommend relevant skills from [skills.sh](https://skills.sh/) and [agentskills.io](https://agentskills.io/).
+Recommend skills from [skills.sh](https://skills.sh/) and [agentskills.io](https://agentskills.io/) only for needs this monorepo or app has: its tracker, framework, language, and test tooling. Never install a whole repository with `--skill '*'`. The toolkit already ships the core workflow skills (TDD, debugging, planning, review) in `.agents/skills/`, so do not recommend them again.
+
+**Rules for every recommendation:**
+- One named skill per install (`--skill <name>`). Confirm the name exists in its source repository first. If you cannot confirm it, leave that install out and say so.
+- List the detected need next to each skill. Recommend nothing without a need.
+- Install nothing before the operator approves that skill. Approving one skill does not approve the others.
 
 **Important:** Use the detected agent flags from step 9 in all `npx skills add` commands. This prevents creating unnecessary configurations for agents the user doesn't have installed.
 
-**Core Skills (Always Recommend):**
+**Generic workflow skills (optional; the toolkit already ships equivalents):**
 
 | Skill Repository           | Purpose                                            |
 | -------------------------- | -------------------------------------------------- |
@@ -348,8 +375,7 @@ Based on detected ecosystem and frameworks, recommend relevant skills from [skil
 **Example commands** (replace `{{AGENT_FLAGS}}` with confirmed harness flags from step 9, e.g., `-a codex`):
 
 ```bash
-npx -y skills add {{AGENT_FLAGS}} obra/superpowers --skill '*'
-npx -y skills add {{AGENT_FLAGS}} trailofbits/skills --skill '*'
+npx -y skills add {{AGENT_FLAGS}} <owner/repo> --skill <confirmed name>   # one line per approved skill
 ```
 
 **Issue Tracker Skills Health Check (if {{ISSUE_TRACKER}} is configured):**
@@ -373,10 +399,10 @@ This template bundles issue tracker skills in `.agents/skills/`. Verify the corr
     - Configured tracker: Linear
     - Found skill: acli (not matching)
     - Expected skill: linear-cli
-    Remove acli and keep linear-cli? (Y/n)
+    Retire acli and keep linear-cli? (Y/n)
     ```
-4.  **Prune unused CLI skills:** On confirmation, delete the mismatched skill directory and update AGENTS.md Skills table
-5.  **If missing:** Warn that the expected CLI skill is not present and offer to copy it from the template bundle
+4.  **Retire mismatched CLI skills:** On confirmation, record each in `.nitm/retired.json` (reason and date) and update the AGENTS.md Skills table. Delete a directory only with separate approval and a backup
+5.  **If missing:** Warn that the expected CLI skill is not present; add it only when `patch --dry-run` shows it applies and the operator approves
 
 **Framework-Specific Skills:**
 
@@ -411,13 +437,13 @@ When recommending framework-specific skills, include the detected agent flags. E
 | React              | `vercel-labs/agent-skills`            | `npx -y skills add {{AGENT_FLAGS}} vercel-labs/agent-skills --skill "vercel-react-best-practices"` |
 | Vue                | `onmax/nuxt-skills` (vue)             | `npx -y skills add {{AGENT_FLAGS}} onmax/nuxt-skills --skill "vue"` |
 | Nuxt               | `onmax/nuxt-skills` (nuxt)            | `npx -y skills add {{AGENT_FLAGS}} onmax/nuxt-skills --skill "nuxt"` |
-| Expo               | `expo/skills`                         | `npx -y skills add {{AGENT_FLAGS}} expo/skills --skill '*'` |
-| TypeScript         | `pproenca/dot-skills` (typescript)    | `npx -y skills add {{AGENT_FLAGS}} pproenca/dot-skills --skill '*'` |
-| Advanced Types     | `wshobson/agents` (ts-advanced-types) | `npx -y skills add {{AGENT_FLAGS}} wshobson/agents --skill '*'` |
+| Expo               | `expo/skills`                         | `npx -y skills add {{AGENT_FLAGS}} expo/skills --skill <name confirmed in the repository>` |
+| TypeScript         | `pproenca/dot-skills` (typescript)    | `npx -y skills add {{AGENT_FLAGS}} pproenca/dot-skills --skill "typescript"` |
+| Advanced Types     | `wshobson/agents` (ts-advanced-types) | `npx -y skills add {{AGENT_FLAGS}} wshobson/agents --skill "ts-advanced-types"` |
 
 **Skill Creation for Unsupported Frameworks:**
 
-Use `npx -y skills add {{AGENT_FLAGS}} anthropics/skills --skill '*'` (includes `skill-creator`) to create custom skills.
+To create a custom skill for an unsupported framework, install only `skill-creator` from `anthropics/skills`: `npx -y skills add {{AGENT_FLAGS}} anthropics/skills --skill "skill-creator"`.
 
 **Monorepo-Specific Considerations:**
 
@@ -438,28 +464,26 @@ Using flags: {{AGENT_FLAGS}}
 
 Based on your monorepo ({{BUILD_SYSTEM}}/{{LANGUAGE}}):
 
-Core Skills (recommended for all projects):
-npx -y skills add {{AGENT_FLAGS}} obra/superpowers --skill '*'
-npx -y skills add {{AGENT_FLAGS}} trailofbits/skills --skill '*'
-npx -y skills add {{AGENT_FLAGS}} softaworks/agent-toolkit --skill '*'
+Approved installs (none until the operator approves each one):
+npx -y skills add {{AGENT_FLAGS}} <owner/repo> --skill <confirmed name>   # one line per approved skill
 
 Issue Tracker Skills (bundled — {{ISSUE_TRACKER}}):
 ✅ .agents/skills/issue-tracker/SKILL.md (shared strategy)
 ✅ Matching CLI reference: .agents/skills/acli/SKILL.md, .agents/skills/gh-cli/SKILL.md, or .agents/skills/linear-cli/SKILL.md
-⚠️ Prune any issue-tracker CLI skills that do not match {{ISSUE_TRACKER}} (if any)
+⚠️ Retire any issue-tracker CLI skills that do not match {{ISSUE_TRACKER}} (if any; record them in .nitm/retired.json)
 
-Framework-Specific Skills:
-- web (Next.js): npx -y skills add {{AGENT_FLAGS}} vercel-labs/agent-skills --skill '*'
-- api (Hono): npx -y skills add {{AGENT_FLAGS}} elysiajs/skills --skill '*'
+Framework-Specific Skills (one named skill each, after confirming its name):
+- web (Next.js): npx -y skills add {{AGENT_FLAGS}} vercel-labs/agent-skills --skill <confirmed name>
+- api (Hono): npx -y skills add {{AGENT_FLAGS}} elysiajs/skills --skill <confirmed name>
 
-Install All? (Y/n)
+Approve each skill by name (or none). Nothing is installed without approval.
 ```
 
 **Example with detected agents:**
 
 - If Cursor and Copilot are confirmed: `AGENT_FLAGS="-a cursor -a github-copilot"`
 - If only Codex is confirmed: `AGENT_FLAGS="-a codex"`
-- Codex-only command: `npx -y skills add -a codex obra/superpowers --skill '*'`
+- Codex-only command: `npx -y skills add -a codex <owner/repo> --skill <confirmed name>`
 
 **On Confirmation:**
 
@@ -530,11 +554,12 @@ Next Steps:
    | django-expert | Django patterns | No Django apps detected |
    | php | PHP patterns | JavaScript/TypeScript monorepo |
 
-   Remove flagged skills? (Y/n)
+   Retire flagged skills? (Y/n)
    ```
 
    **On Confirmation:**
-   - Remove unnecessary skill directories
+   - Record each approved skill in `.nitm/retired.json` (reason and date) so `patch` leaves it out; this removes nothing from the template
+   - Delete a skill directory only with separate approval and a backup
    - Update root AGENTS.md to remove references
    - Report cleanup results
 
@@ -566,8 +591,8 @@ Next Steps:
     ```
 
     **On Confirmation (only if Copilot is confirmed in use):**
-    - Generate missing Copilot instruction files with appropriate templates; skip creation for a Codex-only audit even when shared reference standards are present
-    - Include app-specific scoping (applyTo paths)
+    - Write the policy of each missing Copilot instruction into `.claude/rules-snippets/<name>.md` first, then create `.github/instructions/<name>.instructions.md` as a thin wrapper (frontmatter with `applyTo`, a title, a link to the snippet, at most five key points); skip creation for a Codex-only audit even when shared reference standards are present
+    - Include app-specific scoping (applyTo paths) in the wrapper frontmatter only
     - Include framework-specific patterns from skills
     - Report created files
 
