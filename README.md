@@ -168,16 +168,17 @@ npx nitm-ai-dev-toolkit install --repo
 npx nitm-ai-dev-toolkit install --env cursor
 npx nitm-ai-dev-toolkit install --env codex
 
-# Add only missing files (never overwrites existing ones) + re-emit the bootstrap handoff
+# Print the relevance plan, then add files that apply and update unchanged ones (edited files are kept)
 npx nitm-ai-dev-toolkit patch
 
-# Inspect the install: missing files and unresolved placeholders
+# Inspect the install (read-only): missing files, retired paths, files that do not apply, placeholders
 npx nitm-ai-dev-toolkit doctor
 
-# Upgrade to the latest published version: adds missing files and keeps your existing ones
+# Upgrade to the latest published version: applies the same plan as patch, keeps your edits
 npx nitm-ai-dev-toolkit upgrade
 
-# Also overwrite existing files with the latest templates (back up customisations first)
+# Also runs `install --force`, which overwrites locally changed files with the latest templates (back up customisations first).
+# `patch` never overwrites a locally changed file, with or without --force.
 npx nitm-ai-dev-toolkit upgrade --force
 
 # Preview install/patch/upgrade without writing (exits 1 on conflicts)
@@ -198,11 +199,43 @@ npx nitm-ai-dev-toolkit omo-slim-starter install
 
 - **`--dry-run`** (install, patch, upgrade) lists adds, overwrites, skips, conflicts and the state files it would write, and writes nothing. Install and patch exit 1 if there are conflicts. `upgrade --dry-run` runs the pinned version's own dry run, so the target must be **5.0.1 or later**.
 - **`--exclude` / `--only`** take comma-separated groups. Harnesses: `claude`, `codex`, `copilot`, `cursor`, `opencode`. Features: `factory`, `prisma`, `bkt-cli`, `gh-cli`, `glab-cli`, `acli`, `linear-cli`. Shared files (AGENTS.md, `docs/`, `hooks/`, shared skills and snippets) are never excluded. The selection is saved to `.nitm/toolkit.json` and used by later install, patch and doctor runs; `--exclude ""` clears it.
-- **`upgrade <version>`**, **`upgrade nitm-ai-dev-toolkit@<version>`** and **`--version <version>`** pin an exact version. `latest`, dist-tags and version ranges are refused. Without a version, the latest published release is used.
+- **`upgrade <version>`**, **`upgrade nitm-ai-dev-toolkit@<version>`** and **`--version <version>`** pin an exact version. `latest`, dist-tags and version ranges are refused. Without a version, the latest published release is used. While `.nitm/retired.json` has entries or a `trackers` override, `upgrade` refuses targets older than 5.2.0.
 - **State files:** install, patch and upgrade write `.toolkit-version` (the installed package version) and `.nitm/manifest.json` (hashes of the files the toolkit wrote). `doctor` reports a `.toolkit-version` that differs from the package version, and lists stale toolkit files it recognises. It only reports them; it never deletes anything.
 - **`.nitm/BOOTSTRAP.md`** is rewritten only when its content differs. The previous copy is first saved to `.nitm/backups/`.
 
 After `install`, ask your AI agent to read and follow `.nitm/BOOTSTRAP.md`. Harnesses that supply a toolkit `/bootstrap` wrapper can also use it; **Codex has no native toolkit `/bootstrap` command**. Use `doctor` to verify the result.
+
+### Relevance, retirement and thin wrappers
+
+`patch` and `upgrade` do not copy the whole template. They classify each template file against the project, print the plan with a reason for every entry, then write only what applies:
+
+| Class          | Meaning                                                                                              | Written?                |
+| -------------- | ---------------------------------------------------------------------------------------------------- | ----------------------- |
+| add            | Missing, and it applies to this project                                                              | yes                     |
+| update         | You never changed it since the toolkit wrote it, and the template changed                            | yes                     |
+| current        | Identical to the template                                                                            | no change               |
+| needs review   | Locally changed, or missing while its relevance is undecided                                         | no; never overwritten   |
+| not relevant   | Does not apply: another tracker, no Playwright or Prisma setup, an empty MCP template               | no                      |
+| retired        | Listed in `.nitm/retired.json`                                                                       | no                      |
+
+Relevance comes from the project. The git `origin` host (`github.com`, `gitlab.com`, `bitbucket.org`) names the tracker, and tracker CLI skills follow it (`gh-cli`, `glab-cli`, `bkt-cli`, `acli`, `linear-cli`). A `trackers` list in `.nitm/retired.json` overrides detection (use `[]` for none, for example Linear issues on a GitHub repository). Playwright, Prisma and UI files follow the dependencies in `package.json` at the root and in `apps/*` and `packages/*`. When the tracker cannot be detected, tracker skills are held for review and not guessed.
+
+Retire what a project does not use by recording it in `.nitm/retired.json`. Write the file by hand, after agreeing the reason:
+
+```json
+{
+  "trackers": ["github"],
+  "retired": [
+    { "path": ".agents/skills/linear-cli", "reason": "GitHub Issues is the tracker", "date": "2026-10-27" }
+  ]
+}
+```
+
+A directory path retires every file under it. `install` and `patch` never re-add a retired path. `upgrade` does not either, but only when the target ships this support (5.2.0 or later): while the file has entries or a `trackers` override, `upgrade` refuses older targets. `doctor` lists a retired path as retired rather than missing. Matching is exact and case-sensitive (`AGENTS.md` is not `agents.md`). `./`, doubled and inner `/` are normalised, and paths must stay inside the project (`..` and absolute paths are refused). The CLI never writes this file. A malformed file stops the command before anything is written.
+
+Harness wrappers (`.claude/`, `.cursor/`, `.github/`, `.opencode/`) are thin: frontmatter, a title, a link to the snippet in `.claude/*-snippets/`, at most five key points, and optionally one short summary line. Agent-dispatch tables are activation metadata. Policy lives only in the snippets. `doctor` and `patch` list wrappers that inline policy or diverge from their snippet, and propose moving the content into the snippet. They never change those wrappers.
+
+Limits: classification uses file paths and project files only. It does not check whether a skill restates a snippet's policy, and it does not judge the wording inside a wrapper. A pinned `upgrade <version>` runs that version's `patch`, so these rules apply once that version is published.
 
 ### Native OpenCode V2 (toolkit 4.0.0)
 
@@ -728,10 +761,10 @@ Install skills from [skills.sh](https://skills.sh/) using the `-a` or `--agent` 
 
 ```bash
 # For a single agent
-npx -y skills add -a cursor <owner/repo> --skill '*' --agent github-copilot cursor
+npx -y skills add -a cursor <owner/repo> --skill <confirmed name> --agent github-copilot cursor
 
 # For multiple agents (use multiple -a flags)
-npx -y skills add -a cursor -a github-copilot <owner/repo> --skill '*' --agent github-copilot cursor
+npx -y skills add -a cursor -a github-copilot <owner/repo> --skill <confirmed name> --agent github-copilot cursor
 ```
 
 #### Agent Detection
@@ -747,19 +780,19 @@ Supported agents include:
 
 ```bash
 # For GitHub Copilot only
-npx -y skills add -a github-copilot <owner/repo> --skill '*' --agent github-copilot cursor
+npx -y skills add -a github-copilot <owner/repo> --skill <confirmed name> --agent github-copilot cursor
 
 # For Cursor only
-npx -y skills add -a cursor <owner/repo> --skill '*' --agent github-copilot cursor
+npx -y skills add -a cursor <owner/repo> --skill <confirmed name> --agent github-copilot cursor
 
 # For Windsurf only
-npx -y skills add -a windsurf <owner/repo> --skill '*' --agent github-copilot cursor
+npx -y skills add -a windsurf <owner/repo> --skill <confirmed name> --agent github-copilot cursor
 
 # For Cline only
-npx -y skills add -a cline <owner/repo> --skill '*' --agent github-copilot cursor
+npx -y skills add -a cline <owner/repo> --skill <confirmed name> --agent github-copilot cursor
 
 # For both Cursor and GitHub Copilot
-npx -y skills add -a cursor -a github-copilot <owner/repo> --skill '*' --agent github-copilot cursor
+npx -y skills add -a cursor -a github-copilot <owner/repo> --skill <confirmed name> --agent github-copilot cursor
 ```
 
 **Important:** Always specify the agent(s) explicitly using `-a <agent-name>` to install only for the agents you actively use. You can specify multiple agents using multiple `-a` flags. This prevents creating unnecessary configurations for unused agents.
@@ -806,7 +839,7 @@ This toolkit includes **33 pre-installed universal skills** in the `.agents/skil
 | **bkt-cli**                        | Bitbucket CLI (`bkt`) command reference for repo and monorepo templates.                                                  |
 | **glab-cli**                       | GitLab CLI (`glab`) command reference for repo and monorepo templates.                                                    |
 
-**These skills are ready to use immediately after copying the templates.** No `npx -y skills add -a <agent> <owner/repo> --skill '*' --agent github-copilot cursor` commands needed.
+**These skills are ready to use immediately after copying the templates.** No `npx -y skills add -a <agent> <owner/repo> --skill <confirmed name> --agent github-copilot cursor` commands needed.
 
 The **ponytail** skill bundle is an integrated optional skill set from [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) that adds YAGNI/stdlib/native/one-line/minimum discipline to your AI agents. It includes 6 skills, 6 commands, 7 activation hooks, and ambient agent rules. OpenCode uses the author's upstream `@dietrichgebert/ponytail` package, installed globally by the operator, not a bundled local plugin. See [native setup](#native-opencode-v2-toolkit-400); scaffolding alone does not establish activation. The Claude Code hooks in `hooks/*.json` use `${CLAUDE_PLUGIN_ROOT}` and are plugin-only: they fire only when installed through the Ponytail plugin, not from project settings.
 
@@ -816,9 +849,9 @@ Beyond the bundled skills, these additional skills complement this toolkit for s
 
 **Note:** All install commands in the tables below should include the `-a <agent>` flag to specify your AI agent. For example:
 
-- `npx -y skills add -a github-copilot obra/superpowers --skill '*' --agent github-copilot cursor` (for GitHub Copilot only)
-- `npx -y skills add -a cursor obra/superpowers --skill '*' --agent github-copilot cursor` (for Cursor only)
-- `npx -y skills add -a cursor -a github-copilot obra/superpowers --skill '*' --agent github-copilot cursor` (for both Cursor and GitHub Copilot)
+- `npx -y skills add -a github-copilot obra/superpowers --skill <confirmed name> --agent github-copilot cursor` (for GitHub Copilot only)
+- `npx -y skills add -a cursor obra/superpowers --skill <confirmed name> --agent github-copilot cursor` (for Cursor only)
+- `npx -y skills add -a cursor -a github-copilot obra/superpowers --skill <confirmed name> --agent github-copilot cursor` (for both Cursor and GitHub Copilot)
 
 **Tip:** If you omit the `-a` flag, the CLI will automatically detect your installed agents and prompt you to choose.
 
@@ -828,45 +861,45 @@ If you want the original `obra/superpowers` skills (which the bundled skills are
 
 | Skill                      | Install Command                                                                | Description                                  |
 | -------------------------- | ------------------------------------------------------------------------------ | -------------------------------------------- |
-| **Full Superpowers Suite** | `npx -y skills add obra/superpowers --skill '*' --agent github-copilot cursor` | All workflow skills from the original source |
+| **Superpowers workflow skill** | `npx -y skills add obra/superpowers --skill <confirmed name> --agent github-copilot cursor` | One named workflow skill from the original source |
 
 #### Security & Quality Skills
 
 | Skill                      | Install Command                                                                              | Description                            |
 | -------------------------- | -------------------------------------------------------------------------------------------- | -------------------------------------- |
-| **Semgrep**                | `npx -y skills add trailofbits/skills --skill '*' --agent github-copilot cursor`             | Static analysis patterns               |
-| **Property-Based Testing** | `npx -y skills add trailofbits/skills --skill '*' --agent github-copilot cursor`             | Testing with property-based approaches |
-| **Code Review**            | `npx -y skills add skillcreatorai/Ai-Agent-Skills --skill '*' --agent github-copilot cursor` | Comprehensive code review guidance     |
-| **Logging Best Practices** | `npx -y skills add boristane/agent-skills --skill '*' --agent github-copilot cursor`         | Structured logging patterns            |
+| **Semgrep**                | `npx -y skills add trailofbits/skills --skill <confirmed name> --agent github-copilot cursor`             | Static analysis patterns               |
+| **Property-Based Testing** | `npx -y skills add trailofbits/skills --skill <confirmed name> --agent github-copilot cursor`             | Testing with property-based approaches |
+| **Code Review**            | `npx -y skills add skillcreatorai/Ai-Agent-Skills --skill <confirmed name> --agent github-copilot cursor` | Comprehensive code review guidance     |
+| **Logging Best Practices** | `npx -y skills add boristane/agent-skills --skill <confirmed name> --agent github-copilot cursor`         | Structured logging patterns            |
 
 #### Frontend Skills
 
 | Skill                           | Install Command                                                                        | Description                     |
 | ------------------------------- | -------------------------------------------------------------------------------------- | ------------------------------- |
-| **Vercel React Best Practices** | `npx -y skills add vercel-labs/agent-skills --skill '*' --agent github-copilot cursor` | React patterns and optimization |
-| **Web Design Guidelines**       | `npx -y skills add vercel-labs/agent-skills --skill '*' --agent github-copilot cursor` | UI/UX design principles         |
-| **Frontend Design**             | `npx -y skills add anthropics/skills --skill '*' --agent github-copilot cursor`        | General frontend patterns       |
-| **TailwindCSS Setup**           | `npx -y skills add expo/skills --skill '*' --agent github-copilot cursor`              | Tailwind configuration          |
+| **Vercel React Best Practices** | `npx -y skills add vercel-labs/agent-skills --skill vercel-react-best-practices --agent github-copilot cursor` | React patterns and optimization |
+| **Web Design Guidelines**       | `npx -y skills add vercel-labs/agent-skills --skill <confirmed name> --agent github-copilot cursor` | UI/UX design principles         |
+| **Frontend Design**             | `npx -y skills add anthropics/skills --skill <confirmed name> --agent github-copilot cursor`        | General frontend patterns       |
+| **TailwindCSS Setup**           | `npx -y skills add expo/skills --skill <confirmed name> --agent github-copilot cursor`              | Tailwind configuration          |
 
 #### Framework-Specific Skills
 
 | Skill           | Install Command                                                                                   | Description               |
 | --------------- | ------------------------------------------------------------------------------------------------- | ------------------------- |
-| **Vue**         | `npx -y skills add onmax/nuxt-skills --skill '*' --agent github-copilot cursor`                   | Vue.js best practices     |
-| **Nuxt**        | `npx -y skills add onmax/nuxt-skills --skill '*' --agent github-copilot cursor`                   | Nuxt framework patterns   |
-| **Nuxt UI**     | `npx -y skills add onmax/nuxt-skills --skill '*' --agent github-copilot cursor`                   | Nuxt UI component library |
-| **Better Auth** | `npx -y skills add better-auth/skills --skill '*' --agent github-copilot cursor`                  | Authentication patterns   |
-| **Expo**        | `npx -y skills add expo/skills --skill '*' --agent github-copilot cursor`                         | React Native with Expo    |
-| **NestJS**      | `npx -y skills add Kadajett/agent-nestjs-skills --skill '*' --agent github-copilot cursor`        | NestJS backend patterns   |
-| **Elysia.js**   | `npx -y skills add elysiajs/skills --skill '*' --agent github-copilot cursor`                     | Elysia.js API patterns    |
-| **Three.js**    | `npx -y skills add CloudAI-X/threejs-skills --skill '*' --agent github-copilot cursor`            | Three.js 3D graphics      |
-| **Remotion**    | `npx -y skills add remotion-dev/skills --skill '*' --agent github-copilot cursor`                 | Remotion video creation   |
-| **Convex**      | `npx -y skills add waynesutton/convexskills --skill '*' --agent github-copilot cursor`            | Convex backend patterns   |
-| **TanStack**    | `npx -y skills add jezweb/claude-skills --skill '*' --agent github-copilot cursor`                | TanStack Query patterns   |
-| **SwiftUI**     | `npx -y skills add Dimillian/Skills --skill '*' --agent github-copilot cursor`                    | SwiftUI iOS patterns      |
-| **Obsidian**    | `npx -y skills add kepano/obsidian-skills --skill '*' --agent github-copilot cursor`              | Obsidian note-taking      |
-| **shadcn/ui**   | `npx -y skills add giuseppe-trisciuoglio/developer-kit --skill '*' --agent github-copilot cursor` | shadcn/ui components      |
-| **Stripe**      | `npx -y skills add anthropics/claude-plugins-official --skill '*' --agent github-copilot cursor`  | Stripe integration        |
+| **Vue**         | `npx -y skills add onmax/nuxt-skills --skill vue --agent github-copilot cursor`                   | Vue.js best practices     |
+| **Nuxt**        | `npx -y skills add onmax/nuxt-skills --skill nuxt --agent github-copilot cursor`                   | Nuxt framework patterns   |
+| **Nuxt UI**     | `npx -y skills add onmax/nuxt-skills --skill <confirmed name> --agent github-copilot cursor`                   | Nuxt UI component library |
+| **Better Auth** | `npx -y skills add better-auth/skills --skill <confirmed name> --agent github-copilot cursor`                  | Authentication patterns   |
+| **Expo**        | `npx -y skills add expo/skills --skill <confirmed name> --agent github-copilot cursor`                         | React Native with Expo    |
+| **NestJS**      | `npx -y skills add Kadajett/agent-nestjs-skills --skill <confirmed name> --agent github-copilot cursor`        | NestJS backend patterns   |
+| **Elysia.js**   | `npx -y skills add elysiajs/skills --skill <confirmed name> --agent github-copilot cursor`                     | Elysia.js API patterns    |
+| **Three.js**    | `npx -y skills add CloudAI-X/threejs-skills --skill <confirmed name> --agent github-copilot cursor`            | Three.js 3D graphics      |
+| **Remotion**    | `npx -y skills add remotion-dev/skills --skill <confirmed name> --agent github-copilot cursor`                 | Remotion video creation   |
+| **Convex**      | `npx -y skills add waynesutton/convexskills --skill <confirmed name> --agent github-copilot cursor`            | Convex backend patterns   |
+| **TanStack**    | `npx -y skills add jezweb/claude-skills --skill <confirmed name> --agent github-copilot cursor`                | TanStack Query patterns   |
+| **SwiftUI**     | `npx -y skills add Dimillian/Skills --skill <confirmed name> --agent github-copilot cursor`                    | SwiftUI iOS patterns      |
+| **Obsidian**    | `npx -y skills add kepano/obsidian-skills --skill <confirmed name> --agent github-copilot cursor`              | Obsidian note-taking      |
+| **shadcn/ui**   | `npx -y skills add giuseppe-trisciuoglio/developer-kit --skill <confirmed name> --agent github-copilot cursor` | shadcn/ui components      |
+| **Stripe**      | `npx -y skills add anthropics/claude-plugins-official --skill <confirmed name> --agent github-copilot cursor`  | Stripe integration        |
 
 #### Language-Specific Skills
 
@@ -880,19 +913,19 @@ If you want the original `obra/superpowers` skills (which the bundled skills are
 | **React**          | `npx -y skills add vercel-labs/agent-skills --skill "vercel-react-best-practices"`     | React + Vercel patterns           |
 | **Vue**            | `npx -y skills add onmax/nuxt-skills --skill "vue"`                                    | Vue.js best practices             |
 | **Nuxt**           | `npx -y skills add onmax/nuxt-skills --skill "nuxt"`                                   | Nuxt patterns                     |
-| **Expo**           | `npx -y skills add expo/skills --skill '*' --agent github-copilot cursor`              | Expo/React Native                 |
-| **TypeScript**     | `npx -y skills add pproenca/dot-skills --skill '*' --agent github-copilot cursor`      | TypeScript best practices         |
-| **Advanced Types** | `npx -y skills add wshobson/agents --skill '*' --agent github-copilot cursor`          | TypeScript advanced type patterns |
+| **Expo**           | `npx -y skills add expo/skills --skill <confirmed name> --agent github-copilot cursor`              | Expo/React Native                 |
+| **TypeScript**     | `npx -y skills add pproenca/dot-skills --skill typescript --agent github-copilot cursor`      | TypeScript best practices         |
+| **Advanced Types** | `npx -y skills add wshobson/agents --skill ts-advanced-types --agent github-copilot cursor`          | TypeScript advanced type patterns |
 
-**Note:** For frameworks without dedicated skills, use `npx -y skills add -a <agent> anthropics/skills --skill '*' --agent github-copilot cursor` which includes `skill-creator` to help you create custom skills. Remember to replace `<agent>` with your AI agent name (e.g., `copilot`, `cursor`, `windsurf`, `cline`).
+**Note:** For frameworks without dedicated skills, use `npx -y skills add -a <agent> anthropics/skills --skill skill-creator --agent github-copilot cursor` which includes `skill-creator` to help you create custom skills. Remember to replace `<agent>` with your AI agent name (e.g., `copilot`, `cursor`, `windsurf`, `cline`).
 
 #### Documentation & Writing Skills
 
 | Skill                             | Install Command                                                                        | Description                 |
 | --------------------------------- | -------------------------------------------------------------------------------------- | --------------------------- |
-| **Crafting Effective READMEs**    | `npx -y skills add softaworks/agent-toolkit --skill '*' --agent github-copilot cursor` | README writing guidance     |
-| **Writing Clearly and Concisely** | `npx -y skills add softaworks/agent-toolkit --skill '*' --agent github-copilot cursor` | Clear technical writing     |
-| **Doc Coauthoring**               | `npx -y skills add anthropics/skills --skill '*' --agent github-copilot cursor`        | Collaborative documentation |
+| **Crafting Effective READMEs**    | `npx -y skills add softaworks/agent-toolkit --skill <confirmed name> --agent github-copilot cursor` | README writing guidance     |
+| **Writing Clearly and Concisely** | `npx -y skills add softaworks/agent-toolkit --skill <confirmed name> --agent github-copilot cursor` | Clear technical writing     |
+| **Doc Coauthoring**               | `npx -y skills add anthropics/skills --skill <confirmed name> --agent github-copilot cursor`        | Collaborative documentation |
 
 ### Adding Skills to Your Project
 
@@ -909,16 +942,16 @@ After bootstrapping your project with this toolkit:
 # are already bundled in .agents/skills/ - no installation needed!
 
 # For Cursor only
-npx -y skills add -a cursor onmax/nuxt-skills --skill '*' --agent github-copilot cursor
-npx -y skills add -a cursor vercel-labs/agent-skills --skill '*' --agent github-copilot cursor
-npx -y skills add -a cursor better-auth/skills --skill '*' --agent github-copilot cursor
-npx -y skills add -a cursor trailofbits/skills --skill '*' --agent github-copilot cursor
+npx -y skills add -a cursor onmax/nuxt-skills --skill <confirmed name> --agent github-copilot cursor
+npx -y skills add -a cursor vercel-labs/agent-skills --skill <confirmed name> --agent github-copilot cursor
+npx -y skills add -a cursor better-auth/skills --skill <confirmed name> --agent github-copilot cursor
+npx -y skills add -a cursor trailofbits/skills --skill <confirmed name> --agent github-copilot cursor
 
 # Or, for multiple agents (e.g., Cursor + GitHub Copilot)
-npx -y skills add -a cursor -a github-copilot onmax/nuxt-skills --skill '*' --agent github-copilot cursor
-npx -y skills add -a cursor -a github-copilot vercel-labs/agent-skills --skill '*' --agent github-copilot cursor
-npx -y skills add -a cursor -a github-copilot better-auth/skills --skill '*' --agent github-copilot cursor
-npx -y skills add -a cursor -a github-copilot trailofbits/skills --skill '*' --agent github-copilot cursor
+npx -y skills add -a cursor -a github-copilot onmax/nuxt-skills --skill <confirmed name> --agent github-copilot cursor
+npx -y skills add -a cursor -a github-copilot vercel-labs/agent-skills --skill <confirmed name> --agent github-copilot cursor
+npx -y skills add -a cursor -a github-copilot better-auth/skills --skill <confirmed name> --agent github-copilot cursor
+npx -y skills add -a cursor -a github-copilot trailofbits/skills --skill <confirmed name> --agent github-copilot cursor
 ```
 
 ### Creating Custom Skills
@@ -988,10 +1021,10 @@ After copying templates and installing additional skills, your project will have
 | Location          | Contents                                                   | Source                                                                                              |
 | ----------------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
 | `.agents/skills/` | Universal workflow skills (TDD, debugging, planning, etc.) | Bundled with this toolkit                                                                           |
-| `.cursor/skills/` | Framework/language-specific skills                         | Installed via `npx -y skills add -a <agent> <owner/repo> --skill '*' --agent github-copilot cursor` |
-| `.github/skills/` | Alternative location for GitHub Copilot                    | Installed via `npx -y skills add -a <agent> <owner/repo> --skill '*' --agent github-copilot cursor` |
+| `.cursor/skills/` | Framework/language-specific skills                         | Installed via `npx -y skills add -a <agent> <owner/repo> --skill <confirmed name> --agent github-copilot cursor` |
+| `.github/skills/` | Alternative location for GitHub Copilot                    | Installed via `npx -y skills add -a <agent> <owner/repo> --skill <confirmed name> --agent github-copilot cursor` |
 
-**Note:** Skills installed via `npx -y skills add -a <agent> <owner/repo> --skill '*' --agent github-copilot cursor` use the skill name as the folder name (not org/repo path). For example, `npx -y skills add -a cursor obra/superpowers --skill '*' --agent github-copilot cursor` installs to `.cursor/skills/superpowers/`.
+**Note:** Skills installed via `npx -y skills add -a <agent> <owner/repo> --skill <confirmed name> --agent github-copilot cursor` use the skill name as the folder name (not org/repo path). For example, `npx -y skills add -a cursor obra/superpowers --skill <confirmed name> --agent github-copilot cursor` installs to `.cursor/skills/superpowers/`.
 
 **Recommendation:** Only install skills for agents you have installed and actively use. Symlinking to all known agents creates unnecessary configuration files and can clutter your project.
 

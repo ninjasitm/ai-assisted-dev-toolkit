@@ -117,11 +117,13 @@ The CLI runs the same patch flow without an AI session: `npx nitm-ai-dev-toolkit
 
     For each category, compare template files against project files:
 
-    a. **Classify each file**:
-    - **🆕 New**: Exists in template but not in project → candidate for addition
-    - **📝 Updated**: Exists in both but template has newer content → candidate for merge
-    - **✅ Current**: Exists in both and content matches → no action needed
-    - **🔧 Customized**: Exists in both, project version has non-placeholder customizations → careful merge
+    a. **Classify each file** (relevance-aware; never a wholesale copy). `npx nitm-ai-dev-toolkit patch --dry-run` makes this classification and prints each reason. Read that plan before deciding anything, and see Relevance and Retirement in `bootstrap.md`:
+    - **add**: missing, and it applies to this project (tracker, Playwright, Prisma, UI, and MCP relevance)
+    - **update**: the toolkit wrote it and the project has not changed it since; the new template replaces it
+    - **current**: identical to the template; no action
+    - **needs review**: differs from the template (locally changed), or missing while relevance is undecided; never overwritten, and never added without a decision
+    - **not relevant**: does not apply to this project; never added. A present copy is a retirement candidate
+    - **retired**: listed in `.nitm/retired.json`; never added, updated or overwritten
     - **⚠️ Missing in Template**: Exists in project but not in template → project-specific, keep as-is except the approved obsolete toolkit Ponytail removal above
 
     b. **For updated files, generate a structured diff**:
@@ -132,7 +134,7 @@ The CLI runs the same patch flow without an AI session: `npx nitm-ai-dev-toolkit
 
     c. **Smart Merge Rules**:
     - **Never overwrite** project-specific values that replaced `{{PLACEHOLDER}}`
-    - **Always add** new files that don't exist in the project
+    - **Add only** files classified *add*. Never add a not-relevant or retired file, and never add a file whose relevance is undecided without the operator's decision
     - **Merge structural additions** into existing customized files
     - **Flag for review** any removals from files that have been customized
     - **Preserve custom agents/skills** that were added by the project
@@ -146,13 +148,13 @@ The CLI runs the same patch flow without an AI session: `npx nitm-ai-dev-toolkit
     **Project Type**: repo | monorepo
     **Categories Scanned**: [list]
 
-    ### 🆕 New Files (X files)
+    ### 🆕 Add (X files; apply to this project)
 
     | File                         | Category | Description              |
     | ---------------------------- | -------- | ------------------------ |
     | `.cursor/rules/new-rule.mdc` | Rules    | New coding standard rule |
 
-    ### 📝 Updated Files (X files)
+    ### 📝 Update (X files; unchanged since the toolkit wrote them)
 
     | File                            | Changes                       | Risk           |
     | ------------------------------- | ----------------------------- | -------------- |
@@ -162,16 +164,30 @@ The CLI runs the same patch flow without an AI session: `npx nitm-ai-dev-toolkit
 
     [No action needed]
 
-    ### 🔧 Customized Files Requiring Review (X files)
+    ### 🔧 Needs Review (X files; locally changed or undecided; not written)
 
     | File        | Template Changes  | Project Customizations       | Merge Strategy |
     | ----------- | ----------------- | ---------------------------- | -------------- |
     | `AGENTS.md` | New section added | Has project-specific content | Manual merge   |
 
+    ### 🚫 Not Relevant or Retired (X files; not written)
+
+    | File                                   | Reason                              | Action                              |
+    | -------------------------------------- | ----------------------------------- | ----------------------------------- |
+    | `.claude/commands/playwright-test.md`  | No Playwright setup detected        | Keep out; retire if present (approval) |
+    | `.agents/skills/linear-cli/SKILL.md`   | Project tracker is GitHub           | Retire in `.nitm/retired.json`      |
+
+    ### 🩹 Harness Wrappers to Review (X files; proposals only)
+
+    | Wrapper                     | Finding                              | Proposal                                  |
+    | --------------------------- | ------------------------------------ | ----------------------------------------- |
+    | `.claude/rules/api-server.md` | Policy text outside the snippet link | Move the text into its snippet; keep a thin link |
+
     ### Summary
 
-    - **Auto-apply**: X new files + Y updated files with no conflicts
-    - **Review needed**: Z customized files with structural changes
+    - **Auto-apply**: X add + Y update entries, as printed by `patch`
+    - **Review needed**: Z needs-review files and W wrapper proposals
+    - **Not written**: N not-relevant or retired entries
     - **No action**: W files already current
     ```
 
@@ -179,9 +195,9 @@ The CLI runs the same patch flow without an AI session: `npx nitm-ai-dev-toolkit
     - If `--dry-run` flag: Output the report without making changes
     - Otherwise: Present the report and ask the user to confirm with (Y/n)
     - On confirmation:
-      a. **New files**: Copy directly from template
-      b. **Updated files (no customization)**: Replace with template version
-      c. **Updated files (customized)**: Apply structural additions while preserving project values
+      a. **Add and update**: run `npx nitm-ai-dev-toolkit patch`. It writes only the add and update entries it printed; do not copy template files by hand
+      b. **Retirements**: after approval, record each path in `.nitm/retired.json` with a reason and date. Do not delete files to retire them
+      c. **Needs review**: propose a merge per file (structural additions, preserved project values) and apply it only after the operator approves that file. Wrappers that inline policy: propose moving the content into the snippet and reducing the wrapper to a thin link (see Thin Wrapper Policy in `bootstrap.md`)
       d. **OpenCode plugins**: Apply only the approved obsolete Ponytail cleanup above after backing up the known obsolete toolkit copies and local config; preserve all unrelated local/global plugins. Never add Ponytail to project config.
       e. **Toolkit version**: Keep the `.toolkit-version` value the CLI writes for the verified target version (the installed package version, 4.0.0 or later; never hard-coded) only after the approved migration and OpenCode preflight pass (or OpenCode is confirmed out of scope).
       f. **Git commit**: Stage and commit all changes with message:

@@ -255,6 +255,8 @@ Follow the rules defined in [.claude/rules-snippets/{{NAME}}.md](../../.claude/r
 
 ### Step 7: Create .opencode/ Directory (confirmed OpenCode use only)
 
+Create wrappers below only for entries the patch plan classifies *add* (never retired or not-relevant snippets). Each wrapper stays thin (see Thin Wrapper Policy in `bootstrap.md`).
+
 For the v3 route, merge only relevant native OpenCode host fields; preserve existing wrapper bodies, modes, unrelated frontmatter, and shared snippet bodies/frontmatter. The wrapper examples below apply only to approved missing files, not replacement of existing wrappers.
 
 1. Merge `.opencode/opencode.jsonc` using native V2 fields:
@@ -312,12 +314,13 @@ For the v3 route, merge only relevant native OpenCode host fields; preserve exis
 
 ### Step 8: Install Pre-Commit Hook
 
-Install the CHANGELOG/secrets enforcement hook to run before every commit:
+Install the CHANGELOG/secrets enforcement hook before every commit, only with the operator's approval, only in a git repository, and never over an existing `.git/hooks/pre-commit`. If one exists, show the difference and propose chaining or merging instead:
 
 1. Copy `scripts/pre-commit-check.sh` from the template to the target project's `scripts/` directory
 2. Install as a git hook:
 
    ```bash
+   # only when .git/hooks/pre-commit does not exist yet
    cp scripts/pre-commit-check.sh .git/hooks/pre-commit
    chmod +x .git/hooks/pre-commit
    ```
@@ -330,10 +333,12 @@ This enforces:
 
 Use `git commit --no-verify` to bypass.
 
-### Step 9: Install Project Hooks
+### Step 9: Install Project Hooks (only with approval)
 
-1. Create `hooks/` directory in the target project
-2. Copy all files from the template's `hooks/*` directory (preserve sub-structure)
+The `hooks/` files are Claude Code plugin hooks (`${CLAUDE_PLUGIN_ROOT}`) and the Ponytail runtime. They fire only when installed through the Ponytail plugin, not from project settings. Copy only the files the operator approves for a project that uses that plugin, and never overwrite an existing hook file.
+
+1. Create `hooks/` in the target project when copying
+2. Copy the approved files from the template's `hooks/*` directory (preserve sub-structure); skip any file that already exists
 3. Make `.js` files executable on Unix: `chmod +x hooks/*.js`
 
 ### Step 10: Clean Up Duplicate Skills

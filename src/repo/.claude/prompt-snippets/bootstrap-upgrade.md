@@ -104,7 +104,7 @@ For each file: read → extract body after frontmatter → write to snippet dest
 
 **Parallelizable**: Process rules, commands, and agents independently.
 
-Replace each file's body with a wrapper that preserves frontmatter and references the snippet:
+Replace each file's body with a thin wrapper (see Thin Wrapper Policy in `bootstrap.md`) that preserves frontmatter and references the snippet. Move any policy text into the snippet first; the wrapper keeps only the link, a title and at most five key points:
 
 | File Type                   | Frontmatter to Keep                             | Reference Line                                                                                 |
 | --------------------------- | ----------------------------------------------- | ---------------------------------------------------------------------------------------------- |
@@ -188,7 +188,7 @@ For the v3 route, merge only relevant native OpenCode host fields; preserve exis
    - Back up the local config and known obsolete toolkit-owned `.opencode/plugins/ponytail.js`, `.opencode/plugins/ponytail.mjs`, and `.opencode/plugins/ponytail.ts` copies; obtain approval before removing only those copies. Preserve unrelated local plugins.
    - The OpenCode Ponytail plugin (`@dietrichgebert/ponytail`) is installed globally by the operator. Never add or pin it in the local `plugins` array. Check whether it is installed globally; if not, tell the operator to install it globally. Do not edit global config or overwrite global plugins. Keep `opentmux` commented as V1-only; do not copy local Ponytail source, port APIs, or introduce bridges. Runtime integration remains untested.
 
-3. **Create wrappers with explicit snippet-read instructions** — one file per snippet:
+3. **Create wrappers with explicit snippet-read instructions** — only for entries the patch plan classifies *add* (never retired or not-relevant snippets), each one thin (see Thin Wrapper Policy in `bootstrap.md`), one file per snippet:
 
    | Directory                 | Source Snippets            | Wrapper Body                         |
    | ------------------------- | -------------------------- | ------------------------------------ |
@@ -210,12 +210,13 @@ For the v3 route, merge only relevant native OpenCode host fields; preserve exis
 
 ### 8. Install Pre-Commit Hook
 
-Install the CHANGELOG/secrets enforcement hook to run before every commit:
+Install the CHANGELOG/secrets enforcement hook before every commit, only with the operator's approval, only in a git repository, and never over an existing `.git/hooks/pre-commit`. If one exists, show the difference and propose chaining or merging instead:
 
 1. Copy `scripts/pre-commit-check.sh` from the template to the target project's `scripts/` directory
 2. Install as a git hook:
 
    ```bash
+   # only when .git/hooks/pre-commit does not exist yet
    cp scripts/pre-commit-check.sh .git/hooks/pre-commit
    chmod +x .git/hooks/pre-commit
    ```
@@ -228,10 +229,12 @@ This enforces:
 
 Use `git commit --no-verify` to bypass.
 
-### 9. Install Project Hooks
+### 9. Install Project Hooks (only with approval)
 
-1. Create `hooks/` directory in the target project
-2. Copy all files from the template's `hooks/*` directory (preserve sub-structure)
+The `hooks/` files are Claude Code plugin hooks (`${CLAUDE_PLUGIN_ROOT}`) and the Ponytail runtime. They fire only when installed through the Ponytail plugin, not from project settings. Copy only the files the operator approves for a project that uses that plugin, and never overwrite an existing hook file.
+
+1. Create `hooks/` in the target project when copying
+2. Copy the approved files from the template's `hooks/*` directory (preserve sub-structure); skip any file that already exists
 3. Make `.js` files executable on Unix: `chmod +x hooks/*.js`
 
 ### 10. Clean Up Duplicate Skills

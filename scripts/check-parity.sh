@@ -313,6 +313,17 @@ if [[ "$orphans" -eq 0 ]]; then
   printf "${GREEN}  OK${NC}  No orphaned references found\n"
 fi
 
+# Skills are installed one named skill at a time (bootstrap Step 7). A wildcard install recommendation
+# would pull in a whole repository. The rule text may still mention `--skill '*'` without "skills add".
+wildcard=$(grep -rEn "skills add [^\`]*--skill '\*'" src/ 2>/dev/null || true)
+if [[ -n "$wildcard" ]]; then
+  printf "${RED}FOUND${NC} wildcard skill install (name one skill per install):\n"
+  echo "$wildcard" | sed 's/^/  /'
+  ((orphans += 1))
+else
+  printf "${GREEN}  OK${NC}  No wildcard skill installs recommended\n"
+fi
+
 echo ""
 if [[ "$errors" -eq 0 && "$orphans" -eq 0 ]]; then
   printf "${GREEN}All checks passed.${NC}\n"

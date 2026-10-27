@@ -7,6 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `.nitm/retired.json`: a project-owned list of template paths that `install`, `patch` and `upgrade` must never re-add. Matching is exact and case-sensitive (`AGENTS.md` is not `agents.md`); `./`, doubled and inner `/` are normalised, and `..` or absolute paths are refused. Each entry has a `path`, a `reason` and a `date` (YYYY-MM-DD); a directory path covers every file under it. An optional `trackers` list overrides tracker detection (`[]` for none). The CLI reads this file and never writes it; invalid JSON stops `install`, `patch`, `upgrade` and `doctor` before anything is written, and for `upgrade` that includes the saved selection.
+- `bin/relevance.js` holds the retirement, project-detection, relevance and thin-wrapper logic. Tests: `test/relevance.test.js` and `test/relevance-patch.test.js`.
+- `scripts/check-parity.sh` fails when a bootstrap-facing file recommends a wildcard skill install (`skills add … --skill '*'`).
+
+### Changed
+
+- `patch` and `upgrade` classify every template file against the project before writing: **add** (missing and applicable), **update** (unchanged since the toolkit wrote it, and the template changed), **current**, **needs review** (locally changed, or undecided relevance), **not relevant**, and **retired**. The plan prints, with a reason for each entry, before anything is written.
+- Relevance comes from the project. Tracker CLI skills follow the git `origin` host (GitHub, GitLab, Bitbucket) or the `trackers` list; `playwright-test` follows Playwright; `prisma-migrations` follows Prisma; `component-structure` and `ui-accessibility` follow a UI framework; the empty MCP templates are not added. When the tracker cannot be detected, tracker skills are held for review rather than guessed.
+- `patch` never overwrites a locally changed file, even with `--force`; it reports the file under needs review. `upgrade` without `--force` behaves the same. `upgrade --force` runs `install --force`, which does overwrite locally changed files. `patch` and `upgrade` update only files the toolkit wrote and the project has not changed since (manifest hash).
+- `upgrade` reads `.nitm/retired.json` before the npm lookup and before any write. While that file has entries or a `trackers` override, it refuses targets older than 5.2.0, the planned release that first honours the file, because older targets would ignore it and re-add retired paths. `RELEVANCE_MIN` in `bin/cli.js` holds that version and must match the release that ships this change.
+- `doctor` is read-only. It counts only applicable files as missing, lists retired paths separately, lists present files that do not apply as retirement candidates, lists undecided files, and lists harness wrappers that inline policy.
+- `install` also honours `.nitm/retired.json`: a retired path is never written, including with `--force`.
+- Thin-wrapper policy in the bootstrap, patch and upgrade prompts: policy lives only in `.claude/{rules,prompt,agents}-snippets/`; a wrapper is a link, a title, at most five key points and one short summary line; an Agent Dispatch table is activation metadata. Patch and upgrade report wrappers that inline policy or diverge from their snippet and propose moving the content into the snippet. Copilot instruction creation writes the policy to a snippet first and then a thin wrapper.
+- Bootstrap Step 7 recommends skills by detected need, one named `--skill` per install, each approved by the operator. The wildcard recommendations (`--skill '*'`) are removed from the bootstrap prompts, the skill READMEs and the README catalogue. Bootstrap no longer offers "Install All".
+- Bootstrap skill cleanup and the upgrade steps retire by recording in `.nitm/retired.json` rather than deleting. Deleting a skill directory needs separate approval and a backup.
+- Upgrade pre-commit hook: installed only with approval, in a git repository, and never over an existing `.git/hooks/pre-commit`. Project hooks (plugin-only, `${CLAUDE_PLUGIN_ROOT}`) are copied only with approval, and existing files are skipped.
+
+### Fixed
+
+- `.opencode/commands/review-staged.md` (repo and monorepo) had lost its link to `.claude/prompt-snippets/review-staged.md`. It is a thin wrapper with the link again.
+
+### Migration
+
+- Existing projects: patch no longer adds files that do not apply, so tracker skills for other trackers, Playwright and Prisma files, and the empty MCP templates are not re-added. Record what your project retired in `.nitm/retired.json` so `doctor` reports it as retired. Run `npx nitm-ai-dev-toolkit patch --dry-run` first and read the plan.
+- `patch` never overwrites a file you changed. It lists the file under needs review, so review and merge it by hand. `upgrade --force` is the only path that overwrites it.
+- The new behaviour applies when the pinned version ships it. `upgrade <version>` runs that version's own `patch`. While `.nitm/retired.json` has entries, `upgrade` refuses targets older than 5.2.0; pin 5.2.0 or later.
+
+### Not covered yet
+
+- Template files that link to tracker skills or to `ui-accessibility.md` (the AGENTS.md Skills table, `assign-tasks.md`, `factory/roles/review-ui.md`) can point at files patch leaves out. Doctor does not flag these yet.
+- UI detection reads only the root and `apps/*`, `packages/*` manifests. A UI app in another directory (for example `web/` or `services/*`) is not detected, so UI rules are skipped there.
+- Playwright detection matches any mention of "playwright" in the root manifests, not only a dependency or config.
+- Skills that restate snippet policy are not detected. Copilot instruction files and the Codex README are not audited for inlined policy.
+
 ## [5.1.2] - 2026-10-21
 
 ### Fixed
