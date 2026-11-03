@@ -299,6 +299,16 @@ After validation, create the skill:
    - `assets/`
 4. **Add resource files**: Based on skill requirements
 
+## Artifact Review and Acceptance
+
+Before Post-Creation or a success summary, the orchestrator must:
+
+1. Dispatch an independent, read-only reviewer with the original request, gathered requirements, created skill and resource paths, and validation results. Review the actual files for naming/frontmatter, structure, reference resolution, and coverage of the requested capability; return `VERDICT: PASS` or `VERDICT: CHANGES` with blocking findings and file references.
+2. Repair blocking findings within the agreed scope, repeat affected validation checks, and re-review the changed artifacts independently. Repeat until PASS or blocked; ask the user rather than inventing requirements or expanding scope.
+3. Accept only after the independent reviewer returns PASS and the orchestrator verifies every requirement and applicable validation check against evidence. If an independent reviewer is unavailable, report BLOCKED; self-review cannot substitute for independent acceptance.
+
+Keep any required human approval separate from artifact acceptance. This review adds no commit, push, or apply step.
+
 ## Post-Creation
 
 After creating the skill:

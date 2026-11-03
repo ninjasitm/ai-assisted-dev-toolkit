@@ -1,5 +1,6 @@
 ---
 description: Create an implementation plan for a feature
+tools: ["read", "search", "edit", "agent"]
 argument-hint: "feature specification or requirement"
 ---
 

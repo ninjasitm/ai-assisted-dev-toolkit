@@ -1,6 +1,6 @@
 ---
 description: Create an implementation plan for a feature
-tools: ["read", "search"]
+tools: ["read", "search", "edit", "agent"]
 argument-hint: "issue key or spec file path"
 ---
 

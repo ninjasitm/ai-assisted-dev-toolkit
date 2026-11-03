@@ -11,41 +11,40 @@ Implement a feature by completing tasks sequentially with proper tracking.
 
 ## Orchestrator Checkpoint
 
-> **🛑 Before starting**: This command involves planning, implementation, testing, and review.
-> Use the **orchestrator-first** flow. Delegate to the **Feature Builder** coordinator or use
-> the `subagent-driven-development` skill to dispatch a fresh subagent per task.
-> See `.claude/rules-snippets/subagent-workflow.md` for full patterns.
+> **🛑 Before starting**: Every task and the whole feature run the delivery loop in
+> [implement.md](implement.md). Dispatch the builder directly with that loop. Do not route through a
+> planning skill, and do not write a spec or plan first. **Feature Builder** may be the builder for a
+> task, but its own review never replaces the independent review, and only the orchestrator accepts.
 
 ## Process
 
 > **📋 Standards**: Follow [Coding Standards](../rules-snippets/coding-standards.md), [Testing](../rules-snippets/testing.md), and [Documentation](../rules-snippets/documentation.md).
 
 1. **Load Feature Context**:
-   - Read specification from `docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/spec.md`
-   - Read implementation plan from `docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/plan.md`
-   - Read task list from `docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/tasks.md`
-   - Review `AGENTS.md` for project patterns
+   - The supplied feature text or task list is the requirement. Do not require a spec or plan first.
+   - If `docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/` exists, read whichever of `spec.md`, `plan.md` and `tasks.md` it contains as context. Skip any that are absent.
+   - Review `AGENTS.md` for project patterns.
+   - Turn every requirement of the feature into an acceptance criterion and discover the real checks, as in [implement.md](implement.md) step 1.
 
 2. **Parallelization Analysis**:
    - Scan task list for `[P]` markers and independent tasks
    - Group tasks by domain (backend, frontend, docs, tests)
-   - Tasks that touch **different files with no shared state** → dispatch in parallel
+   - Tasks that touch **different files with no shared state** → run their loops in parallel
    - Tasks with dependencies or shared files → keep sequential
    - Use `dispatching-parallel-agents` skill when 3+ independent tasks exist
 
-3. **Create Feature Branch**:
+3. **Create Feature Branch** (before any build):
 
    ```bash
    git checkout -b feature/{{FEATURE_NAME}}
    git pull origin {{DEFAULT_BRANCH}}
    ```
 
+   Then take the baseline snapshot as in implement.md step 1, before any build.
+
 4. **Task Implementation** (sequential or parallel per analysis):
 
-   For tasks with dependencies, execute in order.
-   For `[P]` tasks with no shared state, **dispatch parallel subagents** — one per task domain:
-
-   For each task:
+   For each task, in dependency order:
 
    a. **Mark Task In Progress**
 
@@ -54,69 +53,46 @@ Implement a feature by completing tasks sequentially with proper tracking.
    - Review referenced files
    - Understand dependencies
 
-   c. **Implement (TDD required)**:
-   - Follow the acceptance criteria in `spec.md` for this task's deliverable
-   - Use patterns from `AGENTS.md`
-   - **Write a failing test first** — one behavior per test, clear name, real code
-   - **Verify it fails** — watch it fail for the right reason (feature missing, not error)
-   - **Write minimal code to pass** — simplest implementation, no over-engineering
-   - **Verify it passes** — all tests green, no regressions
-   - **Refactor** — clean up only after green (remove duplication, improve names)
-   - Ensure type safety
-   - See `test-driven-development/SKILL.md` for the full cycle
+   c. **Delivery loop for the task** (implement.md steps 2–5):
+   - Builder: write the failing test first, watch it fail for the right reason, make the minimal change to pass, then refactor (TDD). Update the docs the task requires: `docs/api/` if API surfaces changed, `README.md` if setup steps, commands, or env vars changed, and `CHANGELOG.md` under `[Unreleased]`. Update a feature `spec.md` or `plan.md` only if one exists.
+   - Orchestrator: verify the checks yourself, dispatch the independent read-only reviewer, then decide.
+   - Repair goes back to the builder. Repeat until the task is accepted or blocked. Do not commit or tick the task before acceptance.
+   - See `.claude/rules-snippets/documentation.md` for the full pre-commit checklist.
 
-   d. **Validate**:
-   - Run type checking: `{{PACKAGE_MANAGER}} run check-types`
-   - Run linter: `{{PACKAGE_MANAGER}} run lint`
-   - Run tests: `{{PACKAGE_MANAGER}} run test`
-   - Build: `{{PACKAGE_MANAGER}} run build`
-
-   e. **Update Documentation**:
-   - Ensure `docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/spec.md` reflects final implementation
-   - Update `plan.md` if implementation deviated from original plan
-   - Update `docs/api/` if any API surfaces changed
-   - Update `README.md` if setup steps, commands, or env vars changed
-   - Add entry to `CHANGELOG.md` under `[Unreleased]`
-   - See `.claude/rules-snippets/documentation.md` for full pre-commit checklist
-
-   f. **Commit Changes**:
+   d. **Commit the Task** (after acceptance, only when there are accepted changes): stage only this task's paths, never `git add -A` or a foreign change, then commit. Skip the commit when nothing is staged.
 
    ```bash
    git commit -m "feat({{SCOPE}}): {{DESCRIPTION}}"
    ```
 
-   f. **Mark Task Complete**:
+   e. **Mark Task Complete** (after the commit):
    - Slim `tasks.md`: tick `- [x]` on the task's line
    - Legacy `tasks.md`: tick `- [x]` only on checkboxes under the current task's heading (until the next heading). Never tick checkboxes under other headings. If that heading has no checkboxes, report "no checkboxes under <heading>; nothing ticked" and continue
 
-5. **Post-Implementation Review**:
-   - Dispatch **Reviewer** agent on all changes before proceeding
-   - If reviewer requests changes, route back to the original domain specialist
-   - Use `verification-before-completion` skill for final quality gate
+5. **Feature Review** (aggregate loop, every round):
+   - Run implement.md steps 3, 4 and 5 for the **whole feature**, against every requirement from step 1, not only the last task.
+   - Review scope: the current working tree against the merge-base, `git diff $(git merge-base {{DEFAULT_BRANCH}} HEAD)`. This covers committed task work, uncommitted repairs, and new files (read the untracked ones directly). Do not review only `{{DEFAULT_BRANCH}}...HEAD`: it misses uncommitted repairs and new files. Compare preexisting files against the saved baseline copies from step 1, as in implement.md step 4.
+   - Repairs go to the builder that owns each file, uncommitted. Then run steps 3–5 again on the current tree.
+   - Exits are the same as implement.md step 5: accepted, blocked, or needs a user decision. There is no round limit. Only acceptance ends the feature review successfully.
 
-6. **Create Pull Request**:
+6. **Create Pull Request** (only after the feature review is accepted):
 
-   After all tasks complete:
+   a. **Final Validation**: the accepted verify results from step 5 (every required check ran and passed).
 
-   a. **Final Validation**:
-   - All tests passing
-   - No type errors
-   - No linter errors
-   - Build successful
-
-   b. **Push and Create PR**:
+   b. **Commit and push**: if accepted feature-review changes are still uncommitted, commit them once, staging only the feature's paths, and skip the commit when nothing is staged. Do not create repair-only commits.
 
    ```bash
+   git commit -m "feat({{SCOPE}}): {{DESCRIPTION}}"   # only when there are uncommitted accepted changes
    git push -u origin feature/{{FEATURE_NAME}}
    ```
 
    - Create PR targeting `{{DEFAULT_BRANCH}}`
-   - Include feature summary and testing notes
+   - Include feature summary, the AC evidence, and testing notes
 
 7. **Report Status**:
-   - Completed tasks count
-   - PR URL
-   - Ready for code review
+   - Tasks accepted (count) and any task blocked or awaiting a user decision
+   - Feature review verdict and `ACCEPTED` or `BLOCKED` / `NOT ACCEPTED` with the open items
+   - PR URL, only when accepted
 
 ## Guidelines
 

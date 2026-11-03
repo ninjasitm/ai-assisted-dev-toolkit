@@ -9,7 +9,7 @@ description: "Implement a feature by completing tasks sequentially"
 | Agent | When to use |
 |-------|-------------|
 | `fixer` | Bounded feature work — spec is clear, files are known |
-| `feature-builder` | Complex feature — needs research, planning, and coordination |
+| `feature-builder` | Complex feature build — builder only; the orchestrator still runs the review |
 
 ## Arguments
 

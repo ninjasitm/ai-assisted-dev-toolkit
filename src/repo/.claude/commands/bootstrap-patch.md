@@ -1,6 +1,6 @@
 ---
 description: Patch AI instructions by fetching updates from the toolkit repo and applying new/updated/missing guidance
-allowed-tools: "Read, Write, Edit, Bash(*)"
+allowed-tools: "Read, Write, Edit, Bash(*), Task"
 argument-hint: "optional patch options"
 ---
 
@@ -10,6 +10,6 @@ argument-hint: "optional patch options"
 | Agent | When to use |
 |-------|-------------|
 | `fixer` | Standard patch — incremental changes to existing config |
-| `planner` | Complex patch — cross-cutting changes needing analysis first |
+| `reviewer` | Independent read-only review before approval and after apply |
 
 Follow the prompt defined in [.claude/prompt-snippets/bootstrap-patch.md](../prompt-snippets/bootstrap-patch.md).

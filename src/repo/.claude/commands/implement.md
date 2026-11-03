@@ -1,6 +1,6 @@
 ---
 description: Execute implementation tasks from a task list or specification
-allowed-tools: "Read, Write, Edit, Bash(*)"
+allowed-tools: "Read, Write, Edit, Bash(*), Task"
 argument-hint: "task list or specification"
 ---
 

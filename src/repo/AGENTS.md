@@ -395,10 +395,12 @@ Documentation updates are **mandatory before committing** any feature or fix. Se
 - Reference `docs/constitution.md` for project principles and governance
 - Include all doc changes in the same commit/PR as the code
 
+**Supplied-task exception (`implement`, `implement-feature`, `implement-fixes` only):** the task supplied to these commands replaces the spec and plan prerequisites. Do not create or require `spec.md` or `plan.md` for the feature or fix unless the user asks for them. Every other applicable item in the [documentation checklist](.claude/rules-snippets/documentation.md) still applies, including the fix log, `CHANGELOG.md`, `docs/api/`, and `README.md`.
+
 ## Contributing
 
 **Standards:** Follow {{FRAMEWORK}} and {{LANGUAGE}} best practices
-**Process:** Feature branch → spec/plan docs → tests → implementation → update docs → lint → build → PR
+**Process:** Feature branch → spec/plan docs (not required by the implement commands; see the supplied-task exception) → tests → implementation → update docs → lint → build → PR
 
 ## Related Documentation
 

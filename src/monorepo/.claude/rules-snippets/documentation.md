@@ -156,6 +156,10 @@ Tracks monorepo-wide changes.
 
 **⚠️ MANDATORY: Documentation MUST be written or updated BEFORE committing code. This is a hard requirement — no commit should land without the corresponding docs entry.**
 
+### Supplied-Task Exception
+
+For changes made by the `implement`, `implement-feature` and `implement-fixes` commands only, the task supplied to the command replaces the spec and plan prerequisites. Do not create or require `spec.md` or `plan.md` (feature folders or complex fix folders) unless the user asks for them. This exception covers only the spec and plan items below and in the decision tree above. Every other applicable item still applies.
+
 ### Pre-Commit Checklist
 
 Before running `git commit`, verify ALL items that apply to your change:

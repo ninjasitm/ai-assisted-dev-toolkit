@@ -114,6 +114,19 @@ Example: 5 tasks → T1 (setup) → T2 [P] (backend API) + T3 [P] (frontend UI) 
 - Coordinators should not skip review even for "simple" changes
 - If a reviewer requests changes, the original specialist fixes them and re-review occurs
 
+## Model Capacity Fallback
+
+When a subagent stops on a model capacity, quota, session limit, or reset-wait failure (most often Claude), switch its **model** and keep its **agent**. This is automatic for those failures; do not ask first.
+
+- **Same agent, same role.** Re-dispatch the same agent with the same task, permissions, and context (and session, where the harness supports it). Do not substitute an equivalent agent.
+- **Model order, one attempt each.** Try the next model in the configured fallback order for that agent. When the order is exhausted, try the harness's known available default, unless it was already tried. Then stop; do not cycle back.
+- **Never** retry the same unavailable model, and never wait blindly for a quota reset.
+- **Only supported switching.** Change the model through per-call selection the runtime supports, using only fallback models and defaults that are already configured or exposed. Do not invent model IDs, and do not edit persistent or global config, accounts, or billing.
+- **Blocker when nothing is left.** If no configured fallback or default is available, or per-call selection is unsupported, stop, report the blocker, and ask the user which model to use.
+- **Inspect before resuming.** Check what the failed attempt left in the working tree, then resume from that partial work. Never run two writers on the same files at once.
+- **Keep review independent.** The reviewer stays a separate agent from the builder, even when the builder moves to a fallback model.
+- **Disclose.** The final report names the original model, each fallback attempted, and the model that finished the work.
+
 ## Skills Integration
 
 These skills complement subagent workflows:

@@ -184,26 +184,28 @@ The CLI runs the same patch flow without an AI session: `npx nitm-ai-dev-toolkit
 
     ### Summary
 
-    - **Auto-apply**: X add + Y update entries, as printed by `patch`
+    - **Apply after review and user approval**: X add + Y update entries, as printed by `patch`
     - **Review needed**: Z needs-review files and W wrapper proposals
     - **Not written**: N not-relevant or retired entries
     - **No action**: W files already current
     ```
 
-5.  **Confirm and Apply**:
+    **Independent review loop (before approval/apply, including dry-run):**
+    - The orchestrator derives acceptance checks from the user's request and the safeguards above; no new spec, plan, persistent state, or configuration is required. The patch author prepares/repairs the proposal and reports evidence, but cannot approve its own work.
+    - The orchestrator dispatches an independent read-only `reviewer` (or available read-only agent), not the patch author or its self-review. Give it the original request, target/source version evidence, current project files, proposed diffs/report (including merges and removals), and check results. Review scope, relevance/retirement decisions, preserved customizations, trust/version gates, and backup/approval requirements.
+    - The reviewer returns `VERDICT: PASS` or `VERDICT: CHANGES`; each blocking finding names the file, problem, and required repair. Send findings or failed checks back to the patch author, repair the proposal, verify it, and re-review the revised proposal. Repeat until PASS or BLOCKED; never proceed merely because a round limit was reached.
+    - Only the orchestrator accepts the proposal, after independently inspecting the evidence for every acceptance check and the current review PASS. A reviewer PASS alone is not acceptance and never replaces user approval. If an independent reviewer or required evidence/check is unavailable, report **BLOCKED** with what would unblock it; do not apply or claim completion.
+
+5.  **Confirm and Apply** (only the accepted proposal):
     - If `--dry-run` flag: Output the report without making changes
-    - Otherwise: Present the report and ask the user to confirm with (Y/n)
+    - Otherwise: Present the reviewed report and ask the user to confirm with (Y/n). Before writes, back up affected existing files/config and confirm the source, project state, and patch still match the reviewed proposal; if they changed, regenerate and repeat review and user approval. Apply only approved changes.
     - On confirmation:
       a. **Add and update**: run `npx nitm-ai-dev-toolkit patch`. It writes only the add and update entries it printed; do not copy template files by hand
       b. **Retirements**: after approval, record each path in `.nitm/retired.json` with a reason and date. Do not delete files to retire them
-      c. **Needs review**: propose a merge per file (structural additions, preserved project values) and apply it only after the operator approves that file. Wrappers that inline policy: propose moving the content into the snippet and reducing the wrapper to a thin link (see Thin Wrapper Policy in `bootstrap.md`)
+      c. **Needs review**: include each proposed merge (structural additions, preserved project values) in Step 4's report and independent review, and apply it only after the operator approves that file. Wrappers that inline policy: propose moving the content into the snippet and reducing the wrapper to a thin link (see Thin Wrapper Policy in `bootstrap.md`)
       d. **OpenCode plugins**: Apply only the approved obsolete Ponytail cleanup above after backing up the known obsolete toolkit copies and local config; preserve all unrelated local/global plugins. Never add Ponytail to project config.
       e. **Toolkit version**: Keep the `.toolkit-version` value the CLI writes for the verified target version (the installed package version, 4.0.0 or later; never hard-coded) only after the approved migration and OpenCode preflight pass (or OpenCode is confirmed out of scope).
-      f. **Git commit**: Stage and commit all changes with message:
-      ```bash
-      git add -A
-      git commit -m "chore: patch AI instructions from toolkit [$(date +%Y-%m-%d)]"
-      ```
+      f. **Git commit**: Do not auto-commit. Only if the user explicitly requests a commit, and only after Step 7 acceptance, stage just this patch's approved paths; never stage unrelated changes.
 
 6.  **Cleanup**:
 
@@ -215,6 +217,9 @@ The CLI runs the same patch flow without an AI session: `npx nitm-ai-dev-toolkit
     - Verify no `{{PLACEHOLDER}}` syntax was accidentally re-introduced
     - Confirm all files are valid (no broken frontmatter, no syntax errors)
     - List any new placeholders that need manual `bootstrap` to fill
+    - Inspect the actual applied diff/files against the approved proposal and backups: verify preserved project values/config, relevance/retirements, approved merges/removals, and the target version marker. Run the applicable syntax/frontmatter checks and report commands/results, not assumed runtime validation.
+    - Dispatch the independent read-only reviewer on the actual applied outcome, approval scope, and validation evidence using the same verdict contract above. On findings or failed checks, repair only within the approved scope, rerun validation, and re-review; any new/unapproved change must return through proposal review and user approval before writes.
+    - Only the orchestrator reports **ACCEPTED** when the current outcome has review PASS and verified evidence for every acceptance check. Missing reviewer/evidence means **BLOCKED**, never completion. For `--dry-run`, accept only the reviewed preview and explicitly report that nothing was applied or post-apply verified. Acceptance never authorizes extra writes, deletions, or a commit.
 
 ## Smart Merge Strategy
 
@@ -239,4 +244,4 @@ When a file has been bootstrapped (placeholders replaced with real values), the 
 - **Non-destructive by default**: Always show changes before applying
 - **Preserve customizations**: Never lose project-specific configuration
 - **Incremental**: Only apply what's changed, don't re-bootstrap everything
-- **Auditable**: Commit message includes date for tracking patch history
+- **Auditable**: Report approved paths, review verdicts, and verification evidence; commit only on explicit request

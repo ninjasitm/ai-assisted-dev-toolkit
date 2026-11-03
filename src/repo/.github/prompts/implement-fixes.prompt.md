@@ -1,6 +1,6 @@
 ---
 description: Implement bug fixes with proper tracking and validation
-tools: ["read", "search", "edit", "terminal"]
+tools: ["read", "search", "edit", "terminal", "agent"]
 argument-hint: "issue key or fix description"
 ---
 

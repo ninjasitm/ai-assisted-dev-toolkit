@@ -1,6 +1,6 @@
 ---
 description: Implement a feature by completing tasks sequentially
-tools: ["read", "search", "edit", "terminal"]
+tools: ["read", "search", "edit", "terminal", "agent"]
 argument-hint: "issue key or task file path"
 ---
 
@@ -11,6 +11,6 @@ argument-hint: "issue key or task file path"
 | Agent | When to use |
 |-------|-------------|
 | `fixer` | Bounded feature work — spec is clear, files are known |
-| `feature-builder` | Complex feature — needs research, planning, and coordination |
+| `feature-builder` | Complex feature build — builder only; the orchestrator still runs the review |
 
 **CRITICAL: READ:** [.claude/prompt-snippets/implement-feature.md](../../.claude/prompt-snippets/implement-feature.md).
