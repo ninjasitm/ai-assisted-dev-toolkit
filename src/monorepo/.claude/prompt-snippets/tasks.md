@@ -1,12 +1,12 @@
 You are helping to break down a feature into actionable tasks.
 
-`tasks.md` is a checklist only. Acceptance criteria live in `spec.md`; approach, files, and effort live in `plan.md`. Do not repeat them here.
+`tasks.md` is a checklist only. Acceptance criteria live in `spec.md` when present, otherwise in `plan.md` under **Requirements Source** and **Acceptance Criteria**; approach, files, and effort live in `plan.md`. Do not repeat them here.
 
 ## Your Task
 
 1. **Load context**:
-   - Read the specification in `apps/{{APP_NAME}}/docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/spec.md`
-   - Read the plan in `apps/{{APP_NAME}}/docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/plan.md` (if exists)
+   - Read the plan in `apps/{{APP_NAME}}/docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/plan.md` when present
+   - Read sibling `spec.md` when present; otherwise use `plan.md` under **Requirements Source** and **Acceptance Criteria** as the requirements source. Cover every requirement and acceptance criterion in the deliverables without copying them into the checklist. If that source is missing or unclear, ask the user; do not require creating a specification.
    - Review `AGENTS.md` for project patterns
 
 2. **Break down into tasks** (aim for 3-7 total; never exceed 10):
@@ -65,6 +65,6 @@ You are helping to break down a feature into actionable tasks.
 When this list is used by `/implement-feature` or `/implement`:
 
 - **`[P]` tasks**: dispatch one subagent per task concurrently, using `dispatching-parallel-agents`
-- **Other tasks**: execute in dependency order, one subagent per task, using `subagent-driven-development`
+- **Other tasks**: execute in dependency order, one subagent per task
 - **Domain routing**: match each task to a specialist (Backend Architect, Frontend Developer, API Specialist, etc.)
-- **Review gate**: every task passes a Reviewer before it is ticked `[x]`
+- **Review gate**: follow the shared delivery loop in `implement.md`; only the orchestrator accepts and ticks `[x]` after independent review and required evidence. This command only generates the checklist; do not dispatch implementation or bypass required human approval.

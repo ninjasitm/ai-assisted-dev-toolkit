@@ -85,7 +85,7 @@ Each app maintains its own feature documentation:
 
 **Location:** `apps/{{APP_NAME}}/docs/features/<feature>/`
 
-**Required Files:**
+**Required Files** (subject to the [requirement-only planning exception](#requirement-only-planning-exception) and the separate [supplied-task exception](#supplied-task-exception)):
 
 ```
 apps/{{APP_1}}/docs/features/<feature>/
@@ -155,6 +155,10 @@ Tracks monorepo-wide changes.
 ## Pre-Commit Documentation Gate
 
 **⚠️ MANDATORY: Documentation MUST be written or updated BEFORE committing code. This is a hard requirement — no commit should land without the corresponding docs entry.**
+
+### Requirement-Only Planning Exception
+
+For `/plan` without an existing specification, preserve the original supplied requirements and acceptance criteria in `plan.md` under **Requirements Source** and **Acceptance Criteria**; do not require or create `spec.md`. `/tasks` and `/assign-tasks` consume that plan source when no specification exists; keep acceptance criteria out of the slim task checklist. This exception overrides the spec prerequisite and mandatory spec-first sequence above and in the documentation checklist only for these planning artifacts. It does not authorize implementation, replace artifact review, waive required human approvals, or change any other documentation duties. The separate implementation-command supplied-task exception remains unchanged.
 
 ### Supplied-Task Exception
 

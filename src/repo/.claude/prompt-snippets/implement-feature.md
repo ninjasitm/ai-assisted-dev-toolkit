@@ -25,6 +25,7 @@ Implement a feature by completing tasks sequentially with proper tracking.
    - If `docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/` exists, read whichever of `spec.md`, `plan.md` and `tasks.md` it contains as context. Skip any that are absent.
    - Review `AGENTS.md` for project patterns.
    - Turn every requirement of the feature into an acceptance criterion and discover the real checks, as in [implement.md](implement.md) step 1.
+   - Preserve the original full-feature text, acceptance criteria, and real checks separately for aggregate feature review; task-local inputs must not overwrite them.
 
 2. **Parallelization Analysis**:
    - Scan task list for `[P]` markers and independent tasks
@@ -52,6 +53,7 @@ Implement a feature by completing tasks sequentially with proper tracking.
    - Search codebase for similar patterns
    - Review referenced files
    - Understand dependencies
+   - Before entering the task's delivery loop, bind the current task's original text unchanged, task-local acceptance criteria, and applicable real checks as in implement.md step 1. Use these inputs for the builder, verification, independent reviewer, and acceptance in steps 2–5. Do not use another task's criteria or require later tasks to pass. Keep the saved baseline unchanged.
 
    c. **Delivery loop for the task** (implement.md steps 2–5):
    - Builder: write the failing test first, watch it fail for the right reason, make the minimal change to pass, then refactor (TDD). Update the docs the task requires: `docs/api/` if API surfaces changed, `README.md` if setup steps, commands, or env vars changed, and `CHANGELOG.md` under `[Unreleased]`. Update a feature `spec.md` or `plan.md` only if one exists.
@@ -70,6 +72,7 @@ Implement a feature by completing tasks sequentially with proper tracking.
    - Legacy `tasks.md`: tick `- [x]` only on checkboxes under the current task's heading (until the next heading). Never tick checkboxes under other headings. If that heading has no checkboxes, report "no checkboxes under <heading>; nothing ticked" and continue
 
 5. **Feature Review** (aggregate loop, every round):
+   - Restore the saved full-feature text, acceptance criteria, and real checks as the inputs for aggregate verification, independent review, and acceptance.
    - Run implement.md steps 3, 4 and 5 for the **whole feature**, against every requirement from step 1, not only the last task.
    - Review scope: the current working tree against the merge-base, `git diff $(git merge-base {{DEFAULT_BRANCH}} HEAD)`. This covers committed task work, uncommitted repairs, and new files (read the untracked ones directly). Do not review only `{{DEFAULT_BRANCH}}...HEAD`: it misses uncommitted repairs and new files. Compare preexisting files against the saved baseline copies from step 1, as in implement.md step 4.
    - Repairs go to the builder that owns each file, uncommitted. Then run steps 3–5 again on the current tree.

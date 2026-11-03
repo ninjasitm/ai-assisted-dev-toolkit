@@ -80,3 +80,80 @@ for (const layout of ['.', 'src/repo', 'src/monorepo']) {
     });
   }
 }
+
+for (const layout of ['src/repo', 'src/monorepo']) {
+  test(`${layout}: governing documentation permits requirement-only planning without weakening other gates`, () => {
+    const agents = read(layout, 'AGENTS.md');
+    const documentation = read(layout, '.claude/rules-snippets/documentation.md');
+    const exception = documentation.split('### Requirement-Only Planning Exception\n\n')[1]?.split('\n\n')[0];
+    assert.ok(exception, 'documentation must define a separate planning exception');
+    assert.ok(agents.includes(`**Requirement-only planning exception:** ${exception}`), 'AGENTS and documentation must agree on the exception');
+    assert.match(exception, /For `\/plan` without an existing specification, preserve the original supplied requirements and acceptance criteria in `plan\.md` under \*\*Requirements Source\*\* and \*\*Acceptance Criteria\*\*; do not require or create `spec\.md`/);
+    assert.match(exception, /`\/tasks` and `\/assign-tasks` consume that plan source when no specification exists/);
+    assert.match(exception, /keep acceptance criteria out of the slim task checklist/);
+    assert.match(exception, /overrides the spec prerequisite and mandatory spec-first sequence.*only for these planning artifacts/);
+    assert.match(exception, /does not authorize implementation, replace artifact review, waive required human approvals, or change any other documentation duties/);
+    assert.match(exception, /separate implementation-command supplied-task exception remains unchanged/);
+    assert.match(documentation, /\*\*Required Files\*\* \(subject to the \[requirement-only planning exception\]\(#requirement-only-planning-exception\)/);
+    assert.match(documentation, /For changes made by the `implement`, `implement-feature` and `implement-fixes` commands only/);
+    assert.match(agents, /\*\*Supplied-task exception \(`implement`, `implement-feature`, `implement-fixes` only\):\*\*/);
+    for (const text of [agents, documentation]) {
+      assert.match(text, /mandatory before committing|Documentation MUST be written or updated BEFORE committing code/);
+      assert.match(text, /CHANGELOG\.md/);
+      assert.match(text, /docs\/api\//);
+    }
+    if (layout === 'src/repo') {
+      assert.match(documentation, /exception.*takes precedence over the spec-first sequence below/);
+      assert.match(agents, /spec\/plan docs \(subject to the requirement-only planning and supplied-task exceptions above\)/);
+    }
+  });
+
+  test(`${layout}: requirement-only plan -> tasks -> ticket preserves acceptance criteria`, () => {
+    const plan = read(layout, '.claude/prompt-snippets/plan.md');
+    const tasks = read(layout, '.claude/prompt-snippets/tasks.md');
+    const tickets = read(layout, '.claude/prompt-snippets/assign-tasks.md');
+    const featurePath = `${layout === 'src/monorepo' ? 'apps/{{APP_NAME}}/' : ''}docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}`;
+
+    // The plan must retain the chat/issue input, not merely point at a nonexistent spec.
+    assert.match(plan, /Without an existing specification, persist the original supplied requirements and acceptance criteria verbatim in `plan\.md`/);
+    assert.match(plan, /including the source path or issue key/);
+    assert.match(plan, /Preserve constraints; label any derived criteria or assumptions separately/);
+    assert.match(plan, /ask the user about unclear or missing criteria rather than inventing approval/);
+    assert.match(plan, /durable requirements source for `\/tasks` and `\/assign-tasks`/);
+    const template = plan.slice(plan.indexOf('## Plan Template'));
+    for (const section of ['Requirements Source', 'Acceptance Criteria']) {
+      assert.ok(template.includes(`## ${section}\n`), `plan template must persist ${section}`);
+      for (const downstream of [tasks, tickets]) {
+        assert.ok(downstream.includes(`**${section}**`), `downstream must read ${section}`);
+      }
+    }
+    assert.ok(plan.includes(`${featurePath}/plan.md`));
+    assert.ok(tasks.includes(`${featurePath}/plan.md`));
+    assert.ok(tasks.includes(`${featurePath}/tasks.md`));
+
+    // All consumers agree on source selection, including the existing spec-backed path.
+    assert.match(plan, /With an existing specification, link to its requirements and acceptance criteria instead of duplicating them/);
+    for (const downstream of [tasks, tickets]) {
+      assert.match(downstream, /(?:Read|load) sibling `spec\.md` when present; otherwise (?:use|load sibling) `plan\.md`/);
+      assert.match(downstream, /do not require creating a specification/);
+      assert.doesNotMatch(downstream, /Read the specification in|Acceptance criteria live in `spec\.md`;/);
+    }
+    assert.match(tasks, /Cover every requirement and acceptance criterion in the deliverables without copying them into the checklist/);
+    assert.match(tasks, /No file lists, effort, or acceptance criteria/);
+    assert.match(tickets, /If the source or criteria are missing or unclear, ask the user before creating tickets/);
+    assert.match(tickets, /Ticket description: the task summary plus the acceptance criteria from the selected requirements source for that deliverable \(`spec\.md` when present, otherwise `plan\.md` for a task checklist/);
+    assert.match(tickets, /Preserve the original criteria and constraints; include a source path\/issue key and section reference/);
+    assert.match(tickets, /Do not copy acceptance criteria into `tasks\.md`/);
+    assert.doesNotMatch(tickets, /acceptance criteria from `spec\.md` for that deliverable|estimate from the scope in `spec\.md`/);
+    assert.match(tickets, /For a requirement document supplied directly, use its requirements and acceptance criteria/);
+
+    // Referenced skills must not turn artifact generation into implementation or self-acceptance.
+    assert.match(plan, /override that skill's execution handoff, worktree and commit procedures/);
+    assert.match(plan, /Stop after reporting the accepted artifacts/);
+    assert.match(plan, /do not implement the plan/);
+    assert.match(plan, /human approval separate from artifact acceptance/);
+    assert.match(tasks, /shared delivery loop in `implement\.md`; only the orchestrator accepts and ticks/);
+    assert.match(tasks, /This command only generates the checklist; do not dispatch implementation or bypass required human approval/);
+    assert.doesNotMatch(tasks, /using `subagent-driven-development`|Implement it directly|third step in the development lifecycle/);
+  });
+}

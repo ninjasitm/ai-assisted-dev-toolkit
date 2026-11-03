@@ -32,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Feature delivery loops initialize task-local requirements, acceptance criteria and checks before each task, reserving the full feature criteria for aggregate review. Requirement-only plans retain requirements and acceptance criteria for `/tasks` and `/assign-tasks` when no specification exists, in both template layouts.
 - `.opencode/commands/review-staged.md` (repo and monorepo) had lost its link to `.claude/prompt-snippets/review-staged.md`. It is a thin wrapper with the link again.
 
 ### Migration

@@ -49,6 +49,7 @@ When interacting with {{ISSUE_TRACKER}}, use MCP tools first (see the `issue-tra
 
 1. **Parse Document**:
    - Load the specified document (.md, .txt, .json)
+   - For `tasks.md`, load sibling `spec.md` when present; otherwise load sibling `plan.md` under **Requirements Source** and **Acceptance Criteria** as the requirements source. For a requirement document supplied directly, use its requirements and acceptance criteria. If the source or criteria are missing or unclear, ask the user before creating tickets; do not require creating a specification.
    - Detect document structure (headers, lists, task categories)
    - For `tasks.md`, detect the format first:
      - **Slim** (has `- [ ] T<n>` or `- [x] T<n>` lines): each such line is one task. The text after the ID is the summary. Sub-bullets, if any, are subtasks. A line already has a ticket only when it ends with ` — {{PROJECT_KEY}}-<digits>`; skip it then. Any other ` — ` suffix (e.g. ` — depends on T3`) is a note, not a key: keep the line
@@ -72,7 +73,7 @@ When interacting with {{ISSUE_TRACKER}}, use MCP tools first (see the `issue-tra
    - **Task**: Implementation work, 2-8 story points (avoid < 2 SP)
    - **Subtask**: Only for complex tasks, 1-3 story points (use sparingly)
 
-4. **Estimate Effort** (`tasks.md` has no effort field: take hours from `plan.md` for the matching work, or estimate from the scope in `spec.md`):
+4. **Estimate Effort** (`tasks.md` has no effort field: take hours from `plan.md` for the matching work, or estimate from the selected requirements source):
    - 0.5-1 hours → **Merge with related task** (too small alone)
    - 2-3 hours → 2 story points
    - 4-6 hours → 3-5 story points
@@ -84,7 +85,7 @@ When interacting with {{ISSUE_TRACKER}}, use MCP tools first (see the `issue-tra
    - Link child issues to parents
    - Set assignees, labels, and story points
    - Create dependency links where noted
-   - Ticket description: the task summary plus the acceptance criteria from `spec.md` for that deliverable
+   - Ticket description: the task summary plus the acceptance criteria from the selected requirements source for that deliverable (`spec.md` when present, otherwise `plan.md` for a task checklist, or the directly supplied requirement document). Preserve the original criteria and constraints; include a source path/issue key and section reference. Do not copy acceptance criteria into `tasks.md`.
    - **Slim `tasks.md`**: append ` — <KEY>` at the end of the task's line, after any notes (`- [ ] T1 Schema + migration — PROJ-124`)
    - **Legacy `tasks.md`**: never write back. Record heading → ticket key in the report instead
 

@@ -1,8 +1,8 @@
 # Generate Task Checklist
 
-Break the implementation plan into a slim task checklist. This is the third step in the development lifecycle.
+Break the implementation plan into a slim task checklist; no prior specification is required.
 
-`tasks.md` is a checklist only. Acceptance criteria live in `spec.md`; approach, files, and effort live in `plan.md`. Do not repeat them here.
+`tasks.md` is a checklist only. Acceptance criteria live in `spec.md` when present, otherwise in `plan.md` under **Requirements Source** and **Acceptance Criteria**; approach, files, and effort live in `plan.md`. Do not repeat them here.
 
 ## Usage
 
@@ -13,7 +13,7 @@ Break the implementation plan into a slim task checklist. This is the third step
 
 ## When Not to Create tasks.md
 
-Small work (1-2 steps) needs no `tasks.md`. Implement it directly.
+Small work (1-2 steps) needs no `tasks.md`. Report that a separate implementation command can handle it; do not implement it in this command.
 
 ## Consolidation Rules (CRITICAL)
 
@@ -37,7 +37,7 @@ Before finalizing, ask: Can adjacent tasks merge? Would one developer naturally 
 
 ## Process
 
-1. **Load context**: `docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/spec.md`, `plan.md`, and `AGENTS.md` (project patterns).
+1. **Load context**: Read `docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/plan.md` and `AGENTS.md` (project patterns). Read sibling `spec.md` when present; otherwise use `plan.md` under **Requirements Source** and **Acceptance Criteria** as the requirements source. Cover every requirement and acceptance criterion in the deliverables without copying them into the checklist. If that source is missing or unclear, ask the user; do not require creating a specification.
 
 2. **Write `docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/tasks.md`** in the format below.
 
@@ -78,6 +78,6 @@ Ordering: setup before implementation; tests before or alongside code (TDD); cor
 When this list is used by `/implement-feature` or `/implement`:
 
 - **`[P]` tasks**: dispatch one subagent per task concurrently, using `dispatching-parallel-agents`
-- **Other tasks**: execute in dependency order, one subagent per task, using `subagent-driven-development`
+- **Other tasks**: execute in dependency order, one subagent per task
 - **Domain routing**: match each task to a specialist (Backend Architect, Frontend Developer, API Specialist, etc.)
-- **Review gate**: every task passes a Reviewer before it is ticked `[x]`
+- **Review gate**: follow the shared delivery loop in `implement.md`; only the orchestrator accepts and ticks `[x]` after independent review and required evidence. This command only generates the checklist; do not dispatch implementation or bypass required human approval.

@@ -32,7 +32,7 @@ Create feature documentation for:
 
 **Location:** `docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/`
 
-**Required Files:**
+**Required Files** (subject to the [requirement-only planning exception](#requirement-only-planning-exception) and the separate [supplied-task exception](#supplied-task-exception)):
 
 ```
 {{ISSUE_ID}}-{{FEATURE_NAME}}/
@@ -42,6 +42,8 @@ Create feature documentation for:
 ```
 
 ### Creating Feature Documentation
+
+The [requirement-only planning exception](#requirement-only-planning-exception) takes precedence over the spec-first sequence below for `/plan`, `/tasks` and `/assign-tasks` without a specification.
 
 1. **Use the spec workflow**: Run `/specify` command to generate `spec.md` in `docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/`
 2. **Create implementation plan**: Run `/plan` command to generate `plan.md` in the same feature folder
@@ -499,6 +501,10 @@ What is the change we're proposing and/or doing?
 ## Pre-Commit Documentation Gate
 
 **⚠️ MANDATORY: Documentation MUST be written or updated BEFORE committing code. This is a hard requirement — no commit should land without the corresponding docs entry.**
+
+### Requirement-Only Planning Exception
+
+For `/plan` without an existing specification, preserve the original supplied requirements and acceptance criteria in `plan.md` under **Requirements Source** and **Acceptance Criteria**; do not require or create `spec.md`. `/tasks` and `/assign-tasks` consume that plan source when no specification exists; keep acceptance criteria out of the slim task checklist. This exception overrides the spec prerequisite and mandatory spec-first sequence above and in the documentation checklist only for these planning artifacts. It does not authorize implementation, replace artifact review, waive required human approvals, or change any other documentation duties. The separate implementation-command supplied-task exception remains unchanged.
 
 ### Supplied-Task Exception
 

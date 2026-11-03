@@ -92,6 +92,28 @@ for (const layout of LAYOUTS) {
       'git commit -m', 'Mark Task Complete');
   });
 
+  test(`implement loop: ${layout} feature binds task-local inputs before each task loop`, () => {
+    const content = read(`${layout}/.claude/prompt-snippets/implement-feature.md`);
+    const task = content.slice(content.indexOf('For each task, in dependency order:'),
+      content.indexOf('5. **Feature Review**'));
+    assert.match(task, /bind the current task's original text unchanged, task-local acceptance criteria, and applicable real checks/);
+    assert.match(task, /implement\.md step 1/);
+    assert.match(task, /Do not use another task's criteria or require later tasks to pass/);
+    assert.match(task, /Keep the saved baseline unchanged/);
+    assertOrder(task, 'bind the current task', 'c. **Delivery loop for the task**');
+  });
+
+  test(`implement loop: ${layout} feature preserves and restores full-feature inputs for aggregate review`, () => {
+    const content = read(`${layout}/.claude/prompt-snippets/implement-feature.md`);
+    const setup = content.slice(0, content.indexOf('2. **Parallelization Analysis**'));
+    const aggregate = content.slice(content.indexOf('5. **Feature Review**'),
+      content.indexOf('6. **Create Pull Request**'));
+    assert.match(setup, /Preserve the original full-feature text, acceptance criteria, and real checks separately/);
+    assert.match(aggregate, /Restore the saved full-feature text, acceptance criteria, and real checks/);
+    assertOrder(aggregate, 'Restore the saved full-feature', 'Run implement.md steps 3, 4 and 5');
+    assert.match(aggregate, /against every requirement from step 1, not only the last task/);
+  });
+
   test(`implement loop: ${layout} implement-fixes pushes only after acceptance`, () => {
     assertOrder(read(`${layout}/.claude/prompt-snippets/implement-fixes.md`),
       '(implement.md)', 'git push -u origin');
