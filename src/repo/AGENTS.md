@@ -395,10 +395,14 @@ Documentation updates are **mandatory before committing** any feature or fix. Se
 - Reference `docs/constitution.md` for project principles and governance
 - Include all doc changes in the same commit/PR as the code
 
+**Supplied-task exception (`implement`, `implement-feature`, `implement-fixes` only):** the task supplied to these commands replaces the spec and plan prerequisites. Do not create or require `spec.md` or `plan.md` for the feature or fix unless the user asks for them. Every other applicable item in the [documentation checklist](.claude/rules-snippets/documentation.md) still applies, including the fix log, `CHANGELOG.md`, `docs/api/`, and `README.md`.
+
+**Requirement-only planning exception:** For `/plan` without an existing specification, preserve the original supplied requirements and acceptance criteria in `plan.md` under **Requirements Source** and **Acceptance Criteria**; do not require or create `spec.md`. `/tasks` and `/assign-tasks` consume that plan source when no specification exists; keep acceptance criteria out of the slim task checklist. This exception overrides the spec prerequisite and mandatory spec-first sequence above and in the documentation checklist only for these planning artifacts. It does not authorize implementation, replace artifact review, waive required human approvals, or change any other documentation duties. The separate implementation-command supplied-task exception remains unchanged.
+
 ## Contributing
 
 **Standards:** Follow {{FRAMEWORK}} and {{LANGUAGE}} best practices
-**Process:** Feature branch → spec/plan docs → tests → implementation → update docs → lint → build → PR
+**Process:** Feature branch → spec/plan docs (subject to the requirement-only planning and supplied-task exceptions above) → tests → implementation → update docs → lint → build → PR
 
 ## Related Documentation
 

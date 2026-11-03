@@ -1,6 +1,6 @@
 ---
 description: Implement bug fixes with proper tracking and validation
-allowed-tools: "Read, Write, Edit, Bash(*)"
+allowed-tools: "Read, Write, Edit, Bash(*), Task"
 argument-hint: "bug description or fix requirements"
 ---
 

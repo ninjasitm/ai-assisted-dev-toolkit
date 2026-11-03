@@ -1,6 +1,6 @@
 ---
 description: Create or update the project constitution
-tools: ["read", "search", "edit"]
+tools: ["read", "search", "edit", "agent"]
 argument-hint: "no arguments required"
 ---
 

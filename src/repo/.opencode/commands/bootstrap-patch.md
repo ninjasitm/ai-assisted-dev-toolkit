@@ -9,7 +9,7 @@ description: "Patch AI instructions by fetching updates from the toolkit repo an
 | Agent | When to use |
 |-------|-------------|
 | `fixer` | Standard patch — incremental changes to existing config |
-| `planner` | Complex patch — cross-cutting changes needing analysis first |
+| `reviewer` | Independent read-only review before approval and after apply |
 
 ## Arguments
 

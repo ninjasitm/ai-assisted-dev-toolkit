@@ -2,7 +2,7 @@ You are helping to create or update the project constitution at `docs/constituti
 
 ## Your Task
 
-1. **Load existing constitution** (if it exists) at `docs/constitution.md`.
+1. **Load existing constitution** (if it exists) at `docs/constitution.md`. Retain its original content for comparison during review.
 
 2. **Collect project information**:
    - Project name and description
@@ -24,6 +24,12 @@ You are helping to create or update the project constitution at `docs/constituti
    - Version follows semantic versioning
 
 5. **Save** the constitution to `docs/constitution.md`.
+
+6. **Review and accept the artifact** before reporting completion:
+   - The orchestrator dispatches an independent, read-only reviewer with the original request, gathered requirements, original constitution (or confirmation this is new), saved constitution, and validation results. Review the actual artifact for contradictions, unintended policy changes, and requirements coverage; return `VERDICT: PASS` or `VERDICT: CHANGES` with blocking findings and section references.
+   - Repair blocking findings within the agreed scope, repeat affected validation checks, and re-review the changed artifact independently. Repeat until PASS or blocked; unresolved policy decisions go to the user, not an invented amendment.
+   - Only the orchestrator accepts, after an independent PASS and evidence that every requirement and applicable validation check is satisfied. If an independent reviewer is unavailable, report BLOCKED; self-review cannot substitute for independent acceptance.
+   - Keep human/team approval and the constitution's amendment governance separate from artifact acceptance. This review adds no commit, push, or apply step.
 
 ## Constitution Template
 

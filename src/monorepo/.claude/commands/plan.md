@@ -1,6 +1,6 @@
 ---
 description: Create an implementation plan from a feature specification or requirement
-allowed-tools: "Read, Write, Edit, Bash(*)"
+allowed-tools: "Read, Write, Edit, Bash(*), Task"
 argument-hint: feature specification or requirement
 ---
 

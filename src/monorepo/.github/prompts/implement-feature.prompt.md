@@ -10,6 +10,6 @@ argument-hint: "feature specification or task list"
 | Agent | When to use |
 |-------|-------------|
 | `fixer` | Bounded feature work — spec is clear, files are known |
-| `feature-builder` | Complex feature — needs research, planning, and coordination |
+| `feature-builder` | Complex feature build — builder only; the orchestrator still runs the review |
 
 **CRITICAL: READ:** [.claude/prompt-snippets/implement-feature.md](../../.claude/prompt-snippets/implement-feature.md).

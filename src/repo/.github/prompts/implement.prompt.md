@@ -1,6 +1,6 @@
 ---
 description: Implement features based on a task list or specification
-tools: ["read", "search", "edit", "runInTerminal", "terminalLastCommand"]
+tools: ["read", "search", "edit", "runInTerminal", "terminalLastCommand", "agent"]
 argument-hint: "task list or specification"
 ---
 

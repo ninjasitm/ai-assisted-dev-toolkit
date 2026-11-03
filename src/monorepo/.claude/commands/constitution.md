@@ -1,7 +1,7 @@
 ---
 description: Create or update the project constitution defining core principles and guidelines
 argument-hint: "no arguments required"
-allowed-tools: "Read, Write, Edit, Bash(*)"
+allowed-tools: "Read, Write, Edit, Bash(*), Task"
 ---
 
 # Project Constitution
