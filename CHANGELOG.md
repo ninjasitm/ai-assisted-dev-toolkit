@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- A lightweight copy-paste universal installation prompt at the top of the README, pointing to full instructions in `INSTALL.md` for Claude Code, Codex, Replit, Lovable, and other AI coding tools. It reuses the CLI and bootstrap handoff, preserves existing configuration, and reports hosted-tool capability and activation limits.
 - `.nitm/retired.json`: a project-owned list of template paths that `install`, `patch` and `upgrade` must never re-add. Matching is exact and case-sensitive (`AGENTS.md` is not `agents.md`); `./`, doubled and inner `/` are normalised, and `..` or absolute paths are refused. Each entry has a `path`, a `reason` and a `date` (YYYY-MM-DD); a directory path covers every file under it. An optional `trackers` list overrides tracker detection (`[]` for none). The CLI reads this file and never writes it; invalid JSON stops `install`, `patch`, `upgrade` and `doctor` before anything is written, and for `upgrade` that includes the saved selection.
 - `bin/relevance.js` holds the retirement, project-detection, relevance and thin-wrapper logic. Tests: `test/relevance.test.js` and `test/relevance-patch.test.js`.
 - `scripts/check-parity.sh` fails when a bootstrap-facing file recommends a wildcard skill install (`skills add … --skill '*'`).
