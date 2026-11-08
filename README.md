@@ -14,6 +14,21 @@ This repository serves as a **template source** for AI development instructions 
 - **Native Codex setup** using `AGENTS.md`, `.agents/skills/`, and an optional comment-only `.codex/config.toml`
 - **Skills recommendations** from [skills.sh](https://skills.sh/) for enhanced AI capabilities
 
+## Quick start: paste into your AI tool
+
+Open your project in Claude Code, Codex, Replit, Lovable, Cursor, Copilot, OpenCode, or another AI coding tool and paste the prompt below. No toolkit slash command is needed.
+
+```text
+Install and configure the NITM AI-Assisted Development Toolkit in this project.
+Read and follow the installation instructions at:
+https://github.com/ninjasitm/ai-assisted-dev-toolkit/blob/main/INSTALL.md
+If you cannot access that file, ask me to paste its contents before proceeding.
+```
+
+Full instructions, prerequisites, and hosted-tool limitations: [INSTALL.md](INSTALL.md).
+
+For manual copying instead, see [Usage](#usage). For installer options and existing installations, see [CLI (npx)](#cli-npx).
+
 ## Repository Structure
 
 ```
