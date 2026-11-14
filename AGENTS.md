@@ -156,12 +156,18 @@ Use the appropriate sub-agents when the task benefits from specialized expertise
 2. **Provide context** — Reference the relevant rules-snippets or prompt-snippets
 3. **Set constraints** — Use tool restrictions for read-only agents (researcher, reviewer)
 4. **Chain when needed** — Planner → Developer → Reviewer for complex changes
+5. **Delegate by default** — Delegate substantial, safely separable discovery, implementation, test, and review work. The coordinator keeps outcome responsibility; trivial or context-heavy work stays direct.
+6. **Batch by dependency** — Build the dependency graph. Dispatch ready tasks with exclusive writable scopes as one parallel batch; dependent or shared-write tasks run sequentially. Reconcile each result before dispatching its dependents. `[P]` markers are optional.
+7. **Never end silently** — During active multi-step execution, end each turn as DONE, WAITING (pending task handle and resume trigger), or BLOCKED / NEEDS-DECISION (what completed, what remains, exact next user action). Dispatch or partial progress is not completion. Spec and plan confirmations remain mandatory human steps; final approval, escalation, and merge behavior follow the job's `APPROVAL_MODE` and `MERGE_MODE`. Delegation or autonomy alone never satisfies a gate.
+8. **Autonomy with blockers** — Work autonomously within the approved goal, scope, and permissions. A blocker pauses only its task and dependents: record it, defer non-global questions, and continue independent authorized work. Stop for the user only when no authorized work remains or a mandatory gate applies, and ask through the harness's native question tool when one exists.
+
+Full workflow, including resume and checkpoint rules: `src/repo/.claude/rules-snippets/subagent-workflow.md`.
 
 ## Clarification & Alignment Guidelines
 
 ### 1. Proactive Clarification
 
-- **Identify Ambiguity**: Stop and ask if a task lacks clear acceptance criteria, inputs, or expected outputs.
+- **Identify Ambiguity**: Ask a targeted question if a task lacks clear acceptance criteria, inputs, or expected outputs. It blocks only that task and its dependents; independent work with clear requirements continues (see Autonomy with blockers, item 8).
 - **Resolve Conflicts**: Flag conflicting instructions between the user prompt, existing code, and documentation before writing code.
 - **Expose Assumptions**: State your assumptions clearly and ask for validation before proceeding with high-impact changes.
 

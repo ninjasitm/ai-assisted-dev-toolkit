@@ -71,41 +71,72 @@ When dispatching implementation tasks, match the specialist to the domain:
 
 ## Orchestration Patterns
 
-### Sequential (default)
+### Delegation Default
 
-Tasks with dependencies are implemented one at a time in dependency order. Each must pass review before the next begins.
+- **Delegate by default.** Hand substantial, safely separable discovery, implementation, test, and review work to subagents. Use a single agent only for trivial work, as listed under "When to Use a Single Agent Directly".
+- **The coordinator keeps outcome responsibility.** It defines each task's scope, reconciles every result, makes sure verification runs, and reports the final outcome. A subagent reporting success is not the outcome.
+- **Work directly only** for trivial changes (one small edit, a quick answer) or when the context is too heavy to hand off cheaply, such as work that depends on large context the coordinator already holds. Say why when you skip delegation.
+- **No delegation capability.** If the host offers no subagent dispatch, say so explicitly in the report. Do permitted direct work where it is safe. Never self-review in place of an independent gate: record the gate as pending and end as BLOCKED or WAITING.
 
-### Parallel
+### Dependency Graph and Parallel Batches (REQUIRED before dispatching)
 
-Independent tasks can be dispatched to multiple specialist subagents simultaneously. Use when tasks don't share files or state.
+Before dispatching any task list, the orchestrator builds the dependency graph. No `[P]` marker is required. If a task list has `[P]` markers, treat them as hints and verify them.
 
-### Parallelization Analysis (REQUIRED before dispatching)
+1. **Read and write sets.** For each task, list the files, directories, or packages it reads and writes.
+2. **Exclusive writable scopes.** Each writer gets a scope no other concurrent task writes. Two tasks that share any writable path are dependent. A task whose write set is unknown or undeclared runs serially until its scope is established from the changed-file list.
+3. **Data dependencies.** A task that reads what another task writes waits for that task.
+4. **Ready batch.** Tasks whose dependencies are satisfied and whose writable scopes are disjoint form one batch. Dispatch the whole batch together. Dependent and shared-write tasks run in later batches, one at a time.
+5. **Route by domain.** Backend tasks → Backend Architect; frontend → Frontend Developer; API contracts → API Specialist; docs → Documenter; cross-cutting → Implementer.
+6. **Track handles.** Record each dispatched task's handle, agent, writable scope, and status until its result is reconciled.
+7. **Reconcile before dependents.** Inspect each result (changed files, summary, verification) before dispatching any task that depends on it. If a result changed a path the graph did not expect, stop the affected tasks and re-plan the batch.
+8. **Continue the chain.** When a batch's results are reconciled, compute the next ready batch and dispatch it. Do not wait for the user unless a mandatory gate applies or no authorized, unblocked work remains (see Autonomous Execution and Blockers).
 
-Before executing any task list, the orchestrator MUST run this analysis:
-
-1. **Scan for `[P]` markers** in the task list — these are pre-identified parallel candidates
-   - If no `[P]` markers exist, do **not** assume sequential-only work. Treat all tasks as candidates and infer parallel-safe groups via the independence test.
-2. **Build a dependency graph**: For each task, list which files it reads and writes
-3. **Apply the independence test**:
-   - Tasks that write to **different files** with **no shared state** → parallel-safe
-   - Tasks that share any writable file → sequential (dependency edge)
-   - Tasks where one reads what another writes → sequential (data dependency)
-4. **Group by domain** for specialist routing:
-   - Backend tasks → Backend Architect
-   - Frontend tasks → Frontend Developer
-   - API contract tasks → API Specialist
-   - Documentation tasks → Documenter
-   - Cross-cutting → Implementer
-5. **Dispatch decision**:
-   - **3+ independent tasks** → Use `dispatching-parallel-agents` skill, one agent per task
-   - **2 independent tasks** → Parallel dispatch (simpler coordination)
-   - **All tasks dependent** → Sequential with `subagent-driven-development` skill
-   - **Mixed** → Dispatch independent group in parallel, then continue sequential chain
+**Dispatch shape:** 3+ independent tasks → `dispatching-parallel-agents`, one agent per task. 2 independent tasks → parallel dispatch. All tasks dependent → sequential with `subagent-driven-development`. Mixed → run each ready batch in parallel, then continue the sequential chain.
 
 ```
-Example: 5 tasks → T1 (setup) → T2 [P] (backend API) + T3 [P] (frontend UI) + T4 [P] (docs) → T5 (integration tests)
-         Dispatch: T1 sequential → T2+T3+T4 parallel → T5 sequential
+Example: 5 tasks → T1 (setup) → T2 (backend API) + T3 (frontend UI) + T4 (docs) → T5 (integration tests)
+         Batches: [T1] → [T2, T3, T4] → [T5]
+         T2, T3, and T4 run together only because their writable scopes are disjoint.
 ```
+
+## Turn Completion and Waiting
+
+During active multi-step execution, never end a turn silently, and never treat dispatch or partial progress as completion. End each such turn in exactly one of these states. Informational answers need no status line:
+
+- **DONE:** the requested work is complete and verified under Quality Gates. State the outcome and the validation that ran.
+- **WAITING:** name each pending task (handle and agent) and its resume trigger, such as a subagent notification or a user reply at a named gate. List what completed and what remains.
+- **BLOCKED / NEEDS-DECISION:** state the blocker or decision, what completed, what remains, and the exact next user action.
+
+Resume mechanics depend on the host:
+
+- When the host notifies on subagent completion, reconcile the notified result and continue with the next eligible batch. Check each handle once per notification.
+- When the host cannot resume in the background, do not claim that it will. Either run the batch in the foreground and collect the results within the turn, or end as WAITING and say that the user must send a message to resume, naming the exact step.
+- Do not busy-poll. Never loop on status checks.
+
+## Autonomous Execution and Blockers
+
+During multi-step execution, work autonomously within the approved goal, scope, and permissions. Autonomy grants no extra authority.
+
+- **A blocker pauses only the affected task and its dependents.** Independent ready work within authority continues in the next batch.
+- **Record each unresolved blocker immediately** in the existing progress record or the conversation: the affected task, what is needed and why, safe options or a targeted input, and the next action. Keep it visible in progress updates and the final report. Never drop it silently.
+- **Defer non-global blockers** as follow-up questions while work can safely advance.
+- **Stop for user input** only when no authorized, unblocked work remains, or when a mandatory approval, security, or permission gate prevents the remaining work. Agents still running are WAITING, not blocked.
+- **Ask clearly.** Present the consolidated outstanding questions through the harness's native question or clarification tool when one is available. Do not assume a tool name or support. Without one, give numbered options or a fill-in block in chat.
+- **Answers can arrive early.** Do not require a blocking tool prompt while independent work continues. Report deferred questions in progress updates.
+- **Never** silently choose a consequential scope or requirement change, bypass a required human approval, or mark a partially blocked task DONE.
+
+## Long-Session Checkpoint
+
+For sessions that span several batches or a context reset:
+
+- Use existing progress records only: a progress section the plan or task list already has, Factory job notes, or task records, when they exist. Keep the approved goal, current step, active task handles, blocker, and next action in those notes or in the conversation.
+- Never add fields to structured files such as Factory `job.json`, never rewrite accepted requirements or spec/plan text, and never replace an authoritative source with a summary.
+- If no such records exist, a short checkpoint in the conversation is enough. Do not create new files for trivial work.
+- On resume, reread the accepted source (spec, plan, or task text) instead of relying on the checkpoint summary, and check the working tree before dispatching anything.
+
+## Factory Approvals
+
+Spec and plan confirmations remain mandatory human steps; final approval, escalation, and merge behavior follow the job's `APPROVAL_MODE` and `MERGE_MODE`. Delegation, batching, autonomy, and subagent sign-offs never satisfy spec or plan human confirmation, or human final approval when `APPROVAL_MODE=human`. Mode-defined approver behavior is preserved. Stop at the gate and report it as WAITING or BLOCKED.
 
 ## Quality Gates
 
@@ -122,7 +153,7 @@ When a subagent stops on a model capacity, quota, session limit, or reset-wait f
 - **Model order, one attempt each.** Try the next model in the configured fallback order for that agent. When the order is exhausted, try the harness's known available default, unless it was already tried. Then stop; do not cycle back.
 - **Never** retry the same unavailable model, and never wait blindly for a quota reset.
 - **Only supported switching.** Change the model through per-call selection the runtime supports, using only fallback models and defaults that are already configured or exposed. Do not invent model IDs, and do not edit persistent or global config, accounts, or billing.
-- **Blocker when nothing is left.** If no configured fallback or default is available, or per-call selection is unsupported, stop, report the blocker, and ask the user which model to use.
+- **Blocker when nothing is left.** If no configured fallback or default is available, or per-call selection is unsupported, the affected task is reported BLOCKED with the question of which model to use. Its dependents stop; independent authorized work continues (see Autonomous Execution and Blockers).
 - **Inspect before resuming.** Check what the failed attempt left in the working tree, then resume from that partial work. Never run two writers on the same files at once.
 - **Keep review independent.** The reviewer stays a separate agent from the builder, even when the builder moves to a fallback model.
 - **Disclose.** The final report names the original model, each fallback attempted, and the model that finished the work.

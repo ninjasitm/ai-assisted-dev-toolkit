@@ -139,7 +139,7 @@ For full-stack or cross-cutting features, dispatch domain specialists in paralle
 | Multi-subsystem fix | Backend Architect (service A) + Backend Architect (service B) | Independent service bugs                                     |
 | Cross-app monorepo  | Specialist per app                                            | Same feature in `apps/web` + `apps/api` (no shared packages) |
 
-**Safe to parallelize:** Agents touch different files/directories with no shared state.
+**Safe to parallelize:** Agents have exclusive writable scopes (no shared files/directories) and no shared state. Build the dependency graph first; see `.claude/rules-snippets/subagent-workflow.md`.
 **Still sequential:** Tasks that share files, database migrations, or API contracts that one depends on.
 
 ## When NOT to Use

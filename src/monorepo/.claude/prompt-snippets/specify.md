@@ -18,8 +18,15 @@ You are helping to create a feature specification based on the user's descriptio
    - Use the template structure below
    - Be specific and actionable
 
-4. **Output**:
-   - Confirm specification created
+4. **Review and Accept the Specification**:
+   - Dispatch an independent, read-only reviewer with the original request (verbatim, with any later user amendments), the feature description, and `spec.md`. Use the goal-fit brief (read and follow [fit-review](../rules-snippets/fit-review.md)): Oracle when available read-only, otherwise a separate reviewer; the author's self-review does not count.
+   - The reviewer traces requirements and acceptance criteria both ways against the original request, checks that each criterion is testable, and returns `VERDICT: PASS` or `VERDICT: CHANGES` with blocking findings and section references. A finding that needs a user decision is blocking, marked `requires user decision; do not auto-repair`; stop and ask the user.
+   - Repair blocking findings within the agreed scope, repeat the affected checks, and re-review the changed spec independently. Repeat until PASS or blocked, or until the user decides. Stop as BLOCKED with the reason when a repair changes nothing or the same finding returns unchanged. A goal change from the review is a user decision, not a repair. Open decisions block PASS until the user resolves them.
+   - Only the orchestrator accepts, after an independent PASS. If an independent reviewer is unavailable, report BLOCKED; self-review cannot substitute for independent acceptance.
+   - Acceptance is separate from human approval: the human still confirms the spec.
+
+5. **Output** (only after artifact acceptance):
+   - Confirm specification created and accepted
    - Summarize key requirements
    - Suggest next step: `/plan` to create implementation plan
 

@@ -120,6 +120,105 @@ for (const layout of LAYOUTS) {
   });
 }
 
+// Evidence freshness, integrated final checks, unknown write sets, ad-hoc routing, user amendments, and the
+// prompt-gate disclaimer. Each check pins one safeguard's wording in both layouts.
+for (const layout of LAYOUTS) {
+  const implement = `${layout}/.claude/prompt-snippets/implement.md`;
+  const feature = `${layout}/.claude/prompt-snippets/implement-feature.md`;
+
+  test(`implement loop: ${layout} acceptance evidence must match the accepted tree and invalidation is scoped`, () => {
+    const content = read(implement);
+    assert.match(content, /\*\*Evidence freshness\.\*\*/);
+    assert.match(content, /invalidates the evidence it affects: rerun the checks covering those ACs and re-review the changed diff/);
+    assert.match(content, /Reuse evidence that the edit cannot affect/);
+    assert.match(content, /If unsure whether an edit affects a check, treat it as affected/);
+    assert.match(content, /Do not rerun everything for an unrelated edit/);
+  });
+
+  test(`implement loop: ${layout} integrated final regression checks run once and never invent commands`, () => {
+    const content = read(implement);
+    assert.match(content, /Checks are scoped: each repair and each task runs the checks for its own ACs/);
+    assert.match(content, /After all writers are reconciled, run the project's full required regression checks once/);
+    assert.match(content, /Use only commands the project defines; do not invent them/);
+    assert.match(content, /A failed required check is a repair/);
+    assert.match(content, /cannot run is BLOCKED/);
+    assert.match(read(feature), /once on the final integrated tree/);
+    assert.match(read(feature), /Any edit after this run requires revalidation/);
+  });
+
+  test(`implement loop: ${layout} unknown or undeclared write sets run serially in both loop and feature`, () => {
+    assert.match(read(implement), /write set is unknown or undeclared runs serially/);
+    assert.match(read(feature), /Tasks with an unknown or undeclared write set → keep sequential/);
+  });
+
+  test(`implement loop: ${layout} nontrivial ad-hoc changes route through the loop, direct work needs an independent reviewer`, () => {
+    const content = read(implement);
+    assert.match(content, /Nontrivial ad-hoc code changes outside these commands follow the same loop/);
+    assert.match(content, /Context-heavy nontrivial work may be built directly, but acceptance still needs an independent reviewer; without one it is BLOCKED/);
+    assert.match(content, /Trivial changes \(typos, one-line edits\) stay outside this loop/);
+    assert.doesNotMatch(content, /Trivial or context-heavy work/);
+  });
+
+  test(`implement loop: ${layout} user amendments join the requirement; goals are not "task text only"`, () => {
+    const content = read(implement);
+    assert.match(content, /Explicit user amendments and answers given during the loop are part of the requirement/);
+    assert.match(content, /record each one as a dated entry beside the original text \(do not rewrite it\)/);
+    assert.match(content, /Goals are the original supplied task plus the user amendments recorded in step 1/);
+    assert.doesNotMatch(content, /Goals are the supplied task text only/);
+  });
+
+  test(`implement loop: ${layout} clarification is task-scoped; only a whole-request gap stops the run`, () => {
+    const content = read(implement);
+    assert.doesNotMatch(content, /and wait\./, 'blocking "ask and wait" wording must be gone');
+    assert.match(content, /Ask one targeted question with its options/);
+    assert.match(content, /A task-scoped question blocks only that task and its dependents/);
+    assert.match(content, /independent tasks with clear requirements continue/);
+    assert.match(content, /If the whole request is unclear, stop and ask before any build/);
+    assert.match(content, /Autonomous Execution and Blockers/);
+  });
+
+  test(`implement loop: ${layout} missing check, decision, and reviewer gaps scope to the affected work, not an unconditional stop`, () => {
+    const content = read(implement);
+    for (const stale of [
+      /Stop and ask the user for the command/,
+      /Stop, report `BLOCKED` with the blocker/,
+      /Stop, report `NOT ACCEPTED: needs decision`/,
+      /Report `BLOCKED`, and stop\./,
+    ]) {
+      assert.doesNotMatch(content, stale, `unconditional stop must be gone: ${stale}`);
+    }
+    assert.match(content, /It blocks acceptance of the affected task and of any aggregate run that needs it/);
+    assert.match(content, /Ask the user for the command as one targeted question/);
+    assert.match(content, /Independent tasks whose checks do not depend on the gap continue/);
+    assert.match(content, /Work that depends on it stops; independent authorized work with its own checks and reviewer continues/);
+    assert.match(content, /Stop work on that task and its dependents, report `NOT ACCEPTED: needs decision`/);
+  });
+
+  test(`implement loop: ${layout} missing reviewer blocks acceptance only, never all discovery or build`, () => {
+    const content = read(implement);
+    assert.match(content, /No independent reviewer means nothing is accepted/);
+    assert.match(content, /Without an independent reviewer nothing is accepted/);
+    assert.match(content, /discovery and builds that do not need acceptance may continue and be reported as awaiting review/);
+    assert.match(content, /Do not treat all work as blocked when independent discovery or build can proceed/);
+    assert.match(content, /Never mark blocked work accepted/);
+  });
+
+  test(`implement loop: ${layout} the run stops only when no authorized work remains or a mandatory gate applies`, () => {
+    const content = read(implement);
+    assert.match(content, /Stop the run only when no authorized work remains or a mandatory approval, security, or permission gate applies/);
+    assert.match(content, /Mandatory approval, security, and permission gates are never bypassed/);
+    assert.match(content, /apply to the affected work, or to the whole run when the gate is global/);
+    assert.match(content, /A review PASS alone never accepts/);
+    assert.match(content, /an independent reviewer produced the verdict/);
+  });
+
+  test(`implement loop: ${layout} prompt gates are instructions, with no automatic-resume guarantee`, () => {
+    const content = read(implement);
+    assert.match(content, /prompt instructions, not host enforcement/);
+    assert.match(content, /does not guarantee automatic resume/);
+  });
+}
+
 // No mandatory pre-build planning gate: the supplied task is the requirement. Spec and plan files are
 // optional context, so the shared loop and the feature snippet must not require them before a build.
 for (const layout of LAYOUTS) {
@@ -139,8 +238,8 @@ for (const layout of LAYOUTS) {
     const content = read(`${layout}/.claude/prompt-snippets/implement.md`);
     assert.ok(content.includes('**Repair (back to step 2):**'), 'repair must loop back to step 2');
     assertOrder(content, '**Repair (back to step 2):**', '**Accept (exit):**');
-    assert.ok(content.includes('**Blocked (exit):**'), 'blocked exit missing');
-    assert.ok(content.includes('**Needs user decision (exit):**'), 'needs-decision exit missing');
+    assert.ok(content.includes('**Blocked (exit for the affected work):**'), 'blocked exit missing');
+    assert.ok(content.includes('**Needs user decision (exit for the affected work):**'), 'needs-decision exit missing');
   });
 }
 

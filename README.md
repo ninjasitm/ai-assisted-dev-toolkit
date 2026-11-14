@@ -589,6 +589,11 @@ The coordinator decides when to delegate. You don't need to manually invoke suba
 | **Frontend Developer** | Domain      | read, search, edit, terminal | `true`           | UI components and frontend performance        |
 
 **Coordinator agents** (Feature Builder, TDD) appear in the agents dropdown and orchestrate worker agents.
+
+For substantial work, coordinators delegate by default and dispatch ready, independent tasks in parallel batches with exclusive writer scopes. They reconcile results before dependent work and report whether execution is complete, waiting, or blocked, including the next action. Resume checkpoints preserve progress without replacing approved requirements. Background continuation depends on the host; these instructions cannot recover a crashed or disconnected session.
+
+Lightweight swarm-style safeguards reuse the existing agents and delivery loop, including non-trivial ad-hoc code changes. Unknown write scopes run serially. Edits invalidate affected checks and review evidence; acceptance needs current evidence and independent approval, plus applicable project-defined integrated checks on the final tree. These gates are instructions, not runtime enforcement. No Swarm plugin or additional configuration is installed.
+
 **Worker agents** (`user-invocable: false`) are only accessible as subagents — they don't appear in the dropdown.
 **Domain agents** (Admin Portal, API Specialist, Backend Architect, Documenter, Frontend Developer) are user-invocable specialists for specific development domains.
 **Researcher** is both user-invocable and usable as a subagent.
@@ -723,6 +728,10 @@ It runs alongside Feature Builder and TDD and does not replace them. Nothing run
 | `/factory prune [--all] [--abandoned] [--dry-run]` | Permanently delete closed jobs from `factory/jobs/` and `factory/archive/`, after one confirmation. By default only `merged` jobs (same 7-day age rule as archive; `--all` drops the age limit). `--abandoned` also deletes `abandoned` jobs. Open jobs and `docs/features/` are never touched |
 
 **Two gates are mandatory.** Every job stops at `awaiting-spec` after the spec, and at `awaiting-plan` after the plan. At the spec gate you confirm the spec or request changes. At the plan gate you review the tasks, the size, the tracking proposal, and the build mode, then confirm or request changes. Leave either gate for later with `/factory start <job-id>`. Nothing is ticketed or built before you confirm the plan.
+
+Before these approvals, an independent, read-only Oracle (when available) or reviewer assesses goal fit, scope, unnecessary complexity, and proportional SOLID/SRP concerns. `/plan` and `/specify` use the same assessment. Changed or resumed artifacts are reassessed; unresolved findings or unavailable independent review block acceptance, not discussion with the user. Review never substitutes for your approval or authorizes extra scope.
+
+Single-session role switching, including the Codex fallback, cannot satisfy independent goal-fit review: those gates stay blocked until an independent reviewer is available.
 
 **The builder also writes `qa.md`.** It lists how to run the feature, numbered manual checks tied to the acceptance criteria, and what the automated tests do not cover. The orchestrator shows it before approval as suggested checks. It is not a gate.
 

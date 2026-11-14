@@ -121,7 +121,7 @@ const KNOWN_HISTORICAL = {
 const DRY_RUN_UPGRADE_MIN = '5.0.1';
 // First release whose patch and install honour .nitm/retired.json and the relevance plan. Upgrade refuses
 // older targets while that file has entries or a tracker override, because those targets would ignore it.
-// Set to the version that ships this change; keep in step with the CHANGELOG [Unreleased] release.
+// First supported release: 5.2.0.
 const RELEVANCE_MIN = '5.2.0';
 const VERSION_RE = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/;
 

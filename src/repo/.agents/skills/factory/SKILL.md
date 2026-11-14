@@ -59,7 +59,7 @@ factory/
   jobs/                      runtime state, ignored by git
     <NNN-slug>/
       job.json               orchestrator only; rewrite the whole file
-      intake.md              you, from the intake questions and answers (only when asked)
+      intake.md              you: the original request verbatim under `## Original request`, the questions and answers (when asked), and `## Baseline confirmed` (when needed)
       spec-<k>.md            you, from the operator's change request at the spec gate
       plan-<k>.md            you, from the operator's change request at the plan gate
       build.md               builder; cumulative round log
@@ -147,7 +147,7 @@ A job is **closed** when its stage is `merged` or `abandoned`. Every other job i
    2. Make changes: the operator types them.
 
    Changes → revise the Q&A with the operator's text, show it, and ask again. Nothing is created until the operator picks 1.
-4. **Continue as Start.** Treat the answers as clarifications of the request. Run Start from step 1 with the request text. Once the job folder exists (Start step 4), write `factory/jobs/<id>/intake.md` with the questions as asked and the answers, verbatim, one question and answer each. Skip the file when nothing was asked. The spec writer reads it (paths block). If Start resumes an open job instead of creating one, say the answers were not applied. Changes after the spec go through the spec gate, the plan gate, or `/factory rework`.
+4. **Continue as Start.** Treat the answers as clarifications of the request. Run Start from step 1 with the request text. Once the job folder exists (Start step 4), add the questions as asked and the answers to `factory/jobs/<id>/intake.md`, verbatim, one question and answer each. Skip this when nothing was asked. The spec writer reads it (paths block). If Start resumes an open job instead of creating one, say the answers were not applied. Changes after the spec go through the spec gate, the plan gate, or `/factory rework`.
 
 `--in-place` on the command, or the operator's answer saying so, sets `worktree` to `false` on the new job (see In-place mode).
 
@@ -188,9 +188,9 @@ Resume by stage:
 | Stage | Resume action |
 | --- | --- |
 | `spec` | Rerun `planner` in spec mode (brief `roles/spec.md`), then show the spec gate |
-| `awaiting-spec` | Show the spec gate |
+| `awaiting-spec` | Show the spec gate (it runs the fit review first) |
 | `plan` | Rerun `planner` in plan mode (brief `roles/spec.md`), then show the plan gate |
-| `awaiting-plan` | Show the plan gate |
+| `awaiting-plan` | Show the plan gate (it runs the fit review first) |
 | `build` | Rerun `implementer` (brief `roles/build.md`) in the mode the files call for: rework if a `rework-<k>.md` is newer than `build.md`, repair if the last review round has `CHANGES`, otherwise build |
 | `review` | Rerun the review round `round` |
 | `approve` | Rerun the approval (`reviewer` in approval mode, brief `roles/approve.md`) |
@@ -212,7 +212,7 @@ A job with no work started (stage before `build`, so no build has begun and no `
 3. Slug = the feature folder name without its key prefix (`onboarding-bootstrap` for `PROJ-1234-onboarding-bootstrap`). Stable across the key rename.
 4. `mkdir factory/jobs/<NNN-slug>` (no `-p`). If it already exists, bump `NNN` and retry. `mkdir` without `-p` is the claim.
 5. Write `job.json` with stage `spec`, `feature_dir`, `issue_key` (the key from Resolve, or `null`), `size` `unclear`, `tracking` `none`, `worktree` (`false` for `--in-place` or when the operator asked for it at intake, `true` otherwise), and `worktree_path` `null`.
-6. If intake asked questions, write `intake.md` (see Intake).
+6. Write `intake.md` (see Intake): when the request text was typed, the original request verbatim under `## Original request`. For a key or slug start, write no original request section; the Fit review baseline step asks the operator for it. Add the questions and answers when intake asked.
 
 ## Spec
 
@@ -220,18 +220,19 @@ Set stage `spec`. Dispatch `planner` in spec mode (brief `roles/spec.md`) with t
 
 ## Spec gate (mandatory)
 
-Runs in every `APPROVAL_MODE`, before any plan is written. Show the operator in chat:
+Runs in every `APPROVAL_MODE`, before any plan is written. Every time the gate is shown (first time, after each change request, and on resume), run the fit review first (see Fit review). Show the operator in chat:
 
 - The spec's Summary, the number of acceptance criteria, each open `[PRODUCT DECISION]` item, and Open Questions.
+- The fit review's verdict, its blocking findings, and its decisions for the user.
 
 Then ask in chat, as a numbered choice:
 
-1. Confirm the spec. Offered only when no `[PRODUCT DECISION]` item is open.
+1. Confirm the spec. Offered only when no `[PRODUCT DECISION]` item is open and the current fit review is an explicit `VERDICT: PASS`.
 2. Request changes: the operator types the change. Each open `[PRODUCT DECISION]` item needs an answer in the change text.
 
 Handle the answer:
 
-- **Confirm** → continue to Plan. If decision items are still open, do not continue: list them and ask again.
+- **Confirm** → continue to Plan. If decision items are still open, or the current fit review is not an explicit `VERDICT: PASS`, do not continue: list them and ask again.
 - **Request changes:** write the operator's text verbatim to `spec-<k>.md` in the job folder (`k` = next free index). Set stage `spec`, rerun `planner` in spec mode (brief `roles/spec.md`) with the paths block and `spec-<k>.md`. It updates `spec.md`. Set stage `awaiting-spec` and show the gate again. The spec writer records each answered decision as `[DECIDED] <answer>`.
 
 If the session ends at this gate, `/factory start <job-id|slug|KEY>` shows it again (see Start).
@@ -247,21 +248,22 @@ Read the `**Size:**` line of `plan.md`:
 
 Proposed tracking: `tracked` only when size is `large` and the project's `AGENTS.md` Project Management section names a real tracker. Unfilled placeholders mean no tracker. Otherwise propose `none`.
 
-Set stage `awaiting-plan` and show the plan gate.
+Set stage `awaiting-plan`. The plan gate runs the fit review before it is shown.
 
 ## Plan gate (mandatory)
 
-Every job stops at `awaiting-plan` before anything is ticketed or built, in every `APPROVAL_MODE`. Show the operator in chat:
+Every job stops at `awaiting-plan` before anything is ticketed or built, in every `APPROVAL_MODE`. Every time the gate is shown (first time, after each change request, and on resume), run the fit review first (see Fit review), against the goal sources (see Fit review), the accepted spec, and the plan. Show the operator in chat:
 
 - The plan's approach and steps from `plan.md`.
 - The size and the reason from `plan.md`.
+- The fit review's verdict, its blocking findings, and its decisions for the user.
 - For large work, the lines of `tasks.md`.
 - The tracking proposal: create tickets in the tracker under the parent (the job's key, or a new parent), or no tickets (`tasks.md` only), or no tickets at all.
 - The build mode: `worktree` (default) or `in-place`, as set in `job.json`.
 
 Then ask in chat, as a numbered choice:
 
-1. Confirm the plan.
+1. Confirm the plan. Offered only when the current fit review is an explicit `VERDICT: PASS`.
 2. Request changes: the operator types the change.
 3. If size is `unclear`: answer `small` or `large`.
 4. Change tracking: `tracked` or `none`.
@@ -269,13 +271,32 @@ Then ask in chat, as a numbered choice:
 
 Handle the answer:
 
-- **Confirm** with size known → continue to Tracking. If size is still `unclear`, ask again.
+- **Confirm** with size known → continue to Tracking. If size is still `unclear`, or the current fit review is not an explicit `VERDICT: PASS`, ask again.
 - **Request changes:** write the operator's text verbatim to `plan-<k>.md` (`k` = next free index). Set stage `plan`, rerun `planner` in plan mode (brief `roles/spec.md`) with the paths block and `plan-<k>.md`. Show the gate again. If the change touches the spec itself, send it through the spec gate instead: write it to `spec-<k>.md`, rerun spec mode, show the spec gate, then plan again.
 - **Change size only:** the operator's answer to choice 3 sets `size` in `job.json`. The plan does not change.
 - **Change tracking only:** update `tracking` in `job.json`. Do not rerun the spec writer.
 - **Change build mode only:** update `worktree` in `job.json`. Do not rerun the spec writer. In-place is checked when the build starts (see In-place mode).
 
 If the session ends at the gate, nothing is lost. `/factory start <job-id|slug|KEY>` returns to this gate (see Start).
+
+## Fit review (spec and plan gates)
+
+Read and follow the goal-fit brief: [fit-review](../../../.claude/rules-snippets/fit-review.md). It is a read-only goal-fit review, separate from the reviewer lenses. It runs every time a spec or plan gate is shown: after each planner run, after each change request, after each repair, and on resume.
+
+- **Baseline first.** No review runs without the original request. Check `intake.md` for an `## Original request` section or a `## Baseline confirmed` section. If neither exists (a key or slug start, a legacy job, or a sparse one), the orchestrator promotes nothing. It shows the candidate sources it found (the existing `intake.md`, the tracker description when `issue_key` is set, and the existing `spec.md`), each labelled as a candidate and not a requirement. It asks the operator, as a numbered choice: (1) confirm one candidate as the original request, or (2) paste the original request. It writes the confirmed text to `intake.md` under `## Baseline confirmed`, naming its source. Until then the gate reports `NEEDS-DECISION: baseline missing`, and Confirm is not offered.
+- **Goal sources in every dispatch.** Pass them as text, not as paths alone: the verbatim original request (from `## Original request` or `## Baseline confirmed`), and every explicit amendment (the intake answers, and the operator's `spec-<k>.md`, `plan-<k>.md`, and `rework-<k>.md`). For a plan review, also pass the accepted spec. The accepted spec and plan are traced against these; they are not goal authority. A slug, a key, a tracker title, the existing spec on its own, and any reviewer finding are never goal sources.
+- **Reviewer.** Dispatch `oracle` when the harness has it configured read-only. Otherwise dispatch `reviewer` in fresh context. The task line is `goal-fit review: spec` or `goal-fit review: plan`, then the paths block, the goal sources, and the brief. Give the reviewer the artifacts, never the planner's summary.
+- **Independence.** The planner's own output, the orchestrator's reading, and a single session playing every role do not count. With no independent reviewer, the gate reports `BLOCKED: no independent reviewer`, shows the artifact, and does not offer Confirm. Request changes and abandon stay available.
+- **Reply.** The first line decides:
+  - `VERDICT: PASS`: the gate may offer Confirm.
+  - `VERDICT: CHANGES` with a finding marked `requires user decision; do not auto-repair`: stop as `NEEDS-DECISION`. Show the marked findings with the gate. Confirm is not offered. Nothing is repaired until the user answers with an explicit amendment (a change request), and the artifact is reviewed again.
+  - `VERDICT: CHANGES` with only repairable findings: run the repair loop below.
+  - No valid first line: re-dispatch once. If it still has none, set `needs-human` with `failed_stage` `spec` or `plan`, as for any spec or plan agent that returns no output.
+- **Repair loop.** On `CHANGES` with only repairable findings, pass the blocking findings to the planner as dispatch context under the heading `Fit repair findings (reviewer findings, not operator requests, not goal authority)`. Write no `spec-<k>.md`, `plan-<k>.md`, or fit file for them. Rerun the planner, then review the changed artifacts again. The loop has no round limit. It repeats until `PASS`, `NEEDS-DECISION`, or `BLOCKED`. Stop as `BLOCKED` with the reason when a repair changes nothing, when the same blocking finding returns unchanged after a repair, or when the planner reports a finding it cannot address. On `BLOCKED`, show the open findings. Confirm is not offered. Request changes and abandon stay available.
+- **Timeouts.** A timed-out fit reviewer is never re-dispatched (see Harness notes). Set stage `needs-human`, `failed_stage` `spec` or `plan`, and the reason `fit reviewer timed out after <N> min; it may still be running`. Tell the operator to confirm the reviewer has stopped before `/factory start`. Confirm is not offered.
+- **Confirm needs an explicit PASS.** Confirm is offered only when the reply on this gate visit starts with `VERDICT: PASS`. The absence of blocking findings is not a PASS.
+- **BLOCKED at the gate versus agent failure.** A `BLOCKED` gate (baseline, independence, or an unproductive loop) leaves the stage at `awaiting-spec` or `awaiting-plan`. A failed agent or a timeout uses `needs-human`, as above.
+- **Later visits.** Once a `BLOCKED` or `needs-human` outcome is resolved (the baseline confirmed, a reviewer available, or a change request given), the next gate visit runs the review again from the start.
 
 ## Tracking
 
@@ -604,6 +625,8 @@ The age rule is the same as Archive: by default only jobs whose `updatedAt` is m
 
 Dispatch with the paths block first, then the task line, then the role brief and the files to read. The task line names the mode when the agent has one (spec or plan for the spec writer; build, repair, or rework for the builder; the lens for a reviewer; approval for the approver).
 
+Every dispatch of the planner, builder, reviewers, and approver also passes the goal sources as text, not as paths alone: the confirmed original request and every explicit user amendment (see Fit review: Baseline first and Goal sources). This applies to first runs, reruns, repairs, rework, and resumes alike. If a job has no confirmed baseline, run the Baseline first procedure of Fit review before dispatching, and do not invent goals or omit these inputs. Reviewer findings passed as dispatch context are never goal sources.
+
 Factory adds no agents of its own. Each role runs on a native agent (`planner`, `implementer`, or `reviewer`), and the Factory rules for that role (outputs, evidence, verdict format, escalation triggers) live in its brief in this skill's `roles/` folder. Every dispatch tells the agent to read the matching brief first. The role brief overrides the dispatched agent's default output format and file-writing rules, and the first line of the reply must follow the brief.
 
 | Role | Native agent | Task line | Brief | Fresh context | Output |
@@ -641,7 +664,7 @@ The loop is the same in every harness. Use a parallel lens batch where the harne
 - **Timeout.** The default is 15 minutes per agent. The operator can set another value for one run by saying so in the request, for example `timeout 30 min`.
 - **A timed-out agent is never re-dispatched.** It may still be running, and a second run could write the same file. Stage `needs-human` with the reason "`<agent>` timed out after `<N>` min; it may still be running". For a spec or plan agent, also set `failed_stage`. Tell the operator to check the job folder and the build location, and to confirm the agent has stopped, before `/factory start` or `/factory rework`.
 
-**Single-session mode (Codex).** Codex has no agent files, so one session plays every role. The orchestrator switches roles one at a time. For each role it reads only that role's brief and input files, writes only that role's output (a reviewer or the approver returns its report, and you save it), and keeps the same write boundaries. The rule "never write code" applies per role: as orchestrator it writes only orchestrator files, and it writes code only as the builder, and only in the build location. Lenses run in order (stage A, then stage B). The security reviewer judges the diff, not the builder's account. A timed-out role is handled as above; a role that ends without its file is re-run once, then `needs-human`.
+**Single-session mode (Codex).** Codex has no agent files, so one session plays every role. The orchestrator switches roles one at a time. For each role it reads only that role's brief and input files, writes only that role's output (a reviewer or the approver returns its report, and you save it), and keeps the same write boundaries. The rule "never write code" applies per role: as orchestrator it writes only orchestrator files, and it writes code only as the builder, and only in the build location. Lenses run in order (stage A, then stage B). The security reviewer judges the diff, not the builder's account. A timed-out role is handled as above; a role that ends without its file is re-run once, then `needs-human`. Fit review is the exception: one session is not independent, so the spec and plan gates report `BLOCKED` instead (see Fit review).
 
 ## Limits
 

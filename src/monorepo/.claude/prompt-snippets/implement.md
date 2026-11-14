@@ -8,6 +8,7 @@ You are the orchestrator for this implementation. You derive the acceptance crit
 > with this loop. Do not route through a planning skill, and do not write a spec or plan first.
 > For 3+ independent `[P]` tasks that touch disjoint files, the loops may run concurrently with the
 > `dispatching-parallel-agents` skill. Each task still runs its own loop.
+> Nontrivial ad-hoc code changes outside these commands follow the same loop. Context-heavy nontrivial work may be built directly, but acceptance still needs an independent reviewer; without one it is BLOCKED. Trivial changes (typos, one-line edits) stay outside this loop.
 
 ## Roles
 
@@ -31,12 +32,12 @@ build → verify → review → decide ─┬─ accept   (review PASS, every re
 
 ### 1. Task, checks and baseline (orchestrator)
 
-- The original supplied task (request, task list entry, or fix description) is the requirement. Keep its text and give it to the builder and the reviewer unchanged. Do not require a new spec or plan first, and do not write one.
+- The original supplied task (request, task list entry, or fix description) is the requirement. Keep its text and give it to the builder and the reviewer unchanged. Explicit user amendments and answers given during the loop are part of the requirement too: record each one as a dated entry beside the original text (do not rewrite it), and give the builder and the reviewer the original text plus every amendment. Do not require a new spec or plan first, and do not write one.
 - Turn every requirement in the supplied task into an acceptance criterion, `AC-1`, `AC-2`, ... There is no fixed count: one criterion per requirement, however many there are. Do not add requirements the task does not state.
 - Each AC names its check. Discover the real checks; do not assume them. Read the project's manifests (for example `package.json` scripts, `Makefile`, `pyproject.toml`, `Cargo.toml`, `go.mod`), its CI configuration (for example `.github/workflows`), its README, and `AGENTS.md`. Use the commands the project actually runs.
 - A documentation criterion may be checked by direct inspection: open the file and confirm the content, and quote what you found as evidence.
-- A required check that cannot be discovered, or cannot be run, is a gap. It is not a pass, and it is not a bypass. Stop and ask the user for the command (see the Blocked exit in step 5).
-- Ask only when the task is unclear in a way that changes what gets built: two readings lead to different code, or a needed fact is missing. Ask one targeted question, offering the options, and wait.
+- A required check that cannot be discovered, or cannot be run, is a gap. It is not a pass, and it is not a bypass. It blocks acceptance of the affected task and of any aggregate run that needs it. Ask the user for the command as one targeted question and keep that question in the progress report. Independent tasks whose checks do not depend on the gap continue (see the Blocked exit in step 5).
+- Ask only when a requirement is unclear in a way that changes what gets built: two readings lead to different code, or a needed fact is missing. Ask one targeted question with its options. A task-scoped question blocks only that task and its dependents: independent tasks with clear requirements continue, and the question stays in the progress report (see [subagent-workflow.md](../rules-snippets/subagent-workflow.md), Autonomous Execution and Blockers). If the whole request is unclear, stop and ask before any build.
 - Take a baseline snapshot once, before any build. It is a plain copy of the state the task starts from, kept in a temporary directory outside the repository:
   - `git rev-parse HEAD`: the base commit.
   - `git status --porcelain > <tmp>/baseline/status.txt`: which files were already changed, staged or untracked.
@@ -59,6 +60,8 @@ build → verify → review → decide ─┬─ accept   (review PASS, every re
 
 Every round, run every check that covers an AC, using the commands from step 1. Treat the builder's report as a lead, not as evidence. For each AC, record `pass` with the command and result from this round, or `not verified` or `fail` with the reason. Docs criteria are recorded with the quoted content.
 
+Checks are scoped: each repair and each task runs the checks for its own ACs. After all writers are reconciled, run the project's full required regression checks once: the repo-defined full suite, lint, typecheck, and build, where they exist. Use only commands the project defines; do not invent them. A failed required check is a repair. A required check that does not exist or cannot run is BLOCKED (see step 5).
+
 ### 4. Review (reviewer, read-only)
 
 Every round, after verify, dispatch the reviewer on the current working tree. Give it the original supplied task text, the AC list, this round's check results, the base commit, and the baseline snapshot. Its review scope covers the whole task, and it compares content, not patches:
@@ -74,6 +77,7 @@ The reviewer's rules:
 - The first line of the reply is exactly `VERDICT: PASS` or `VERDICT: CHANGES`.
 - `VERDICT: CHANGES` needs at least one blocking item, each with `file:line`, the problem, and the specific fix. Blocking means a correctness issue, a failing check, a requirement with no test or evidence, or a clear convention break. Taste goes in non-blocking notes.
 - Check each requirement of the original task, not only the diff. A requirement with no coverage is a blocking item.
+- Scope drift, both ways: trace the diff against the original supplied task. A change that no requirement needs is a blocking item unless the reviewer confirms it is a necessary implementation detail for a stated goal and says why. Goals are the original supplied task plus the user amendments recorded in step 1: do not require or assume a spec or plan (supplied-task exception). Simplicity and SRP notes stay non-blocking unless they add scope the task does not ask for.
 
 ### 5. Decide (orchestrator)
 
@@ -81,10 +85,12 @@ Pick one outcome per round:
 
 - **Repair (back to step 2):** the review is `VERDICT: CHANGES`, **or** any AC is `not verified` or `fail`, **or** a required check failed or did not run. Send the open items to the builder, then run steps 3, 4 and 5 again on the current tree.
 - **Accept (exit):** all of these hold on this round's verify and review: the review is `VERDICT: PASS`; every requirement has an AC marked `pass` with evidence from this round; every required check ran and passed; an independent reviewer produced the verdict; and the builder did not report `BLOCKED`. Then report `ACCEPTED` with the AC evidence. A review PASS alone never accepts.
-- **Blocked (exit):** the builder reports `BLOCKED`, or a required check cannot be discovered or run, or no independent reviewer is available. Stop, report `BLOCKED` with the blocker and what would unblock it. Never mark blocked work accepted.
-- **Needs user decision (exit):** the task is unclear in a way only the user can settle. Stop, report `NOT ACCEPTED: needs decision` with the question. This is not acceptance.
+- **Blocked (exit for the affected work):** the builder reports `BLOCKED`, a required check cannot be discovered or run, or no independent reviewer is available. Report `BLOCKED` with the blocker and what would unblock it. Never mark blocked work accepted. Work that depends on it stops; independent authorized work with its own checks and reviewer continues. Without an independent reviewer nothing is accepted, but discovery and builds that do not need acceptance may continue and be reported as awaiting review. Stop the run only when no authorized work remains or a mandatory approval, security, or permission gate applies.
+- **Needs user decision (exit for the affected work):** the task is unclear in a way only the user can settle. Stop work on that task and its dependents, report `NOT ACCEPTED: needs decision` with the question, and continue independent authorized work. This is not acceptance.
 
 No other exit exists. An unmet requirement, a failing check, or a `not verified` result always loops back to repair. There is no round limit to escape the loop.
+
+**Evidence freshness.** Acceptance uses evidence from the tree it accepts. Any edit after a verify or review, whether by the builder, a repair, or the orchestrator, invalidates the evidence it affects: rerun the checks covering those ACs and re-review the changed diff. Reuse evidence that the edit cannot affect. If unsure whether an edit affects a check, treat it as affected. Do not rerun everything for an unrelated edit.
 
 ### Commit (only when the calling flow asks)
 
@@ -95,13 +101,15 @@ The loop never commits by itself. Accepting reports the result; it does not crea
 
 ### Limits
 
-- **No independent reviewer means BLOCKED.** The orchestrator may run its own verify and report the evidence, but it cannot accept the work on its own review. Report `BLOCKED`, and stop.
+- **No independent reviewer means nothing is accepted.** The orchestrator may run its own verify and report the evidence, but it cannot accept the work on its own review. Report `BLOCKED` for acceptance. Do not treat all work as blocked when independent discovery or build can proceed (see the Blocked exit in step 5).
+- Mandatory approval, security, and permission gates are never bypassed. They apply to the affected work, or to the whole run when the gate is global.
 - A self-review is never presented as an independent review.
+- These gates are prompt instructions, not host enforcement. Resuming after a pause depends on the host; this prompt does not guarantee automatic resume.
 
 ## Your Task
 
 1. **Analyze**: identify the files to create or modify, the dependencies between tasks, and the `[P]` tasks.
-   Dispatch `[P]` tasks in parallel only when they touch different files with no shared state. Otherwise keep them sequential.
+   Dispatch `[P]` tasks in parallel only when they touch different files with no shared state. Otherwise keep them sequential. A task whose write set is unknown or undeclared runs serially until the builder's changed-file list establishes its scope.
 2. **Run the delivery loop** for each task, in dependency order, until it exits as accepted, blocked, or needs a user decision.
 3. **Track progress**: tick a task only after the orchestrator accepts it. Report blockers and summarize the accepted changes.
 

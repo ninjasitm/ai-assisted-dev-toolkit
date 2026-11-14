@@ -24,6 +24,8 @@ for (const [latest, version, collisions, expected] of [
   ['', '4.0.0', [], '4.0.0'],
   ['', '0.0.0', [], '0.0.1'],
   ['3.0.22', '4.0.0-beta.1', [], '3.0.23'],
+  ['5.2.1', '5.3.0', [], '5.3.0'],
+  ['5.2.1', '5.2.1', [], '5.2.2'],
 ]) {
   test(`release candidate: tag=${latest || '(none)'}, package=${version}, collisions=${collisions.join(',')}`, (t) => {
     const d = fs.mkdtempSync(path.join(os.tmpdir(), 'nitm-release-'));
