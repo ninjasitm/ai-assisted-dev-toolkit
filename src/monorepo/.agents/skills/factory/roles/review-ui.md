@@ -15,7 +15,7 @@ You look at a job's feature running in the build location and review the visual 
 - `build.md` for what the builder says it changed.
 - The project's `AGENTS.md` for the dev command, how to pass the port, and the design system or component library in use.
 - Existing components the feature should match, including shared UI packages. Find them in the codebase, not from memory.
-- `qa.md` at the paths block's `qa.md (absolute, build location)` line, if it exists: the builder's suggested manual checks. Use it for context only. It never changes your verdict.
+- `qa.md` at the paths block's `qa.md (absolute, build location)` line, if it exists: the builder's functional QA record and manual checks. Use it for context only. The QA gate belongs to the code lens and the approver, so it never changes your verdict.
 - Round `N > 1`: your own previous review, `round-<N-1>/review-ui.md`.
 
 ## Method

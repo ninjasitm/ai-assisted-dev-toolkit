@@ -61,6 +61,11 @@ check_section_match() {
   local base_section target_section
   base_section=$(extract_section "$base" "$section")
   target_section=$(extract_section "$target" "$section")
+  if [[ -z "$base_section" || -z "$target_section" ]]; then
+    printf "${RED}MISSING${NC} %s [%s] (section header not found)\n" "$label" "$section"
+    ((errors += 1))
+    return
+  fi
   if [[ "$base_section" == "$target_section" ]]; then
     printf "${GREEN}  OK${NC}  %s [%s]\n" "$label" "$section"
   else
@@ -294,6 +299,20 @@ check_identical "github-prompt: factory repo ↔ monorepo" \
 
 check_identical "factory-state: _gitignore repo ↔ monorepo" \
   "src/repo/factory/_gitignore" "src/monorepo/factory/_gitignore"
+
+# Functional QA sections are the gate contract: identical in both layouts. Other sections of
+# SKILL.md differ by design.
+check_section_match "factory SKILL repo ↔ monorepo" \
+  "src/repo/.agents/skills/factory/SKILL.md" "src/monorepo/.agents/skills/factory/SKILL.md" "Functional QA"
+check_section_match "factory SKILL repo ↔ monorepo" \
+  "src/repo/.agents/skills/factory/SKILL.md" "src/monorepo/.agents/skills/factory/SKILL.md" "QA guidance"
+
+echo ""
+echo "=== Implement Loop Functional QA Parity ==="
+echo ""
+
+check_section_match "implement loop repo ↔ monorepo" \
+  "src/repo/.claude/prompt-snippets/implement.md" "src/monorepo/.claude/prompt-snippets/implement.md" "Functional QA"
 
 echo ""
 echo "=== Orphaned References ==="

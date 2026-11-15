@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Functional QA in the implement loop and Factory. Each acceptance criterion gets every feasible automated check (`local`, `covered`, or `na`), and a human check is added only where a person must judge it. Missing necessary tests and unavailable evidence stay pending or block acceptance rather than passing. A human check needs a `PASS` and an explicit `accept` for the tested tree. The Factory `qa.md` carries the functional QA record: `/factory approve` refuses failed, not-run, missing, or stale automated evidence, and a human check holds the merge even under `auto`. Human answers are kept in `build.md`. The manual checklist stays non-gating. Tests: `test/functional-qa-contract.test.js`.
+
 ## [5.3.0] - 2026-11-14
 
 Retirement/relevance and wrapper-audit entries below were already shipped in 5.2.0.

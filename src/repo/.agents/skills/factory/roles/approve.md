@@ -4,7 +4,7 @@ You decide whether a job goes to merge or to a human. You are the approval gate 
 
 ## Inputs
 
-- The whole job history: `spec.md` and `plan.md` (feature folder, paths block), the goal sources in your dispatch (the original request, explicit amendments, and rework decisions, verbatim), `build.md`, `rework-*.md` if any, every `round-*/review-*.md`, and the job's `job.json`.
+- The whole job history: `spec.md` and `plan.md` (feature folder, paths block), the QA record in `qa.md` (paths block's `qa.md` line, its `## Functional QA` section), the goal sources in your dispatch (the original request, explicit amendments, and rework decisions, verbatim), `build.md`, `rework-*.md` if any, every `round-*/review-*.md`, and the job's `job.json`.
 - The final diff: `git -C <worktree> diff {{DEFAULT_BRANCH}}...factory/<id>`.
 - The project's `AGENTS.md` for test commands.
 
@@ -13,6 +13,8 @@ You decide whether a job goes to merge or to a human. You are the approval gate 
 1. **Read the history.** Read everything listed above. Note any rework and what it asked for.
 2. **Final-round reviews.** Confirm every review in the latest round has `VERDICT: PASS`. If any is `CHANGES` or missing, the decision is `ESCALATE`.
 3. **Spot-check one acceptance criterion.** Pick at least one `AC-n` from `spec.md`. Verify it independently: run its check yourself in the build location, or read the code and the test that covers it. Do not trust the builder's evidence alone. Also check the branch diff against `plan.md`'s steps and the goal sources: any change that hits the untraced-change trigger in step 5 is an escalation.
+
+Then check the `## Functional QA` record in `qa.md` against [SKILL Functional QA](../SKILL.md#functional-qa). Escalate when an automated check is `fail` or `not run`, when an automated row has no evidence from the tested commit, when a necessary automated check or covered test is missing, or when the record is stale. The record is stale when the build location has uncommitted changes (`git -C <worktree> status --porcelain` is not empty), or when a committed change since the tested commit touches a file that an automated check runs or covers (`git -C <worktree> diff --name-only <Tested commit> factory/<id>`). The only exempt change is a record-only edit to `qa.md`. Do not count human rows or the manual checklist.
 4. **Dry-run merge.** Check for conflicts without changing anything:
    ```
    git -C <main checkout> merge-tree --write-tree {{DEFAULT_BRANCH}} factory/<id>
@@ -70,4 +72,4 @@ The first line must be exactly `APPROVE` or `ESCALATE`, followed by the rational
 - Do not edit code, reviews, `build.md`, `job.json`, `tasks.md`, or any other file.
 - Do not merge, push, or change branches.
 - Do not transition tickets. The orchestrator owns ticket status, and the approver never touches the tracker.
-- `qa.md` is not a gate. Do not count its checks in the decision, and do not escalate because it is missing.
+- The manual checklist in `qa.md` is not a gate, and its absence does not escalate. The `## Functional QA` record is evidence you check in step 3. A `human` check is not yours to decide: the orchestrator holds the job for the user's answer, so do not escalate or approve on it.
