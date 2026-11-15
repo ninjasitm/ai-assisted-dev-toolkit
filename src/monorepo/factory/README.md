@@ -92,8 +92,8 @@ Session ended at a gate? `/factory start <job-id | slug | KEY>` shows that gate 
 
 ## Approval modes
 
-- **`human`** (default). An approved job stops at `awaiting-human`. Read the branch and `qa.md`, then run `/factory approve <job-id>`.
-- **`auto`**. An approved job merges automatically. The approver still escalates anything touching auth, payments, data security, deployment, migrations, email, production data, new dependencies, or unresolved product decisions. Its tickets stay In Review until you run `/factory approve <job-id>`, which then moves them to Done.
+- **`human`** (default). An approved job stops at `awaiting-human`. Read the branch and the QA handoff in `qa.md`, answer any pending human check, then run `/factory approve <job-id>`.
+- **`auto`**. An approved job merges automatically. The approver still escalates anything touching auth, payments, data security, deployment, migrations, email, production data, new dependencies, or unresolved product decisions. A job with a human QA check still stops at `awaiting-human`, because that check is required validation. Its tickets stay In Review until you run `/factory approve <job-id>`, which then moves them to Done.
 
 Any value other than exactly `auto` is treated as `human`.
 
@@ -128,9 +128,15 @@ Set `MERGE_MODE`. The approval gates are the same in both modes.
 
 `push-mr` suits forge-reviewed setups, where required reviews or CI gates sit on the forge after your approval. It never force-pushes and never merges locally. Under `auto`, approve opens the request without a pause, but the forge merge and the second `/factory approve` stay yours.
 
-## Suggested checks (`qa.md`)
+## Functional QA (`qa.md`)
 
-The builder writes `qa.md` in the feature folder, on the job's branch. It has how to run the feature (dev server, port, seed data, flags), numbered manual checks tied to acceptance criteria, and what the automated tests do not cover. When a job waits for you, the orchestrator prints it with the reviewers' `Not verified` items under the line `Suggested checks before /factory approve — not a gate`. It is a checklist. It never affects a verdict, and a missing `qa.md` is only noted.
+The builder writes the QA plan into `qa.md` in the feature folder, on the job's branch, before it writes code. After the final code commit it records each check: the command, the expected result, the observed result, and `pass`, `fail`, `not run` (with the reason), or `NA`. Acceptance criteria that need a person are marked `human`, and their handoff lists the numbered steps, the expected results, and the response template.
+
+- **Automated checks** run for every criterion on the job's tree. A failed check goes back to the builder. A check that could not run because a credential, data, or environment is missing stops the job for you, as a `Not verified` item.
+- **Human checks** are added only where a person must judge: a new flow, or a judgement no safe automated check settles. They supplement the automated checks. The job waits at `awaiting-human`, even in `auto`. Answer the handoff with `PASS` and `accept`. `/factory approve` saves your answer in `build.md` and merges only when every human check reads `PASS` with `accept`. A failure or rejection means `/factory rework <job-id> <note>`.
+- **Optional checks** are listed as limitations. They never block.
+
+The approver reads the functional QA record and escalates on a failed, missing, or stale check. The manual checklist never affects a verdict, and a missing `qa.md` is only noted when the job has no `local` or `human` criteria. When a job waits for you, the orchestrator prints the record and the reviewers' `Not verified` items under the line `Suggested checks before /factory approve — not a gate`.
 
 ## Tickets
 
@@ -153,7 +159,7 @@ The parent and every sub-task move together. The orchestrator uses the project's
 4. **Plan.** `planner` in plan mode writes `plan.md` (with the size) and `tasks.md` for large work.
 5. **Plan gate.** You confirm the plan, or request changes. Nothing is ticketed or built before you confirm.
 6. **Tickets and build location.** If tracked, the parent and sub-tasks are created and their keys are written into `tasks.md`. The folder is renamed to carry the key. Then a builder gets its own git worktree on branch `factory/<id>` (bootstrapped first, see Build location), or the in-place branch. The job's feature docs are committed on that branch.
-7. **Build.** The builder follows TDD, ticks `tasks.md` as it completes tasks, writes `build.md`, and writes `qa.md`.
+7. **Build.** The builder follows TDD, ticks `tasks.md` as it completes tasks, writes `build.md`, and writes `qa.md` (its functional QA plan before the code, and its results after).
 8. **Review.** Every configured lens reviews the branch, and each reviewer's report is saved as `round-N/review-<lens>.md` with `VERDICT: PASS` or `VERDICT: CHANGES`.
 9. **Repair.** Any `CHANGES` sends the builder back to fix it. Two repairs at most, so three review rounds. Then the job escalates to you.
 10. **Approve.** `reviewer` in approval mode (fresh context) returns `APPROVE` or `ESCALATE`, and the orchestrator writes it to `decision.md`.

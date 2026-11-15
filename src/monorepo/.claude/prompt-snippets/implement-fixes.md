@@ -49,7 +49,7 @@ Implement bug fixes and corrections with proper validation and documentation.
 4. **Verify, Review and Decide** (repeat implement.md steps 3, 4 and 5 until an exit):
    - Verify: rerun the reproducing test and confirm it passes now, run every check that covers an AC, and run the full test suite for regressions.
    - Review: the independent read-only reviewer checks the fix, the reproducing test, and the untracked files.
-   - Decide: repair goes back to the same builder. Repeat until `ACCEPTED`, `BLOCKED`, or `NOT ACCEPTED: needs decision`. There is no round limit. A review PASS alone never accepts.
+   - Decide: repair goes back to the same builder. Repeat until `ACCEPTED`, `BLOCKED`, or `NOT ACCEPTED: needs decision` (which includes a pending human QA check, reason `awaiting human QA`). There is no round limit. A review PASS alone never accepts.
 
 5. **Commit and Push** (only after `ACCEPTED`, and only when there are accepted changes): stage only the fix's paths, never `git add -A` or a foreign change. Skip the commit when nothing is staged.
    ```bash

@@ -5,7 +5,7 @@ description: Opt-in software factory for feature-sized work. Runs one job throug
 
 # Factory (orchestrator)
 
-One orchestrator session runs a feature through intake → spec → plan → build → review → approve → merge. Agents get their context from files. Builders and spec writers write their own files; reviewers and the approver return their report, and you save it (see Subagent dispatch). You are the orchestrator: you ask the intake questions, dispatch agents, read their files, rewrite `job.json`, run the gates with the operator, handle tickets, and run the merge. You never write code, specs, plans, reviews, or `qa.md` yourself. Exceptions: you write `intake.md` from the operator's answers, `spec-<k>.md` and `plan-<k>.md` from the operator's change requests, `tasks.md` ticket keys, the feature folder rename and copy, the feature docs commit on the job branch, worktree and branch removal, the moves and branch deletions in Archive, the review files and `decision.md` from the reviewers' and approver's replies (see Subagent dispatch), and `decision.md` with `ESCALATE` when retries run out, `merge-conflict.md` on a merge conflict, `bootstrap.md` on a failed worktree bootstrap step, the push and merge request in `push-mr` mode (see Merge procedure), and `rework-<k>.md` from the user's note.
+One orchestrator session runs a feature through intake → spec → plan → build → review → approve → merge. Agents get their context from files. Builders and spec writers write their own files; reviewers and the approver return their report, and you save it (see Subagent dispatch). You are the orchestrator: you ask the intake questions, dispatch agents, read their files, rewrite `job.json`, run the gates with the operator, handle tickets, and run the merge. You never write code, specs, plans, reviews, or `qa.md` yourself. Exceptions: you write `intake.md` from the operator's answers, `spec-<k>.md` and `plan-<k>.md` from the operator's change requests, `tasks.md` ticket keys, the feature folder rename and copy, the feature docs commit on the job branch, worktree and branch removal, the moves and branch deletions in Archive, the review files and `decision.md` from the reviewers' and approver's replies (see Subagent dispatch), and `decision.md` with `ESCALATE` when retries run out, `merge-conflict.md` on a merge conflict, `bootstrap.md` on a failed worktree bootstrap step, the push and merge request in `push-mr` mode (see Merge procedure), and `rework-<k>.md` from the user's note, It also appends the user's QA answer, verbatim, to `build.md` (see Functional QA).
 
 The factory is opt-in and sits alongside Feature Builder and TDD. Nothing runs unless the user invokes `/factory`.
 
@@ -51,7 +51,7 @@ A first argument of `start`, `approve`, `rework`, `abandon`, `status`, `watch`, 
   spec.md                    spec-writer, spec mode (from the feature spec template)
   plan.md                    spec-writer, plan mode: approach, steps, and the **Size:** line
   tasks.md                   spec-writer, plan mode, large work only
-  qa.md                      builder, on the branch: suggested manual checks (not a gate)
+  qa.md                      builder, on the branch: functional QA record (plan, runs, results) and the human handoff (see Functional QA)
 factory/
   README.md                  setup and reference
   .gitignore                 ignores jobs/ and archive/
@@ -62,7 +62,7 @@ factory/
       intake.md              you: the original request verbatim under `## Original request`, the questions and answers (when asked), and `## Baseline confirmed` (when needed)
       spec-<k>.md            you, from the operator's change request at the spec gate
       plan-<k>.md            you, from the operator's change request at the plan gate
-      build.md               builder; cumulative round log
+      build.md               builder; cumulative round log; you append the user's QA answer blocks (kept on rewrite)
       round-<N>/review-<lens>.md   one per configured lens
       decision.md            approver (or you, on escalation)
       merge-conflict.md      you, on a merge conflict (blocks approve)
@@ -194,10 +194,10 @@ Resume by stage:
 | `build` | Rerun `implementer` (brief `roles/build.md`) in the mode the files call for: rework if a `rework-<k>.md` is newer than `build.md`, repair if the last review round has `CHANGES`, otherwise build |
 | `review` | Rerun the review round `round` |
 | `approve` | Rerun the approval (`reviewer` in approval mode, brief `roles/approve.md`) |
-| `awaiting-human` | Print the approver's rationale, the suggested checks from `qa.md` (see QA guidance), and the `/factory approve` command |
+| `awaiting-human` | Print the approver's rationale, the QA record and any human handoff from `qa.md` (see QA guidance), and the `/factory approve` command |
 | `needs-human`, `failed_stage` `spec` | Rerun the spec stage (see Spec), then show the spec gate |
 | `needs-human`, `failed_stage` `plan` | Rerun the plan stage (see Plan), then show the plan gate |
-| `needs-human`, otherwise | Print the reason from `decision.md`, `merge-conflict.md`, `bootstrap.md`, or `build.md`, and the options: rework, approve, or abandon |
+| `needs-human`, otherwise | Print the reason from `decision.md`, `merge-conflict.md`, `bootstrap.md`, or `build.md`, and the options: rework, approve, or abandon. If a human check is pending, print its exact handoff from `qa.md` first |
 | `abandoned` | Closed. Say so and stop. To work on the feature again, run `/factory start <slug or KEY>`, which creates a new job |
 | Archived (in `factory/archive/`, any stage) | Closed. Say so and stop (see Start step 1) |
 
@@ -383,7 +383,7 @@ PATHS
 - Ports: builder <p>, ux <p+1>, ui <p+2>
 ```
 
-Agents read their inputs by these absolute paths. Builders and spec writers write their output files there; reviewers and the approver return their report instead (see Subagent dispatch). The spec-writer works in the main-checkout feature folder. Reviewers and the approver read the spec and plan there. The builder reads them there and ticks `tasks.md` in the build location's copy. Reviewers read `qa.md` at the paths block's `qa.md` line, for context only.
+Agents read their inputs by these absolute paths. Builders and spec writers write their output files there; reviewers and the approver return their report instead (see Subagent dispatch). The spec-writer works in the main-checkout feature folder. Reviewers and the approver read the spec and plan there. The builder reads them there and ticks `tasks.md` in the build location's copy. Reviewers read `qa.md` at the paths block's `qa.md` line. The code lens checks its functional QA record. The other lenses read it for context only. The approver checks the record (see Functional QA).
 
 ## Loop
 
@@ -414,8 +414,8 @@ Let `N` be the current round, starting at `1` for a new job.
    A review cycle is the rounds since the job started, or since the latest `rework-<k>.md` (see Rework). "Third review round of the cycle" means two repairs have already been made in this cycle. The rework note records where its cycle starts.
 9. **Approve.** Set stage `approve`. Dispatch `reviewer` in approval mode (brief `roles/approve.md`, fresh context) with the paths block. Wait for the approver's reply and save it as `decision.md` (see Harness notes). Its first line must be `APPROVE` or `ESCALATE`. If the line is missing or invalid, re-dispatch once, then stage `needs-human`.
    - `ESCALATE` → stage `needs-human`. Tell the user the rationale. Stop.
-   - `APPROVE` and `{{APPROVAL_MODE}}` is exactly `auto` → run the merge procedure.
-   - `APPROVE` otherwise: stage `awaiting-human`. Print the suggested checks (see QA guidance). Tell the user to run `/factory approve <id>` after reviewing the branch. Stop. Any value other than exactly `auto` is treated as `human`.
+   - `APPROVE` and `{{APPROVAL_MODE}}` is exactly `auto` → run the merge procedure, unless the job has a `human` criterion (see Functional QA). Such a job stops at `awaiting-human` even under `auto`, as below.
+   - `APPROVE` otherwise: stage `awaiting-human`. Print the QA guidance, with the human handoff when there is one (see QA guidance). Tell the user to run `/factory approve <id>` after reviewing the branch. Stop. Any value other than exactly `auto` is treated as `human`.
 
 ### Repair
 
@@ -474,21 +474,36 @@ Rules:
 
 The new cycle starts with a fresh repair budget. Old rounds and reviews are kept, not overwritten.
 
-## QA guidance (non-gating)
+## Functional QA
 
-The builder writes `qa.md` in the feature folder of its build location (the worktree's copy, or the main checkout's for an in-place job). It is committed with the work. It is the operator's checklist for a human look before approval:
+Functional QA means the changed behavior was run, not only built. The rules are the shared loop's [Functional QA](../../../.claude/prompt-snippets/implement.md#functional-qa): automated checks for every AC, a human check only where a person must judge, the plan before the build, recorded runs, safety, identity and freshness, and the handoff. This section adds the Factory mechanics. Gates use only the existing verdicts and stages.
 
-- How to run the feature: setup, dev-server command and port, seed data, flags.
-- Numbered manual checks, each tied to an `AC-n` in `spec.md`, with the expected result.
-- "Not covered by automated tests" items.
+- **Plan.** Before writing code, the builder writes the QA table into `qa.md` in the build location: one row per AC and check, with its kind (`local`, `covered`, `human`, or `na`), its exact command or fixture, and its expected result. A human check is an extra row on its AC, never a replacement for the automated rows. Observed and Result start as `-` and `planned`.
+- **Run.** The order is fixed: the code commit, then the runs on that commit, then the evidence commit. After the final code commit, the builder runs each automated check and each cited `covered` test, fills in Observed and Result, records `Tested commit: <hash>` (the code commit), and commits `qa.md` with the work. A `human` row is never recorded as passed.
+- **Review.** The code lens re-runs each automated command from the table and each cited `covered` test, and compares the results with the recorded ones (see the code brief). A failed row, a missing feasible automated check, or a label without its reason is a `VERDICT: CHANGES` item, repaired within the usual three review rounds. A check that could not run because a credential, data, or environment is missing is a blocking item titled `Not verified: functional QA <AC-n>: <reason>`. It sends the job to `needs-human`, and nothing is repaired for it.
+- **Approve.** The approver checks the record (see its brief) and escalates on a failed, missing, or not-run automated check, or on stale evidence. Evidence is stale when the build location has uncommitted changes, or when a committed change since `Tested commit` touches a file that an automated check runs or covers. The only exempt change is a record-only edit to `qa.md`, one that changes the Observed, Result, or Tested commit cells and nothing else. Changes to files that no check runs or covers do not stale the record. A changed criterion, command, expected result, or evidence line does. The approver does not count human rows or the manual checklist.
+- **Human checks.** For an AC with a human check, the handoff is the `## Manual checks` section of `qa.md`: numbered steps, each with its AC and expected result, plus the fields from implement.md's Functional QA (tested commit, setup and test accounts by name, seeded prerequisites, what was already tested, cleanup, and the response template). The orchestrator prints it at `awaiting-human`, even under `auto`, and the job waits there. Acceptance needs `PASS` and an explicit `accept` for the tested commit named in the handoff (Approve step 6). `not run` with `accept` stays pending. `reject` or `FAIL` means rework. The answer is saved verbatim in `build.md` as a `## Human QA answer` block. After any rework or any change to a checked file, the tested commit changes, and a new handoff is printed. Ask the user with the harness's native question tool when one exists, and only when no independent authorized work remains or a gate needs the answer; otherwise ask in chat at that point. Resume restores the exact pending handoff from `qa.md`, not a summary of it.
+- **Unavailable user.** Nothing repeats or loops. The job stays at `awaiting-human`, the handoff stays in `qa.md`, the status table shows it, and other jobs continue. Absence is never signoff.
+- **Where the evidence lives.** `qa.md` is on the job branch in the build location: the worktree path from the paths block, or the main checkout for an in-place job. The orchestrator reads it there before the merge, and from the main checkout's feature folder after it. Answers are in `build.md` in the job folder, which git ignores, so they survive worktree removal. The builder keeps those blocks when it rewrites `build.md`.
+- **Missing record.** A missing `qa.md`, or a missing `## Functional QA` section, escalates when the job has any automated or human check. Otherwise it is only noted.
+- **Optional checks.** They are listed under `## Not covered by automated tests`, each with its reason. They never block.
 
-The builder rewrites it on repair and rework rounds. A small job can have a few lines.
+## QA guidance
+
+The builder writes `qa.md`, committed with the work. It holds the functional QA record, the human handoff when there is one, and the operator's checklist. It rewrites it on repair and rework rounds. A small job can have a few lines.
+
+When the job reaches `awaiting-human` or `needs-human`, and after an auto merge, print (from the build location before the merge, from the main checkout's feature folder after it):
+
+- First, the mandatory items: every `## Not verified` item from the latest round's reviews, and every failed, not-run, or stale automated check from the record. These are blocking and never sit under the optional line.
+- If a human check is pending: `Human QA required before /factory approve: answer the handoff below`, then the handoff.
+- The `## Functional QA` table with its results.
+- Under the line `Suggested checks before /factory approve — not a gate`, the `## Not covered by automated tests` items.
+- If `qa.md` is missing: `No qa.md: no QA record or suggested checks.`
 
 Rules:
 
-- `qa.md` never affects a verdict. Reviewers may read it for context. The approver ignores it.
-- A missing `qa.md` is noted, never blocking.
-- When the job reaches `awaiting-human` or `needs-human`, and after an auto merge, print `qa.md` (from the build location before the merge, from the main checkout's feature folder after it). Then print the `## Not verified` items from the latest round's reviews. Put this line before them: `Suggested checks before /factory approve — not a gate`. If `qa.md` is missing, print `No qa.md: no suggested checks.` in its place.
+- Only the checklist and the limitations are optional. They never change a verdict.
+- A missing `qa.md`, or a missing `## Functional QA` section, escalates only when the job has an automated or human check. Otherwise it is noted.
 
 ## Approve
 
@@ -498,8 +513,10 @@ Rules:
 2. Otherwise refuse unless stage is `awaiting-human` or `needs-human`. The user's explicit command is the approval. Do not re-run the approver.
 3. Refuse unless the first line of `build.md` is exactly `STATUS: READY`. A job that failed before its build has no `build.md`: say so, and point to `/factory start <job-id>` (for a failed spec or plan step) or `/factory abandon <job-id>`.
 4. Refuse while `merge-conflict.md` exists in the job folder. The user resolves the conflict on the branch, then removes that file.
-5. Print the reason the job stopped before merging, so the user sees what they approve: the `ESCALATE` rationale in `decision.md`, the `Not verified` items, or the failed agent. For `awaiting-human`, print the approver's rationale.
-6. Run the merge procedure for `{{MERGE_MODE}}`. In `push-mr`, a job with `mr` set takes the finish path there instead.
+5. **Required QA evidence.** Refuse, in every mode and from `needs-human` too, while the functional QA record in `qa.md` shows a failed, not-run, or missing automated check or covered test, or stale evidence (see Functional QA, Approve). Name the row and what the user must supply. Do not waive this with the approve command: the fix is rework, or a builder repair followed by review. The existing overrides for other items are unchanged.
+6. **Human QA.** Only when the job has a `human` check (see Functional QA). The command alone is not enough for it. If no answer is recorded for the tested commit, print the handoff from `qa.md` and ask in chat for the answer in the response template, then stop. When the answer comes, append it verbatim to `build.md` as a `## Human QA answer (<tested commit>)` block. Proceed only when every human check reads `PASS` with an explicit `accept` for that commit. A `FAIL` or `reject` does not merge: tell the user to run `/factory rework <job-id> <note>` naming the row. `defer`, `not run`, or no answer leaves the job at `awaiting-human`. A job with no `human` check skips this step.
+7. Print the reason the job stopped before merging, so the user sees what they approve: the `ESCALATE` rationale in `decision.md`, the `Not verified` items, or the failed agent. For `awaiting-human`, print the approver's rationale.
+8. Run the merge procedure for `{{MERGE_MODE}}`. In `push-mr`, a job with `mr` set takes the finish path there instead.
 
 ## Abandon
 
@@ -569,7 +586,7 @@ Closed jobs (`merged` or `abandoned`) are hidden by default. Print one line in t
 | `plan` | Wait, or `/factory start <id>` to resume if the session ended |
 | `awaiting-plan` | `/factory start <id>` to review the plan and confirm it |
 | `build`, `review`, `approve` | Wait, or `/factory start <id>` to resume if the session ended |
-| `awaiting-human` | Review the branch and its `qa.md` (suggested checks, not a gate), then `/factory approve <id>`. In `push-mr` with `mr` set: merge the request on the forge, then `/factory approve <id>` to finish. Print the request URL |
+| `awaiting-human` | Review the branch and the QA record in `qa.md`. Answer any pending `human` check in its handoff, then `/factory approve <id>`. A `reject` means `/factory rework <id> <note>`. In `push-mr` with `mr` set: merge the request on the forge, then `/factory approve <id>` to finish. Print the request URL |
 | `needs-human` | Read the reason. A failed spec or plan step: `/factory start <id>` reruns it. After a build: `/factory rework <id> <note>` or `/factory approve <id>`. Either way, `/factory abandon <id>` closes the job |
 | `abandoned` | Nothing: the job is closed. To work on the feature again, `/factory start <slug or KEY>` creates a new job |
 | `merged` | Nothing, unless tickets are not Done yet: `/factory approve <id>` |
@@ -668,7 +685,7 @@ The loop is the same in every harness. Use a parallel lens batch where the harne
 
 ## Limits
 
-File-write boundaries are prompt conventions, not enforced isolation. Nothing physically stops an agent from writing outside its file. The real gates are the spec and plan gates, the reviewer verdicts, the approver's rules and dry-run merge check, and the merge procedure's preconditions and test run. Ticket updates are best-effort and never gate the pipeline. `qa.md` is advisory and gates nothing.
+File-write boundaries are prompt conventions, not enforced isolation. Nothing physically stops an agent from writing outside its file. The real gates are the spec and plan gates, the reviewer verdicts, the approver's rules and dry-run merge check, and the merge procedure's preconditions and test run. Ticket updates are best-effort and never gate the pipeline. The `## Functional QA` record in `qa.md` gates through the code lens and the approver. The manual checklist gates nothing. A pending `human` check gates the merge only through approval (see Functional QA).
 
 ## Related
 
