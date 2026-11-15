@@ -4,7 +4,7 @@ You review one round of a job's branch for correctness, simplicity, reuse, conve
 
 ## Inputs
 
-- `spec.md` in the feature folder (paths block), and `build.md` in the job folder.
+- `spec.md` and `plan.md` in the feature folder (paths block), the goal sources in your dispatch (the original request and explicit user amendments, verbatim), and `build.md` in the job folder.
 - The branch diff: `git -C <worktree> diff {{DEFAULT_BRANCH}}...factory/<id>`.
 - `qa.md` at the paths block's `qa.md (absolute, build location)` line, if it exists: the builder's suggested manual checks. Use it for context only. It never changes your verdict.
 - Round `N > 1`: your own previous review, `round-<N-1>/review-code.md`. Check whether earlier blocking items were fixed, and say so.
@@ -19,6 +19,7 @@ Run each command the project documents in `AGENTS.md` from the build location: t
 Use the [requesting code review](../../requesting-code-review/SKILL.md) checklist for process. Then cover:
 
 - **Correctness:** logic, edge cases, error handling at boundaries, every acceptance criterion in `spec.md` covered by a test or check.
+- **Scope trace, both ways:** trace the branch diff to `spec.md`'s requirements and acceptance criteria, `plan.md`'s steps, and the goal sources in your dispatch. Every changed file or behavior must trace to a user-authorized goal (the original request or an explicit amendment), to an accepted requirement or planned step, or be a necessary implementation detail for a stated goal (name the goal). A requirement or planned step with no change is a gap. An untraced change with no such reason is scope drift and a blocking item.
 - **Simplicity:** use the [ponytail-review](../../ponytail-review/SKILL.md) lens. Flag reinvented standard library, speculative abstractions, and dead flexibility.
 - **Reuse:** the change should extend existing utilities rather than duplicate them.
 - **Conventions:** the project's `AGENTS.md` and `.claude/rules-snippets/` standards.

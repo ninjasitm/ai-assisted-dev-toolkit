@@ -30,6 +30,7 @@ Implement a feature by completing tasks sequentially with proper tracking.
    - Group tasks by domain (backend, frontend, docs, tests)
    - Tasks that touch **different files with no shared state** → run their loops in parallel
    - Tasks with dependencies or shared files → keep sequential
+   - Tasks with an unknown or undeclared write set → keep sequential until the scope is established
    - Use `dispatching-parallel-agents` skill when 3+ independent tasks exist
 
 3. **Create Feature Branch** (before any build):
@@ -77,7 +78,7 @@ Implement a feature by completing tasks sequentially with proper tracking.
 
 6. **Create Pull Request** (only after the feature review is accepted):
 
-   a. **Final Validation**: the accepted verify results from step 5 (every required check ran and passed).
+   a. **Final Validation**: after all tasks are reconciled, run the project's full required regression checks once on the final integrated tree (implement.md step 3): the repo-defined full suite, lint, typecheck, and build, where they exist. Every required check must pass on this tree. Any edit after this run requires revalidation.
 
    b. **Commit and push**: if accepted feature-review changes are still uncommitted, commit them once, staging only the feature's paths, and skip the commit when nothing is staged. Do not create repair-only commits.
 

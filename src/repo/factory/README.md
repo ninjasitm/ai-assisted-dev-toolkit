@@ -55,7 +55,7 @@ The orchestrator and agents are the same in every harness. Each harness has its 
 | GitHub Copilot | `/factory` prompt (`.github/prompts/factory.prompt.md`) | `.github/agents/` |
 | Cursor | `/factory` (`.cursor/commands/factory.md`) | `.cursor/agents/` |
 | OpenCode | `/factory` (`.opencode/commands/factory.md`) | `.opencode/agents/` |
-| Codex | The factory skill (`.agents/skills/factory/SKILL.md`) | None. Runs each role brief directly, one role at a time in one session (see Harness notes in SKILL.md) |
+| Codex | The factory skill (`.agents/skills/factory/SKILL.md`) | No native agent definitions. Role briefs run directly; spec and plan acceptance requires an independent review session. Single-session role switching cannot satisfy that gate (see Harness notes in SKILL.md). |
 
 In OpenCode with the Slim plugin, `oracle` and `designer` are optional alternatives to `reviewer`, if you configure them as edit-denied. The default is the native agents.
 
@@ -76,6 +76,8 @@ Sizing is decided in `plan.md`:
 ## Gates
 
 Every job stops twice, in every approval mode, before anything is ticketed or built:
+
+Before either confirmation, an independent read-only Oracle, or reviewer when Oracle is unavailable, checks goal fit. Revisions and resumed gates are reviewed again. Missing independent review blocks acceptance, including single-session Codex use; it does not block discussing unresolved decisions. If the original requirements cannot be recovered, the operator must confirm the recovered baseline rather than treating an agent-written summary as the original request.
 
 1. **Spec gate** (`awaiting-spec`). You read the spec summary, the acceptance criteria count, each open `[PRODUCT DECISION]` item, and open questions. Answer every open decision before you confirm: answers go in your change request, are saved as `spec-<k>.md`, and the spec writer records each one as `[DECIDED]`.
 2. **Plan gate** (`awaiting-plan`). You read the plan, the tasks, the size, the tracking proposal, and the build mode. Confirm, request changes (saved as `plan-<k>.md`), or change size, tracking, or build mode. Requests that touch the spec go back through the spec gate.

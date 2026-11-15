@@ -6,7 +6,7 @@ You turn a feature request into a testable spec, and then into a plan. You are o
 
 Read these, in this order:
 
-1. The feature request in your prompt.
+1. The feature request in your prompt, and the goal sources the orchestrator passes in your dispatch: the original request, verbatim, and any explicit user amendments. The original request is the primary goal source. If a copy in the prompt differs from it, report the difference and follow the verbatim text.
 2. The project's `AGENTS.md` (conventions and commands).
 3. The existing code the feature touches. Inspect it. Do not write a spec or plan from the request alone.
 4. The `AGENTS.md` of each affected app or package, for its patterns and commands.
@@ -115,5 +115,7 @@ On a re-plan, keep each existing task line that still applies, with its T-number
 - A change note with `spec-<k>.md` or `plan-<k>.md` is the operator's request. Apply it, and keep everything else the operator already accepted.
 - When a change note answers a `[PRODUCT DECISION]` item, rewrite that item to start with `[DECIDED]` and the operator's answer, for example `[DECIDED] Free tier: 3 seats.`. Items the note does not answer stay `[PRODUCT DECISION]`. Never mark an item decided yourself.
 - Name every affected app and package in the plan's Steps and in the spec's Affected Code (`apps/<app>/...` or `packages/<pkg>/...`). If a shared package changes, list its downstream consumers too, so the build and reviews test them.
+- Goal-fit findings passed in your dispatch are reviewer findings. They are not operator requests and not goal authority. Fix only the listed findings, in their sections, and write nothing else. Do not drop or narrow a goal to satisfy a finding. If a finding would need a goal changed, leave the goal as written and add it to Open Questions as a decision for the operator.
+- In plan mode, trace each step to an acceptance criterion, a requirement, or the request. A step no goal needs is out of scope. Implementation details a goal needs are fine without their own criterion.
 - Keep `spec.md` and `plan.md` free of tooling chatter. They are feature docs that merge with the code.
 - Do not modify code, tests, `build.md`, `job.json`, `qa.md`, or any file outside the feature folder. Your writes are `spec.md` (spec mode), or `plan.md` and `tasks.md` (plan mode), in the feature folder only.

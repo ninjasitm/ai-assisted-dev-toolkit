@@ -58,7 +58,7 @@ For CLI command reference, see the matching skill: `.agents/skills/{acli,gh-cli,
 
 #### 1. Proactive Clarification
 
-- **Identify Ambiguity**: Stop and ask if a task lacks clear acceptance criteria, inputs, or expected outputs.
+- **Identify Ambiguity**: Ask a targeted question if a task lacks clear acceptance criteria, inputs, or expected outputs. It blocks only that task and its dependents; independent work with clear requirements continues (see Autonomy with blockers, item 8).
 - **Resolve Conflicts**: Flag conflicting instructions between the user prompt, existing code, and documentation before writing code.
 - **Expose Assumptions**: State your assumptions clearly and ask for validation before proceeding with high-impact changes.
 
@@ -240,7 +240,8 @@ Use custom agents when you want explicit coordinator and worker roles. Use workf
 - Do not make an implementation subagent read the plan file on its own; pass the relevant task directly.
 - In `subagent-driven-development`, keep the review order strict: spec compliance first, then code quality.
 - If a reviewer finds issues, fix them and re-run the same review before moving on.
-- Do not run multiple implementation subagents in parallel when they could touch shared packages, shared docs, or the same app surface.
+- Parallel implementation subagents need exclusive writable scopes. If scopes could overlap (shared packages, shared docs, or the same app surface), or one task reads another's output, run them sequentially. See `.claude/rules-snippets/subagent-workflow.md` for the dependency graph and batch rules.
+- Delegate substantial, separable work by default; the coordinator stays responsible for the outcome and reconciles each result before dispatching dependents.
 
 #### Recommended Flow
 
@@ -308,6 +309,12 @@ Use the appropriate sub-agents when the task benefits from specialized expertise
 2. **Provide context** — Reference the relevant rules-snippets or prompt-snippets
 3. **Set constraints** — Use tool restrictions for read-only agents (researcher, reviewer)
 4. **Chain when needed** — Planner → Developer → Reviewer for complex changes
+5. **Delegate by default** — Delegate substantial, safely separable discovery, implementation, test, and review work. The coordinator keeps outcome responsibility; trivial or context-heavy work stays direct.
+6. **Batch by dependency** — Build the dependency graph. Dispatch ready tasks with exclusive writable scopes as one parallel batch; dependent or shared-write tasks run sequentially. Reconcile each result before dispatching its dependents. `[P]` markers are optional.
+7. **Never end silently** — During active multi-step execution, end each turn as DONE, WAITING (pending task handle and resume trigger), or BLOCKED / NEEDS-DECISION (what completed, what remains, exact next user action). Dispatch or partial progress is not completion. Spec and plan confirmations remain mandatory human steps; final approval, escalation, and merge behavior follow the job's `APPROVAL_MODE` and `MERGE_MODE`. Delegation or autonomy alone never satisfies a gate.
+8. **Autonomy with blockers** — Work autonomously within the approved goal, scope, and permissions. A blocker pauses only its task and dependents: record it, defer non-global questions, and continue independent authorized work. Stop for the user only when no authorized work remains or a mandatory gate applies, and ask through the harness's native question tool when one exists.
+
+Full workflow, including resume and checkpoint rules: `.claude/rules-snippets/subagent-workflow.md`.
 
 ## Custom Agents (Subagents)
 
@@ -364,8 +371,8 @@ Workers are dispatched by coordinators and are not directly user-invocable.
 - Admin dashboards, RBAC, reporting, monitoring → Admin Portal
 - General implementation → Implementer
 
-**Sequential**: Tasks with dependencies are implemented one at a time.
-**Parallel**: Independent tasks can be dispatched to multiple subagents simultaneously.
+**Sequential**: Dependent tasks, and tasks that share a writable file, run one at a time in dependency order.
+**Parallel**: Ready tasks with exclusive writable scopes run together as one batch. Reconcile each batch's results before dispatching the next.
 
 ### Invoking Subagents
 
@@ -381,7 +388,7 @@ Subagents are typically **agent-initiated** — the coordinator decides when to 
 
 ### Factory (opt-in)
 
-An optional file-driven pipeline for feature-sized work, alongside Feature Builder and TDD. Start it with `/factory <request>` in Claude Code, Copilot, Cursor, or OpenCode. The orchestrator reads the project and asks only the glaring questions before it creates anything, then asks you to continue or change the answers. Resume a feature with `/factory start <KEY | slug | job-id>`. Codex runs the orchestrator skill directly. Each job belongs to a feature folder in `docs/features/`, stops at a spec gate and a plan gate for your confirmation before any ticket or build, builds in its own git worktree unless you ask for `--in-place`, and moves its tickets when the project tracks them. The orchestrator is [.agents/skills/factory/SKILL.md](.agents/skills/factory/SKILL.md). It runs on the native `planner` (spec and plan), `implementer` (build, repair, and rework), and `reviewer` (the code, security, ux, and ui lenses, and approval) agents. Each role's Factory rules are in its brief in `.agents/skills/factory/roles/`. Setup, placeholders, and approval modes are in [factory/README.md](factory/README.md).
+An optional file-driven pipeline for feature-sized work, alongside Feature Builder and TDD. Start it with `/factory <request>` in Claude Code, Copilot, Cursor, or OpenCode. The orchestrator reads the project and asks only the glaring questions before it creates anything, then asks you to continue or change the answers. Resume a feature with `/factory start <KEY | slug | job-id>`. Codex runs the orchestrator skill directly. Each job belongs to a feature folder in `docs/features/`, stops at a spec gate and a plan gate for your confirmation before any ticket or build, builds in its own git worktree unless you ask for `--in-place`, and moves its tickets when the project tracks them. The orchestrator is [.agents/skills/factory/SKILL.md](.agents/skills/factory/SKILL.md). It runs on the native `planner` (spec and plan), `implementer` (build, repair, and rework), and `reviewer` (the code, security, ux, and ui lenses, and approval) agents. Each role's Factory rules are in its brief in `.agents/skills/factory/roles/`. Spec and plan goal-fit must be confirmed by an independent Oracle or read-only reviewer, not the spec or plan author. Single-session role switching, including the Codex fallback, does not satisfy that and blocks these gates. Spec and plan confirmations stay mandatory human steps in every approval mode. Setup, placeholders, and approval modes are in [factory/README.md](factory/README.md).
 
 ## Documentation Requirements
 
