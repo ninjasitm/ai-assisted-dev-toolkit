@@ -64,6 +64,10 @@ Retirement/relevance and wrapper-audit entries below were already shipped in 5.2
 - Playwright detection matches any mention of "playwright" in the root manifests, not only a dependency or config.
 - Skills that restate snippet policy are not detected. Copilot instruction files and the Codex README are not audited for inlined policy.
 
+### Added
+
+- Slim model-availability guidance in both template workflows: confirm the active preset and ordered configured fallback, verify the model/variant, then retry once or report the blocker.
+
 ## [5.1.2] - 2026-10-21
 
 ### Fixed

@@ -34,6 +34,16 @@
 
 **Default to using a coordinator agent for non-trivial work.** Coordinators break complex tasks into focused subtasks and dispatch specialized subagents with context isolation.
 
+### Model Availability Fallback (oh-my-opencode-slim)
+
+Only a confirmed **model unavailable, quota/capacity, or rate-limit** failure qualifies; task, tool, and validation errors do not.
+
+1. Confirm the run is terminal and inspect partial work. Preserve the original agent, task, and context.
+2. In the same live OpenCode instance/session and project location, confirm the active Slim preset when runtime access permits. Load the Slim skill, actual user config (`~/.config/opencode/oh-my-opencode-slim.jsonc` or `.json`), and relevant project overrides (known `.opencode/oh-my-opencode-slim.json` or `.jsonc` only). In config, use the ordered `presets.<preset>.<agent>.model` array of `{id, variant}` entries as configured intent; RPC `agentModels` is a map of model strings, not a fallback chain. Do not mistake disk config for merged live state. Resolve conflicting or unknown overrides before proceeding.
+3. Verify the next configured model ID and variant with the models tool, then relaunch that same agent/task in the same session once using the explicit `model#variant`. Do not guess IDs, change config, or silently take over. If the fallback cannot be established, runtime/config sources conflict, or the retry fails, report the blocker.
+
+Runtime discovery/authentication must use the active instance and location; never hardcode a host or credentials. **Slim 3.0.7 limitation:** `POST /api/rpc/oh-my-opencode-slim.session-preset.v1/read` (body `{"input":{"sessionID":"<current-session-id>"}}`, current `location[directory]`) returns `output.presetName` and resolved `output.team.agentModels` / `agentVariants`, not the fallback chain. Use these only to confirm the active preset; they do not prove merged effective state or identify the next fallback.
+
 ## When to Use Orchestrator + Subagents
 
 - Features spanning multiple files or domains
