@@ -14,6 +14,14 @@ Task tool (general-purpose):
 
     [FULL TEXT of task requirements]
 
+    ## Goal Context
+
+    [The overall goal summary of the whole work, as context only.]
+
+    ## Original Request and Amendments (authority)
+
+    [VERBATIM original request and every explicit amendment, pasted as text, not as paths]
+
     ## What Implementer Claims They Built
 
     [From implementer's report]
@@ -58,4 +66,5 @@ Task tool (general-purpose):
     Report:
     - ✅ Spec compliant (if everything matches after code inspection)
     - ❌ Issues found: [list specifically what's missing or extra, with file:line references]
+    - Consequential findings (missing or extra scope that changes goals, approach, requirements, or plan): report them separately under their own heading and do not fix them. The coordinator routes them to the planner (see subagent-workflow Plan and Spec Changes).
 ```

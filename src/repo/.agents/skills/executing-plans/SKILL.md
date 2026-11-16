@@ -16,7 +16,7 @@ Load plan, review critically, execute tasks in batches, report for review betwee
 ## The Process
 
 ### Step 1: Load and Review Plan
-1. Read plan file
+1. Read plan file, and check for applicable plan review evidence: an explicit PASS for this plan (fit-review, Plan review). Without it, request plan review before executing.
 2. Review critically - identify any questions or concerns about the plan
 3. If concerns: Raise them with your human partner before starting
 4. If no concerns: Create TodoWrite and proceed
@@ -38,6 +38,7 @@ When batch complete:
 
 ### Step 4: Continue
 Based on feedback:
+- Classify each feedback item first: an ordinary repair stays within the plan; a plan or spec change follows Plan and Spec Changes in subagent-workflow.
 - Apply changes if needed
 - Execute next batch
 - Repeat until complete
@@ -62,7 +63,7 @@ After all tasks complete and verified:
 ## When to Revisit Earlier Steps
 
 **Return to Review (Step 1) when:**
-- Partner updates the plan based on your feedback
+- Partner updates the plan based on your feedback: Planner revises it → independent plan review → applicable existing confirmation → resume the affected work. The partner's amendment remains the authoritative goal input.
 - Fundamental approach needs rethinking
 
 **Don't force through blockers** - stop and ask.

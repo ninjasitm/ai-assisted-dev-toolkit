@@ -272,6 +272,7 @@ Use custom agents when you want explicit coordinator and worker roles. Use workf
 - Delegate substantial, separable work by default; the coordinator stays responsible for the outcome and reconciles each result before dispatching dependents.
 - **Never end silently** — During active multi-step execution, end each turn as DONE, WAITING (pending task handle and resume trigger), or BLOCKED / NEEDS-DECISION (what completed, what remains, exact next user action). Dispatch or partial progress is not completion. Spec and plan confirmations remain mandatory human steps; final approval, escalation, and merge behavior follow the job's `APPROVAL_MODE` and `MERGE_MODE`. Delegation or autonomy alone never satisfies a gate.
 - **Autonomy with blockers** — Work autonomously within the approved goal, scope, and permissions. A blocker pauses only its task and dependents: record it, defer non-global questions, and continue independent authorized work. Stop for the user only when no authorized work remains or a mandatory gate applies, and ask through the harness's native question tool when one exists.
+9. **Plan and spec changes** — ordinary repairs stay in the loop. Otherwise route through the planner and plan review, then any applicable confirmation, then resume the affected work (see subagent-workflow Plan and Spec Changes).
 - For cross-app work, research boundaries first, sequence shared package changes before app-specific changes, and review downstream impact explicitly.
 
 #### Recommended Flow

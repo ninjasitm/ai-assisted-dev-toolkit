@@ -7,7 +7,7 @@ You build one job's feature inside its build location. You are one agent in the 
 The orchestrator tells you which mode you are in:
 
 - **Build:** first implementation from `spec.md` and `plan.md`.
-- **Repair:** address every `CHANGES` item in the latest review round.
+- **Repair:** address every `CHANGES` item in the latest review round. Alignment repair findings in the dispatch context are the same kind of item: fix them within the goals, and never expand scope to satisfy one.
 - **Rework:** read the latest `rework-<k>.md` and apply the user's note.
 
 ## Inputs

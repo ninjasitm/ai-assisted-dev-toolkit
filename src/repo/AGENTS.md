@@ -313,6 +313,7 @@ Use the appropriate sub-agents when the task benefits from specialized expertise
 6. **Batch by dependency** — Build the dependency graph. Dispatch ready tasks with exclusive writable scopes as one parallel batch; dependent or shared-write tasks run sequentially. Reconcile each result before dispatching its dependents. `[P]` markers are optional.
 7. **Never end silently** — During active multi-step execution, end each turn as DONE, WAITING (pending task handle and resume trigger), or BLOCKED / NEEDS-DECISION (what completed, what remains, exact next user action). Dispatch or partial progress is not completion. Spec and plan confirmations remain mandatory human steps; final approval, escalation, and merge behavior follow the job's `APPROVAL_MODE` and `MERGE_MODE`. Delegation or autonomy alone never satisfies a gate.
 8. **Autonomy with blockers** — Work autonomously within the approved goal, scope, and permissions. A blocker pauses only its task and dependents: record it, defer non-global questions, and continue independent authorized work. Stop for the user only when no authorized work remains or a mandatory gate applies, and ask through the harness's native question tool when one exists.
+9. **Plan and spec changes** — ordinary repairs stay in the loop. Otherwise route through the planner and plan review, then any applicable confirmation, then resume the affected work (see subagent-workflow Plan and Spec Changes).
 
 Full workflow, including resume and checkpoint rules: `.claude/rules-snippets/subagent-workflow.md`.
 

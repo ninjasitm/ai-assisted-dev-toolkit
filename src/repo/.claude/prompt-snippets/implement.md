@@ -15,9 +15,10 @@ You are the orchestrator for this implementation. You derive the acceptance crit
 | Role         | Agent                                                                                             | Rules                                                                                                                                                                                 |
 | ------------ | ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Orchestrator | this session                                                                                      | Derives the acceptance criteria, dispatches, verifies, decides. Only the orchestrator accepts work or ticks tasks as accepted.                                                       |
-| Builder      | `fixer` (bounded) or `implementer` where the harness has it; `feature-builder` for complex builds | Reproduces, builds, repairs and reports evidence. Never approves its own work. Its internal self-review, and any reviewer it dispatches, do not count as the independent review.       |
+| Builder      | `fixer` (bounded) or `implementer` where the harness has it; `feature-builder` for complex builds | Reproduces, builds, repairs and reports evidence. Never authors a plan or approach note, and never approves its own work. Its internal self-review, and any reviewer it dispatches, do not count as the independent review.       |
 | Reviewer     | `reviewer`, or any read-only agent given the reviewer brief                                       | Reads the original task, the diff, the untracked files and the checks. Never edits.                                                                                                    |
-| Oracle       | `oracle`                                                                                          | Advises on approach or root cause before a build. Does not build or review.                                                                                                            |
+| Oracle       | `oracle`                                                                                          | Read-only guidance and feedback only: root-cause and approach advice, and alignment review at a checkpoint when asked (see [fit-review](../rules-snippets/fit-review.md)). Never authors or edits a plan, approach note, or code, and never builds. Its feedback is guidance. It may authorize a justified expansion within the original goals only as the Expansion rule allows.                                                                                                            |
+| Planner      | `planner` | Authors and revises any plan or approach note, including the checkpoint C note. Proposed planning adjustments go back through an independent alignment review and the existing user confirmations. Never edits code. |
 
 ## Delivery Loop
 
@@ -48,7 +49,15 @@ build → verify → review → decide ─┬─ accept   (review PASS, every re
 
 ### 2. Build or repair (builder)
 
-**Round 1 (build):** dispatch one builder, directly, with the original task text, the AC list, the discovered checks, the base commit, and the baseline snapshot. The builder must:
+**Approach checkpoint C (before the first build of a task):** the build does not start until the approach is aligned with the supplied task.
+
+1. Dispatch the planner for a lightweight approach note only: the planned files, the approach in a few lines, and the QA plan, returned as text. The planner writes no spec or plan file for this and makes no edits or build. The supplied-task exception applies, so no spec or plan is required.
+2. Dispatch the independent read-only reviewer with the checkpoint C brief (read and follow [fit-review](../rules-snippets/fit-review.md)): the original task text and every amendment, the overall work's summary and goals as context (for a task inside a feature, the whole feature, not only the task), the AC list, and the approach note as the reviewed input. Oracle when it is available read-only, otherwise a reviewer in fresh context. The planner's self-review does not count.
+3. Only the explicit `VERDICT: PASS` releases the round-1 build. A pending expansion is a `CHANGES`, never a PASS, until the planner's revision is reviewed again. A `CHANGES` with any finding marked `requires user decision; do not auto-repair` stops this task and its dependents as needs-decision, even when other findings are repairable. A `CHANGES` where every finding is repairable: the planner revises the approach note within the task's goals, and the reviewer checks the revised note again. A justified expansion from Oracle is a planner revision request under the Expansion rule in fit-review, and the reviewer checks the revised note again. No independent reviewer: this task is `BLOCKED`, and independent tasks continue.
+
+Later repair rounds reuse checkpoint C only under the freshness rule in fit-review: after an applicable `PASS`, never after a `CHANGES`.
+
+**Round 1 (build):** dispatch one builder, directly, with the original task text, the AC list, the discovered checks, the base commit, the baseline snapshot, and the approved approach note. The builder must:
 
 - For a bug, first write a failing test that reproduces it, and watch it fail for the right reason. Then make the minimal change that passes it. For a feature, follow TDD: failing test, minimal code, then refactor. Keep the diff as small as the task allows.
 - Leave all its changes uncommitted and unstaged, including new files, so the review sees them. Do not commit.
