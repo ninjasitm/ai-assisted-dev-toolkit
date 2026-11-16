@@ -193,3 +193,47 @@ for (const layout of LAYOUTS) {
     assert.doesNotMatch(s, /auto` merges|merges on an approver/);
   });
 }
+
+// Plan review propagation: roles, references, wrapper summary, reviewer tool grant, and AGENTS guidance.
+// Each check is local to the layout it names. The repo and monorepo intentional differences are kept.
+test('plan review propagation: reviewer agent grants no explicit Write in src/repo or src/monorepo', () => {
+  for (const layout of LAYOUTS) {
+    const agent = read(`${layout}/.claude/agents/reviewer.agent.md`);
+    const tools = agent.match(/^tools:.*$/m);
+    assert.ok(tools, `${layout} reviewer declares tools`);
+    assert.doesNotMatch(tools[0], /"Write"/, `${layout} reviewer must not grant Write`);
+    assert.match(tools[0], /"Read"/, `${layout} reviewer keeps Read`);
+  }
+});
+
+test('plan review propagation: repo reviewer agent keeps its read-only snippet reference and other tools', () => {
+  const agent = read('src/repo/.claude/agents/reviewer.agent.md');
+  assert.match(agent, /tools: \["Read", "Grep", "Glob", "Bash\(\*\)"\]/);
+  assert.match(agent, /\.\.\/agents-snippets\/reviewer\.md/);
+});
+
+test('plan review propagation: repo instructions wrapper summary names the consequential-plan exception only', () => {
+  const s = read('src/repo/.github/instructions/subagent-workflow.instructions.md');
+  assert.match(s, /use single agent only for focused single-file tasks without a consequential execution plan \(plan review applies to those\)/);
+  assert.match(s, /Follow the rules defined in \[\.claude\/rules-snippets\/subagent-workflow\.md\]/);
+});
+
+for (const layout of LAYOUTS) {
+  test(`plan review propagation: ${layout} AGENTS routes plan and spec changes through the planner and plan review`, () => {
+    const s = read(`${layout}/AGENTS.md`);
+    assert.match(s, /Plan and spec changes/);
+    assert.match(s, /route through the planner and plan review, then any applicable confirmation, then resume/);
+    assert.match(s, /see subagent-workflow Plan and Spec Changes/);
+  });
+
+  test(`plan review propagation: ${layout} planner snippet is the only author of plan revisions`, () => {
+    const p = read(`${layout}/.claude/agents-snippets/planner.md`);
+    assert.match(p, /You author every plan revision/);
+    assert.match(p, /Reviewers and Oracle never author or edit plans/);
+  });
+
+  test(`plan review propagation: ${layout} feature builder shows plan review and gate before implement`, () => {
+    const fb = read(`${layout}/.claude/agents-snippets/feature-builder.md`);
+    assert.match(fb, /Plan review \(fit-review, Plan review\) and any applicable confirmation must pass before step 3/);
+  });
+}

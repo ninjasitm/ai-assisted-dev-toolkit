@@ -36,6 +36,10 @@ digraph when_to_use {
 - Two-stage review after each task: spec compliance first, then code quality
 - Faster iteration (no human-in-loop between tasks)
 
+## Direct Entry and Plan Changes
+
+This skill starts only from a plan that has an explicit plan review PASS and any applicable existing confirmation, including when it is invoked directly rather than from Factory or another gate. Each finding is classified before repair. An ordinary repair stays with the implementer. A consequential finding (scope, approach, requirement, or plan) exits the implementer loop: the implementer stops and reports it, the coordinator sends it to the planner for revision, plan review, and any applicable confirmation, and the work resumes from there. Spec compliance review still runs before code quality review.
+
 ## The Process
 
 ```dot
@@ -62,18 +66,25 @@ digraph process {
     "Dispatch final code reviewer subagent for entire implementation" [shape=box];
     "Use superpowers:finishing-a-development-branch" [shape=box style=filled fillcolor=lightgreen];
 
+    "Consequential change needed?" [shape=diamond];
+    "Exit: coordinator sends to planner (revision, plan review, confirmation)" [shape=box];
+
     "Read plan, extract all tasks with full text, note context, create TodoWrite" -> "Dispatch implementer subagent (./implementer-prompt.md)";
     "Dispatch implementer subagent (./implementer-prompt.md)" -> "Implementer subagent asks questions?";
     "Implementer subagent asks questions?" -> "Answer questions, provide context" [label="yes"];
     "Answer questions, provide context" -> "Dispatch implementer subagent (./implementer-prompt.md)";
     "Implementer subagent asks questions?" -> "Implementer subagent implements, tests, commits, self-reviews" [label="no"];
-    "Implementer subagent implements, tests, commits, self-reviews" -> "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)";
+    "Implementer subagent implements, tests, commits, self-reviews" -> "Consequential change needed?";
+    "Consequential change needed?" -> "Exit: coordinator sends to planner (revision, plan review, confirmation)" [label="yes"];
+    "Consequential change needed?" -> "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)" [label="no"];
     "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)" -> "Spec reviewer subagent confirms code matches spec?";
-    "Spec reviewer subagent confirms code matches spec?" -> "Implementer subagent fixes spec gaps" [label="no"];
+    "Spec reviewer subagent confirms code matches spec?" -> "Implementer subagent fixes spec gaps" [label="no: ordinary gap"];
+    "Spec reviewer subagent confirms code matches spec?" -> "Exit: coordinator sends to planner (revision, plan review, confirmation)" [label="no: consequential gap"];
     "Implementer subagent fixes spec gaps" -> "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)" [label="re-review"];
     "Spec reviewer subagent confirms code matches spec?" -> "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" [label="yes"];
     "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" -> "Code quality reviewer subagent approves?";
-    "Code quality reviewer subagent approves?" -> "Implementer subagent fixes quality issues" [label="no"];
+    "Code quality reviewer subagent approves?" -> "Implementer subagent fixes quality issues" [label="no: ordinary issue"];
+    "Code quality reviewer subagent approves?" -> "Exit: coordinator sends to planner (revision, plan review, confirmation)" [label="no: consequential issue"];
     "Implementer subagent fixes quality issues" -> "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" [label="re-review"];
     "Code quality reviewer subagent approves?" -> "Mark task complete in TodoWrite" [label="yes"];
     "Mark task complete in TodoWrite" -> "More tasks remain?";
@@ -95,6 +106,7 @@ digraph process {
 You: I'm using Subagent-Driven Development to execute this plan.
 
 [Read plan file once: apps/{{APP_NAME}}/docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/plan.md]
+[Check the explicit plan review PASS and any applicable confirmation first: stop if either is missing]
 [Extract all 5 tasks with full text and context]
 [Create TodoWrite with all tasks]
 
@@ -213,7 +225,7 @@ Done!
 - Skip scene-setting context (subagent needs to understand where task fits)
 - Ignore subagent questions (answer before letting them proceed)
 - Accept "close enough" on spec compliance (spec reviewer found issues = not done)
-- Skip review loops (reviewer found issues = implementer fixes = review again)
+- Skip review loops (reviewer found ordinary issues = implementer fixes = review again; consequential findings go to the coordinator)
 - Let implementer self-review replace actual review (both are needed)
 - **Start code quality review before spec compliance is ✅** (wrong order)
 - Move to next task while either review has open issues
@@ -226,7 +238,7 @@ Done!
 
 **If reviewer finds issues:**
 
-- Implementer (same subagent) fixes them
+- Implementer (same subagent) fixes each ordinary issue. A consequential finding (scope, approach, requirement, or plan) is not fixed here: it goes to the coordinator for the planner, plan review, and any applicable confirmation (see Direct Entry and Plan Changes).
 - Reviewer reviews again
 - Repeat until approved
 - Don't skip the re-review

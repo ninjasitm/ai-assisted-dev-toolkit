@@ -148,10 +148,19 @@ For sessions that span several batches or a context reset:
 
 Spec and plan confirmations remain mandatory human steps; final approval, escalation, and merge behavior follow the job's `APPROVAL_MODE` and `MERGE_MODE`. Delegation, batching, autonomy, and subagent sign-offs never satisfy spec or plan human confirmation, or human final approval when `APPROVAL_MODE=human`. Mode-defined approver behavior is preserved. Stop at the gate and report it as WAITING or BLOCKED.
 
+## Plan and Spec Changes
+
+- **Route by substance.** An ordinary repair (a fix inside the accepted plan and goals) stays with the builder or specialist that owns the files. A plan or spec change, or any expansion, goes to the planner: the planner authors the revision, and no reviewer, Oracle, or builder does.
+- **Order.** The planner authors the revision, then independent plan review (fit-review, Plan review), then the applicable existing confirmation (Factory's spec and plan gates, or none where the flow has no gate), then resume the affected work. A PASS on an earlier plan does not cover the revised one.
+- **Handoff and resume.** Every handoff and resume carries the verbatim original request and explicit amendments as the goal authority, plus the overall summary and goals as context. The summary is not authority and never replaces them. No new record schema or structured-file field is added: use the existing progress record or the conversation.
+- **Expansion.** Oracle may authorize a justified in-goal expansion only as fit-review's Expansion rule allows. The expansion then goes to the planner as a revision request.
+- **Feature Builder.** A standalone Planner-to-Implementer handoff is a bypass: it must get the plan gate and classify each feedback item as a repair or a plan or spec change before implementation.
+- **Reviewers.** A reviewer dispatched under a goal-fit or alignment contract follows that contract's reply format, not the generic review summary.
+
 ## Quality Gates
 
 - Every implementation must pass **Reviewer** before proceeding
-- Every plan must pass **Reviewer** before final acceptance during a commit or before implementation begins
+- Every plan must pass plan review (fit-review, Plan review) before implementation begins; the Reviewer gate applies to implementations
 - Coordinators should not skip review even for "simple" changes
 - If a reviewer requests changes, the original specialist fixes them and re-review occurs
 

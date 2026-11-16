@@ -64,10 +64,12 @@ factory/
       plan-<k>.md            you, from the operator's change request at the plan gate
       build.md               builder; cumulative round log; you append the user's QA answer blocks (kept on rewrite)
       round-<N>/review-<lens>.md   one per configured lens
+      round-<N>/alignment-A-<j>.md   checkpoint A replies, one file each, never overwritten (see Alignment checkpoint A)
       decision.md            approver (or you, on escalation)
       merge-conflict.md      you, on a merge conflict (blocks approve)
       bootstrap.md           you, on a failed worktree bootstrap step (blocks the build)
       rework-<k>.md          you, from the user's note
+      alignment-B-<b>.md     you, checkpoint B reply on a rework note, with its reserved file indices (see Rework)
       main-copies/           feature docs moved aside at merge (see Merge procedure)
   archive/                   closed jobs moved here by /factory archive, ignored by git
     <NNN-slug>/              same layout as jobs/; never resumed
@@ -191,15 +193,41 @@ Resume by stage:
 | `awaiting-spec` | Show the spec gate (it runs the fit review first) |
 | `plan` | Rerun `planner` in plan mode (brief `roles/spec.md`), then show the plan gate |
 | `awaiting-plan` | Show the plan gate (it runs the fit review first) |
-| `build` | Rerun `implementer` (brief `roles/build.md`) in the mode the files call for: rework if a `rework-<k>.md` is newer than `build.md`, repair if the last review round has `CHANGES`, otherwise build |
-| `review` | Rerun the review round `round` |
-| `approve` | Rerun the approval (`reviewer` in approval mode, brief `roles/approve.md`) |
-| `awaiting-human` | Print the approver's rationale, the QA record and any human handoff from `qa.md` (see QA guidance), and the `/factory approve` command |
+| `build` | Build state resume (see Resume of build and review state below): a finished `build.md` goes to checkpoint A without rerunning the builder; otherwise rerun `implementer` (brief `roles/build.md`) in the mode the files call for: rework if a `rework-<r>.md` is newer than `build.md`, otherwise build |
+| `review` | Review and alignment state resume (see Resume of build and review state below) |
+| `approve` | Review and alignment state resume (see Resume of build and review state below). Only after an explicit PASS, rerun the approval (`reviewer` in approval mode, brief `roles/approve.md`) |
+| `awaiting-human` | Print the approver's rationale, the QA record and any human handoff from `qa.md` (see QA guidance). Check the current alignment record first: print the `/factory approve` command only when it is an applicable PASS; otherwise print its remediation (see Approve step 3) |
 | `needs-human`, `failed_stage` `spec` | Rerun the spec stage (see Spec), then show the spec gate |
 | `needs-human`, `failed_stage` `plan` | Rerun the plan stage (see Plan), then show the plan gate |
-| `needs-human`, otherwise | Print the reason from `decision.md`, `merge-conflict.md`, `bootstrap.md`, or `build.md`, and the options: rework, approve, or abandon. If a human check is pending, print its exact handoff from `qa.md` first |
+| `needs-human`, otherwise | Print the reason from `decision.md`, `merge-conflict.md`, `bootstrap.md`, `build.md`, or the current `round-<N>/alignment-A-<j>.md`, and the options: rework, approve, or abandon. If a human check is pending, print its exact handoff from `qa.md` first |
 | `abandoned` | Closed. Say so and stop. To work on the feature again, run `/factory start <slug or KEY>`, which creates a new job |
 | Archived (in `factory/archive/`, any stage) | Closed. Say so and stop (see Start step 1) |
+
+### Resume of build and review state
+
+Resume is one branch. It starts by capturing the persisted values: `R` = `round`, `S` = `stage`, and `failed_stage`. Nothing is written until a branch below says so. Never add 1 to `round` on resume, because `round` already holds the round in progress. A resume caller runs checkpoint A without step 0: it keeps `round` and `stage` as persisted, so an interrupted check leaves the job as it was.
+
+**Stop first.** If any of these holds, print the reason and its remediation, and stop. Do not repair, do not run checkpoint A, and do not change `S`:
+
+- a `Not verified:` item in any `round-R/review-*.md`;
+- `decision.md` starts with `ESCALATE` and belongs to the current cycle. Its round `N` is the one in its `Round: N` line or in `retries exhausted after round N`. It belongs to the current cycle when `N` is at least the cycle start: the `Starts at round` value of the latest `rework-<k>.md`, or round 1 when there is none. An earlier cycle's `ESCALATE` is historical: it does not stop a newer rework that has started, and it stays in `decision.md` or its `decision-<R>.md` copy;
+- step 8's third-review-round rule applies to `R` (`CHANGES` with the retries already used);
+- the current alignment record for `R` is `CHANGES` with a user decision. The operator answers with `/factory rework <id> <note>` or `/factory abandon <id>`.
+
+**Then, by the captured stage:**
+
+- **`build`.** If `build.md` starts with `STATUS: READY` and is newer than `job.json`, the builder finished this round. Do not rerun it: go to step 6's READY handling, a normal initial-build caller (checkpoint A for `U = R`, then step 7). Otherwise rerun the builder: rework when a `rework-<r>.md` is newer than `build.md`, otherwise build.
+- **`needs-human` with `failed_stage` null.** Resume only an alignment stop: the current record for `R` is missing or `BLOCKED`, or it is an alignment timeout the operator has confirmed stopped (see the timeout rule). Then run checkpoint A fresh as a resume caller. Any other reason prints its remediation and waits. A `needs-human` stop is never converted into a repair on start.
+- **`review`, `approve`, or `awaiting-human`.** Look at `round-R/` first:
+  - **Repair finished.** `round-R/` holds a `review-*.md` with `VERDICT: CHANGES`, and `build.md` starts with `STATUS: READY` and is newer than those reviews. Set `round` to `R + 1` and stage `review` (persist), then run checkpoint A for `U = R + 1` as a normal review-repair caller. On PASS, step 7 runs for `U`.
+  - **Repair not finished.** The same `CHANGES` reviews, with no newer READY `build.md`. The stop rules above already passed, so the repair is authorized: rerun it with `Round` `R` (step 8), then checkpoint A for `R + 1` as a normal caller.
+  - **No review yet for `R`.** Checkpoint A owns round `R` (a first build, or a review repair that persisted `U`). Read its record. None, or `BLOCKED`: run checkpoint A fresh as a resume caller. `CHANGES` with only repairable findings: restore its findings, repair with `Round` `R`, then checkpoint A again for `R`. `PASS`, or a `Skipped:` line that names a current PASS: run step 7 for `R`, the captured action.
+  - **Reviews exist for `R`.** An explicit PASS is needed before any review or approval. Run checkpoint A fresh for `R` as a resume caller, then:
+    - `CHANGES` with a user decision: stop (see Stop first).
+    - `CHANGES` with only repairable findings: restore its findings, repair with `Round` `R`, set `repaired` to yes, and run checkpoint A fresh for `R` again.
+    - `BLOCKED`: stage `needs-human` with the alignment reason. Retry with `/factory start <id>` after the cause is fixed.
+    - `PASS`: resume the captured action. `review` reruns the review round `R` (step 7). `approve` reruns the approval (`reviewer` in approval mode, brief `roles/approve.md`). `awaiting-human` prints the handoff and the `/factory approve` command, and reruns nothing. If `repaired` is yes, the code changed after the reviews, so the captured action becomes a rerun of the reviews for `R` (step 7), whatever `S` was.
+- **Timeout rule.** A timed-out alignment reviewer is never re-dispatched. Set `needs-human`, `failed_stage` `null`, and the reason `alignment reviewer timed out after <N> min; it may still be running`. The operator confirms it has stopped, then `/factory start <id>` runs the resume above, which writes a new `j`.
 
 A rerun of a failed stage sets `stage` to that stage and clears `failed_stage`.
 
@@ -284,7 +312,7 @@ If the session ends at the gate, nothing is lost. `/factory start <job-id|slug|K
 Read and follow the goal-fit brief: [fit-review](../../../.claude/rules-snippets/fit-review.md). It is a read-only goal-fit review, separate from the reviewer lenses. It runs every time a spec or plan gate is shown: after each planner run, after each change request, after each repair, and on resume.
 
 - **Baseline first.** No review runs without the original request. Check `intake.md` for an `## Original request` section or a `## Baseline confirmed` section. If neither exists (a key or slug start, a legacy job, or a sparse one), the orchestrator promotes nothing. It shows the candidate sources it found (the existing `intake.md`, the tracker description when `issue_key` is set, and the existing `spec.md`), each labelled as a candidate and not a requirement. It asks the operator, as a numbered choice: (1) confirm one candidate as the original request, or (2) paste the original request. It writes the confirmed text to `intake.md` under `## Baseline confirmed`, naming its source. Until then the gate reports `NEEDS-DECISION: baseline missing`, and Confirm is not offered.
-- **Goal sources in every dispatch.** Pass them as text, not as paths alone: the verbatim original request (from `## Original request` or `## Baseline confirmed`), and every explicit amendment (the intake answers, and the operator's `spec-<k>.md`, `plan-<k>.md`, and `rework-<k>.md`). For a plan review, also pass the accepted spec. The accepted spec and plan are traced against these; they are not goal authority. A slug, a key, a tracker title, the existing spec on its own, and any reviewer finding are never goal sources.
+- **Goal sources in every dispatch.** Pass them as text, not as paths alone, with the job's overall summary and goals as context (never as authority): the verbatim original request (from `## Original request` or `## Baseline confirmed`), and every explicit amendment (the intake answers, and the operator's `spec-<k>.md`, `plan-<k>.md`, and `rework-<k>.md`). For a plan review, also pass the accepted spec. The accepted spec and plan are traced against these; they are not goal authority. A slug, a key, a tracker title, the existing spec on its own, and any reviewer finding are never goal sources.
 - **Reviewer.** Dispatch `oracle` when the harness has it configured read-only. Otherwise dispatch `reviewer` in fresh context. The task line is `goal-fit review: spec` or `goal-fit review: plan`, then the paths block, the goal sources, and the brief. Give the reviewer the artifacts, never the planner's summary.
 - **Independence.** The planner's own output, the orchestrator's reading, and a single session playing every role do not count. With no independent reviewer, the gate reports `BLOCKED: no independent reviewer`, shows the artifact, and does not offer Confirm. Request changes and abandon stay available.
 - **Reply.** The first line decides:
@@ -395,7 +423,7 @@ Let `N` be the current round, starting at `1` for a new job.
 4. **Plan gate.** Show the gate and wait for the operator's confirmation (see Plan gate). Do not continue until the operator confirms.
 5. **Tracking and build location.** Run Tracking if `tracking` is `tracked`. Create the build location: the worktree and its copy of the feature docs (see Worktree), or the in-place branch (see In-place mode). Set `worktree_path` if a worktree was made. Set stage `build`. Move any tracked tickets to In Progress (see Ticket lifecycle).
 6. **Build.** Dispatch `implementer` (brief `roles/build.md`) in build mode. Wait (see Harness notes), then read the first line of `build.md`:
-   - `STATUS: READY` → continue.
+   - `STATUS: READY` → run alignment checkpoint A (see Alignment checkpoint A), then step 7.
    - `STATUS: BLOCKED` → stage `needs-human`. Tell the user the reason from `build.md`. Stop.
    - Anything else → treat as BLOCKED with reason "builder wrote no valid status".
 7. **Review round N.** Set stage `review`, `round` to `N`, and every configured lens to `pending` in `reviews`. Move tracked tickets to In Review. Dispatch the lenses from `{{FACTORY_REVIEW_LENSES}}` in two stages, each with the paths block:
@@ -407,19 +435,35 @@ Let `N` be the current round, starting at `1` for a new job.
    Wait for every reviewer's reply, and save each as `round-N/review-<lens>.md` (see Harness notes). Each must have a first line `VERDICT: PASS` or `VERDICT: CHANGES`. A reviewer whose reply has no valid first line is re-dispatched alone, once. If it still fails, stage `needs-human`. Never resume the builder during a review round. Update `reviews` from the verdicts.
 8. **Verdicts.** Check in this order:
    - Any blocking item titled `Not verified:`, from any lens: no repair. Stage `needs-human`. Tell the user the `Not verified` items. Stop.
-   - Any `CHANGES`, and the cycle has used fewer than 3 review rounds: run a builder repair (below) with `Round` set to `N`, the round just reviewed. Then set `N` to `N + 1` and go to step 7.
+   - Any `CHANGES`, and the cycle has used fewer than 3 review rounds: run a builder repair (below) with `Round` set to `N`, the round just reviewed. Then set `N` to `N + 1` (the upcoming review round `U`), run checkpoint A for `U` when the repair requires it (see Repair), and go to step 7.
    - Any `CHANGES` on the third review round of the cycle: write `decision.md` with first line `ESCALATE` and the reason ("retries exhausted after round N; open items: …", listing the blocking items). Stage `needs-human`. Tell the user. Stop.
    - All `PASS`: go to step 9.
 
    A review cycle is the rounds since the job started, or since the latest `rework-<k>.md` (see Rework). "Third review round of the cycle" means two repairs have already been made in this cycle. The rework note records where its cycle starts.
-9. **Approve.** Set stage `approve`. Dispatch `reviewer` in approval mode (brief `roles/approve.md`, fresh context) with the paths block. Wait for the approver's reply and save it as `decision.md` (see Harness notes). Its first line must be `APPROVE` or `ESCALATE`. If the line is missing or invalid, re-dispatch once, then stage `needs-human`.
+9. **Approve.** Set stage `approve`. Dispatch `reviewer` in approval mode (brief `roles/approve.md`, fresh context) with the paths block. Wait for the approver's reply and save it as `decision.md` (see Harness notes). When the first line is `ESCALATE`, add a second line `Round: <N>` with the round just approved, so resume can tell which cycle it belongs to. Its first line must be `APPROVE` or `ESCALATE`. If the line is missing or invalid, re-dispatch once, then stage `needs-human`.
    - `ESCALATE` → stage `needs-human`. Tell the user the rationale. Stop.
    - `APPROVE` and `{{APPROVAL_MODE}}` is exactly `auto` → run the merge procedure, unless the job has a `human` criterion (see Functional QA). Such a job stops at `awaiting-human` even under `auto`, as below.
    - `APPROVE` otherwise: stage `awaiting-human`. Print the QA guidance, with the human handoff when there is one (see QA guidance). Tell the user to run `/factory approve <id>` after reviewing the branch. Stop. Any value other than exactly `auto` is treated as `human`.
 
 ### Repair
 
-Dispatch `implementer` (brief `roles/build.md`) in repair mode with the paths block, where `Round` is the round just reviewed (the `N` from step 7, before it increments). It reads `spec.md`, `plan.md`, `build.md`, and `round-<Round>/review-*.md`. It must address every `CHANGES` item or justify it in `build.md`. It also rewrites `qa.md`. Wait for `build.md` (see Harness notes) and check its first line again (step 6 rules).
+Dispatch `implementer` (brief `roles/build.md`) in repair mode with the paths block, where `Round` is the round just reviewed (the `N` from step 7, before it increments). It reads `spec.md`, `plan.md`, `build.md`, and `round-<Round>/review-*.md`. It must address every `CHANGES` item or justify it in `build.md`. It also rewrites `qa.md`. Wait for `build.md` (see Harness notes) and check its first line again (step 6 rules). Here `Round` is the round just reviewed (`R`). The upcoming review round is `U` (step 8 sets it). After a `STATUS: READY` repair, run alignment checkpoint A for `U` before step 7, unless the repair is a mechanical change after an applicable `PASS` (fit-review Freshness). Never reuse a PASS after a `CHANGES`.
+
+### Alignment checkpoint A
+
+Runs before the upcoming review round `U` starts: after the first build (`U` is `N`), and after a review repair (`U` is the incremented `N`, see step 8). Resume also runs it, as a resume caller (see Resume of build and review state). Read and follow [fit-review](../../../.claude/rules-snippets/fit-review.md) for checkpoint A. The goal sources are the original request and every explicit amendment, and the accepted spec and plan are traced against them.
+
+0. Normal callers only (the initial build and a review repair). Persist first: set `round` to `U` and stage `review` in `job.json` before any dispatch, so a blocked or interrupted `U` is visible. Step 7 writes the same values again when reviews start; that write is idempotent.
+1. Dispatch an independent, read-only reviewer: `oracle` when the harness has it configured read-only, otherwise `reviewer` in fresh context. Oracle reads and advises only: it never authors or edits a plan or code. The task line is `alignment checkpoint A: round <U>`, then the paths block (with `Round` set to `U`), the goal sources, the job's overall summary and goals as context, the accepted spec and plan, and the brief. Its reviewed inputs are the build location's changed-file list against the merge-base, including uncommitted and new files. Give it the artifacts, never the builder's summary.
+2. Save the reply as a new file `round-<U>/alignment-A-<j>.md`, where `j` is the next free index in that folder. Never overwrite an earlier reply. A skipped check is saved the same way with one line, `Skipped: mechanical change after the applicable PASS in round-<U'>/alignment-A-<j'>.md`, naming the retained PASS it relies on. The current record for a round is its highest-`j` file. Then the first line decides:
+   - `VERDICT: PASS`: a normal caller continues to step 7 for `U`. A resume caller continues with the captured action of Resume of build and review state, and step 7 runs only when that action is a review.
+   - `VERDICT: CHANGES` with any finding marked `requires user decision; do not auto-repair`: a user decision wins, even when other findings are repairable. Stage `needs-human` with the reason `alignment decision: <finding>`. Show the finding to the operator and stop. The record stays in the round folder and is printed on resume. The operator answers with `/factory rework <id> <note>` (checkpoint B classifies it) or `/factory abandon <id>`.
+   - `VERDICT: CHANGES` with a justified expansion (the fit-review Expansion rule) and no decision finding: the expansion changes an accepted plan, so it is not applied directly. Stage `needs-human` with the reason `alignment expansion: <finding>`. The operator routes it with `/factory rework <id> <note>`: checkpoint B classifies it as a plan change, and the plan gate confirms the planner's revision.
+   - `VERDICT: CHANGES` where every finding is repairable: dispatch the builder in repair mode (brief `roles/build.md`) with `Round` set to `U` and the findings under the heading `Alignment repair findings (reviewer findings, not operator requests, not goal authority)`. There are no review files for `U` yet, so these findings are the repair input. Then run checkpoint A for `U` again. A `CHANGES` is always followed by a new check. Repeat until `PASS`, `needs-human`, or `BLOCKED`, using the rules in Fit review for a repair that changes nothing or a finding that returns unchanged. No round limit applies, and alignment repairs do not use the review-round budget.
+   - No valid first line: re-dispatch once. If it still has none, save a file whose first line is `BLOCKED: no valid alignment reply`, and stage `needs-human`.
+   - No independent reviewer: save a file whose first line is `BLOCKED: no independent alignment reviewer`, stage `needs-human` with that reason, and do not start the review round.
+
+**Resume.** A resumed job decides what runs next with the procedure in Resume of build and review state (under Start). Pending alignment findings are never dropped on resume.
 
 ### Builder continuity
 
@@ -461,8 +505,23 @@ Rules:
 `/factory rework <job-id> <note>`:
 
 1. Refuse unless stage is `awaiting-human` or `needs-human`, and the build location still exists (the worktree, or the branch for an in-place job). If a timed-out agent may still be running (see Harness notes), first confirm with the operator that it has stopped.
-2. `k` = next free index of `rework-<k>.md` in the job folder, starting at 1.
-3. Let `N` = `round + 1`. Write `rework-<k>.md`:
+   **Checkpoint B (before any file is written).** Read and follow the [fit-review](../../../.claude/rules-snippets/fit-review.md) brief for checkpoint B. Dispatch the independent read-only reviewer (`oracle` when available read-only, otherwise `reviewer` in fresh context) with the original request and every explicit amendment verbatim, the job's overall summary and goals as context, `spec.md`, `plan.md`, the latest `build.md`, and the note verbatim. It classifies the note as `repair`, `plan change`, or `spec change`, and it does not repair the note. Reserve the next free index `b` of `alignment-B-<b>.md`, and the next free index of each family the route might write (`rework-<r>.md`, `spec-<s>.md`, `plan-<p>.md`). Save the reply as `alignment-B-<b>.md` with a header line `Note: <first line of the note>`, the reserved indices, and `Starts at round <N>`, where `N` = `round + 1` from `job.json` as it is now. The gates never change `round`, so this value stays valid until the continuation below persists it. Each family keeps its own index, and no existing file of any family is overwritten. Then:
+   - `VERDICT: PASS` with `Classification: repair`: continue with steps 2 to 4.
+   - A finding marked `requires user decision; do not auto-repair`, or any `plan change` or `spec change`: do not start the rework. Show the operator the classification and the finding, and ask as a numbered choice: (1) spec change: the spec gate, then the regenerated plan gate; (2) plan-only change: the plan gate; (3) leave the job as it is. A spec change always takes choice 1. Add a `Route: spec then plan` or `Route: plan` line to `alignment-B-<b>.md`.
+      - Route `spec then plan`: write the note verbatim to the reserved `spec-<s>.md`, set stage `spec`, rerun `planner` in spec mode, and show the spec gate. Its Confirm reruns `planner` in plan mode, so the plan is regenerated from the confirmed spec. The plan gate then shows the regenerated plan, and its Confirm is required again.
+      - Route `plan`: write the note verbatim to the reserved `plan-<p>.md`, set stage `plan`, rerun `planner` in plan mode, and show the plan gate.
+      - Continuation: a routed rework continues from the plan gate's Confirm. It is pending while the newest `alignment-B-<b>.md` has a `Route:` line and `job.round` is lower than its `Starts at round` value. Once `round` is persisted, it is no longer pending and the job resumes as an ordinary build. Its Confirm does not run Start's create or resume path, and it does not run the initial build-location setup. It runs this procedure in order:
+        1. **Tracking first** when `tracking` is `tracked`: write missing keys and rename the folder in the main checkout (this updates `feature_dir`). Only then sync the docs, so keys and the rename are carried.
+        2. **Validate the build location from `job.json`**, independently of the gate. `worktree` `true`: `worktree_path` must be set to an existing worktree on `factory/<id>`. `worktree` `false` (in-place): `worktree_path` must be `null` and the main checkout must be on `factory/<id>`, and the In-place dirty check must pass. That check excludes the feature roots, so the new spec and plan do not trip it. A failed check stops the continuation and reports the reason. Never run checkout, reset, stash, or clean to pass a check, so newly edited docs are never lost.
+        3. **Doc sync**, for a worktree job only. An in-place job's main checkout is its location, so only the Feature docs commit runs there. Carry the renamed folder: if the worktree still has the old unkeyed folder, `git mv` its `qa.md` into `feature_dir` when that folder has none; if both have one, stop and ask. Copy `spec.md` and `plan.md` from the main checkout's `feature_dir` over the worktree's copies. Copy `tasks.md` when the main checkout has it; when the main checkout lacks it and the worktree has one, remove only that worktree `tasks.md`. Never copy, delete, or overwrite `qa.md` or any other file. Then run the Feature docs commit: its step 1 removes the old unkeyed folder only after `qa.md` has moved.
+        4. **Round and note.** Set `N` = `round + 1` from `job.json` now. Compare it with `Starts at round` in `alignment-B-<b>.md`; if they differ, stop and ask. Write the reserved `rework-<r>.md` if it does not exist yet: `Starts at round N.`, then `The operator's note is in spec-<s>.md or plan-<p>.md, as named by alignment-B-<b>.md. The confirmed spec and plan are the inputs.`
+        5. Continue with Rework step 4 below. It persists `round` = `N` and stage `build`, which ends the pending state. Steps 1 to 4 are idempotent, so a crash before that persist reruns them safely.
+      - A routed job at `awaiting-spec` or `awaiting-plan` resumes at its gate, and its Confirm follows this procedure.
+   - No independent reviewer: stop with `BLOCKED: no independent reviewer`. The stage stays where it was, and no rework starts.
+   - No valid first line: re-dispatch once. If it still has none, stop and report it. The stage stays where it was.
+
+2. `r` = the reserved index of `rework-<r>.md` from checkpoint B's header. Each family keeps its own index, and an existing file is never overwritten.
+3. Let `N` = `round + 1`. Write `rework-<r>.md`:
 
    ```
    Starts at round N.
@@ -470,7 +529,7 @@ Rules:
    <the user's note, verbatim>
    ```
 
-4. Set `round` to `N`, stage `build`. Move tracked tickets to In Progress. For an in-place job, switch the main checkout to `factory/<id>` if needed (see In-place mode). For a worktree job, rerun the bootstrap first (see Worktree bootstrap); a failed step stops the rework the way it stops a build. Dispatch a fresh `implementer` (brief `roles/build.md`) in rework mode. It reads the latest `rework-<k>.md` and rewrites `qa.md`. Wait for it. Then continue from step 6's status check on `build.md` (do not dispatch the builder again), and run review round `N` from step 7.
+4. Set `round` to `N`, stage `build`. If `decision.md` exists and `decision-<R>.md` does not, copy `decision.md` unchanged to `decision-<R>.md`, where `R` is the round it names. This is a copy, never a deletion, so the historical decision stays. Move tracked tickets to In Progress. For an in-place job, switch the main checkout to `factory/<id>` if needed (see In-place mode). For a worktree job, rerun the bootstrap first (see Worktree bootstrap); a failed step stops the rework the way it stops a build. Dispatch a fresh `implementer` (brief `roles/build.md`) in rework mode. It reads the latest `rework-<k>.md` and rewrites `qa.md`. Wait for it. Then continue from step 6's status check on `build.md` (do not dispatch the builder again), and run review round `N` from step 7.
 
 The new cycle starts with a fresh repair budget. Old rounds and reviews are kept, not overwritten.
 
@@ -511,11 +570,11 @@ Rules:
 
 1. If stage is `merged`: move the job's tickets to Done (if tracked), report, and stop. Do not merge again.
 2. Otherwise refuse unless stage is `awaiting-human` or `needs-human`. The user's explicit command is the approval. Do not re-run the approver.
-3. Refuse unless the first line of `build.md` is exactly `STATUS: READY`. A job that failed before its build has no `build.md`: say so, and point to `/factory start <job-id>` (for a failed spec or plan step) or `/factory abandon <job-id>`.
+3. Refuse unless the first line of `build.md` is exactly `STATUS: READY`. Also refuse, in every mode and from `needs-human` too, unless the current alignment record passes: the highest-`j` `round-<round>/alignment-A-<j>.md` for the job's `round` has first line `VERDICT: PASS`, or is a `Skipped:` line that names a `VERDICT: PASS` file. A `CHANGES` record, a `BLOCKED` record, a missing record, or a record made stale by a later change that needs a new checkpoint under fit-review Freshness refuses. Name the record and what is missing. Remediation: a missing, stale, `BLOCKED`, or repairable `CHANGES` record is fixed with `/factory start <job-id>` (see Resume of build and review state). A decision `CHANGES` is answered with `/factory rework <job-id> <note>` or `/factory abandon <job-id>`. A job that failed before its build has no `build.md`: say so, and point to `/factory start <job-id>` (for a failed spec or plan step) or `/factory abandon <job-id>`.
 4. Refuse while `merge-conflict.md` exists in the job folder. The user resolves the conflict on the branch, then removes that file.
 5. **Required QA evidence.** Refuse, in every mode and from `needs-human` too, while the functional QA record in `qa.md` shows a failed, not-run, or missing automated check or covered test, or stale evidence (see Functional QA, Approve). Name the row and what the user must supply. Do not waive this with the approve command: the fix is rework, or a builder repair followed by review. The existing overrides for other items are unchanged.
 6. **Human QA.** Only when the job has a `human` check (see Functional QA). The command alone is not enough for it. If no answer is recorded for the tested commit, print the handoff from `qa.md` and ask in chat for the answer in the response template, then stop. When the answer comes, append it verbatim to `build.md` as a `## Human QA answer (<tested commit>)` block. Proceed only when every human check reads `PASS` with an explicit `accept` for that commit. A `FAIL` or `reject` does not merge: tell the user to run `/factory rework <job-id> <note>` naming the row. `defer`, `not run`, or no answer leaves the job at `awaiting-human`. A job with no `human` check skips this step.
-7. Print the reason the job stopped before merging, so the user sees what they approve: the `ESCALATE` rationale in `decision.md`, the `Not verified` items, or the failed agent. For `awaiting-human`, print the approver's rationale.
+7. Print the reason the job stopped before merging, so the user sees what they approve: the `ESCALATE` rationale in `decision.md`, the `Not verified` items, the current alignment record's blocker, or the failed agent. For `awaiting-human`, print the approver's rationale.
 8. Run the merge procedure for `{{MERGE_MODE}}`. In `push-mr`, a job with `mr` set takes the finish path there instead.
 
 ## Abandon

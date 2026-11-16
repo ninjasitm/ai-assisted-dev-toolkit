@@ -44,7 +44,8 @@ Implement bug fixes and corrections with proper validation and documentation.
    Then take the baseline snapshot as in implement.md step 1, before any build.
 
 3. **Reproduce and Build** (builder, implement.md step 2):
-   - Dispatch one builder with the bug report, the AC list, the discovered checks, the base commit and the baseline.
+   - Run the approach checkpoint C of [implement.md](implement.md) before the build: the planner's approach note is reviewed against the bug report, and only `VERDICT: PASS` releases the build.
+   - Dispatch one builder with the bug report, the AC list, the discovered checks, the base commit, the baseline, and the approved approach note.
    - The builder identifies the root cause and writes a **failing test that reproduces the bug**. It watches the test fail for the right reason, then makes the minimal change that passes it. The reproduction belongs to the builder, not to the orchestrator.
    - Fix only the reported issue. Maintain backward compatibility. Leave all changes uncommitted, including new files.
 

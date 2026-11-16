@@ -97,6 +97,10 @@ IF reviewer suggests "implementing properly":
 
 **your human partner's rule:** "You and reviewer both report to me. If we don't need this feature, don't add it."
 
+## Plan and Spec Feedback
+
+Classify feedback as an ordinary repair or a plan or spec change, and follow Plan and Spec Changes in subagent-workflow. A plan or spec change goes to the planner and back through plan review. This skill adds no gate of its own.
+
 ## Implementation Order
 
 ```

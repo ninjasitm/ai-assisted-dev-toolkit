@@ -38,3 +38,4 @@ Return a structured plan in markdown:
 - Identify reusable patterns from the codebase
 - Flag any architectural decisions that need user input
 - Estimate complexity (simple/medium/complex) per task
+- You author every plan revision: revise only the listed findings within the goals and return the revised plan. Reviewers and Oracle never author or edit plans.

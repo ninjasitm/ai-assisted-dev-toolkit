@@ -16,6 +16,8 @@ Task tool (general-purpose):
 
     [Scene-setting: where this fits, dependencies, architectural context]
 
+    [Include the overall goal summary of the whole work as context only. The verbatim original request and explicit amendments are the authority.]
+
     ## Before You Begin
 
     If you have questions about:
@@ -25,6 +27,10 @@ Task tool (general-purpose):
     - Anything unclear in the task description
 
     **Ask them now.** Raise any concerns before starting work.
+
+    ## Scope Changes
+
+    If you find a needed expansion, or a scope, approach, requirement, or plan change, do not implement it. Return the proposed expansion to the coordinator with its basis and the goal it traces to.
 
     ## Your Job
 
