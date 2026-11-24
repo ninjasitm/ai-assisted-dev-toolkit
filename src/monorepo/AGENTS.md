@@ -157,14 +157,20 @@ For detailed standards on specific topics, refer to these skills in `.agents/ski
 | ------------------------- | ----------------------------------------- | ---------------------------------------------------- |
 | **Atlassian CLI**         | `acli/SKILL.md`                           | Atlassian CLI (ACLI) command reference               |
 | **Bitbucket CLI**         | `bkt-cli/SKILL.md`                        | Bitbucket PRs, issues, repos CLI reference           |
-| **Brainstorming**         | `brainstorming/SKILL.md`                  | Structured ideation sessions                         |
+| **Brainstorming** | `brainstorming/SKILL.md` | Open ideation toward options. For blocking questions about a plan, use Grill Me instead |
 | **Code Simplifier**       | `code-simplifier/SKILL.md`                | Simplifies code for clarity without behavior changes |
-| **Code Review**           | `requesting-code-review/SKILL.md`         | Review process and checklists                        |
+| **Code Review** | `code-review/SKILL.md` | Read-only review of one change set against standards and requirements |
 | **Debugger**              | `debugger/SKILL.md`                       | Structured debugging dispatch with root cause focus  |
 | **Debugging**             | `systematic-debugging/SKILL.md`           | Debugging workflows                                  |
 | **Documentation**         | `project-documentation/SKILL.md`          | README, comments, ADRs, changelogs                   |
 | **Executing Plans**       | `executing-plans/SKILL.md`                | Following through on implementation plans            |
 | **Factory**               | `factory/SKILL.md`                        | Opt-in spec-to-merge feature pipeline                |
+| **Autonomous Mode** | `autonomous-mode/SKILL.md` | Run an accepted plan's unblocked work; Oracle only for technical blockers; human-only items last |
+| **Design System** | `design-system/SKILL.md` | Reuse the project's design system when building UI (UI projects only) |
+| **Grill Me** | `grill-me/SKILL.md` | Blocking clarification of your own plan or request, before approval |
+| **Learn** | `learn/SKILL.md` | Advisory proposal after a verified Factory merge; applies nothing |
+| **Requesting Code Review** | `requesting-code-review/SKILL.md` | Best practices for asking for a review |
+| **Retro** | `retro/SKILL.md` | Advisory retrospective on a Factory acceptance decision |
 | **Finishing Branches**    | `finishing-a-development-branch/SKILL.md` | Completing and merging branches                      |
 | **GitHub CLI**            | `gh-cli/SKILL.md`                         | GitHub Issues CLI command reference                  |
 | **GitLab CLI**            | `glab-cli/SKILL.md`                       | GitLab MRs, issues, pipelines CLI reference          |
@@ -370,7 +376,7 @@ Subagents are typically **agent-initiated** — the coordinator decides when to 
 
 ### Factory (opt-in)
 
-An optional file-driven pipeline for feature-sized work, alongside Feature Builder and TDD. Start it with `/factory <request>` in Claude Code, Copilot, Cursor, or OpenCode. The orchestrator reads the project and asks only the glaring questions before it creates anything, then asks you to continue or change the answers. Resume a feature with `/factory start <KEY | slug | job-id>`. Codex runs the orchestrator skill directly. Each job belongs to a feature folder in `docs/features/`, stops at a spec gate and a plan gate for your confirmation before any ticket or build, builds in its own git worktree unless you ask for `--in-place`, and moves its tickets when the project tracks them. The orchestrator is [.agents/skills/factory/SKILL.md](.agents/skills/factory/SKILL.md). It runs on the native `planner` (spec and plan), `implementer` (build, repair, and rework), and `reviewer` (the code, security, ux, and ui lenses, and approval) agents. Each role's Factory rules are in its brief in `.agents/skills/factory/roles/`. Spec and plan goal-fit must be confirmed by an independent Oracle or read-only reviewer, not the spec or plan author. Single-session role switching, including the Codex fallback, does not satisfy that and blocks these gates. Spec and plan confirmations stay mandatory human steps in every approval mode. Setup, placeholders, and approval modes are in [factory/README.md](factory/README.md). Jobs name the affected apps and packages in their spec, and checks run for those with the filtered commands in [Commands](#commands).
+An optional file-driven pipeline for feature-sized work, alongside Feature Builder and TDD. Start it with `/factory <request>` in Claude Code, Copilot, Cursor, or OpenCode. The orchestrator reads the project and asks only the glaring questions before it creates anything, then asks you to continue or change the answers. Resume a feature with `/factory start <KEY | slug | job-id>`. Codex runs the orchestrator skill directly. Each job belongs to a feature folder in `docs/features/`, stops at a plan gate for your confirmation before any ticket or build (after a spec gate, unless a small new feature takes the plan-only route that intake proposes and you confirm), builds in its own git worktree unless you ask for `--in-place`, and moves its tickets when the project tracks them. The orchestrator is [.agents/skills/factory/SKILL.md](.agents/skills/factory/SKILL.md). It runs on the native `planner` (spec and plan), `implementer` (build, repair, and rework), and `reviewer` (the code, security, ux, and ui lenses, and approval) agents. Each role's Factory rules are in its brief in `.agents/skills/factory/roles/`. Spec and plan goal-fit must be confirmed by an independent Oracle or read-only reviewer, not the spec or plan author. Single-session role switching, including the Codex fallback, does not satisfy that and blocks these gates. Spec and plan confirmations stay mandatory human steps in every approval mode. On the plan-only route there is no spec to confirm, and the plan confirmation still applies. With `--retro`, each acceptance decision also saves an advisory retro report, which never changes a gate. After plan confirmation, the build works through every unblocked item and asks you only for what needs you (see the [autonomous-mode](.agents/skills/autonomous-mode/SKILL.md) skill). Setup, placeholders, and approval modes are in [factory/README.md](factory/README.md). Jobs name the affected apps and packages in their spec, and checks run for those with the filtered commands in [Commands](#commands).
 
 ## Documentation Requirements
 
@@ -378,7 +384,7 @@ Documentation updates are **mandatory before committing** any feature or fix. Se
 
 **Quick summary:**
 
-- Create or update `apps/{{APP_NAME}}/docs/features/<feature>/` (spec + plan) for every feature, where `<feature>` is `<KEY>-<slug>` or `<slug>`
+- Create or update `apps/{{APP_NAME}}/docs/features/<feature>/` (spec + plan, or plan only on a Factory plan-only job, see the Factory plan-only exception) for every feature, where `<feature>` is `<KEY>-<slug>` or `<slug>`
 - Features run through the factory pipeline live in root `docs/features/<feature>/` because the pipeline is root-scoped; other features stay in their app or package
 - Add fixes to the monthly log in `apps/{{APP_NAME}}/docs/fixes/{{YYYY-MM}}.md` (or a dedicated folder for complex fixes)
 - Use root `docs/` only for monorepo-wide concerns: `docs/architecture/`, `docs/integration/`, `docs/guides/`
@@ -389,6 +395,8 @@ Documentation updates are **mandatory before committing** any feature or fix. Se
 **Supplied-task exception (`implement`, `implement-feature`, `implement-fixes` only):** the task supplied to these commands replaces the spec and plan prerequisites. Do not create or require `spec.md` or `plan.md` for the feature or fix unless the user asks for them. Every other applicable item in the [documentation checklist](.claude/rules-snippets/documentation.md) still applies, including the fix log, `CHANGELOG.md`, `docs/api/`, and `README.md`.
 
 **Requirement-only planning exception:** For `/plan` without an existing specification, preserve the original supplied requirements and acceptance criteria in `plan.md` under **Requirements Source** and **Acceptance Criteria**; do not require or create `spec.md`. `/tasks` and `/assign-tasks` consume that plan source when no specification exists; keep acceptance criteria out of the slim task checklist. This exception overrides the spec prerequisite and mandatory spec-first sequence above and in the documentation checklist only for these planning artifacts. It does not authorize implementation, replace artifact review, waive required human approvals, or change any other documentation duties. The separate implementation-command supplied-task exception remains unchanged.
+
+**Factory plan-only exception:** For a Factory job on the plan-only route (the factory skill, Intake, Spec route), the job's `plan.md` carries the supplied requirements under **Requirements Source** and **Acceptance Criteria**, and no `spec.md` is written. This overrides the spec prerequisite and the spec-first sequence, in this section and in the documentation checklist, only for that job's feature folder. It changes no other documentation duty, no approval gate, and not the spec route.
 
 ## Related Documentation
 

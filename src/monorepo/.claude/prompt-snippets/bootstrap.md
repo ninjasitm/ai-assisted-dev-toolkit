@@ -40,6 +40,7 @@ The template ships files for every stack, tracker and test tool. Decide what app
   ```
 
   A directory path retires every file under it. Patch and upgrade never re-add retired paths, and doctor reports them as retired, not missing. Never delete files to retire them.
+- **`design-system` (UI apps):** a standard initial install may copy the skill before bootstrap runs; keep it as the operator's file. `patch` and `upgrade` add it only when a UI is detected in the root, an app, or a package. Setup is UI-only: for each UI app (and any shared UI package), find its existing design docs, tokens, shared components and design references, then add one short pointer in that app's existing `AGENTS.md` (create it with the normal per-app rules in step 8 if missing) that links `../../.agents/skills/design-system/SKILL.md` and those docs (skip it if a pointer exists). Ask the operator about anything missing; never invent a visual style or copy existing docs. Non-UI apps get no pointer or activation, and a workspace with no UI gets none anywhere (offer to retire the skill in `.nitm/retired.json`). If the detector misses a known UI (for example a non-JavaScript stack) or reports "needs review", ask the operator and follow the normal approved path (`patch --dry-run`, then approval); do not change detection.
 - **Override tracker detection** with `"trackers": ["github"]` (or `[]` for none) when the git origin does not name the tracker.
 
 ## Your Task

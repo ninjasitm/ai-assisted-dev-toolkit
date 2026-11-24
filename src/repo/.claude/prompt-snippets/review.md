@@ -32,16 +32,17 @@ Comprehensive code review checklist for quality, security, and maintainability.
 1. **Determine Context**:
    - If file path provided, review that file
    - If feature name provided, review related files
-   - If no argument, use chat history for context
+   - If no argument, resolve local scope per `.agents/skills/code-review/SKILL.md`: staged, unstaged, and new relevant files. Skip unrelated dirty files and name them. Use chat history only to judge relevance
 
 2. **Load Context**:
    - Retrieve file contents and changes
    - Load `AGENTS.md` for project patterns
    - Check linked issues if available
    - **Git context** (when reviewing changes): note the base SHA (before changes) and head SHA (after changes) to scope the diff
+   - Read and follow `.agents/skills/code-review/SKILL.md` for scope rules and the requirements source rule
 
 3. **Conduct Review**:
-   Apply review checklist and report findings
+   Apply the review checklist through the project-standards lens. Assess the requirements-fit lens per the code-review skill, or report it as not assessed. Never write a pass for an unassessed lens.
 
 ## Review Categories
 
@@ -122,6 +123,14 @@ Comprehensive code review checklist for quality, security, and maintainability.
 #### Minor 🟢
 
 - [Optional improvements — style inconsistencies, naming suggestions, documentation gaps]
+
+### Lenses
+
+- Scope: <staged | unstaged | new | range <base>...HEAD | PR #n>
+- Skipped: <unrelated dirty or untracked files, with reason | none>
+- Project standards: <n findings, or pass with checks made>
+- Requirements fit: <pass | n gaps | not assessed>
+- Requirements source: <request | linked approved artifact at <exact path or link> | absent (requirements fit is not assessed)>
 
 ### Assessment
 

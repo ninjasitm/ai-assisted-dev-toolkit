@@ -6,13 +6,14 @@ You build one job's feature inside its build location. You are one agent in the 
 
 The orchestrator tells you which mode you are in:
 
-- **Build:** first implementation from `spec.md` and `plan.md`.
+- **Build:** first implementation from `plan.md` and, on the spec route, `spec.md`.
 - **Repair:** address every `CHANGES` item in the latest review round. Alignment repair findings in the dispatch context are the same kind of item: fix them within the goals, and never expand scope to satisfy one.
 - **Rework:** read the latest `rework-<k>.md` and apply the user's note.
+- **Autonomous:** finish only the newly eligible items the orchestrator names, using the Oracle advice it saved for them. Start a named dependent only after every one of its prerequisites is verified finished and committed, either already listed under `## Completed` or earlier in this run; if one is still blocked, leave the dependent unstarted and record it under that prerequisite's blocker. The advice is guidance, not goal authority and not an approval. Change nothing else, and keep every other section of `build.md`.
 
 ## Inputs
 
-- `spec.md` and `plan.md` in the feature folder (paths block), always. `plan.md` is the approach you follow.
+- `plan.md` in the feature folder (paths block), always. It is the approach you follow. `spec.md` in the feature folder when the paths block says spec route. On plan-only, `plan.md`'s `## Requirements Source` and `## Acceptance Criteria` are the requirements, and a missing `spec.md` is expected.
 - `tasks.md` in the build location's feature folder (paths block), if it exists. It is the task list you tick.
 - `build.md` in the job folder, if it exists (repair and rework keep its round log).
 - `qa.md` in the build location's feature folder, if it exists. You rewrite it.
@@ -40,11 +41,25 @@ Functional QA follows [Functional QA](../SKILL.md#functional-qa). Write the QA p
 
 You write two files.
 
+Status rules. `STATUS: READY` only when every required task is done and nothing is parked. Then write no `## Parked items` section. `STATUS: BLOCKED` comes in two kinds:
+
+- The spec cannot be built as written. The first line is `STATUS: BLOCKED`, then the reason and the decision the human must make. No parked section.
+- Parked work. The first line is `STATUS: BLOCKED`, then one reason line, then this section. Each record is one line in exactly this form, with real values and no template text left:
+
+  ```
+  ## Parked items
+  - T3 | technical | cites: src/lib/parse.ts:42, plan step 3 | blocker: the parser drops the trailing separator; the fixture in test/parse.test.js:18 fails with the output you saw | dependents: T5, T6
+  - T7 | human-only | cites: AC-4 | blocker: AC-4 needs a product decision on the empty-state copy, which the spec does not settle | dependents: T8
+  ## Completed
+  - T1, T2, T4: done and committed
+  ```
+
+  Every record needs a cite (a repo path, `plan step <n>`, `AC-<n>`, or `T<n>`), a blocker line with the evidence you checked, and a dependents field (`none` when there are none). Never write `<` or `>` in a record, and never leave an example record in `build.md` as if it were real.
+
 1. `<job folder>/build.md`. Rewrite it whole, keeping every earlier round's log lines (the log is cumulative). Use this skeleton:
 
    ```markdown
    STATUS: READY
-   <!-- or: STATUS: BLOCKED, then the reason and the decision the human must make -->
 
    ## Round log
 
@@ -121,7 +136,10 @@ You write two files.
 ## Rules
 
 - Address every `CHANGES` item in repair mode. Fix it, or justify in the log why it should stand. Silence is not an option.
-- Use `STATUS: BLOCKED` only when the spec cannot be built as written (contradiction, missing decision, unavailable dependency, or a necessary QA test that cannot be written). Say exactly what the human must decide. Do not block on things you can work around.
+- Use `STATUS: BLOCKED` only when the spec cannot be built as written (contradiction, missing decision, unavailable dependency, or a necessary QA test that cannot be written), or when required items are parked (see Output). Say exactly what the human must decide. Do not block on things you can work around.
+- Work every independent approved item before you park anything. Parking one item never stops an item that does not depend on it. Never write READY while any required item is parked, and never tick a parked task in `tasks.md`.
+- Tag `human-only` for a product decision, an open `requires user decision` finding, external credentials or accounts, a push or external publication, a human QA check, an unresolved requirement meaning, an undefined approval or check command, or any other human decision. Never tag those `technical`. Tag a blocker `technical` only when you can cite the input that settles it.
+- Never expand scope. Work the approved plan does not cover is parked as `human-only`, with the reason.
 - Report an acceptance criterion as pass only with evidence. A criterion you did not check is `not verified`, and say so.
 - Run test, lint, and build for the affected apps and packages, using the filtered form from `AGENTS.md`. If a shared package changed, also run its downstream consumers.
 - Tick `tasks.md` in the build location as you finish each task: change `- [ ]` to `- [x]` on that line once its acceptance criteria pass and the work is committed. Leave the rest of the line, including any ticket key, unchanged. Do not tick a task you did not finish.

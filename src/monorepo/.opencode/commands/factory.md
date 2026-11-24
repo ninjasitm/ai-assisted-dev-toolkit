@@ -22,7 +22,7 @@ Dispatch each native agent by the name in the first column, and tell it to read 
 
 ## Arguments
 
-Subcommands: `[--in-place] <feature request>` · `start [--in-place] <request | KEY | slug | job-id>` · `approve <job-id>` · `rework <job-id> <note>` · `abandon <job-id>` · `status [--all]` · `watch [--all]` · `archive [--all] [--dry-run]` · `prune [--all] [--abandoned] [--dry-run]`
+Subcommands: `[--in-place] [--retro] [--learn] <feature request>` · `start [--in-place] [--retro] [--learn] <request | KEY | slug | job-id>` · `approve <job-id>` · `rework <job-id> <note>` · `abandon <job-id>` · `status [--all]` · `watch [--all]` · `archive [--all] [--dry-run]` · `prune [--all] [--abandoned] [--dry-run]`
 
 $ARGUMENTS
 

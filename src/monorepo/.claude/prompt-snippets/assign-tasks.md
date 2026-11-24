@@ -78,7 +78,13 @@ When interacting with {{ISSUE_TRACKER}}, use MCP tools first (see the `issue-tra
    - 7-12 hours → 8 story points
    - 13+ hours → 13 story points (consider splitting into stories)
 
-5. **Create Tickets**:
+5. **Preview and Approve** (before any tracker write):
+   - Show the proposed breakdown as a numbered list: title, type (Epic/Story/Task/Subtask), story points, parent, and blocking edges (`Blocked by: <numbers/titles>`, or "None (can start immediately)"). For a legacy `tasks.md`, show each heading → proposed ticket. Include the consolidation counts.
+   - Ask the user to approve, or to change granularity, merges, splits, or blocking edges. Iterate until the user approves.
+   - Create nothing in {{ISSUE_TRACKER}} until the user approves that exact breakdown. Any change after approval needs a new preview. This preview is the single approval point for this command's tracker writes; do not add a second one.
+   - _Attribution: the preview-and-approve step is adapted from mattpocock/skills (MIT), `skills/engineering/to-tickets/SKILL.md` at commit `d65391149dbb5fe76478e76fa8d5122b2aa5a70e`. No text is copied._
+
+6. **Create Tickets**:
    - Create in proper hierarchy order (Epics first, then Stories, then Tasks)
    - Link child issues to parents
    - Set assignees, labels, and story points
@@ -87,7 +93,7 @@ When interacting with {{ISSUE_TRACKER}}, use MCP tools first (see the `issue-tra
    - **Slim `tasks.md`**: append ` — <KEY>` at the end of the task's line, after any notes (`- [ ] T1 Schema + migration — PROJ-124`)
    - **Legacy `tasks.md`**: never write back. Record heading → ticket key in the report instead
 
-6. **Generate Report**:
+7. **Generate Report**:
    - List all created tickets with IDs
    - **Legacy `tasks.md`**: heading → ticket key mapping, plus headings skipped because they already had a key
    - Show hierarchy and relationships

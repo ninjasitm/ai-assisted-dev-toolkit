@@ -34,6 +34,7 @@ Implement a feature by completing tasks sequentially with proper tracking.
    - Tasks with dependencies or shared files → keep sequential
    - Tasks with an unknown or undeclared write set → keep sequential until the scope is established
    - Use `dispatching-parallel-agents` skill when 3+ independent tasks exist
+   - Once the task list and plan are approved, schedule the ready tasks with [autonomous-mode](../../.agents/skills/autonomous-mode/SKILL.md): run every dependency-ready task, park only a blocked task and its dependents, and queue human-only items for the developer last. Checkpoint C still gates each task's first build, and checkpoint D still runs before aggregate review.
 
 3. **Create Feature Branch** (before any build):
 
@@ -59,7 +60,7 @@ Implement a feature by completing tasks sequentially with proper tracking.
    c. **Delivery loop for the task** (implement.md steps 2–5):
    - Builder: write the failing test first, watch it fail for the right reason, make the minimal change to pass, then refactor (TDD). Update the docs the task requires: `docs/api/` if API surfaces changed, `README.md` if setup steps, commands, or env vars changed, and `CHANGELOG.md` under `[Unreleased]`. Update a feature `spec.md` or `plan.md` only if one exists.
    - Orchestrator: verify the checks yourself, dispatch the independent read-only reviewer, then decide.
-   - Repair goes back to the builder. Repeat until the task is accepted or blocked. Do not commit or tick the task before acceptance.
+   - Repair goes back to the builder. Repeat until the task is accepted or blocked. Do not commit or tick the task before acceptance. A blocked task parks itself and its dependents only (autonomous-mode); a parked mandatory task is never ticked or reported complete.
    - See `.claude/rules-snippets/documentation.md` for the full pre-commit checklist.
 
    d. **Commit the Task** (after acceptance, only when there are accepted changes): stage only this task's paths, never `git add -A` or a foreign change, then commit. Skip the commit when nothing is staged.
@@ -79,6 +80,7 @@ Implement a feature by completing tasks sequentially with proper tracking.
    - Review scope: the current working tree against the merge-base, `git diff $(git merge-base {{DEFAULT_BRANCH}} HEAD)`. This covers committed task work, uncommitted repairs, and new files (read the untracked ones directly). Do not review only `{{DEFAULT_BRANCH}}...HEAD`: it misses uncommitted repairs and new files. Compare preexisting files against the saved baseline copies from step 1, as in implement.md step 4.
    - Repairs go to the builder that owns each file, uncommitted. Then run steps 3–5 again on the current tree.
    - Exits are the same as implement.md step 5: accepted, blocked, or needs a user decision. There is no round limit. Only acceptance ends the feature review successfully.
+   - Autonomous mode: start aggregate review only once every mandatory task is accepted. While a mandatory task is parked, the feature is not accepted, and its human-only items go in the queued list from autonomous-mode.
 
 6. **Create Pull Request** (only after the feature review is accepted):
 

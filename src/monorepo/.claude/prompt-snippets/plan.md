@@ -12,12 +12,12 @@ You are helping to create an implementation plan for a feature or requirement.
 
 1. **Load context**:
 
-   - Use the supplied requirement as sufficient input. Ask targeted questions only when the request is unclear; do not require creating a specification first.
+   - Use the supplied requirement as sufficient input. Ask targeted questions only when the request is unclear; do not require creating a specification first. When it is unclear, run a grill-me round: read and follow [grill-me](../../.agents/skills/grill-me/SKILL.md).
    - Read `AGENTS.md` for project architecture and patterns
    - Review `docs/constitution.md` for project principles (if exists)
    - If an existing specification is available at `apps/{{APP_NAME}}/docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/spec.md`, read it as optional context.
    - Without an existing specification, persist the original supplied requirements and acceptance criteria verbatim in `plan.md` under **Requirements Source** and **Acceptance Criteria**, including the source path or issue key when available. Preserve constraints; label any derived criteria or assumptions separately and ask the user about unclear or missing criteria rather than inventing approval. This plan is the durable requirements source for `/tasks` and `/assign-tasks`.
-   - With an existing specification, link to its requirements and acceptance criteria instead of duplicating them. Surface conflicts with the supplied request to the user before proceeding.
+   - With an existing specification, link to its requirements and acceptance criteria instead of duplicating them. Surface conflicts with the supplied request to the user before proceeding. On re-entry from plan-only, remove copied **Requirements Source** and **Acceptance Criteria** text that the approved specification supersedes; keep the original source link and the fit review and plan confirmation records.
    - Check relevant existing code for patterns to follow
 
 2. **Analyze the requirement**:

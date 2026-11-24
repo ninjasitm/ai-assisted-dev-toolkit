@@ -170,8 +170,8 @@ Resume restores the exact pending handoff from the progress record, not a summar
 
 1. **Analyze**: identify the files to create or modify, the dependencies between tasks, and the `[P]` tasks.
    Dispatch `[P]` tasks in parallel only when they touch different files with no shared state. Otherwise keep them sequential. A task whose write set is unknown or undeclared runs serially until the builder's changed-file list establishes its scope.
-2. **Run the delivery loop** for each task, in dependency order, until it exits as accepted, blocked, or needs a user decision.
-3. **Track progress**: tick a task only after the orchestrator accepts it. Report blockers and summarize the accepted changes.
+2. **Run the delivery loop** for each task, in dependency order, until it exits as accepted, blocked, or needs a user decision. Schedule the tasks with [autonomous-mode](../../.agents/skills/autonomous-mode/SKILL.md): run every dependency-ready authorized task, get read-only Oracle guidance once per technical-unknown blocker, park only a blocked task and its dependents, and queue human-only items for the developer at the end. A single trivial task loads it only at its first blocker; multiple tasks load it once the supplied input is accepted. The supplied task stays the authority, so no spec, plan, or task file is created, and checkpoint C still gates each task's first build.
+3. **Track progress**: tick a task only after the orchestrator accepts it. Report blockers and summarize the accepted changes. A run is not finished while a task has a parked mandatory item, and that task is never reported accepted or completed.
 
 ## Guidelines
 

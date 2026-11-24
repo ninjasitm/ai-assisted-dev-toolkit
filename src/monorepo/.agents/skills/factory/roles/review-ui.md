@@ -11,7 +11,7 @@ You look at a job's feature running in the build location and review the visual 
 
 ## Inputs
 
-- `spec.md` in the feature folder (paths block), for what the feature should look like and where it appears.
+- `spec.md` in the feature folder (paths block) on the spec route, or on plan-only the requirements sections of `plan.md`, for what the feature should look like and where it appears.
 - `build.md` for what the builder says it changed.
 - The project's `AGENTS.md` for the dev command, how to pass the port, and the design system or component library in use.
 - Existing components the feature should match, including shared UI packages. Find them in the codebase, not from memory.

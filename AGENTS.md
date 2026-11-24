@@ -214,22 +214,27 @@ All templates use `{{PLACEHOLDER}}` syntax for customizable values:
 
 ## Bundled Skills
 
-The toolkit includes 33 pre-installed universal skills in `src/repo/.agents/skills/` and `src/monorepo/.agents/skills/`:
+The toolkit includes 39 pre-installed universal skills in `src/repo/.agents/skills/` and `src/monorepo/.agents/skills/`:
 
 | Skill                            | Purpose                                  |
 | -------------------------------- | ---------------------------------------- |
 | `acli`                           | Atlassian CLI (ACLI) command reference   |
+| `autonomous-mode`                | After an approved plan, progress unblocked work and reserve human-only items for the developer |
 | `bkt-cli`                        | Bitbucket CLI (bkt) command reference    |
 | `brainstorming`                  | Structured ideation sessions             |
 | `code-simplifier`                | Simplify and clean up code               |
+| `code-review`                    | Review changes against requirements and project standards |
 | `debugger`                       | General-purpose debugger skill           |
+| `design-system`                  | UI-only guidance to find and follow authoritative project/app UI patterns |
 | `dispatching-parallel-agents`    | Coordinating multiple AI agents          |
 | `executing-plans`                | Following through on plans               |
 | `factory`                        | Opt-in spec-to-merge feature pipeline    |
 | `finishing-a-development-branch` | Completing and merging branches          |
 | `gh-cli`                         | GitHub CLI helpers                       |
 | `glab-cli`                       | GitLab CLI helpers                       |
+| `grill-me`                       | Clarify blocking uncertainty before approval |
 | `issue-tracker`                  | Issue tracking workflows                 |
+| `learn`                           | Propose approved project-memory or narrow docs/skills improvements after verified merge |
 | `linear-cli`                     | Linear CLI helpers                       |
 | `logging`                        | Structured logging standards             |
 | `orient-to-recent-work`          | Orient to recent project activity        |
@@ -242,6 +247,7 @@ The toolkit includes 33 pre-installed universal skills in `src/repo/.agents/skil
 | `project-documentation`          | README, comments, ADRs, changelogs       |
 | `receiving-code-review`          | Responding to review feedback            |
 | `requesting-code-review`         | Best practices for requesting reviews    |
+| `retro`                           | Advisory retrospective for accepted Factory decisions |
 | `security-reviewer`              | Security-focused code review             |
 | `subagent-driven-development`    | Breaking tasks into subagent chunks      |
 | `systematic-debugging`           | Structured debugging methodology         |

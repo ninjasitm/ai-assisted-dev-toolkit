@@ -10,7 +10,6 @@
 		".claude/skills"
 	],
 	"plugins": [
-		"opencode-mem",
 		"@tarquinen/opencode-dcp@latest"
 		// "opentmux": V1-only; enable only after it supports V2.
 	],
