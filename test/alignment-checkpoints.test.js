@@ -172,7 +172,7 @@ for (const layout of LAYOUTS) {
 
   test(`${layout}: factory runs checkpoint A after READY and before the upcoming review round`, () => {
     const content = read(layout, FACTORY);
-    assert.match(content, /`STATUS: READY` → run alignment checkpoint A \(see Alignment checkpoint A\), then step 7\./);
+    assert.match(content, /Valid `READY` → run alignment checkpoint A \(see Alignment checkpoint A\), then step 7\./);
     order(content, 'run alignment checkpoint A (see Alignment checkpoint A), then step 7.', '7. **Review round N.**');
     order(content, '### Repair', '### Alignment checkpoint A');
     const a = section(content, '### Alignment checkpoint A', '### Builder continuity');
@@ -195,7 +195,7 @@ for (const layout of LAYOUTS) {
     assert.match(content, /Then set `N` to `N \+ 1` \(the upcoming review round `U`\), run checkpoint A for `U` when the repair requires it \(see Repair\), and go to step 7\./);
     const repair = section(content, '### Repair', '### Alignment checkpoint A');
     assert.match(repair, /Here `Round` is the round just reviewed \(`R`\)\. The upcoming review round is `U`/);
-    assert.match(repair, /After a `STATUS: READY` repair, run alignment checkpoint A for `U` before step 7, unless the repair is a mechanical change after an applicable `PASS`/);
+    assert.match(repair, /Classify the result with the Build status rules, as step 6 does\. A valid `READY`: run alignment checkpoint A for `U` before step 7, unless the repair is a mechanical change after an applicable `PASS`/);
     assert.match(repair, /Never reuse a PASS after a `CHANGES`\./);
   });
 
@@ -258,7 +258,7 @@ for (const layout of LAYOUTS) {
 
   test(`${layout}: decision table: needs-human is never converted into a repair on start`, () => {
     const resume = section(read(layout, FACTORY), '### Resume of build and review state', 'A rerun of a failed stage');
-    assert.match(resume, /\*\*`needs-human` with `failed_stage` null\.\*\* Resume only an alignment stop/);
+    assert.match(resume, /\*\*`needs-human` with `failed_stage` null\.\*\* A valid BLOCKED `build\.md` with parked records is the parked-task resume, not an alignment stop/);
     assert.match(resume, /Any other reason prints its remediation and waits\. A `needs-human` stop is never converted into a repair on start\./);
     assert.doesNotMatch(resume, /needs-human[^\n]*rerun the repair/);
   });
@@ -294,8 +294,8 @@ for (const layout of LAYOUTS) {
 
   test(`${layout}: factory resume of build state recognizes a finished READY build without rerunning the builder`, () => {
     const resume = section(read(layout, FACTORY), '### Resume of build and review state', 'A rerun of a failed stage');
-    assert.match(resume, /If `build\.md` starts with `STATUS: READY` and is newer than `job\.json`, the builder finished this round\. Do not rerun it: go to step 6's READY handling, a normal initial-build caller \(checkpoint A for `U = R`, then step 7\)/);
-    order(resume, 'the builder finished this round', 'rework when a `rework-<r>.md` is newer than `build.md`');
+    assert.match(resume, /A valid `STATUS: READY` newer than `job\.json`: the builder finished this round\. Do not rerun it: go to step 6's READY path \(checkpoint A for `U = R`, then step 7\)/);
+    order(resume, 'the builder finished this round', 'rework if a `rework-<r>.md` is newer than `build.md`');
   });
 
   test(`${layout}: factory resume table keeps review, approve, awaiting-human, and needs-human actions explicit`, () => {
@@ -333,15 +333,15 @@ for (const layout of LAYOUTS) {
 
   test(`${layout}: factory rework routes a spec change through spec then regenerated plan confirmation`, () => {
     const rework = section(read(layout, FACTORY), '`/factory rework <job-id> <note>`:', '## Functional QA');
-    assert.match(rework, /\(1\) spec change: the spec gate, then the regenerated plan gate; \(2\) plan-only change: the plan gate; \(3\) leave the job as it is\. A spec change always takes choice 1\./);
+    assert.match(rework, /\(1\) spec change: the spec gate, then the regenerated plan gate; \(2\) plan change: the plan gate; \(3\) leave the job as it is\. A spec change always takes choice 1\./);
     assert.match(rework, /Route `spec then plan`: write the note verbatim to the reserved `spec-<s>\.md`, set stage `spec`, rerun `planner` in spec mode, and show the spec gate\./);
     assert.match(rework, /Its Confirm reruns `planner` in plan mode, so the plan is regenerated from the confirmed spec\. The plan gate then shows the regenerated plan, and its Confirm is required again\./);
     assert.doesNotMatch(rework, /spec change[^\n]*route it through the plan gate only/i, 'a spec change must never take the plan-only route');
   });
 
-  test(`${layout}: factory rework routes a plan-only change through plan confirmation alone`, () => {
+  test(`${layout}: factory rework routes a plan change through plan confirmation alone`, () => {
     const rework = section(read(layout, FACTORY), '`/factory rework <job-id> <note>`:', '## Functional QA');
-    assert.match(rework, /\(2\) plan-only change: the plan gate/);
+    assert.match(rework, /\(2\) plan change: the plan gate/);
     assert.match(rework, /Route `plan`: write the note verbatim to the reserved `plan-<p>\.md`, set stage `plan`, rerun `planner` in plan mode, and show the plan gate\./);
   });
 
@@ -372,7 +372,7 @@ for (const layout of LAYOUTS) {
   test(`${layout}: factory routed doc sync carries qa and optional tasks without broad deletion`, () => {
     const rework = section(read(layout, FACTORY), '`/factory rework <job-id> <note>`:', '## Functional QA');
     assert.match(rework, /if the worktree still has the old unkeyed folder, `git mv` its `qa\.md` into `feature_dir` when that folder has none; if both have one, stop and ask/);
-    assert.match(rework, /Copy `spec\.md` and `plan\.md` from the main checkout's `feature_dir` over the worktree's copies/);
+    assert.match(rework, /Copy `spec\.md` \(when the main checkout has it\) and `plan\.md` from the main checkout's `feature_dir` over the worktree's copies/);
     assert.match(rework, /Copy `tasks\.md` when the main checkout has it; when the main checkout lacks it and the worktree has one, remove only that worktree `tasks\.md`/);
     assert.match(rework, /Never copy, delete, or overwrite `qa\.md` or any other file\./);
     assert.match(rework, /its step 1 removes the old unkeyed folder only after `qa\.md` has moved/);
@@ -494,7 +494,7 @@ for (const layout of LAYOUTS) {
     assert.match(feature, /Dispatch the independent read-only reviewer with the saved full-feature text and every amendment, the feature's summary and goals as context,/);
     assert.match(feature, /Each task's checkpoint C also receives the full-feature summary and goals as context, not only the task\./);
     const factory = read(layout, FACTORY);
-    assert.match(factory, /the goal sources, the job's overall summary and goals as context, the accepted spec and plan, and the brief\./);
+    assert.match(factory, /the goal sources, the job's overall summary and goals as context, the accepted spec \(spec route\) or the plan's requirements sections \(plan-only\), the accepted plan, and the brief\./);
     assert.match(factory, /with the original request and every explicit amendment verbatim, the job's overall summary and goals as context, `spec\.md`/);
     assert.match(factory, /Pass them as text, not as paths alone, with the job's overall summary and goals as context \(never as authority\)/);
   });
@@ -532,7 +532,7 @@ for (const layout of LAYOUTS) {
 
   test(`${layout}: approver ESCALATE carries its round, and a rework keeps the old decision by copy, never deletion`, () => {
     const content = read(layout, FACTORY);
-    assert.match(content, /When the first line is `ESCALATE`, add a second line `Round: <N>` with the round just approved/);
+    assert.match(content, /Write the acceptance basis header under the first line, for both `APPROVE` and `ESCALATE`: line 2 `Round: <N>`/);
     const rework = section(content, '`/factory rework <job-id> <note>`:', '## Functional QA');
     assert.match(rework, /4\. Set `round` to `N`, stage `build`\. If `decision\.md` exists and `decision-<R>\.md` does not, copy `decision\.md` unchanged to `decision-<R>\.md`, where `R` is the round it names\. This is a copy, never a deletion, so the historical decision stays\./);
   });

@@ -15,12 +15,15 @@ Review the current staged files before committing.
 1. **Load Staged Context**:
    - Run `git diff --cached` to get all staged changes
    - Run `git diff --cached --stat` for a summary of affected files
+   - Read and follow `.agents/skills/code-review/SKILL.md` for the requirements source and lens rules
+   - Evidence boundary: the staged index only, via `git diff --cached`. Do not read unstaged changes or untracked files as review input, even when dirty. If nothing is staged, stop and report that. Do not fall through to unstaged or untracked changes
    - Load `AGENTS.md` for project patterns
    - Identify the scope of changes (feature, fix, refactor, etc.)
 
 2. **Apply Review Checklist**:
    - Apply all review categories from [review.md](review.md) (Architecture & Patterns, Functionality, Code Quality, Error Handling, Security, Performance, Testing, Documentation)
    - Focus on issues that should block this specific commit
+   - Assess the requirements-fit lens per the code-review skill against the staged change, or report it as not assessed
 
 3. **Pre-Commit Checks**:
    - [ ] Documentation updated (see `.claude/rules-snippets/documentation.md`)
@@ -30,6 +33,6 @@ Review the current staged files before committing.
 
 4. **Output Format**:
 
-   Use the standard report format from [review.md](review.md).
+   Use the standard report format from [review.md](review.md). The Lenses block scope is `staged`.
 
    If issues are found, recommend either fixing before commit or creating a follow-up task.

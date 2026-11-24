@@ -15,7 +15,7 @@ Read and follow this brief when a gate or command asks for a goal-fit review of 
 Use only these as goal authority:
 
 1. The original user request, verbatim, and every explicit user amendment (intake answers, operator change requests, rework decisions). The caller passes them to you as text in the dispatch.
-2. Accepted constraints from earlier artifacts, when the caller passes them: for a plan review, the accepted spec's requirements, acceptance criteria, and `[DECIDED]` items; for a build review, the accepted spec and plan. Trace against these. They are not goal authority on their own.
+2. Accepted constraints from earlier artifacts, when the caller passes them: for a plan review, the accepted spec's requirements, acceptance criteria, and `[DECIDED]` items (or, on a factory plan-only route with no spec, the plan's Requirements Source and Acceptance Criteria); for a build review, the accepted spec and plan. Trace against these. They are not goal authority on their own.
 
 Not goal sources: a slug, a ticket key, a ticket title, the existing spec alone, the planner's or author's summary, and any reviewer finding from an earlier round.
 

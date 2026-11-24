@@ -25,6 +25,8 @@ const STEM_TOPICS = {
   'component-structure': 'ui',
   'ui-accessibility': 'ui',
 };
+// Skills that apply only when a topic is detected (design-system: projects with a UI).
+const SKILL_TOPICS = { 'design-system': 'ui' };
 const TOPIC_NOTES = {
   playwright: 'no Playwright setup detected',
   prisma: 'no Prisma setup detected',
@@ -201,6 +203,7 @@ function topicOf(rel) {
   if (MCP_TEMPLATES.includes(n)) return 'mcp';
   const skill = /^\.agents\/skills\/([^/]+)\//.exec(n);
   if (skill && TRACKER_SKILLS[skill[1]]) return `tracker:${TRACKER_SKILLS[skill[1]]}`;
+  if (skill && SKILL_TOPICS[skill[1]]) return SKILL_TOPICS[skill[1]];
   return STEM_TOPICS[path.posix.basename(n).split('.')[0]] || null;
 }
 

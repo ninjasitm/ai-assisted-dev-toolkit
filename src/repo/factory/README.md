@@ -41,7 +41,7 @@ Orchestrator: [.agents/skills/factory/SKILL.md](../.agents/skills/factory/SKILL.
 | `/factory archive [--all] [--dry-run]` | Move closed jobs to `factory/archive/`. Open jobs never move. See [Archive](#archive) |
 | `/factory prune [--all] [--abandoned] [--dry-run]` | Permanently delete closed jobs from `factory/jobs/` and `factory/archive/`, after one confirmation. Open jobs and feature folders are never touched. See [Prune](#prune) |
 
-`--in-place` can follow either form (`/factory --in-place <request>`, `/factory start --in-place <...>`). It builds in the main checkout instead of a worktree. See [In-place builds](#in-place-builds).
+`--in-place` can follow either form (`/factory --in-place <request>`, `/factory start --in-place <...>`). It builds in the main checkout instead of a worktree. See [In-place builds](#in-place-builds). `--retro` works the same way: it turns on the advisory retro report for a new job (see [Retro](#retro)). `--learn` works the same way for the Learn report (see [Closeout and learn](#closeout-and-learn)).
 
 There is no queue. Start each feature with a request, a ticket key, or a slug.
 
@@ -61,7 +61,7 @@ In OpenCode with the Slim plugin, `oracle` and `designer` are optional alternati
 
 ## Feature folders and sizing
 
-Each job belongs to a feature folder, `docs/features/<KEY>-<slug>/` (or `docs/features/<slug>/` before a ticket exists). The spec writer puts `spec.md` there. Then the plan step adds `plan.md`, which carries the size, and, for large work, a slim `tasks.md`, one line per task:
+Each job belongs to a feature folder, `docs/features/<KEY>-<slug>/` (or `docs/features/<slug>/` before a ticket exists). The spec writer puts `spec.md` there on the spec route. A plan-only job has no `spec.md` (see Spec route). Then the plan step adds `plan.md`, which carries the size, and, for large work, a slim `tasks.md`, one line per task:
 
 ```
 - [ ] T1 <one-line task> [P] — PROJ-1235
@@ -69,17 +69,32 @@ Each job belongs to a feature folder, `docs/features/<KEY>-<slug>/` (or `docs/fe
 
 Sizing is decided in `plan.md`:
 
-- **Small** (one or two steps): `spec.md` and `plan.md` only, no tickets.
+- **Small** (one or two steps): `plan.md` only on the plan-only route, or `spec.md` and `plan.md` on the spec route. No tickets.
 - **Large**: `tasks.md` plus tickets, when your `AGENTS.md` documents a project management tool. Otherwise `tasks.md` only.
 - **Unclear**: the orchestrator asks you at the plan gate.
 
+### Spec route
+
+Intake proposes a **plan-only** route, which skips `spec.md` and the spec gate, only for a small, well-defined job: its requirements and acceptance criteria are clear, it has no open product decision, and the total working context it needs (instructions, files, and expected tool results) stays confidently below 100,000 tokens with a reasonable margin. Near or unknown means the spec route. The estimate is judgment, not a tokenizer, and the limit is not enforced across harnesses. A new feature only: an existing feature folder, spec, plan, or job always takes the spec route. Intake shows the route and its basis; you confirm the skip there, or choose the spec route. Anything else takes the spec route, and so does a job with no recorded route. Plan-only still needs an independent plan fit review and your plan confirmation. If its plan turns out larger or unclear, or broader than the request, the job returns to the spec route and its spec gate. Jobs created before this route existed keep the spec route.
+
+## Autonomous build
+
+After plan confirmation, a build follows the [autonomous-mode](../.agents/skills/autonomous-mode/SKILL.md) skill. It finishes every unblocked approved item first. Technical blockers go to a read-only Oracle, once for each unchanged input, and its advice is guidance, not approval. Work that still needs a person is parked and listed as exact next steps, in `build.md` under `## Needs you`. The job stops at `needs-human` only after that. A parked item keeps the job from READY, so it is never reviewed as finished or approved. Plan-only jobs have no `tasks.md`: their units are the approved plan steps. No new stage or setting is involved. An interrupted build reruns the builder. A finished BLOCKED build with valid parked records re-enters the pass on `/factory start`, without a builder rerun. Oracle's answers are saved in `build.md` under `## Oracle advice`, one line per key, so a re-dispatch never asks again.
+
+## Retro
+
+`--retro` (or `"retro": true` in `job.json`) turns on an advisory retro report for each acceptance decision. It runs once, after the approver's valid `decision.md` is saved and before the job routes on, for both `APPROVE` and `ESCALATE`. A job without it, and every legacy job, has no retro. The report is `round-<round>/retro-<decision>.md` in the job folder. Each round has one decision, and a repeat for the same decision and round is skipped. A superseding decision gets its own report.
+## Closeout and learn
+
+`--learn` (or `"learn": true` in `job.json`) turns on an advisory Learn step for a job that finished. It runs once, after the merge is verified and recorded in `job.json` (`merge`), and before cleanup removes the branch or worktree: after a local merge's tests pass, or after the forge reports a `push-mr` request merged. It runs only for an approved decision. It never runs for an escalated, abandoned, or unmerged job, and `/factory approve` only recovers a missing report, with no repeat of the merge, cleanup, or approval. It writes one short `factory/jobs/<id>/learn.md`, which proposes no change, one memory entry, or one small diff. Nothing is applied: an approved entry or diff is a separate later step. A later job reads `docs/agent-memory.md` (or the memory file an `AGENTS.md` pointer names) at intake, only for entries that match its request, as advice that never widens scope. Learn is off by default, and it is independent of Retro.
+
 ## Gates
 
-Every job stops twice, in every approval mode, before anything is ticketed or built:
+Every job stops at the plan gate, in every approval mode, before anything is ticketed or built. A spec-route job stops at the spec gate first:
 
-Before either confirmation, an independent read-only Oracle, or reviewer when Oracle is unavailable, checks goal fit. Revisions and resumed gates are reviewed again. Missing independent review blocks acceptance, including single-session Codex use; it does not block discussing unresolved decisions. If the original requirements cannot be recovered, the operator must confirm the recovered baseline rather than treating an agent-written summary as the original request.
+Before any confirmation, an independent read-only Oracle, or reviewer when Oracle is unavailable, checks goal fit. Revisions and resumed gates are reviewed again. Missing independent review blocks acceptance, including single-session Codex use; it does not block discussing unresolved decisions. If the original requirements cannot be recovered, the operator must confirm the recovered baseline rather than treating an agent-written summary as the original request.
 
-1. **Spec gate** (`awaiting-spec`). You read the spec summary, the acceptance criteria count, each open `[PRODUCT DECISION]` item, and open questions. Answer every open decision before you confirm: answers go in your change request, are saved as `spec-<k>.md`, and the spec writer records each one as `[DECIDED]`.
+1. **Spec gate** (`awaiting-spec`, spec route only). You read the spec summary, the acceptance criteria count, each open `[PRODUCT DECISION]` item, and open questions. Answer every open decision before you confirm: answers go in your change request, are saved as `spec-<k>.md`, and the spec writer records each one as `[DECIDED]`.
 2. **Plan gate** (`awaiting-plan`). You read the plan, the tasks, the size, the tracking proposal, and the build mode. Confirm, request changes (saved as `plan-<k>.md`), or change size, tracking, or build mode. Requests that touch the spec go back through the spec gate.
 
 Session ended at a gate? `/factory start <job-id | slug | KEY>` shows that gate again. A job whose build has started resumes without the prompt. A job that stopped before its build because a spec or plan step failed reruns that step with `/factory start <job-id>`.
@@ -148,8 +163,8 @@ The parent and every sub-task move together. The orchestrator uses the project's
 ## How a job runs
 
 1. **Intake.** For `/factory <request>`, the orchestrator reads the project and asks only the glaring questions. You answer them, then choose to continue or change the answers. Nothing is created before you continue.
-2. **Spec.** `planner` (spec mode) inspects the code and writes `spec.md` with numbered acceptance criteria.
-3. **Spec gate.** You confirm the spec, or request changes.
+2. **Spec** (spec route only). `planner` (spec mode) inspects the code and writes `spec.md` with numbered acceptance criteria.
+3. **Spec gate** (spec route only). You confirm the spec, or request changes.
 4. **Plan.** `planner` in plan mode writes `plan.md` (with the size) and `tasks.md` for large work.
 5. **Plan gate.** You confirm the plan, or request changes. Nothing is ticketed or built before you confirm.
 6. **Tickets and build location.** If tracked, the parent and sub-tasks are created and their keys are written into `tasks.md`. The folder is renamed to carry the key. Then a builder gets its own git worktree on branch `factory/<id>` (bootstrapped first, see Build location), or the in-place branch. The job's feature docs are committed on that branch.
@@ -185,7 +200,7 @@ Without `--abandoned`, abandoned jobs are kept and counted, and the flow offers 
 ```
 <feature root>/           tracked by the project (roots: FACTORY_FEATURE_PATHS)
   <KEY>-<slug>/
-    spec.md
+    spec.md               spec route only
     plan.md
     tasks.md              large work only
     qa.md                 builder, on the branch: suggested checks (not a gate)
@@ -195,7 +210,7 @@ factory/
   worktree-bootstrap.md   setup steps run in each new worktree (edit for your project)
   jobs/                   runtime state (ignored by git)
     <NNN-slug>/
-      job.json            stage, round, reviews, size, tracking, worktree, mr, failed_stage, approval mode
+      job.json            stage, spec_route, round, reviews, size, tracking, worktree, mr, failed_stage, approval mode
       intake.md           intake questions and answers (only when asked)
       spec-<k>.md         after a change request at the spec gate
       plan-<k>.md         after a change request at the plan gate

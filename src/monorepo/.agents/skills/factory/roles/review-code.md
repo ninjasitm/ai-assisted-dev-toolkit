@@ -4,7 +4,7 @@ You review one round of a job's branch for correctness, simplicity, reuse, conve
 
 ## Inputs
 
-- `spec.md` and `plan.md` in the feature folder (paths block), the goal sources in your dispatch (the original request and explicit user amendments, verbatim), and `build.md` in the job folder.
+- `spec.md` (spec route; on plan-only, `plan.md`'s requirements sections instead, and a missing `spec.md` is expected) and `plan.md` in the feature folder (paths block), the goal sources in your dispatch (the original request and explicit user amendments, verbatim), and `build.md` in the job folder.
 - The branch diff: `git -C <worktree> diff {{DEFAULT_BRANCH}}...factory/<id>`.
 - `qa.md` at the paths block's `qa.md (absolute, build location)` line, if it exists: the builder's functional QA record (`## Functional QA`) and manual checks. Check the record as the Functional QA review below says. The manual checks are context only and never change your verdict.
 - Round `N > 1`: your own previous review, `round-<N-1>/review-code.md`. Check whether earlier blocking items were fixed, and say so.
@@ -18,8 +18,8 @@ Run each command the project documents in `AGENTS.md` from the build location: t
 
 Use the [requesting code review](../../requesting-code-review/SKILL.md) checklist for process. Then cover:
 
-- **Correctness:** logic, edge cases, error handling at boundaries, every acceptance criterion in `spec.md` covered by a test or check.
-- **Scope trace, both ways:** trace the branch diff to `spec.md`'s requirements and acceptance criteria, `plan.md`'s steps, and the goal sources in your dispatch. Every changed file or behavior must trace to a user-authorized goal (the original request or an explicit amendment), to an accepted requirement or planned step, or be a necessary implementation detail for a stated goal (name the goal). A requirement or planned step with no change is a gap. An untraced change with no such reason is scope drift and a blocking item.
+- **Correctness:** logic, edge cases, error handling at boundaries, every acceptance criterion (in `spec.md`, or on plan-only in `plan.md`'s Acceptance Criteria) covered by a test or check.
+- **Scope trace, both ways:** trace the branch diff to `spec.md`'s requirements and acceptance criteria (on plan-only, `plan.md`'s requirements sections), `plan.md`'s steps, and the goal sources in your dispatch. Every changed file or behavior must trace to a user-authorized goal (the original request or an explicit amendment), to an accepted requirement or planned step, or be a necessary implementation detail for a stated goal (name the goal). A requirement or planned step with no change is a gap. An untraced change with no such reason is scope drift and a blocking item.
 - **Functional QA:** check the `## Functional QA` record against [SKILL Functional QA](../SKILL.md#functional-qa). Each AC lists every feasible automated check with its label: `local` for observable behavior, `covered` for a cited existing test, and `na` with a reason. A `human` check is added on top where a person must judge. It never replaces an automated check. Re-run each `local` command and each cited `covered` test in the table, and compare the result with the recorded one. Every automated row needs a `pass` from the tested commit. A missing feasible automated check, a result that does not reproduce, a `fail`, or a label without its reason is a blocking item with its fix. A check that could not run for a missing credential, data, or environment is a blocking item titled `Not verified: functional QA <AC-n>: <reason>`.
 - **Simplicity:** use the [ponytail-review](../../ponytail-review/SKILL.md) lens. Flag reinvented standard library, speculative abstractions, and dead flexibility.
 - **Reuse:** the change should extend existing utilities rather than duplicate them.

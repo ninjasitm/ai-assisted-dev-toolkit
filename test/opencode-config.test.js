@@ -17,10 +17,7 @@ const preservedSettings = {
   lsp: true,
 };
 const skills = ['.agents/skills', '.claude/skills'];
-const plugins = [
-  'opencode-mem',
-  '@tarquinen/opencode-dcp@latest',
-];
+const plugins = ['@tarquinen/opencode-dcp@latest'];
 
 for (const [name, file, template] of [
   ['root', '.opencode/opencode.jsonc', false],

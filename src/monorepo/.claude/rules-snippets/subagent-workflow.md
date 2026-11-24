@@ -140,7 +140,7 @@ During multi-step execution, work autonomously within the approved goal, scope, 
 For sessions that span several batches or a context reset:
 
 - Use existing progress records only: a progress section the plan or task list already has, Factory job notes, or task records, when they exist. Keep the approved goal, current step, active task handles, blocker, and next action in those notes or in the conversation.
-- Never add fields to structured files such as Factory `job.json`, never rewrite accepted requirements or spec/plan text, and never replace an authoritative source with a summary.
+- Never add fields to structured files such as Factory `job.json` (the job's documented fields, such as `spec_route`, are set only by the Factory skill), never rewrite accepted requirements or spec/plan text, and never replace an authoritative source with a summary.
 - If no such records exist, a short checkpoint in the conversation is enough. Do not create new files for trivial work.
 - On resume, reread the accepted source (spec, plan, or task text) instead of relying on the checkpoint summary, and check the working tree before dispatching anything.
 

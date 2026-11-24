@@ -164,6 +164,37 @@ test('relevanceOf: Playwright, Prisma and UI files follow the detected setup; ge
   assert.equal(relevance.relevanceOf('.mcp.json', base).status, 'irrelevant');
 });
 
+test('design-system skill: both templates ship it, and it applies only to UI projects', (t) => {
+  for (const tpl of ['repo', 'monorepo']) {
+    const rel = '.agents/skills/design-system/SKILL.md';
+    const body = fs.readFileSync(path.join(SRC, tpl, rel), 'utf8');
+    assert.match(body, /^---\nname: design-system\n/, tpl);
+    assert.match(body, /no visual style|sets no visual style/i, tpl);
+    const bootstrap = fs.readFileSync(path.join(SRC, tpl, '.claude/prompt-snippets/bootstrap.md'), 'utf8');
+    assert.match(bootstrap, /never invent a visual style/, tpl);
+    assert.match(bootstrap, /initial install may copy the skill/, tpl);
+    assert.match(bootstrap, /do not change detection/, tpl);
+    // The pointer link resolves from where it is written (root AGENTS.md, or apps/<app>/AGENTS.md).
+    const linked = tpl === 'repo' ? '.agents/skills/design-system/SKILL.md' : '../../.agents/skills/design-system/SKILL.md';
+    assert.ok(bootstrap.includes('`' + linked + '`'), tpl + ': pointer link in bootstrap');
+    const from = path.join(SRC, tpl, tpl === 'repo' ? 'AGENTS.md' : 'apps/app-template/AGENTS.md');
+    assert.ok(fs.existsSync(path.resolve(path.dirname(from), linked)), tpl + ': link resolves');
+
+    assert.equal(relevance.topicOf(rel), 'ui');
+    const base = { trackers: [], playwright: false, prisma: false, ui: false, stackKnown: true };
+    assert.equal(relevance.relevanceOf(rel, base).status, 'irrelevant', 'non-UI');
+    assert.equal(relevance.relevanceOf(rel, { ...base, ui: true }).status, 'add', 'UI');
+
+    // End to end: a project's detected facts decide whether patch plans the skill.
+    const uiDir = tmp(t);
+    writeJson(path.join(uiDir, 'package.json'), { dependencies: { react: '18' } });
+    const apiDir = tmp(t);
+    writeJson(path.join(apiDir, 'package.json'), { dependencies: { express: '4' } });
+    assert.equal(relevance.relevanceOf(rel, relevance.detectProject(uiDir, null)).status, 'add');
+    assert.equal(relevance.relevanceOf(rel, relevance.detectProject(apiDir, null)).status, 'irrelevant');
+  }
+});
+
 // ---- project facts ----
 
 test('detectProject: reads Playwright, Prisma and UI from package.json, including monorepo apps', (t) => {

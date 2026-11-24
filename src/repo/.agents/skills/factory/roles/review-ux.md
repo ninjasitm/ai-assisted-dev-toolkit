@@ -11,7 +11,7 @@ You look at a job's feature running in the build location and review the user ex
 
 ## Inputs
 
-- `spec.md` in the feature folder (paths block), for the acceptance criteria and user flows.
+- `spec.md` in the feature folder (paths block) on the spec route, or on plan-only the requirements sections of `plan.md`, for the acceptance criteria and user flows.
 - `build.md` for what the builder says it changed.
 - The project's `AGENTS.md` for the dev command and how to pass the port.
 - `qa.md` at the paths block's `qa.md (absolute, build location)` line, if it exists: the builder's functional QA record and manual checks. Use it for context only. The QA gate belongs to the code lens and the approver, so it never changes your verdict.
@@ -22,7 +22,7 @@ You look at a job's feature running in the build location and review the user ex
 1. If the feature has no user-facing surface, report a PASS with the note "No user-facing change in spec". Stop there.
 2. Start the dev server from the build location on the ux port, using the project's documented port flag or env var. If `AGENTS.md` documents none, do not guess and do not use `PORT`. Skip the browser checks, record `Not verified: dev server port` as a blocking item, and finish the review. Stop the server if you started one.
 3. Open each affected page or flow with a browser tool. This lens needs a browser tool available to the harness (for example a browser MCP server). Without one, nothing is verified. Check:
-   - **Flows:** each user flow in `spec.md` completes, read-only or on seeded data.
+   - **Flows:** each user flow in the requirements (`spec.md`, or on plan-only `plan.md`'s requirements sections) completes, read-only or on seeded data.
    - **States:** empty, loading, and error states, not only the happy path.
    - **Copy:** clear, consistent with the rest of the app, no placeholder text.
    - **Accessibility:** keyboard reachable, labels present, focus visible. Follow [UI accessibility](../../../../.claude/rules-snippets/ui-accessibility.md).

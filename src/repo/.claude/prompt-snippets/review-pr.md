@@ -27,7 +27,8 @@ Conduct comprehensive code review for pull requests with structured fix tracking
 1. **Load PR Context**:
    - Get PR details (title, description, changed files)
    - Extract issue reference if available
-   - Get PR diff and file changes
+   - Read and follow `.agents/skills/code-review/SKILL.md` for the PR diff rule. Get the PR diff and file changes from the PR host for the PR's base and head. Do not use the local working tree or local branch
+   - Evidence boundary: the PR host's base-to-head diff plus the PR's own comments and threads. Staged, unstaged, untracked, and local-branch files are not review input. If the PR diff cannot be fetched, stop and report it
    - **CRITICAL — Comment Retrieval Strategy**:
      1. **Use issue tracker MCP tools** (preferred) to retrieve ALL comments:
         - Get PR/MR details and review comments
@@ -57,9 +58,9 @@ Conduct comprehensive code review for pull requests with structured fix tracking
      - Add to todo list with appropriate status
 
 3. **Verify Requirements**:
-   - Read specification if linked
+   - Read and follow `.agents/skills/code-review/SKILL.md` for the requirements source. If none applies, mark the requirements-fit lens not assessed
    - Check task completion against acceptance criteria
-   - Verify all requirements met
+   - Verify all requirements met, or record each gap as a finding
 
 4. **Apply Review Checklist**:
    - Apply all review categories from [review.md](review.md) (Architecture & Patterns, Functionality, Code Quality, Error Handling, Security, Performance, Testing, Documentation)
@@ -78,7 +79,7 @@ Conduct comprehensive code review for pull requests with structured fix tracking
 
 7. **Output Format**:
 
-   Use the standard report format from [review.md](review.md), with these PR-specific additions:
+   Use the standard report format from [review.md](review.md), including its Lenses block (scope is the PR diff), with these PR-specific additions:
 
    ```markdown
    ## Review Summary

@@ -264,7 +264,7 @@ With user approval, merge this reproducible registration without replacing user/
 { "plugins": ["oh-my-opencode-slim@3.0.0"] }
 ```
 
-The toolkit root deliberately omits `plugins` to inherit user/global registrations. Both target templates register `opencode-mem` and `@tarquinen/opencode-dcp@latest` in their local `plugins` arrays; `opentmux` remains commented as V1-only. The OpenCode Ponytail plugin (`@dietrichgebert/ponytail`) is installed globally by the operator; neither the toolkit root nor the templates register it. The local `ponytail.mjs` files are removed from the toolkit root and both templates; no local API port or bridge replaces them.
+The toolkit root deliberately omits `plugins` to inherit user/global registrations. Both target templates register `@tarquinen/opencode-dcp@latest` in their local `plugins` arrays; `opentmux` remains commented as V1-only. The OpenCode Ponytail plugin (`@dietrichgebert/ponytail`) is installed globally by the operator; neither the toolkit root nor the templates register it. The local `ponytail.mjs` files are removed from the toolkit root and both templates; no local API port or bridge replaces them.
 
 For existing targets, back up and obtain approval before removing only known obsolete toolkit `.opencode/plugins/ponytail.js`, `.mjs`, or `.ts` copies. Preserve unrelated local plugins. Never add the Ponytail plugin to project config; if it is not installed globally, tell the operator to install it globally, without editing or overwriting global plugins. Native local plugins are discovered automatically. Slim's separate strict schema keeps its own `prompt`, `permission`, and `variant`: do not host-migrate plugin-owned fields. The root's no-`plugins` policy is specific to this toolkit repository, not target templates.
 
@@ -727,7 +727,9 @@ It runs alongside Feature Builder and TDD and does not replace them. Nothing run
 | `/factory archive [--all] [--dry-run]` | Move closed jobs (`merged` or `abandoned`) from `factory/jobs/` to `factory/archive/`. By default only jobs not updated for 7 days move. `--dry-run` moves nothing. Open jobs never move |
 | `/factory prune [--all] [--abandoned] [--dry-run]` | Permanently delete closed jobs from `factory/jobs/` and `factory/archive/`, after one confirmation. By default only `merged` jobs (same 7-day age rule as archive; `--all` drops the age limit). `--abandoned` also deletes `abandoned` jobs. Open jobs and `docs/features/` are never touched |
 
-**Two gates are mandatory.** Every job stops at `awaiting-spec` after the spec, and at `awaiting-plan` after the plan. At the spec gate you confirm the spec or request changes. At the plan gate you review the tasks, the size, the tracking proposal, and the build mode, then confirm or request changes. Leave either gate for later with `/factory start <job-id>`. Nothing is ticketed or built before you confirm the plan.
+**The plan gate always applies; the spec gate applies on the spec route.** At the spec gate you confirm the spec or request changes. At the plan gate you review the tasks, the size, the tracking proposal, and the build mode, then confirm or request changes. For a new, small, clearly defined job, intake may propose plan-only when estimated relevant context is comfortably within 100K tokens; you confirm the route at intake. Ambiguous work and existing feature folders/specs default to the normal spec route. Independent plan-fit review and your plan approval are still required. See the [Factory README](src/repo/factory/README.md#spec-route) for the full route criteria. Leave either gate for later with `/factory start <job-id>`. Nothing is ticketed or built before you confirm the plan.
+
+The `grill-me` skill can clarify blocking uncertainty before an existing approval; it does not add an approval gate. The `code-review` skill checks changes against requirements and project standards for local, range, or PR reviews without adding a Factory gate. Factory `--retro` is opt-in and advisory at persisted acceptance decisions, before routing; it is not a gate. `to-spec` and `to-tickets` are not bundled: use their module/interface clarification or approved-breakdown concepts only when useful, and approve a breakdown before creating external tracker issues.
 
 Before these approvals, an independent, read-only Oracle (when available) or reviewer assesses goal fit, scope, unnecessary complexity, and proportional SOLID/SRP concerns. `/plan` and `/specify` use the same assessment. Changed or resumed artifacts are reassessed; unresolved findings or unavailable independent review block acceptance, not discussion with the user. Review never substitutes for your approval or authorizes extra scope.
 
@@ -827,7 +829,7 @@ Skills are installed to `{.cursor|.agents|.github}/skills/` and automatically av
 
 ### Bundled Universal Skills
 
-This toolkit includes **33 pre-installed universal skills** in the `.agents/skills/` folder. These skills are copied automatically when you set up your project and require **no additional installation**.
+This toolkit includes **39 pre-installed universal skills** in the `.agents/skills/` folder. These skills are copied automatically when you set up your project and require **no additional installation**.
 
 | Skill                              | Description                                                                                          |
 | ---------------------------------- | ---------------------------------------------------------------------------------------------------- |
@@ -857,15 +859,25 @@ This toolkit includes **33 pre-installed universal skills** in the `.agents/skil
 | **orient-to-recent-work**          | Build a compact mental model of recent project activity (CHANGELOG, recent commits) before any non-trivial task. Auto-loaded at session start. |
 | **acli**                           | Atlassian CLI wrapper for Jira and Confluence operations from the terminal.                                               |
 | **code-simplifier**                | Simplifies code for clarity without changing behavior. Use for readability and maintainability.                            |
+| **autonomous-mode**                | After an approved plan, progress unblocked work and reserve human-only items for the developer.                              |
+| **code-review**                    | Reviews local changes, ranges, or PRs against requirements and project standards.                                             |
+| **design-system**                  | UI-only guidance to find and follow authoritative project/app UI patterns; relevant patching and UI setup are conditional.      |
 | **debugger**                       | Structured debugging methodology with systematic root cause analysis.                                                      |
 | **gh-cli**                         | GitHub CLI reference for issues, PRs, repos, and workflow management.                                                     |
 | **issue-tracker**                  | Issue tracker integration patterns for Jira, Linear, and GitHub Issues.                                                   |
+| **learn**                          | Opt-in post-verified-merge improvement proposals for project memory, docs/skills, or no change.                            |
 | **linear-cli**                     | Linear CLI reference for issue management and project tracking.                                                           |
 | **security-reviewer**              | Security-focused code review patterns for finding vulnerabilities.                                                        |
 | **bkt-cli**                        | Bitbucket CLI (`bkt`) command reference for repo and monorepo templates.                                                  |
 | **glab-cli**                       | GitLab CLI (`glab`) command reference for repo and monorepo templates.                                                    |
+| **grill-me**                       | Clarifies blocking uncertainty before an existing approval; adds no approval gate.                                             |
+| **retro**                           | Optional Factory acceptance-decision retrospective; advisory, not a gate.                                                     |
 
 **These skills are ready to use immediately after copying the templates.** No `npx -y skills add -a <agent> <owner/repo> --skill <confirmed name> --agent github-copilot cursor` commands needed.
+
+The generic initial template copy may include `design-system` even in a non-UI project; relevance-based patching and UI setup are conditional on an app having a UI. The skill follows existing project and app patterns rather than introducing a root coding-standards or style-guide file. `autonomous-mode` applies after a proper plan and tasks are approved: it can continue unblocked work and seek read-only Oracle input on technical blockers, while reserving genuinely human-only work for the developer and preserving mandatory approvals.
+
+Both Factory skills are artifact-based and advisory, with different timing: `--retro` runs at an acceptance decision before routing; `--learn` runs after verified merge and proposes project-local memory, a narrow documentation/skills change, or no change. Learn reads job artifacts, not raw transcripts or global memory; it requires explicit approval before edits, and later relevant jobs consult only approved project memory.
 
 The **ponytail** skill bundle is an integrated optional skill set from [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) that adds YAGNI/stdlib/native/one-line/minimum discipline to your AI agents. It includes 6 skills, 6 commands, 7 activation hooks, and ambient agent rules. OpenCode uses the author's upstream `@dietrichgebert/ponytail` package, installed globally by the operator, not a bundled local plugin. See [native setup](#native-opencode-v2-toolkit-400); scaffolding alone does not establish activation. The Claude Code hooks in `hooks/*.json` use `${CLAUDE_PLUGIN_ROOT}` and are plugin-only: they fire only when installed through the Ponytail plugin, not from project settings.
 
@@ -1028,7 +1040,7 @@ After copying templates and installing additional skills, your project will have
     │   └── SKILL.md
     ├── verification-before-completion/
     │   └── SKILL.md
-    └── ... (33 skills total)
+    └── ... (39 skills total)
 
 .cursor/                  # or .github/ for GitHub Copilot
 ├── rules/                # IDE behavior rules (from this toolkit)

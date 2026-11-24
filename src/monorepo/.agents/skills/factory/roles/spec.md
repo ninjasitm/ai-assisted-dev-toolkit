@@ -12,11 +12,11 @@ Read these, in this order:
 4. The `AGENTS.md` of each affected app or package, for its patterns and commands.
 5. [Feature spec template](../../../../templates/feature-spec.template.md) for the section structure.
 6. Any existing `spec.md`, `plan.md`, and `tasks.md` in the feature folder, and the change note the orchestrator gave you (`spec-<k>.md` in spec mode, `plan-<k>.md` in plan mode). Update them, do not start over blind.
-7. `intake.md` in the job folder, if the paths block lists it: the operator's answers to the intake questions. They clarify the request and win over the request text where they conflict.
+7. `intake.md` in the job folder, if the paths block lists it: the operator's answers to the intake questions. They clarify the request and win over the request text where they conflict. They also state the spec route and any `Derived:` criteria the operator confirmed.
 
 ## Spec mode
 
-You write `spec.md` in the feature folder (paths block). Nothing else.
+You write `spec.md` in the feature folder (paths block). Nothing else. Spec route only: a plan-only job is not dispatched in spec mode, so a missing `spec.md` there is expected, not a missing file.
 
 Use this skeleton, keeping the template's section order and dropping sections that do not apply (Timeline, References, Changelog):
 
@@ -73,7 +73,7 @@ Rules for the spec:
 
 ## Plan mode
 
-You write `plan.md` in the feature folder, and `tasks.md` for large work. Nothing else. Do not change `spec.md`.
+You write `plan.md` in the feature folder, and `tasks.md` for large work. Nothing else. Do not change `spec.md`. On a plan-only route there is no `spec.md`: do not create one, and do not treat its absence as a missing file.
 
 `plan.md` is concise. Use this skeleton:
 
@@ -95,6 +95,24 @@ Short: how the change is built, and which files it touches.
 
 - AC-n: <test or command that proves it>
 ```
+
+Plan-only route (no `spec.md`) only: the plan also carries these sections, after Approach and before Steps:
+
+```markdown
+## Requirements Source
+
+Source: <intake.md `## Original request` or `## Baseline confirmed`, and the issue key when there is one>. Pointers: `build.md`, `round-<N>/`, and `decision.md` in the job folder; `qa.md` in the feature folder, as the build produces them.
+
+<the original supplied requirements, verbatim>
+
+## Acceptance Criteria
+
+- AC-1: <the original criterion, verbatim>
+- AC-2: ...
+- Derived: <a criterion you derived, only when the operator confirmed it at intake>
+```
+
+Number the original criteria `AC-n` in front, with their text unchanged. On a plan-only route, write `small` only when the plan is one or two steps and no product decision is open. Otherwise write `large` or `unclear` with the reason; the orchestrator then returns the job to the spec route.
 
 Sizing: **small** is one or two steps, so write no `tasks.md` and delete a stale one. **Large** has more steps than that, so write `tasks.md`. **Unclear** means you cannot tell from the spec and the code. Say why in the Size line; the operator decides at the plan gate.
 
