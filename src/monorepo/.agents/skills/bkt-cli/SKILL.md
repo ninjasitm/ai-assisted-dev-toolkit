@@ -31,8 +31,8 @@ Interact with Bitbucket Cloud & Data Center from the command line using [bkt](ht
 # Interactive flow: opens browser to create a Personal Access Token
 bkt auth login https://bitbucket.mycorp.example --web-token
 
-# Or provide credentials directly
-bkt auth login https://bitbucket.mycorp.example --username alice --token <PAT>
+# Do not pass tokens in command-line arguments (they may be exposed in history/process listings).
+# Use an independently verified secure interactive or credential-store method documented by bkt.
 ```
 
 ### Bitbucket Cloud
@@ -41,8 +41,8 @@ bkt auth login https://bitbucket.mycorp.example --username alice --token <PAT>
 # Browser OAuth flow
 bkt auth login https://bitbucket.org --kind cloud --web
 
-# Or provide credentials directly
-bkt auth login https://bitbucket.org --kind cloud --username <email> --token <api-token>
+# Do not pass tokens in command-line arguments (they may be exposed in history/process listings).
+# Use an independently verified secure interactive or credential-store method documented by bkt.
 ```
 
 ### Context Management

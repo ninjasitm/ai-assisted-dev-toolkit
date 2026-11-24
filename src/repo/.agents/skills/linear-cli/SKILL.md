@@ -23,14 +23,7 @@ The `linear` command must be available on PATH. To check:
 linear --version
 ```
 
-If not installed globally, you can run it without installing via npx:
-
-```bash
-npx @schpet/linear-cli --version
-```
-
-All subsequent commands can be prefixed with `npx @schpet/linear-cli` in place of `linear`. Otherwise, follow the install instructions at:
-https://github.com/schpet/linear-cli?tab=readme-ov-file#install
+If it is not installed, stop and report that the CLI must be provisioned and independently reviewed through the project's approved process. Do not use an unpinned `npx` fallback or fetch/execute a package to inspect a skill. For installation guidance, consult the project's independently verified local documentation: https://github.com/schpet/linear-cli?tab=readme-ov-file#install. Follow the CLI's supported interactive or credential-store authentication; never print or expose tokens, and do not pass credentials in shell arguments.
 
 ## Best Practices for Markdown Content
 
@@ -80,7 +73,6 @@ linear auth login
 linear auth logout
 linear auth list
 linear auth default
-linear auth token
 linear auth whoami
 linear auth migrate
 
@@ -228,14 +220,7 @@ linear api '{ issues(first: 5) { nodes { identifier title } } }' | jq '.data.iss
 
 ### Advanced: Using curl directly
 
-For cases where you need full HTTP control, use `linear auth token`:
-
-```bash
-curl -s -X POST https://api.linear.app/graphql \
-  -H "Content-Type: application/json" \
-  -H "Authorization: $(linear auth token)" \
-  -d '{"query": "{ viewer { id } }"}'
-```
+Do not retrieve, print, or interpolate an authentication token into commands. Use the CLI's authenticated API support or consult independently verified local documentation for a secure authentication method.
 
 ## Common Workflows
 

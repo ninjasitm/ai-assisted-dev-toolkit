@@ -1,36 +1,9 @@
 # GitHub Copilot Skills
 
-This folder is for skills installed via `npx -y skills add <owner/repo> --skill <confirmed name> --agent github-copilot cursor` when using GitHub Copilot.
+This directory is a target for skills only after their exact contents have been reviewed and explicitly approved. A skill name, repository, listing, or installer report is not a safety endorsement.
 
-## About Skills
+## Adding an external skill
 
-Skills are folders of instructions and resources that help AI agents perform specific tasks more accurately. They use the [Agent Skills](https://agentskills.io/) open format.
+Treat external repositories as source candidates, not vetted recommendations. Obtain the provenance and exact revision, inspect `SKILL.md` and every referenced or helper file as inert data, and have the exact bytes independently reviewed. Reject suspicious or unreviewable content. Never execute an unreviewed skill. After explicit approval, add only the reviewed bytes; any change requires a new review. A recorded trusted local review may be reused only for byte-identical contents. Preserve existing skills unless separately approved for change.
 
-## Installing Skills
-
-Install skills from [skills.sh](https://skills.sh/) using the `-a github-copilot` flag:
-
-```bash
-# For GitHub Copilot only
-npx -y skills add -a github-copilot <owner/repo> --skill <confirmed name> --agent github-copilot cursor
-
-# For multiple agents (e.g., Copilot + Cursor)
-npx -y skills add -a github-copilot -a cursor <owner/repo> --skill <confirmed name> --agent github-copilot cursor
-```
-
-**Tip:** The skills CLI automatically detects installed agents. If you omit `-a github-copilot`, you'll be prompted to choose from detected agents. Use `--skill <confirmed name> --agent github-copilot cursor` when installing one named skill from a repo.
-
-**Important:** Always use `-a github-copilot` to install only for GitHub Copilot (or add multiple `-a` flags if you use multiple agents). This prevents creating unnecessary configuration files for other agents.
-
-## Pre-installed Skills
-
-Universal workflow skills are pre-installed in `.agents/skills/`. These include:
-
-- test-driven-development
-- systematic-debugging
-- verification-before-completion
-- writing-plans
-- executing-plans
-- And more...
-
-See the main README.md for a full list of recommended skills.
+See [Skill Trust and Integrity](../../README.md#skill-trust-and-integrity) for the project review and integrity process. The toolkit's universal workflow skills are bundled in `.agents/skills/` and are separate from external candidates; their presence or integrity match is not safety certification.

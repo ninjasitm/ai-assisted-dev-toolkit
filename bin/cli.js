@@ -14,6 +14,7 @@ const factory = require('./factory-watch.js');
 const factoryArchive = require('./factory-archive.js');
 const factoryPrune = require('./factory-prune.js');
 const relevance = require('./relevance.js');
+const skillIntegrity = require('./skill-integrity.js');
 
 const PKG_ROOT = path.join(__dirname, '..');
 const SRC_DIR = path.join(PKG_ROOT, 'src');
@@ -619,6 +620,8 @@ function printHandoff(env, state) {
 // ---- Commands ----
 
 function cmdInstall(cwd, flags) {
+  // Packaged skills are verified before any plan is built or file is written (dry run included).
+  skillIntegrity.assertIntact(PKG_ROOT);
   const type = detectType(cwd, flags);
   if (flags.env && !ENV_DIRS[flags.env]) warn(`Unknown --env "${flags.env}"; scaffolding all environments.`);
   info(`Detected project type: ${type}` + (flags.env ? `, environment: ${flags.env}` : ''));
@@ -658,6 +661,8 @@ function cmdInstall(cwd, flags) {
 // Classifies every template file against the project, shows the plan, then writes only add and update
 // entries. Existing files that differ are reported, never overwritten (not even with --force).
 function cmdPatch(cwd, flags) {
+  // Packaged skills are verified before any plan is built or file is written (dry run included).
+  skillIntegrity.assertIntact(PKG_ROOT);
   const type = detectType(cwd, flags);
   const { selection, explicit } = resolveSelection(cwd, flags);
   const retired = relevance.readRetired(cwd);

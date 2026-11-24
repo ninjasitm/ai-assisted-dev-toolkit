@@ -9,12 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added a trust gate for skill recommendations and creation: external skills are unvetted source candidates, require exact-revision inspection and independent review before explicit approval, and are not executed or auto-enabled. Skills are staged outside discoverable paths; `npm run skills:check` detects inventory drift but does not certify safety.
 - Added the opt-in `improve-codebase-architecture` skill to both templates; it reports findings in chat without writing files.
 - Documented the specific Matt Pocock skills and patterns adapted by the toolkit, with upstream links and MIT attribution. The existing project license is unchanged.
 - Adopted patterns from Matt Pocock's PR guidance, blocker-only disposable prototypes, domain modeling for requirement-blocking terms, and cross-person/tool handoffs; expanded the README credits.
 
 ### Changed
 
+- Removed mutable external skill-installer recommendations and tightened bundled skill guidance against unreviewed instructions, secret disclosure, and unapproved publication.
 - Bootstrap completion checklist: `bootstrap.md` gains one short `## Completion Contract`, identical in both templates and inlined into `.nitm/BOOTSTRAP.md`. It covers the active files each change affects or links to. It requires cited project evidence before filling a setting or choosing a skill, forbids guessed required values, asks and parks unresolved questions, and removes files only with approval and a backup. Retiring a skill stops re-adding it, not loading. Statuses are applied, pending, and reviewer-accepted; the bootstrap completion report is written only after verification. Tests: `test/bootstrap-completion-contract.test.js`.
 - Guided `bootstrap-patch` and `bootstrap-upgrade` run from one verified source (an exact npm archive or `refs/tags/<version>`, minimum 5.2.0), with one CLI invocation for preview and apply. Patch compiles one write set (CLI state, manual changes, before-states, and the handoff backup), has it reviewed and approved, and revalidates it before any write. Upgrade runs the native migration first, then a separately approved pinned marker refresh, and checks the refresh against the actual state before it writes. Patch step 6 resolves live placeholders in the same loop, and the temp source is removed only at the terminal cleanup. Commits use one rule in `bootstrap-patch.md` step 5f: explicit request only, a baseline, an empty index, content and mode checks, and no broad staging. Tests: `test/bootstrap-patch-review.test.js`, `test/bootstrap-completion-contract.test.js`.
 - Upgrade's version-marker step no longer runs an unpinned `npx ... patch`. On the v3 route the CLI action stops on any protected or unapproved mutation. Hook `chmod` covers only the exact copied files.

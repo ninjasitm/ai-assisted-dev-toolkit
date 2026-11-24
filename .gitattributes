@@ -1,0 +1,6 @@
+# Skill text keeps LF on every checkout (including core.autocrlf=true on Windows). text=auto lets git
+# detect binary helpers and leave their bytes untouched, so only text assets are normalized.
+# The reviewed skill manifest is always text with LF, so its digests never depend on the platform.
+# Digests are over raw bytes; nothing normalizes line endings when hashing.
+src/**/skills/** text=auto eol=lf
+bin/skill-integrity.manifest.json text eol=lf
