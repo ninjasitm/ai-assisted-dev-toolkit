@@ -2,7 +2,7 @@
 name: logging
 description: Comprehensive logging standards for applications including structured logging, log levels, message formatting, and observability guidelines
 version: 1.0.0
-author: {{PROJECT_NAME}} Team
+author: "{{PROJECT_NAME}} Team"
 created: 2026-01-26
 updated: 2026-01-26
 tags:

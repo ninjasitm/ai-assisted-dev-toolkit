@@ -1,6 +1,6 @@
 ---
 name: code-simplifier
-description: Use after coding sessions or before commits to analyze recently modified code for simplification opportunities. Two-phase process: generate suggestions, then spawn a Staff Engineer reviewer to validate before presenting recommendations. Do not make code changes — analyze and report only.
+description: "Use after coding sessions or before commits to analyze recently modified code for simplification opportunities. Two-phase process: generate suggestions, then spawn a Staff Engineer reviewer to validate before presenting recommendations. Do not make code changes — analyze and report only."
 ---
 
 # Code Simplifier

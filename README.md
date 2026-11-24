@@ -168,7 +168,7 @@ After bootstrapping:
 
 ## CLI (npx)
 
-Scaffold AI agent config into any repo, then hand off to your AI agent to finish setup (replace `{{PLACEHOLDER}}`s, calibrate native instructions). The CLI scaffolds config for **all** supported harnesses (Claude Code, GitHub Copilot, Cursor, OpenCode, Codex) by default, so you normally don't need `--env`. Scaffolding does not prove a harness is installed or active: bootstrap uses actual runtime information or asks which harnesses you use. `install` aborts if files already exist — use `--force` to overwrite, or `patch` to add only missing files.
+Scaffold AI agent config into any repo, then hand off to your AI agent to finish setup (replace `{{PLACEHOLDER}}`s, calibrate native instructions). The CLI scaffolds config for **all** supported harnesses (Claude Code, GitHub Copilot, Cursor, OpenCode, Codex) by default, so you normally don't need `--env`. Scaffolding does not prove a harness is installed or active: bootstrap uses actual runtime information or asks which harnesses you use. `install` aborts if files already exist — use `--force` to overwrite, or `patch` to add missing files and update files you never changed.
 
 ```bash
 # Scaffold AI config into the current repo (auto-detects repo vs monorepo)
@@ -193,7 +193,7 @@ npx nitm-ai-dev-toolkit doctor
 npx nitm-ai-dev-toolkit upgrade
 
 # Also runs `install --force`, which overwrites locally changed files with the latest templates (back up customisations first).
-# `patch` never overwrites a locally changed file, with or without --force.
+# `patch` never overwrites a locally changed template file, with or without --force. It backs up and replaces the generated `.nitm/BOOTSTRAP.md` handoff when its content differs.
 npx nitm-ai-dev-toolkit upgrade --force
 
 # Preview install/patch/upgrade without writing (exits 1 on conflicts)
@@ -215,7 +215,7 @@ npx nitm-ai-dev-toolkit omo-slim-starter install
 - **`--dry-run`** (install, patch, upgrade) lists adds, overwrites, skips, conflicts and the state files it would write, and writes nothing. Install and patch exit 1 if there are conflicts. `upgrade --dry-run` runs the pinned version's own dry run, so the target must be **5.0.1 or later**.
 - **`--exclude` / `--only`** take comma-separated groups. Harnesses: `claude`, `codex`, `copilot`, `cursor`, `opencode`. Features: `factory`, `prisma`, `bkt-cli`, `gh-cli`, `glab-cli`, `acli`, `linear-cli`. Shared files (AGENTS.md, `docs/`, `hooks/`, shared skills and snippets) are never excluded. The selection is saved to `.nitm/toolkit.json` and used by later install, patch and doctor runs; `--exclude ""` clears it.
 - **`upgrade <version>`**, **`upgrade nitm-ai-dev-toolkit@<version>`** and **`--version <version>`** pin an exact version. `latest`, dist-tags and version ranges are refused. Without a version, the latest published release is used. While `.nitm/retired.json` has entries or a `trackers` override, `upgrade` refuses targets older than 5.2.0.
-- **State files:** install, patch and upgrade write `.toolkit-version` (the installed package version) and `.nitm/manifest.json` (hashes of the files the toolkit wrote). `doctor` reports a `.toolkit-version` that differs from the package version, and lists stale toolkit files it recognises. It only reports them; it never deletes anything.
+- **State files:** install, patch and upgrade write `.toolkit-version` (the installed package version), `.nitm/manifest.json` (hashes of the template files the toolkit wrote, used to tell unchanged files from edited ones), and `.nitm/BOOTSTRAP.md` (the handoff). When the handoff content differs, the old copy is first backed up to `.nitm/backups/BOOTSTRAP.<UTC timestamp>.md` (with a numeric suffix if the name is taken), then replaced. A new `--only` or `--exclude` selection is saved to `.nitm/toolkit.json`. `doctor` reports a `.toolkit-version` that differs from the package version, and lists stale toolkit files it recognises. It only reports them; it never deletes anything.
 - **`.nitm/BOOTSTRAP.md`** is rewritten only when its content differs. The previous copy is first saved to `.nitm/backups/`.
 
 After `install`, ask your AI agent to read and follow `.nitm/BOOTSTRAP.md`. Harnesses that supply a toolkit `/bootstrap` wrapper can also use it; **Codex has no native toolkit `/bootstrap` command**. Use `doctor` to verify the result.
@@ -288,7 +288,7 @@ Follow official V2 [migration](https://opencode.ai/v2/docs/migrate-v1), [config]
 - `--env codex` includes `.codex/`, `.agents/`, and shared context, plus `.github/instructions/` solely to supply the standards linked from `AGENTS.md`. The shared `.claude/rules-snippets/` standards are installed in every scope, so those standards' wrapper source content is present too. It does not install other harness command, agent, or config directories. These reference files neither establish Copilot/Claude use nor load automatically as Codex rules; other harness scopes are unchanged.
 - Codex reads `AGENTS.md` and discovers `.agents/skills/*/SKILL.md` natively. Monorepos can use more-specific nested `AGENTS.md` files for app/package guidance. Linked standards are references to read as needed, not automatically loaded Claude/Copilot rules.
 - The optional `.codex/config.toml` is deliberately comment-only: it preserves the user's inherited defaults. Codex loads project config only after the user explicitly trusts the project; the toolkit does not grant trust or set model/provider, approval, sandbox, security, or feature overrides.
-- For manual copies without `.nitm/`, provide `.claude/prompt-snippets/bootstrap.md` to Codex directly. For incremental AI-guided merges, provide `.claude/prompt-snippets/bootstrap-patch.md` as a task document; the CLI `patch` command only adds missing files.
+- For manual copies without `.nitm/`, provide `.claude/prompt-snippets/bootstrap.md` to Codex directly. For incremental AI-guided merges, provide `.claude/prompt-snippets/bootstrap-patch.md` as a task document, with the `bootstrap.md` from the same copy beside it (the guide stops if that checklist is missing). The CLI `patch` command adds missing files, updates files you never changed, and writes its state files (`.toolkit-version`, `.nitm/manifest.json`, the handoff, and `.nitm/toolkit.json` on a new selection). It never overwrites a template file you changed; the handoff is backed up before it is replaced.
 - Codex MCP configuration uses native `[mcp_servers.name]` TOML in Codex config, **not `.mcp.json`**. No MCP servers are activated by the Codex template. Configure only user-approved servers using the native docs; do not copy credentials or activate other harness hooks automatically.
 - Existing `.claude/agents/`, `.github/agents/`, and `.opencode/agents/` formats are tool-specific, not Codex custom agents. This toolkit does not translate their frontmatter or permissions into Codex configuration. Use only delegation capabilities actually available in your running harness.
 

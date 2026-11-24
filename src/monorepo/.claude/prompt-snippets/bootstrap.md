@@ -10,6 +10,20 @@ You are helping to bootstrap AI instructions for this monorepo by analyzing the 
 - If the CLI is missing, fails, or output is unparseable, **STOP OpenCode steps** and leave the version marker unchanged; ask the user to confirm/install a supported OpenCode version, then rerun this check. Never assume V2.
 - If oh-my-opencode-slim >=3.0.0 is used or planned, require OpenCode >=2.0.7 (compare version components numerically); otherwise **STOP** before changes and ask to upgrade. Proceed only after this gate passes.
 
+## Completion Contract
+
+This is the single completion checklist for bootstrap, patch, and upgrade. Guided patch and upgrade load it once, before any change (see `bootstrap-patch.md`), and hold it unchanged through apply.
+
+- **Cite before you fill.** Before filling an active setting or choosing a skill, cite what you read: the root and applicable nested `AGENTS.md`, package scripts and lockfile, CI and config files, and representative code and tests.
+- **No guessed required facts.** Do not fill a required value from a stack or framework default, a toolkit default (a port, `main`, `human`, `5100`), or a stale toolkit value kept without confirmation. Never change a custom value silently.
+- **Ask, then park.** Ask the user a targeted question: the native question tool when the harness has one, otherwise in chat as a numbered list or fill-in template. Park only the work that depends on the answer and finish the rest. Do not accept while required work is unresolved.
+- **Omit unsupported optional blocks** instead of filling them with guesses.
+- **Verify what you changed.** Run the syntax, frontmatter, and link checks that apply to the files you changed and to the active files they link to or affect. Confirm no required `{{PLACEHOLDER}}` is still live in any of them. Intent-specific runtime variables, examples, template literals, and preserved legacy runtime text are not leftovers.
+- **Statuses.** *Applied* means written. *Pending* means not yet written, parked, or waiting on an answer. *Reviewer-accepted* means an independent reviewer returned PASS on the current outcome, after verification. Guided patch and upgrade need the user's approval to write and answers to unresolved required questions, but no final human acceptance vote. Human approvals given during bootstrap are established. Name anything blocked or needing a decision, with its exact next action.
+- **Removals need explicit approval.** Remove only toolkit-owned files that match the template unmodified, after a backup, separate approval, and scoped reference cleanup. Never remove custom, modified, global, or unknown files.
+- **Retirement is not removal.** Retiring a skill in `.nitm/retired.json` stops the toolkit re-adding it; it does not unload a skill already on disk. Do not install external skills or change permissions automatically.
+- `npx nitm-ai-dev-toolkit doctor` is advisory. Its output does not decide completion.
+
 ## Harness selection and native Codex targets
 
 **Codex:** `/bootstrap` is not a native Codex command. For npm installs, ask Codex to read and follow `.nitm/BOOTSTRAP.md`. For manually copied templates without `.nitm/`, ask it to read and follow `.claude/prompt-snippets/bootstrap.md` as a task document.
@@ -80,7 +94,7 @@ The template ships files for every stack, tracker and test tool. Decide what app
    | `{{PACKAGE_MANAGER}}`       | Lock file or config (pnpm, composer, dotnet, etc.)                                                                                              |
    | `{{SETUP_COMMAND}}`         | Root install from the lock file (`pnpm install --frozen-lockfile`, `npm ci`, `yarn install --immutable`); a root `setup` script wins if present |
    | `{{BUILD_SYSTEM}}`          | Build tool (Turborepo, Nx, MSBuild, Maven, etc.)                                                                                                |
-   | `{{DEFAULT_BRANCH}}`        | `git symbolic-ref --short refs/remotes/origin/HEAD`, minus `origin/`; else `main`                                                               |
+   | `{{DEFAULT_BRANCH}}`        | `git symbolic-ref --short refs/remotes/origin/HEAD`, minus `origin/`; otherwise ask (never assume `main`)                                                               |
    | `{{TEST_FRAMEWORK}}`        | Common test framework across packages                                                                                                           |
    | `{{DEV_COMMAND}}`           | Root dev script or task (`turbo run dev`, `nx run-many -t serve`)                                                                               |
    | `{{DEV_PORT_FLAG}}`         | Port flag or env var the root dev command passes to apps (`--port <port>`, `PORT=<port>`); check each app config. Ask if none                   |
@@ -91,9 +105,9 @@ The template ships files for every stack, tracker and test tool. Decide what app
    | `{{PM_URL}}`                | Project management URL (if applicable)                                                                                                          |
    | `{{PROJECT_KEY}}`           | Project/workspace ID (if applicable)                                                                                                            |
    | `{{PM_ISSUE_KEY}}`          | Issue key format (e.g., PROJ-###, #42)                                                                                                          |
-   | `{{FACTORY_PORT_BASE}}`     | Only if Factory is installed. Default `5100`                                                                                                                                  |
-   | `{{APPROVAL_MODE}}`         | Only if Factory is installed. Default `human`                                                                                                                                 |
-   | `{{FACTORY_REVIEW_LENSES}}` | Only if Factory is installed. Default `code, security`; add `ux, ui` only if the project has a UI and a browser tool is configured (for example a browser MCP server)         |
+   | `{{FACTORY_PORT_BASE}}`     | Only if Factory is installed. Toolkit default `5100` is not confirmed until the user confirms it                                                                                                                                  |
+   | `{{APPROVAL_MODE}}`         | Only if Factory is installed. Toolkit default `human` is not confirmed until the user confirms it                                                                                                                                 |
+   | `{{FACTORY_REVIEW_LENSES}}` | Only if Factory is installed. Ask which review lenses to run (`code`, `security`, `ux`, `ui`); `ux` and `ui` need a UI and a browser tool (for example a browser MCP server). If none is chosen, omit the setting; no default is assumed         |
 
 3. **Analyze Apps**:
 
@@ -104,7 +118,7 @@ The template ships files for every stack, tracker and test tool. Decide what app
    | `{{APP_NAME_N}}`            | Directory names                    |
    | `{{APP_N_LANGUAGE}}`        | App-specific language if different |
    | `{{APP_N_FRAMEWORK}}`       | Detected framework                 |
-   | `{{APP_N_DEV_PORT}}`        | Config or framework defaults       |
+   | `{{APP_N_DEV_PORT}}`        | Cite each app's config value. Framework defaults are not a source; ask if none       |
    | `{{APP_N_DEPLOY_PLATFORM}}` | Deployment config files            |
 
 4. **Analyze Packages**:
@@ -164,7 +178,7 @@ The template ships files for every stack, tracker and test tool. Decide what app
 
 6. **Prompt for Missing Values**:
 
-   Ask specific questions for values that couldn't be inferred:
+   Ask specific questions for values that couldn't be inferred. A value you cannot cite from the project is a question, not a default; park the work that depends on it:
    - "What is the main purpose of this monorepo?"
    - "Confirm detected project management tool or specify different one (GitHub Issues, Jira, Azure DevOps, Linear, GitLab)?"
    - "Provide project management URL if applicable?"
@@ -498,7 +512,7 @@ Approve each skill by name (or none). Nothing is installed without approval.
 Populate this example with only files actually changed and skills actually installed. Omit unconfirmed harness targets; for Codex, include native targets and shared reference standards only when changed. This is a change inventory, not proof of runtime loading or trust.
 
 ```
-✅ Monorepo Bootstrap Complete!
+Monorepo Bootstrap Status (write only after final verification)
 
 Ecosystem: {{LANGUAGE}} / {{BUILD_SYSTEM}}
 
@@ -615,7 +629,7 @@ Next Steps:
     | Instructions created | {{N}} | Report actual result |
 
     ### Quality Checks
-    - [ ] Placeholders replaced (list any remaining)
+    - [ ] No required `{{PLACEHOLDER}}` left live in changed files (list any remaining; runtime variables excluded)
     - [ ] Skills match tech stack
     - [ ] No duplicate skills
     - [ ] Applicable apps/packages have scoped AGENTS.md

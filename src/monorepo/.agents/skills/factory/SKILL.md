@@ -1,6 +1,6 @@
 ---
 name: factory
-description: Opt-in software factory for feature-sized work. Runs one job through intake questions, a spec gate, a plan gate, build in an isolated git worktree (or in place on request), parallel reviews by lens, approval, and then a merge: local, or a merge request on the forge. Feature docs live in the feature folders, job state in factory/jobs/, and tickets (when the project tracks them) follow the job. Invoked as /factory with a request (intake), start, approve, rework, abandon, status, watch, archive, or prune. Quick fixes stay direct.
+description: "Opt-in software factory for feature-sized work. Runs one job through intake questions, a spec gate, a plan gate, build in an isolated git worktree (or in place on request), parallel reviews by lens, approval, and then a merge: local, or a merge request on the forge. Feature docs live in the feature folders, job state in factory/jobs/, and tickets (when the project tracks them) follow the job. Invoked as /factory with a request (intake), start, approve, rework, abandon, status, watch, archive, or prune. Quick fixes stay direct."
 ---
 
 # Factory (orchestrator)

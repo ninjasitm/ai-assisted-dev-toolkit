@@ -790,8 +790,8 @@ function cmdDoctor(cwd, flags) {
     info(`Selection (${result.selectionSource}): exclude [${selection.exclude.join(', ')}], only [${selection.only.join(', ')}].`);
   }
   if (version.status === 'match') ok(`${VERSION_FILE} ${version.installed} matches toolkit ${version.package}.`);
-  else if (version.status === 'missing') warn(`${VERSION_FILE} is missing (toolkit ${version.package}). Run patch to record it.`);
-  else warn(`${VERSION_FILE} is ${version.installed}, toolkit is ${version.package}. Run upgrade or patch to record it.`);
+  else if (version.status === 'missing') warn(`${VERSION_FILE} is missing (toolkit ${version.package}). Doctor does not write it; the guided patch flow records it after preview and approval.`);
+  else warn(`${VERSION_FILE} is ${version.installed}, toolkit is ${version.package}. Doctor does not write it; the guided patch flow records it after preview and approval.`);
   if (placeholders.length === 0) ok('No unresolved {{PLACEHOLDER}} values found.');
   else {
     warn(`${placeholders.length} file(s) still contain {{PLACEHOLDER}} values (AI handoff replaces these):`);
@@ -943,7 +943,7 @@ function cmdUpgrade(cwd, flags, deps = {}) {
     return { version: target, status: null };
   }
   if (r.status === 0) {
-    ok(flags.dryRun ? 'Dry run complete; nothing was written.' : 'Upgrade complete. Hand off to your AI agent with .nitm/BOOTSTRAP.md to finish setup.');
+    ok(flags.dryRun ? 'Dry run complete; nothing was written.' : 'Upgrade scaffold applied. Setup is not finished: hand off to your AI agent with .nitm/BOOTSTRAP.md, then re-run doctor.');
   } else if (flags.dryRun && r.status === 1) {
     err('Upgrade dry run found conflicts (exit 1); nothing was written. Resolve them, then re-run.');
     process.exitCode = 1;
@@ -1164,8 +1164,14 @@ function main() {
       case 'omo-slim-starter': return cmdOmoStarter(cwd, flags);
       case 'factory': return cmdFactory(cwd, flags);
       default:
-        if (cmd) err(`Unknown command: ${cmd}`);
-        usage();
+        // No command prints help and exits 0. An unknown command is an error: help, then exit 1.
+        if (cmd) {
+          err(`Unknown command: ${cmd}`);
+          usage();
+          process.exitCode = 1;
+        } else {
+          usage();
+        }
     }
   } catch (e) {
     err(e.message);

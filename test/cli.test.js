@@ -607,3 +607,46 @@ test('help: lists Codex and truthful default and bootstrap instructions', () => 
   assert.match(r.stdout, /no native \/bootstrap command is provided/);
   assert.doesNotMatch(r.stdout, /auto-detects your harness/);
 });
+
+// ---- process exit codes (real child processes; nothing is written) ----
+
+function runCli(args, cwd) {
+  return spawnSync(process.execPath, [path.join(__dirname, '..', 'bin', 'cli.js'), ...args],
+    { cwd, encoding: 'utf8' });
+}
+
+test('exit: an unknown command prints the error and help, then exits 1', () => {
+  const d = tmp();
+  const r = runCli(['bogus-command'], d);
+  assert.equal(r.status, 1);
+  assert.match(r.stdout, /Unknown command: bogus-command/);
+  assert.match(r.stdout, /Usage:/);
+  assert.deepEqual(fs.readdirSync(d), []);
+});
+
+test('exit: no arguments and --help print usage and exit 0', () => {
+  const d = tmp();
+  for (const args of [[], ['--help']]) {
+    const r = runCli(args, d);
+    assert.equal(r.status, 0, args.join(' ') || '(no args)');
+    assert.match(r.stdout, /Usage:/);
+    assert.doesNotMatch(r.stdout, /Unknown command/);
+  }
+});
+
+test('exit: patch --only rules is rejected by the real group check, exits 1 and writes nothing', () => {
+  for (const extra of [['--dry-run'], []]) {
+    const d = tmp();
+    const r = runCli(['patch', '--only', 'rules', ...extra], d);
+    assert.equal(r.status, 1, extra.join(' ') || 'apply');
+    assert.match(r.stdout + r.stderr, /Unknown group "rules" for --only/);
+    assert.deepEqual(fs.readdirSync(d), []);
+  }
+});
+
+test('upgrade: the documented --version pin and the positional forms all resolve to the same version', () => {
+  assert.equal(cli.parseUpgradeTarget(cli.parseFlags(['upgrade', '--version', '5.2.0'])), '5.2.0');
+  assert.equal(cli.parseUpgradeTarget(cli.parseFlags(['upgrade', '5.2.0'])), '5.2.0');
+  assert.equal(cli.parseUpgradeTarget(cli.parseFlags(['upgrade', 'nitm-ai-dev-toolkit@5.2.0'])), '5.2.0');
+  assert.equal(cli.parseUpgradeTarget(cli.parseFlags(['upgrade'])), undefined);
+});
