@@ -13,6 +13,8 @@ You are helping to create an implementation plan for a feature or requirement.
 1. **Load context**:
 
    - Use the supplied requirement as sufficient input. Ask targeted questions only when the request is unclear; do not require creating a specification first. When it is unclear, run a grill-me round: read and follow [grill-me](../../.agents/skills/grill-me/SKILL.md).
+   - Conditional: offer a disposable prototype only when discussion and examples cannot settle one blocking behavior, UI, or state question and a runnable demo can. Get the user's permission; keep it isolated and synthetic, with no commits or external operations, and carry forward only the answer.
+   - Conditional: for a domain term that blocks requirements, resolve it from examples and the existing glossary or ADRs first; ask only about unresolved intent, with no automatic glossary or ADR edits.
    - Read `AGENTS.md` for project architecture and patterns
    - Review `docs/constitution.md` for project principles (if exists)
    - If an existing specification is available at `apps/{{APP_NAME}}/docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/spec.md`, read it as optional context.

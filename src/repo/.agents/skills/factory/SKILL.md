@@ -152,6 +152,11 @@ A job is **closed** when its stage is `merged` or `abandoned`. Every other job i
 
    For a genuinely blocking ambiguity, follow the [grill-me](../grill-me/SKILL.md) skill to put the questions to the operator. It stays inside this step: at most five questions, only the ones that meet the conditions above, the answers recorded verbatim in `intake.md`, and the intake gate still shown before anything is created. Grill-me never confirms anything for the operator; the gate's numbered choice does.
 
+   **Domain examples first.** When a term in the request has two readings that would produce different requirements, give the operator concrete domain examples and counterexamples first, checked read-only against the project's glossary and ADRs. Examples are not questions and do not count toward the five-question cap. Only if they do not settle the term, ask one question, counted in the cap. Do not write to a glossary, ADR, or any other doc automatically. A meaning that stays unresolved is a decision for the user.
+
+   **Disposable prototype (optional, one question).** After the discussion and the domain examples above, offer it only when one qualifying blocking question remains that they could not settle. The question need not be about terms: a UI or state question qualifies too, and a runnable demo must be able to decide it. The offer is one question in the five-question cap. Never run the prototype unless the operator says yes. It runs on synthetic data where it can, in a temporary folder outside the live project directory, with no production data, no commits, no new dependencies, and no external action. It runs before any Factory job artifact exists. Only the decision and its evidence come back, never the prototype's code. The spec and plan approvals stay exactly as they are.
+
+
    Do not ask about details the spec writer can decide and flag as `[PRODUCT DECISION]`, and do not ask for taste. If nothing is glaring, say so in one line ("No glaring questions; starting the job.") and continue to step 3. If the request resolves to an existing feature folder, still ask, then continue that feature.
 3. **Spec route.** Decide the route before the gate. Propose plan-only (no `spec.md`, no spec gate) only when every check below holds. Any miss, a total near the budget or not estimable, and an unknown route, mean the spec route:
    - **New feature only.** The feature folder does not exist yet, and no open or archived job names it. A request that resolves to an existing folder, spec, plan, or job always takes the spec route. A route is never overwritten on resume.
@@ -760,10 +765,22 @@ Runs in place of the local merge, when `{{MERGE_MODE}}` is `push-mr` and the app
 
 1. **Forge and preconditions.** Pick the forge from `git remote get-url origin`: a GitHub host uses `gh`, a GitLab host uses `glab`. Stop and tell the operator if that CLI is missing or its auth check fails (`gh auth status` or `glab auth status`). The build location must have no tracked changes: `git -C <build location> status --porcelain --untracked-files=no` is empty. Do not change the stage on a failed precondition.
 2. **Test gate.** Run the test commands of the local merge, step 5, in the build location on the branch, before any push. A failure sets stage `needs-human`, reports the output, and pushes nothing.
-3. **Push.** `git -C <build location> push -u origin factory/<id>`. A rejected push stops here: set stage `needs-human` and report the message. Do not force.
-4. **Open the request, once.** Skip this step when `mr` is already set. Otherwise:
-   - GitHub: `gh pr create --base {{DEFAULT_BRANCH}} --head factory/<id> --title "<feature>" --body-file <job folder>/decision.md`
-   - GitLab: `glab mr create --source-branch factory/<id> --target-branch {{DEFAULT_BRANCH}} --title "<feature>" --description-file <job folder>/decision.md --yes`
+3. **Push.** `git -C <build location> push -u origin factory/<id>`. On success, record the pushed SHA (the build location's `HEAD`) for the body's verification snapshot. A rejected push stops here: set stage `needs-human` and report the message. Do not force.
+4. **Open the request, once.** Skip this step when `mr` is already set. Otherwise render the body first, then open the request with it.
+
+   **Render `<job folder>/pr-body.md`** for both forges. `decision.md` is never changed, and the file is built only from current evidence:
+   - Summary: the decision's summary, as one short paragraph.
+   - Verification (a creation-time snapshot. Its label displays two SHAs: the branch SHA that step 3 recorded, and the accepted Tested commit. Show `unknown` for either one that is not recorded. Later pushes can update the branch, but this procedure does not edit the existing request body or add another forge operation, so the snapshot may then differ. Never present it as a pass for a later revision): this run's test gate (step 2) and the rows of `qa.md` in the build location, only when its `Tested commit:` equals the current decision's `Tested commit:` and the Functional QA freshness rules (see Functional QA) show that evidence fresh. Each check is one line with its result. A check not run is named with its reason. When the QA evidence is not fresh or does not match, omit its rows and name `QA evidence unavailable: <reason>`. The test gate of step 2 is kept either way.
+   - Blast radius: the files and features the change touches, from the diff stat against the default branch, or `unknown`.
+   - Rollback: `not attempted`. A revert of the branch's commits is a candidate only when the job's artifacts show no migration, data change, or external effect. Otherwise state the rollback the artifacts record, or `unknown`. Never run a rollback.
+   - Redact secrets, tokens, credentials, personal data, and paths outside the repository. Never copy QA output or logs beyond their one-line result.
+   - Project template: when the repository has one, keep its sections and requirements, and fill them with the above. Use a template only when the selection is unique. GitHub: exactly one of `.github/pull_request_template.md`, `.github/PULL_REQUEST_TEMPLATE.md`, `docs/pull_request_template.md`, or `pull_request_template.md` at the repository root. GitLab: `.gitlab/merge_request_templates/Default.md` when present, otherwise the folder's single template. Several candidates without a unique choice, such as several GitLab templates with no `Default.md`, are no unique selection. A template is for layout only and grants no authority beyond this push.
+   - No template, or no unique selection: the body is the decision's summary, then the sections above, in that order, the same sanitized fallback on both forges. The raw `decision.md` is never the body.
+
+   Anything the job did not establish is written `unknown`, never invented. This is the approved push-mr procedure only: it publishes the branch and the request that `/factory approve` (or an `auto` APPROVE) already authorized. It adds no approval.
+
+   - GitHub: `gh pr create --base {{DEFAULT_BRANCH}} --head factory/<id> --title "<feature>" --body-file <job folder>/pr-body.md`
+   - GitLab: `glab mr create --source-branch factory/<id> --target-branch {{DEFAULT_BRANCH}} --title "<feature>" --description-file <job folder>/pr-body.md --yes`
 
    Record the URL the command prints in `mr`. A failed command sets stage `needs-human` and reports the error. Nothing is recorded, and rerunning approve retries from step 1.
 5. **Stage.** Set stage `awaiting-human`. Tickets stay In Review. Print the request URL and say: "Review and merge it on the forge, then run `/factory approve <id>` to finish." Under `auto`, the same message applies: the forge merge stays the human gate.
@@ -873,6 +890,10 @@ Codex has no agent files. Run each role brief directly, as a delegated or fresh 
 In OpenCode with the Slim plugin, `oracle` (security or approval) and `designer` (ux or ui) are optional alternatives to the native agents. Use them only if you have configured them as edit-denied reviewers. The native agents above are the default.
 
 Copilot may show a display name in its agent list; pick the agent with the name above.
+
+## Handoff summary
+
+Give a handoff summary only when the job crosses a human or tool boundary: its state must reach a person or a tool that is not the orchestrator. Ordinary reviewer and approver dispatches, and routine resumes, are not handoffs. The summary names the owner of the next step (the operator, a reviewer, or a tool), the artifact paths, the redacted evidence it shares, what is proved and what is unknown, the blockers, and the next action that owner is authorized to take. Never send it automatically. It can stay in chat or in an existing artifact, and it creates no artifact or stage.
 
 ## Harness notes
 

@@ -829,7 +829,7 @@ Skills are installed to `{.cursor|.agents|.github}/skills/` and automatically av
 
 ### Bundled Universal Skills
 
-This toolkit includes **39 pre-installed universal skills** in the `.agents/skills/` folder. These skills are copied automatically when you set up your project and require **no additional installation**.
+This toolkit includes **40 pre-installed universal skills** in the `.agents/skills/` folder. These skills are copied automatically when you set up your project and require **no additional installation**.
 
 | Skill                              | Description                                                                                          |
 | ---------------------------------- | ---------------------------------------------------------------------------------------------------- |
@@ -872,6 +872,7 @@ This toolkit includes **39 pre-installed universal skills** in the `.agents/skil
 | **glab-cli**                       | GitLab CLI (`glab`) command reference for repo and monorepo templates.                                                    |
 | **grill-me**                       | Clarifies blocking uncertainty before an existing approval; adds no approval gate.                                             |
 | **retro**                           | Optional Factory acceptance-decision retrospective; advisory, not a gate.                                                     |
+| **improve-codebase-architecture**   | Opt-in architecture scan with recommendations reported in chat; writes no files.                                               |
 
 **These skills are ready to use immediately after copying the templates.** No `npx -y skills add -a <agent> <owner/repo> --skill <confirmed name> --agent github-copilot cursor` commands needed.
 
@@ -880,6 +881,26 @@ The generic initial template copy may include `design-system` even in a non-UI p
 Both Factory skills are artifact-based and advisory, with different timing: `--retro` runs at an acceptance decision before routing; `--learn` runs after verified merge and proposes project-local memory, a narrow documentation/skills change, or no change. Learn reads job artifacts, not raw transcripts or global memory; it requires explicit approval before edits, and later relevant jobs consult only approved project memory.
 
 The **ponytail** skill bundle is an integrated optional skill set from [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) that adds YAGNI/stdlib/native/one-line/minimum discipline to your AI agents. It includes 6 skills, 6 commands, 7 activation hooks, and ambient agent rules. OpenCode uses the author's upstream `@dietrichgebert/ponytail` package, installed globally by the operator, not a bundled local plugin. See [native setup](#native-opencode-v2-toolkit-400); scaffolding alone does not establish activation. The Claude Code hooks in `hooks/*.json` use `${CLAUDE_PLUGIN_ROOT}` and are plugin-only: they fire only when installed through the Ponytail plugin, not from project settings.
+
+### Adapted from Matt Pocock's skills
+
+The following skills and patterns are adapted from [Matt Pocock's skills](https://github.com/mattpocock/skills) ([AI Hero catalog](https://www.aihero.dev/skills)), licensed under [MIT](https://github.com/mattpocock/skills/blob/d65391149dbb5fe76478e76fa8d5122b2aa5a70e/LICENSE), at commit [`d653911`](https://github.com/mattpocock/skills/tree/d65391149dbb5fe76478e76fa8d5122b2aa5a70e). The existing project license is unchanged.
+
+**Adapted skills**
+
+- [`retro`](src/repo/.agents/skills/retro/SKILL.md) ← [engineering/retro](https://github.com/mattpocock/skills/blob/d65391149dbb5fe76478e76fa8d5122b2aa5a70e/skills/engineering/retro/SKILL.md)
+- [`grill-me`](src/repo/.agents/skills/grill-me/SKILL.md) ← [productivity/grilling](https://github.com/mattpocock/skills/blob/d65391149dbb5fe76478e76fa8d5122b2aa5a70e/skills/productivity/grilling/SKILL.md)
+- [`improve-codebase-architecture`](src/repo/.agents/skills/improve-codebase-architecture/SKILL.md) ← [engineering/improve-codebase-architecture](https://github.com/mattpocock/skills/blob/d65391149dbb5fe76478e76fa8d5122b2aa5a70e/skills/engineering/improve-codebase-architecture/SKILL.md) and [engineering/codebase-design](https://github.com/mattpocock/skills/blob/d65391149dbb5fe76478e76fa8d5122b2aa5a70e/skills/engineering/codebase-design/SKILL.md)
+
+**Adapted patterns**
+
+- [`code-review`](src/repo/.agents/skills/code-review/SKILL.md) — [engineering/code-review](https://github.com/mattpocock/skills/blob/d65391149dbb5fe76478e76fa8d5122b2aa5a70e/skills/engineering/code-review/SKILL.md) review lenses.
+- [`.claude/prompt-snippets/specify.md`](src/repo/.claude/prompt-snippets/specify.md) — [engineering/to-spec](https://github.com/mattpocock/skills/blob/d65391149dbb5fe76478e76fa8d5122b2aa5a70e/skills/engineering/to-spec/SKILL.md) interface rule.
+- [`.claude/prompt-snippets/assign-tasks.md`](src/repo/.claude/prompt-snippets/assign-tasks.md) — [engineering/to-tickets](https://github.com/mattpocock/skills/blob/d65391149dbb5fe76478e76fa8d5122b2aa5a70e/skills/engineering/to-tickets/SKILL.md) preview pattern.
+- [`.agents/skills/factory/SKILL.md`](src/repo/.agents/skills/factory/SKILL.md): [engineering/pr](https://github.com/mattpocock/skills/blob/d65391149dbb5fe76478e76fa8d5122b2aa5a70e/skills/engineering/pr/SKILL.md) informs Factory PR template priority, evidence, blast radius, and rollback guidance.
+- [Factory](#factory-opt-in-v5), [specify](src/repo/.claude/prompt-snippets/specify.md), and [plan](src/repo/.claude/prompt-snippets/plan.md): [engineering/prototype](https://github.com/mattpocock/skills/blob/d65391149dbb5fe76478e76fa8d5122b2aa5a70e/skills/engineering/prototype/SKILL.md) supports a disposable prototype only when a runnable question blocks the spec or plan.
+- [Factory](#factory-opt-in-v5), [specify](src/repo/.claude/prompt-snippets/specify.md), and [plan](src/repo/.claude/prompt-snippets/plan.md): [engineering/domain-modeling](https://github.com/mattpocock/skills/blob/d65391149dbb5fe76478e76fa8d5122b2aa5a70e/skills/engineering/domain-modeling/SKILL.md) helps when domain terms block requirements.
+- [Factory](#factory-opt-in-v5): [productivity/handoff](https://github.com/mattpocock/skills/blob/d65391149dbb5fe76478e76fa8d5122b2aa5a70e/skills/productivity/handoff/SKILL.md) informs real cross-person or cross-tool transfer, not routine resume.
 
 ### Additional Recommended Skills
 

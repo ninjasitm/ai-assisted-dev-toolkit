@@ -176,6 +176,7 @@ For detailed standards on specific topics, refer to these skills in `.agents/ski
 | **GitLab CLI**            | `glab-cli/SKILL.md`                       | GitLab MRs, issues, pipelines CLI reference          |
 | **Git Worktrees**         | `using-git-worktrees/SKILL.md`            | Parallel development branches                        |
 | **Issue Tracker**         | `issue-tracker/SKILL.md`                  | MCP tools, CLI fallback, epic discovery              |
+| **Improve Codebase Architecture** | `improve-codebase-architecture/SKILL.md` | Opt-in architecture scan; report in chat only |
 | **Linear CLI**            | `linear-cli/SKILL.md`                     | Linear CLI command reference                         |
 | **Logging**               | `logging/SKILL.md`                        | Structured logging standards, log levels             |
 | **Orient to Recent Work** | `orient-to-recent-work/SKILL.md`          | Build context from recent project activity           |
