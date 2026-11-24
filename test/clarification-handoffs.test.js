@@ -12,8 +12,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const ROOT = path.join(__dirname, '..');
-const LAYOUTS = ['src/repo', 'src/monorepo'];
 const SHA = 'd65391149dbb5fe76478e76fa8d5122b2aa5a70e';
+const LAYOUTS = ['src/repo', 'src/monorepo'];
 const GRILL = '.agents/skills/grill-me/SKILL.md';
 const SPECIFY = '.claude/prompt-snippets/specify.md';
 const PLAN = '.claude/prompt-snippets/plan.md';
@@ -107,6 +107,19 @@ for (const layout of LAYOUTS) {
     assert.ok(exists(layout, GRILL));
   });
 }
+
+test('specify and plan carry one conditional prototype pointer and one domain pointer, with isolation and no-edit boundaries', () => {
+  for (const layout of LAYOUTS) {
+    for (const file of [SPECIFY, PLAN]) {
+      const text = read(layout, file);
+      assert.equal(text.split('Conditional: offer a disposable prototype only when').length - 1, 1, `${layout}/${file}: prototype pointer count`);
+      assert.equal(text.split('Conditional: for a domain term that blocks requirements').length - 1, 1, `${layout}/${file}: domain pointer count`);
+      assert.match(text, /discussion and examples cannot settle one blocking behavior, UI, or state question and a runnable demo can/);
+      assert.match(text, /keep it isolated and synthetic, with no commits or external operations/);
+      assert.match(text, /no automatic glossary or ADR edits/);
+    }
+  }
+});
 
 test('the three edited snippets carry the same handoff markers in both layouts', () => {
   const markers = [

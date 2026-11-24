@@ -26,6 +26,8 @@ Start a new feature by creating a specification. This is the first step in the d
 3. **Clarify Real Ambiguity** (only when needed):
    - If scope, acceptance criteria, or out-of-scope items are unclear in a way that changes what gets built, run a grill-me round: read and follow [grill-me](../../.agents/skills/grill-me/SKILL.md).
    - Skip this step when the request is clear. Do not interview for its own sake.
+   - Conditional: offer a disposable prototype only when discussion and examples cannot settle one blocking behavior, UI, or state question and a runnable demo can. Get the user's permission; keep it isolated and synthetic, with no commits or external operations, and carry forward only the answer.
+   - Conditional: for a domain term that blocks requirements, resolve it from examples and the existing glossary or ADRs first; ask only about unresolved intent, with no automatic glossary or ADR edits.
    - Record settled answers in the spec. Keep unanswered decisions in **Open Questions** marked `[NEEDS CLARIFICATION: question]`. An unanswered recommendation is not accepted.
 
 4. **Create Feature Directory**:

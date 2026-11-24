@@ -214,7 +214,7 @@ All templates use `{{PLACEHOLDER}}` syntax for customizable values:
 
 ## Bundled Skills
 
-The toolkit includes 39 pre-installed universal skills in `src/repo/.agents/skills/` and `src/monorepo/.agents/skills/`:
+The toolkit includes 40 pre-installed universal skills in `src/repo/.agents/skills/` and `src/monorepo/.agents/skills/`:
 
 | Skill                            | Purpose                                  |
 | -------------------------------- | ---------------------------------------- |
@@ -234,6 +234,7 @@ The toolkit includes 39 pre-installed universal skills in `src/repo/.agents/skil
 | `glab-cli`                       | GitLab CLI helpers                       |
 | `grill-me`                       | Clarify blocking uncertainty before approval |
 | `issue-tracker`                  | Issue tracking workflows                 |
+| `improve-codebase-architecture`  | Opt-in architecture scan with report in chat only |
 | `learn`                           | Propose approved project-memory or narrow docs/skills improvements after verified merge |
 | `linear-cli`                     | Linear CLI helpers                       |
 | `logging`                        | Structured logging standards             |

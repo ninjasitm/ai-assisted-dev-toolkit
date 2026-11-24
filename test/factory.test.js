@@ -1492,3 +1492,94 @@ test('B2: only a parked technical root with a RESOLVED row whose key matches the
     assert.match(step7, /Rows are handled as in step 3 and step 4/, tpl + ': resumed unconsumed rows use the step 4 key check');
   }
 });
+
+// Outgoing PR/MR body, prototype, domain-first language, and handoff: dependency, order, parity, and privacy contracts.
+test('push-mr: one sanitized pr-body.md path for both forges, never the raw decision, and the step 4 text is identical across layouts', () => {
+  const step4 = (tpl) => section(factorySkill(tpl), '4. **Open the request, once.**', 'Record the URL the command prints in `mr`.');
+  for (const tpl of SPEC_ROUTE_LAYOUTS) {
+    const s = step4(tpl);
+    assert.match(s, /--body-file <job folder>\/pr-body\.md`/, tpl + ': GitHub uses pr-body.md');
+    assert.match(s, /--description-file <job folder>\/pr-body\.md --yes`/, tpl + ': GitLab uses pr-body.md');
+    assert.doesNotMatch(s, /<job folder>\/decision\.md`\)|--body-file <job folder>\/decision|--description-file <job folder>\/decision/, tpl + ': no raw decision body in either command');
+    assert.match(s, /`decision\.md` is never changed/, tpl + ': decision not mutated');
+    assert.match(s, /The raw `decision\.md` is never the body\./, tpl + ': no raw body, even without a template');
+    assert.match(s, /the rows of `qa\.md` in the build location, only when its `Tested commit:` equals the current decision's `Tested commit:` and the Functional QA freshness rules \(see Functional QA\) show that evidence fresh/, tpl + ': canonical freshness rule, not HEAD equality');
+    assert.match(s, /`QA evidence unavailable: <reason>`/, tpl + ': unavailable QA is named');
+    assert.match(s, /The test gate of step 2 is kept either way\./, tpl + ': step 2 kept');
+    assert.doesNotMatch(s, /equals the build location's `HEAD`/, tpl + ': no HEAD equality');
+    assert.match(s, /Rollback: `not attempted`\./, tpl + ': rollback not attempted');
+    assert.match(s, /Never run a rollback\./, tpl + ': rollback never executed');
+    assert.match(s, /adds no approval\./, tpl + ': no new authority');
+  }
+  assert.equal(step4('repo'), step4('monorepo'), 'step 4 identical across layouts');
+});
+
+test('prototype: offered only for a blocking question the examples did not settle, within the cap, before job artifacts, in isolation', () => {
+  for (const tpl of SPEC_ROUTE_LAYOUTS) {
+    const intake = section(factorySkill(tpl), '2. **Ask only glaring questions.**', '3. **Spec route.**');
+    const proto = section(intake, '**Disposable prototype', '   Do not ask about details');
+    assert.match(proto, /After the discussion and the domain examples above, offer it only when one qualifying blocking question remains/, tpl + ': discussion and examples first');
+    assert.match(proto, /a UI or state question qualifies too/, tpl + ': not limited to terms');
+    assert.match(proto, /Never run the prototype unless the operator says yes\./, tpl + ': never without yes');
+    assert.match(proto, /in the five-question cap/, tpl + ': counts toward the cap');
+    assert.match(proto, /It runs before any Factory job artifact exists\./, tpl + ': before job artifacts');
+    assert.match(proto, /outside the live project directory/, tpl + ': isolated from the live directory');
+    assert.match(proto, /no production data, no commits, no new dependencies, and no external action/, tpl + ': no side effects');
+    assert.match(proto, /Only the decision and its evidence come back, never the prototype's code\./, tpl + ': only decision returns');
+    assert.match(proto, /The spec and plan approvals stay exactly as they are\./, tpl + ': approvals unchanged');
+  }
+});
+
+test('domain examples: first, indented as part of the intake list, not questions, and never an automatic doc write', () => {
+  for (const tpl of SPEC_ROUTE_LAYOUTS) {
+    const lines = factorySkill(tpl).split('\n');
+    const lead = (needle) => { const l = lines.find((x) => x.includes(needle)); assert.ok(l, tpl + ': found ' + needle); return l; };
+    assert.match(lead('**Domain examples first.**'), /^   \*\*Domain examples first\.\*\*/, tpl + ': indented');
+    assert.match(lead('Do not ask about details the spec writer can decide'), /^   Do not ask about details/, tpl + ': indented');
+    const intake = section(factorySkill(tpl), '2. **Ask only glaring questions.**', '3. **Spec route.**');
+    order(intake, '**Domain examples first.**', 'Only if they do not settle the term, ask one question, counted in the cap.');
+    order(intake, '**Domain examples first.**', '**Disposable prototype');
+    assert.match(intake, /Examples are not questions and do not count toward the five-question cap\./, tpl + ': examples do not count');
+    assert.match(intake, /Do not write to a glossary, ADR, or any other doc automatically\./, tpl + ': no automatic doc writes');
+  }
+});
+
+test('handoff: only a crossing of a human or tool boundary, not reviewer or approver dispatch or routine resume, with a named owner and no automatic send', () => {
+  for (const tpl of SPEC_ROUTE_LAYOUTS) {
+    const handoff = section(factorySkill(tpl), '## Handoff summary', '## Harness notes');
+    assert.match(handoff, /only when the job crosses a human or tool boundary/, tpl + ': boundary crossing');
+    assert.match(handoff, /Ordinary reviewer and approver dispatches, and routine resumes, are not handoffs\./, tpl + ': not dispatch or resume');
+    assert.match(handoff, /names the owner of the next step \(the operator, a reviewer, or a tool\)/, tpl + ': owner may be recipient');
+    assert.match(handoff, /the redacted evidence it shares/, tpl + ': redacted shared evidence');
+    assert.match(handoff, /Never send it automatically\./, tpl + ': no automatic send');
+    assert.match(handoff, /creates no artifact or stage\./, tpl + ': no new artifact or stage');
+  }
+});
+
+// Creation-time snapshot and template selection: the body describes the SHA pushed at creation, and a template is
+// used only when its selection is unique, otherwise the same sanitized fallback applies on both forges.
+test('push-mr body: a creation-time snapshot tied to the recorded push SHA, with no unqualified pass for a later revision', () => {
+  for (const tpl of SPEC_ROUTE_LAYOUTS) {
+    const skill = factorySkill(tpl);
+    const step3 = section(skill, '3. **Push.**', '4. **Open the request, once.**');
+    assert.match(step3, /On success, record the pushed SHA \(the build location's `HEAD`\) for the body's verification snapshot\./, tpl + ': step 3 records the SHA');
+    const step4 = section(skill, '4. **Open the request, once.**', 'Record the URL the command prints in `mr`.');
+    assert.match(step4, /Verification \(a creation-time snapshot\. Its label displays two SHAs: the branch SHA that step 3 recorded, and the accepted Tested commit\./, tpl + ': snapshot label shows both SHAs');
+    assert.match(step4, /Show `unknown` for either one that is not recorded\./, tpl + ': unknown SHA shown');
+    assert.match(step4, /Later pushes can update the branch, but this procedure does not edit the existing request body or add another forge operation, so the snapshot may then differ\./, tpl + ': later pushes allowed, body not edited');
+    assert.match(step4, /Never present it as a pass for a later revision\)/, tpl + ': no unqualified pass');
+    assert.match(step4, /The test gate of step 2 is kept either way\./, tpl + ': step 2 and QA freshness kept');
+  }
+});
+
+test('push-mr template: GitHub root file recognized, a template only on a unique selection, and the same sanitized fallback otherwise', () => {
+  for (const tpl of SPEC_ROUTE_LAYOUTS) {
+    const step4 = section(factorySkill(tpl), '4. **Open the request, once.**', 'Record the URL the command prints in `mr`.');
+    assert.match(step4, /Use a template only when the selection is unique\./, tpl + ': unique selection only');
+    assert.match(step4, /`pull_request_template\.md` at the repository root/, tpl + ': GitHub root candidate');
+    assert.match(step4, /Several candidates without a unique choice, such as several GitLab templates with no `Default\.md`, are no unique selection\./, tpl + ': ambiguity named');
+    assert.match(step4, /No template, or no unique selection: the body is the decision's summary, then the sections above, in that order, the same sanitized fallback on both forges\./, tpl + ': same fallback');
+    assert.match(step4, /The raw `decision\.md` is never the body\./, tpl + ': no raw decision');
+    assert.match(step4, /adds no approval\./, tpl + ': approval untouched');
+  }
+});
