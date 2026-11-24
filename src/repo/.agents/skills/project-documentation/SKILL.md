@@ -2,7 +2,7 @@
 name: project-documentation
 description: Standards for creating and maintaining project documentation including README files, inline comments, API documentation, and architectural decision records
 version: 1.0.0
-author: {{PROJECT_NAME}} Team
+author: "{{PROJECT_NAME}} Team"
 created: 2026-01-26
 updated: 2026-01-26
 tags:

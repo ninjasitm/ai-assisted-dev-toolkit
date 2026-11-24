@@ -18,6 +18,23 @@ Read `.toolkit-version` and select the route before dispatching agents or changi
 - **v3 (`3.x`)**: **Skip Steps 2–6 and 8–10.** Run only the relevant native OpenCode migration in Step 7 (confirmed OpenCode use only), then applicable approved merge/validation/version/report steps 11–15. Preserve existing snippet bodies/frontmatter and unrelated harness files.
 - **Pre-3.0 or missing marker**: Steps 2–6 and applicable approved legacy steps 8–10 require a verified legacy inline installation. A missing marker alone is not legacy evidence; if snippets already exist or the installed version cannot be verified, **STOP** and ask rather than extracting/rewriting them. Back up before legacy conversion and preserve existing customizations.
 - **Invalid or unverified version**: **STOP** and ask; never guess a route or downgrade.
+- **Completion checklist (every route)**: before any route runs, load the `## Completion Contract` once from `bootstrap.md` beside this guide, as `bootstrap-patch.md` describes, and hold it unchanged through apply. If its origin is uncertain, **STOP** and ask. The selected target does not supply these criteria.
+
+## Migration order and approvals (v3 and legacy routes)
+
+The native migration (Steps 2–11, for the selected route) runs first. The pinned CLI refresh of the version marker (Step 12) runs second. Each phase has its own approval, given after the independent reviewer has passed that phase's set:
+
+1. **Scope, before any write (read-only):** first pass the source gate in `bootstrap-patch.md` step 1, or reuse the source already verified in this run (minimum 5.2.0). If the gate fails, run no CLI invocation at all; the native-only path may continue only on its own required evidence and authority, which the failure does not grant. Then run `node "$SOURCE_ROOT/bin/cli.js" patch --dry-run` with the fixed invocation from `bootstrap-patch.md` step 5 and record it as the current CLI preview. List every native file operation with its target, exact change, before-state (absent, or sha256), and backup. State the expected CLI effects after the native changes, reconcile them with the approved additions and overlaps, and name each known difference with the native change that causes it.
+2. **Review both candidate sets** (the native set and the expected CLI set) with the same independent reviewer, per `bootstrap-patch.md` steps 4–5. If the CLI path is barred, the independently approved structural path still proceeds on its own approval.
+3. **Approve and apply the native set.** Revalidate, back up, then apply exactly the listed native operations.
+4. **Check the CLI set against the actual state** after the native apply (Step 12, item 1), before the refresh is approved.
+5. **Approve and apply the refresh** (Step 12): a separate user approval scoped to the CLI set.
+
+Rules:
+- Alignment is not repeated when the scope is unchanged. Any changed write needs review and its own approval. An earlier approval never covers a changed write.
+- A `--dry-run` executes no native operation and no CLI apply. It runs only the read-only preview in step 1.
+- Category-level permission to inspect is not write approval.
+- v3 snippet bodies, frontmatter, and existing wrappers stay byte-for-byte. A protected mutation in the CLI preview bars the CLI path only.
 
 ## OpenCode migration guardrails
 
@@ -48,7 +65,7 @@ Back up V1; native-converted files are incompatible with V1. Preserve models/pro
 Run all checks before making any changes:
 
 1. **Detect project type**:
-   - If `apps/` and `packages/` directories exist at root → `monorepo` (use `src/monorepo/` templates)
+   - Resolve as the CLI does (`bin/cli.js` `detectType`): an explicit flag first; otherwise a readable `package.json` with a `workspaces` field, or both `apps/` and `packages/` at root → `monorepo` (use `src/monorepo/` templates)
    - Otherwise → `repo` (use `src/repo/` templates)
 
 2. **Check toolkit version**: Apply the route selected above; inventory and confirm only its applicable steps and confirmed harness targets.
@@ -68,10 +85,10 @@ Run all checks before making any changes:
     2.  Confirmed OpenCode only: merge native V2 host files and approved missing wrappers (Step 7)
     3.  Verified legacy only: approved hook installation and verified identical duplicate skill cleanup (Steps 8–10); preserve custom skills
     4.  Merge only applicable missing documentation and validate the selected route; v3 keeps existing snippet bodies/frontmatter unchanged
-    5.  Keep the `.toolkit-version` the CLI writes (installed package version, 4.0.0 or later) after the approved migration
-    6.  Commit all changes
+    5.  Record the `.toolkit-version` marker through the guided patch flow (Step 12), after the approved migration
+    6.  Commit only if you ask after acceptance, and then only the approved paths
 
-   Proceed? (Y/n)
+   Scope only: no approval is given here. Approval comes per phase (see Migration order and approvals).
    ```
 
    If `--dry-run`: show the report and **stop** — do not write any files.
@@ -235,7 +252,7 @@ The `hooks/` files are Claude Code plugin hooks (`${CLAUDE_PLUGIN_ROOT}`) and th
 
 1. Create `hooks/` in the target project when copying
 2. Copy the approved files from the template's `hooks/*` directory (preserve sub-structure); skip any file that already exists
-3. Make `.js` files executable on Unix: `chmod +x hooks/*.js`
+3. On Unix, make executable only the exact `.js` paths this step copied, one `chmod +x <path>` each. No wildcard.
 
 ### 10. Clean Up Duplicate Skills
 
@@ -243,6 +260,7 @@ The `hooks/` files are Claude Code plugin hooks (`${CLAUDE_PLUGIN_ROOT}`) and th
 - Preserve custom, unmatched, modified, and nested skill content; name or location alone does not prove duplication.
 - A candidate in a confirmed harness skill directory may be removed only after the same-name canonical `.agents/skills/<skill-name>/` copy exists and a complete recursive comparison (`diff -qr` or equivalent, including nested content) proves them identical. Missing canonical copy, differences, or comparison errors mean preserve and report, not delete.
 - Back up the verified identical duplicate and obtain explicit approval before removing only that duplicate; keep the canonical copy intact. No bulk deletion or name/location-based nested cleanup.
+- Removal also needs an independent review PASS of the exact candidate (the `bootstrap-patch.md` review loop) and the explicit consent above. Retiring a skill in `.nitm/retired.json` is never removal.
 
 ### 11. Update `CLAUDE.md`
 
@@ -256,12 +274,14 @@ See existing `CLAUDE.md` in the toolkit template (`src/repo/CLAUDE.md`) for the 
 
 ### 12. Check `.toolkit-version` File
 
-Only after the approved migration and OpenCode preflight pass (or OpenCode is confirmed out of scope):
+This is phase 2 of the Migration order: the pinned CLI refresh of the marker, with its own approval.
 
-```bash
-# Keep the value the CLI wrote (the installed package version). If it is missing, record it with the CLI:
-npx nitm-ai-dev-toolkit patch
-```
+1. Use the same verified source and the same invocation as `bootstrap-patch.md` step 5. Run `node "$SOURCE_ROOT/bin/cli.js" patch --dry-run` from the target directory against the actual post-native state, and compare it with the reviewed expected CLI set and before-state for this phase, not with the earlier pre-native output. Do not download a second copy, and do not use an unpinned `npx` command.
+2. **STOP** before any CLI write if the preview shows a protected v3 mutation (any `update` or `overwrite` of an existing snippet, wrapper, or other v3 file), or any difference, overlap, or conflict that was not reviewed and approved. Re-enter planning, review, and consent for the changed set, or leave the refresh pending. The approved native structural path is unaffected.
+3. If the set matches, run the approved apply with the same invocation. The CLI writes `.toolkit-version`, `.nitm/manifest.json`, `.nitm/toolkit.json` (only when a new selection was chosen), and `.nitm/BOOTSTRAP.md`. Keep the `.toolkit-version` value the CLI writes (the installed package version, 4.0.0 or later; never hard-coded). Never write `.toolkit-version` by hand.
+4. **Handoff backup (recorded action):** read the handoff action the dry run recorded for this phase: `create`, `replace (old copy backed up)`, or `no change`. For `replace`, exactly one new `BOOTSTRAP.<UTC stamp>[-N].md` must appear in `.nitm/backups/`, and its sha256 must equal the before-state of `.nitm/BOOTSTRAP.md` recorded in the write set. For `create` or `no change`, zero new automatic handoff backups must appear. Any other count or hash is **STOP** and report. This is separate from the guide's own backup.
+5. Keep the temp source from `bootstrap-patch.md` step 1 until its terminal cleanup. If it is gone on resume, re-verify its identity before reuse.
+6. Report the native and marker outcomes separately, with any pending calibration. Never mark the migration complete from the marker alone.
 
 ### 13. Validation
 
@@ -276,14 +296,16 @@ Run only checks applicable to the selected route and confirmed harnesses; on v3 
 | `.opencode/` complete                 | Check `opencode.jsonc` + one file per snippet in commands/, rules/, agents/              | Counts match                                  |
 | Custom skills preserved               | Compare the before/after inventory and any removed duplicate against its canonical copy | Only approved verified identical duplicates removed |
 
+**Independent review of the actual outcome.** Dispatch the same independent read-only reviewer used in Migration order step 2, on the actual applied outcome: the native set plus the CLI refresh when it was applied, or the native set alone when the refresh was barred. Follow the post-apply loop in `bootstrap-patch.md` step 6: a CHANGES repair stays within the approved scope, and any follow-up write is a new proposal. Required calibration that is still unmet stays blocked pending calibration and does not block the independent native path. Report **reviewer-accepted** only for a current, scoped outcome with a PASS and verified evidence; otherwise report applied or pending. A preview is never reported as applied. No commit is implied; the commit rule is `bootstrap-patch.md` step 5f.
+
 If `--verbose`: log each check result with file paths.
 
 ### 14. Generate Upgrade Report
 
-Output the report to stdout (and optionally to `docs/upgrade-report-<version>.md`). Include only operations/checks actually performed for the selected route; omit legacy extraction/cleanup rows on v3 and never pre-mark skipped checks as passed:
+Output the report to chat/stdout only. Do not write a report file into the project. Include only operations/checks actually performed for the selected route; omit legacy extraction/cleanup rows on v3 and never pre-mark skipped checks as passed:
 
 ```markdown
-## 🚀 Bootstrap Upgrade Report
+## Bootstrap Upgrade Status (write only after Step 13 verification)
 
 **From**: detected installed version (include inline extraction only for pre-3.0)
 **To**: <version> (toolkit 4.0.0 or later; native V2 for confirmed OpenCode use; snippet conversion only for verified legacy)
@@ -320,7 +342,7 @@ Output the report to stdout (and optionally to `docs/upgrade-report-<version>.md
 
 ### Files Created
 
-- `.toolkit-version` — installed package version (written by the CLI)
+- `.toolkit-version` — version marker recorded by the guided patch flow (Step 12), reported apart from native structural changes
 
 ### Validation
 
@@ -336,12 +358,7 @@ If `--verbose`: include a file-by-file log of every operation.
 
 ### 15. Git Commit
 
-If not `--dry-run`, stage and commit all changes:
-
-```bash
-git add -A
-git commit -m "chore: upgrade AI instructions to toolkit <version>"
-```
+Only on an explicit request, after the Step 13 acceptance. Apply the commit rule in `bootstrap-patch.md` step 5f to the upgrade's approved paths: the baseline, the empty index, the content and mode checks, the staged-content check, and the ban on `git add -A`, `git add .`, `git add -f`, `git reset`, and `git restore --staged`. Commit message: `chore: upgrade AI instructions to toolkit <version>`.
 
 If `--dry-run`: skip commit, note in report: "Dry run — no changes committed."
 

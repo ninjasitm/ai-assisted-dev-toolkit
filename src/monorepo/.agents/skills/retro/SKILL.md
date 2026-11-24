@@ -1,6 +1,6 @@
 ---
 name: retro
-description: Advisory retrospective on one acceptance decision or pre-merge check. Finds where the work needed a stop, a repair, or a manual step, and suggests the cheapest guardrail for each: a deterministic check when the rule is mechanical, or a judgment rule when it is not. Read-only and advisory. Factory runs it inline at each acceptance decision of a job that opted in (retro true). It can also be run by hand on a Factory job or a feature folder.
+description: "Advisory retrospective on one acceptance decision or pre-merge check. Finds where the work needed a stop, a repair, or a manual step, and suggests the cheapest guardrail for each: a deterministic check when the rule is mechanical, or a judgment rule when it is not. Read-only and advisory. Factory runs it inline at each acceptance decision of a job that opted in (retro true). It can also be run by hand on a Factory job or a feature folder."
 ---
 
 # Retro

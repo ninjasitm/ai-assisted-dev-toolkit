@@ -6,7 +6,11 @@
     "nitm-ai-dev-toolkit": "bin/cli.js"
   },
   "scripts": {
-    "test": "node --test"
+    "test": "node --test",
+    "prepack": "node --test test/skill-yaml.test.js"
+  },
+  "devDependencies": {
+    "yaml": "2.8.3"
   },
   "files": [
     "bin",

@@ -93,11 +93,14 @@ for (const variant of ['repo', 'monorepo']) {
     assert.match(body, /installed version[^\n]*`\.toolkit-version`/i);
     assert.match(body, /npm view nitm-ai-dev-toolkit version/);
 
-    // Fetch: npm pack is primary; git tag fallback uses the bare version (tags have no "v" prefix).
+    // Fetch: npm pack is primary; the git fallback fetches the exact refs/tags/<version> tag, never a
+    // same-named branch (--branch would accept either), and tags have no "v" prefix.
     assert.match(body, /npm pack "?nitm-ai-dev-toolkit@<version>"?/);
-    const clones = [...body.matchAll(/\bgit clone[^\n]*/g)];
-    assert.ok(clones.length > 0, 'fetch must include a git clone fallback');
-    for (const [clone] of clones) assert.match(clone, /--branch\s+"<version>"/);
+    const fetches = [...body.matchAll(/^\s*git [^\n]*\bfetch\b[^\n]*/gm)];
+    assert.ok(fetches.length > 0, 'fetch must include a git tag fallback');
+    for (const [line] of fetches) assert.match(line, /"refs\/tags\/<version>:refs\/tags\/<version>"/);
+    assert.match(body, /checkout --detach "refs\/tags\/<version>"/);
+    assert.doesNotMatch(body, /--branch/, 'a same-named branch must never be checked out');
     assert.doesNotMatch(body, /v<version>/, 'git tags have no "v" prefix');
     assert.doesNotMatch(source, /v4\.x/, 'the v4.x branch must not be referenced');
 

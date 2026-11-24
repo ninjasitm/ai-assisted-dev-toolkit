@@ -1,4 +1,11 @@
-You are helping to patch AI instructions by comparing against the published toolkit templates for the target version (4.0.0 or later) from npm or the ai-assisted-dev-toolkit repository's `<version>` git tag, and merging updates into this project.
+You are helping to patch AI instructions by comparing against the published toolkit templates for the target version (5.2.0 or later) from npm or the ai-assisted-dev-toolkit repository's `<version>` git tag, and merging updates into this project.
+
+## Load the Completion Contract (before any changes)
+
+1. Before any change, load the `## Completion Contract` section once from `bootstrap.md` and hold that checklist unchanged through apply.
+2. Use that copy only when it comes from the same trusted install or copy as this guide: the `bootstrap.md` beside this file (installed or copied together from the same source, including a manual copy without `.nitm/`), or the Completion Contract section of `.nitm/BOOTSTRAP.md` when that handoff is the entry point.
+3. If the copy is missing, mismatched, or its origin is uncertain, **STOP** and ask. A manifest mismatch is a reason to ask. A manifest match, `.toolkit-version`, or the target project alone is not proof of origin. Do not run a write to establish proof.
+4. The selected target supplies templates and data, not the criteria for judging this work. A historic source (5.2.0 to 5.4.1) may lack the checklist; that alone does not block the patch.
 
 ## OpenCode version preflight (before any changes)
 
@@ -23,7 +30,7 @@ You are helping to patch AI instructions by comparing against the published tool
 /bootstrap-patch --category commands,prompts
 ```
 
-The CLI runs the same patch flow without an AI session: `npx nitm-ai-dev-toolkit patch --dry-run` previews changes, `--only <categories>` and `--exclude <categories>` narrow the scope, and `npx nitm-ai-dev-toolkit upgrade@<version>` (or `--version <version>`) pins the target version. Pinning a version does not skip the gates in Step 1.
+`--category` narrows only the guided review and agent merge. It never maps to the CLI's `--only` or `--exclude`, which take harness or feature group names (for example `--only factory,prisma`). The CLI preview runs from the verified source: `node "$SOURCE_ROOT/bin/cli.js" patch --dry-run`. Pinning a version does not skip the gates in Step 1.
 
 ## Process
 
@@ -35,34 +42,39 @@ The CLI runs the same patch flow without an AI session: `npx nitm-ai-dev-toolkit
 
     **Resolve versions before any download.**
     - **Installed version**: read `.toolkit-version` in the project root. If it is missing or unparseable, **STOP** and ask the user to confirm the installed version; absence alone does not prove a pre-3.0 installation.
-    - **Target version**: use the version the user pinned (`upgrade@<version>` or `--version <version>` in the CLI, or the version given to this task), validated as SemVer `X.Y.Z`. Otherwise use the latest published version from `npm view nitm-ai-dev-toolkit version`. If npm is unreachable or the output is unparseable, **STOP** and ask. Never guess a version.
+    - **Target version**: use the version the user pinned (`upgrade <version>` or `--version <version>` in the CLI, or the version given to this task), validated as SemVer `X.Y.Z`. Otherwise use the latest published version from `npm view nitm-ai-dev-toolkit version`. If npm is unreachable or the output is unparseable, **STOP** and ask. Never guess a version.
+    - **Minimum**: the target must be **5.2.0 or later**. 5.2.0 is the first release whose patch honours `.nitm/retired.json` and the relevance plan (`RELEVANCE_MIN` in `bin/cli.js`). 5.0.1 added the dry run and selection flags, but a 5.0.1 to 5.1.x patch ignores retirements, so it is below the guided minimum. For an older target, **STOP** and direct the user to that release's own guidance. Do not upgrade automatically.
 
-    **Fetch the matching release.** Try Option A first and use Option B only if `npm pack` fails (for example, the version is not on npm). Each download goes into a new, empty directory:
+    **Fetch exactly one source.** Use Option A. Use Option B only if `npm pack` fails. Each download goes into a new, empty directory. Never fall back to another version, a default branch, or a hand-copied file:
 
     ```bash
     set -e
-    TOOLKIT_TEMP=$(mktemp -d)   # removed in step 6
+    TOOLKIT_TEMP=$(mktemp -d)   # removed only at the terminal step 7
     mkdir "$TOOLKIT_TEMP/pack" "$TOOLKIT_TEMP/unpacked"
-    # Option A (preferred): the published package, the same artifact users install
+    # Option A (preferred): the exact published archive, the same artifact users install
     if (cd "$TOOLKIT_TEMP/pack" && npm pack "nitm-ai-dev-toolkit@<version>"); then
       tar -xzf "$TOOLKIT_TEMP/pack/nitm-ai-dev-toolkit-<version>.tgz" -C "$TOOLKIT_TEMP/unpacked"
       SOURCE_ROOT="$TOOLKIT_TEMP/unpacked/package"
+      SOURCE_KIND="npm archive nitm-ai-dev-toolkit@<version>"
     else
-      # Option B (fallback): the git tag for that release (tags have no "v" prefix)
-      git clone --depth 1 --branch "<version>" https://github.com/ninjasitm/ai-assisted-dev-toolkit.git "$TOOLKIT_TEMP/git"
+      # Option B (fallback): the exact tag refs/tags/<version> (no "v" prefix), never a same-named branch
+      mkdir "$TOOLKIT_TEMP/git" && git -C "$TOOLKIT_TEMP/git" init -q
+      git -C "$TOOLKIT_TEMP/git" fetch --depth 1 https://github.com/ninjasitm/ai-assisted-dev-toolkit.git "refs/tags/<version>:refs/tags/<version>"
+      git -C "$TOOLKIT_TEMP/git" -c advice.detachedHead=false checkout --detach "refs/tags/<version>"
       SOURCE_ROOT="$TOOLKIT_TEMP/git"
+      SOURCE_KIND="git tag refs/tags/<version>"
     fi
     ```
 
-    **Source availability gate:** If both `npm pack` and the tag clone fail (the version is unpublished and the tag is missing), **STOP** before diff/apply/version marking. Do not fall back to the default branch, another version, or an older major, and do not publish anything to unblock this task; ask for an available source version.
+    **Source availability gate:** If `npm pack` and the exact tag fetch both fail (the version is unpublished and the tag is missing), **STOP** before diff/apply/version marking. Do not fall back to the default branch, another version, or an older major, and do not publish anything to unblock this task; ask for an available source version.
 
-    Determine the correct source path based on project structure, under `$SOURCE_ROOT`:
+    **Source identity gate (before any command runs from the source):** Record the source kind, and the `name` and `version` from `$SOURCE_ROOT/package.json` (`name` must be `nitm-ai-dev-toolkit`, `version` must equal the target). Confirm `$SOURCE_ROOT/bin/cli.js` exists. Resolve the layout as step 5 defines it, which is the same rule the CLI uses. The source must contain `$SOURCE_ROOT/src/repo/` or `$SOURCE_ROOT/src/monorepo/` for that layout. If any check fails or a value cannot be parsed, **STOP**; do not diff, apply, or mark the version. Record the identity for reuse: npm `npm view "nitm-ai-dev-toolkit@<version>" dist.integrity`, or tag `git -C "$TOOLKIT_TEMP/git" rev-parse "refs/tags/<version>^{commit}"`. Keep the temp source until the terminal cleanup. If it is missing on resume, fetch again and compare with the recorded identity; a mismatch or unavailability is **STOP**.
+
+    **The verified source runs every CLI call.** From the target project directory, run `node "$SOURCE_ROOT/bin/cli.js" patch` for both the preview and the apply, using the one invocation fixed in step 5. Do not use `npx`, which would resolve a second copy. Do not hand-copy template files from the source.
+
+    Determine the source path based on project structure, under `$SOURCE_ROOT`:
     - **Single repo**: `$SOURCE_ROOT/src/repo/`
     - **Monorepo**: `$SOURCE_ROOT/src/monorepo/`
-
-    Detection heuristic:
-    - If `apps/` and `packages/` directories exist at root → monorepo
-    - Otherwise → single repo
 
     **Source version gate (before diff/apply/version marking):** Read the `version` field in `$SOURCE_ROOT/package.json` and parse it as SemVer. The fetched version must equal the target version exactly, its major must be greater than or equal to the installed major from `.toolkit-version`, and it must not be older than the installed `.toolkit-version`. If any check fails, or a version is unknown or unparseable, **STOP** without diffing, applying changes, or updating the marker. Never auto-downgrade, and never hard-code a major.
 
@@ -115,7 +127,7 @@ The CLI runs the same patch flow without an AI session: `npx nitm-ai-dev-toolkit
 
     For each category, compare template files against project files:
 
-    a. **Classify each file** (relevance-aware; never a wholesale copy). `npx nitm-ai-dev-toolkit patch --dry-run` makes this classification and prints each reason. Read that plan before deciding anything, and see Relevance and Retirement in `bootstrap.md`:
+    a. **Classify each file** (relevance-aware; never a wholesale copy). the dry run of the verified source (`node "$SOURCE_ROOT/bin/cli.js" patch --dry-run`, from the target directory) makes this classification and prints each reason. Read that plan before deciding anything, and see Relevance and Retirement in `bootstrap.md`:
     - **add**: missing, and it applies to this project (tracker, Playwright, Prisma, UI, and MCP relevance)
     - **update**: the toolkit wrote it and the project has not changed it since; the new template replaces it
     - **current**: identical to the template; no action
@@ -184,42 +196,68 @@ The CLI runs the same patch flow without an AI session: `npx nitm-ai-dev-toolkit
 
     ### Summary
 
-    - **Apply after review and user approval**: X add + Y update entries, as printed by `patch`
+    - **Apply after review and user approval**: X add + Y update entries, as printed by the verified source's `patch --dry-run`
     - **Review needed**: Z needs-review files and W wrapper proposals
     - **Not written**: N not-relevant or retired entries
     - **No action**: W files already current
     ```
 
-    **Independent review loop (before approval/apply, including dry-run):**
-    - The orchestrator derives acceptance checks from the user's request and the safeguards above; no new spec, plan, persistent state, or configuration is required. The patch author prepares/repairs the proposal and reports evidence, but cannot approve its own work.
-    - The orchestrator dispatches an independent read-only `reviewer` (or available read-only agent), not the patch author or its self-review. Give it the original request, target/source version evidence, current project files, proposed diffs/report (including merges and removals), and check results. Review scope, relevance/retirement decisions, preserved customizations, trust/version gates, and backup/approval requirements.
-    - The reviewer returns `VERDICT: PASS` or `VERDICT: CHANGES`; each blocking finding names the file, problem, and required repair. Send findings or failed checks back to the patch author, repair the proposal, verify it, and re-review the revised proposal. Repeat until PASS or BLOCKED; never proceed merely because a round limit was reached.
-    - Only the orchestrator accepts the proposal, after independently inspecting the evidence for every acceptance check and the current review PASS. A reviewer PASS alone is not acceptance and never replaces user approval. If an independent reviewer or required evidence/check is unavailable, report **BLOCKED** with what would unblock it; do not apply or claim completion.
+    **Independent review loop (before any write; a dry run stops after the report):**
+    - **Plan first.** Write a short plan in chat: goal, scope (target, resolved layout, and the write categories that may change), and checks. No persistent plan file and no new artifact schema.
+    - **Align.** Send the plan and the original request to an independent, read-only alignment reviewer (Oracle, or an equivalent read-only reviewer the running harness provides). Proceed only on `ALIGNED`. If no such reviewer is available, report **BLOCKED** and ask; do not start the builder.
+    - **Compile one write set.** Before review, build a single proposal from the verified source's dry run and the planned manual work:
+      - **CLI-managed:** every `add`, `update`, and `overwrite` entry, and every state line, that `patch --dry-run` prints (`.toolkit-version`, `.nitm/manifest.json`, `.nitm/toolkit.json` when a selection is saved, and `.nitm/BOOTSTRAP.md`). Record each path's before-state (absent, or its sha256).
+      - **Handoff backup (a separate operation):** when `.nitm/BOOTSTRAP.md` differs, the CLI copies the old copy to `.nitm/backups/BOOTSTRAP.<UTC stamp>[-N].md` before it writes the new one. The dry run prints only `replace (old copy backed up)`, not the path, so the set records the sha256 of the current handoff and the listing of `.nitm/backups/`. After apply, exactly one new `BOOTSTRAP.*.md` must match that sha256; otherwise **STOP** and report. This is separate from the guide's backup below.
+      - **Manual:** every planned merge, addition, deletion, and `.nitm/retired.json` record, and every reference, hook, or config change, with its file, the exact change, and the before-state (absent, or its sha256). Removals follow the Completion Contract.
+      - **Backup:** one bounded action. Before the first write, copy each affected existing file to `.nitm/backups/patch-<UTC timestamp>/` at its relative path. The timestamp is generated at backup time, so the proposal names the directory and the source set, not a filename. Never overwrite a backup.
+      - **Not written:** `review`, `irrelevant`, and `retired` entries, listed for information only.
+    - **Build and review.** The builder (not the reviewer) prepares or repairs that one write set from the report in step 4. The independent read-only reviewer checks the same write set, the source evidence (source kind, package name and version, CLI and layout presence), the dry-run output, and the check results. It returns `VERDICT: PASS` or `VERDICT: CHANGES`; each blocking finding names the file, problem, and required repair. Repair within the actual evidence, rerun the checks, and re-review until PASS.
+    - **Stop conditions.** If two consecutive rounds return the same findings with no new evidence, or a finding needs authority or data that cannot be obtained, stop and ask the user. An unavailable reviewer or check is **BLOCKED**, never a pass.
+    - **Dry run stops here.** With `--dry-run`, complete the report and the compiled write set from the verified source, then stop. Do not ask to apply, and write nothing.
+    - A reviewer PASS is not approval to write. Only the user's explicit approval of this exact write set (step 5) allows writes.
 
-5.  **Confirm and Apply** (only the accepted proposal):
-    - If `--dry-run` flag: Output the report without making changes
-    - Otherwise: Present the reviewed report and ask the user to confirm with (Y/n). Before writes, back up affected existing files/config and confirm the source, project state, and patch still match the reviewed proposal; if they changed, regenerate and repeat review and user approval. Apply only approved changes.
+5.  **Confirm and Apply** (only the PASSed write set, after separate human approval):
+    - **Ask for approval** of the exact write set, with the reviewed report and answers to any unresolved required question. Identify writes outside the approved categories or selection. A widened category or selection needs a fresh preview and proposal review. A material change (scope, criteria, or source) needs planning, the Oracle alignment, and renewed user consent.
+    - **Revalidate immediately before any target write, including backups.** Re-check the source (same kind, package, and version), the before-state of every listed input and target, that the invocation below reproduces the approved CLI set exactly, and that the dry run reports no conflicts. If any check fails, stop, return to the compiled write set and its review, and ask again.
+    - **Invocation (resolved once before the preview, then reused unchanged):** run from the target directory with `$SOURCE_ROOT/bin/cli.js`:
+      - **Layout:** `--monorepo` or `--repo`, resolved as the CLI does: an explicit flag first; otherwise a readable `package.json` with a `workspaces` field, or both `apps/` and `packages/` at root, means monorepo; otherwise repo.
+      - **Environment:** `--env <env>` only when the user confirmed one.
+      - **Selection:** `--only` or `--exclude` only when the user chose a new selection for this run. Otherwise pass neither, and both runs use the same saved `.nitm/toolkit.json`. Never pass both flags.
+      - Only `--dry-run` differs between the preview and the apply.
+    - **Order of writes:** make the bounded backup from the write set first, then run the CLI apply, then verify the handoff backup against its recorded sha256, then do the manual writes in the set. Never force, and never rewrite a file outside its ownership. Do not run the apply while the dry run reports conflicts (exit 1): the CLI can write partially on conflict.
     - On confirmation:
-      a. **Add and update**: run `npx nitm-ai-dev-toolkit patch`. It writes only the add and update entries it printed; do not copy template files by hand
-      b. **Retirements**: after approval, record each path in `.nitm/retired.json` with a reason and date. Do not delete files to retire them
-      c. **Needs review**: include each proposed merge (structural additions, preserved project values) in Step 4's report and independent review, and apply it only after the operator approves that file. Wrappers that inline policy: propose moving the content into the snippet and reducing the wrapper to a thin link (see Thin Wrapper Policy in `bootstrap.md`)
-      d. **OpenCode plugins**: Apply only the approved obsolete Ponytail cleanup above after backing up the known obsolete toolkit copies and local config; preserve all unrelated local/global plugins. Never add Ponytail to project config.
-      e. **Toolkit version**: Keep the `.toolkit-version` value the CLI writes for the verified target version (the installed package version, 4.0.0 or later; never hard-coded) only after the approved migration and OpenCode preflight pass (or OpenCode is confirmed out of scope).
-      f. **Git commit**: Do not auto-commit. Only if the user explicitly requests a commit, and only after Step 7 acceptance, stage just this patch's approved paths; never stage unrelated changes.
+      a. **CLI writes**: `node "$SOURCE_ROOT/bin/cli.js" patch` with the same invocation. It writes only the add and update entries it printed, plus its state files. Do not copy template files by hand
+      b. **Retirements**: record each approved path in `.nitm/retired.json` with a reason and date. Do not delete files to retire them
+      c. **Needs review**: apply each proposed merge only after the operator approves that file. Wrappers that inline policy: propose moving the content into the snippet and reducing the wrapper to a thin link (see Thin Wrapper Policy in `bootstrap.md`)
+      d. **OpenCode plugins**: apply only the approved obsolete Ponytail cleanup above, after backing up the known obsolete toolkit copies and local config; preserve all unrelated local/global plugins. Never add Ponytail to project config.
+      e. **Toolkit version**: keep the `.toolkit-version` value the CLI writes (the installed package version: 4.0.0 or later for OpenCode V2 and 5.2.0 or later for this guided run; never hard-coded), only after the approved migration and OpenCode preflight pass (or OpenCode is confirmed out of scope).
+      f. **Commit** (only on an explicit request, after the step 6 PASS; `bootstrap-upgrade.md` uses this same rule):
+         1. Before the first write, record a baseline with `git diff --cached --name-only` and `git status --porcelain`. An approved path that was dirty, staged, or an untracked file before the first write is not a commit candidate: refuse it and report.
+         2. The index must be empty now: `git diff --cached --name-only` prints nothing. Otherwise **STOP** and report what is staged. Do not unstage, reset, or commit around it.
+         3. Commit only approved paths that are not deletions (**STOP** if the set has one). Each path's content must hash to its after-state from step 6 (`git hash-object -- <path>`), and its mode must match the approved mode (`100644`, or `100755` for an approved executable hook).
+         4. Never stage generated backups, local config, or state files outside the set (`.nitm/backups/`, and `.nitm/toolkit.json` unless it is in the set). Never use `-f`.
+         5. `git add -- <each approved path>`, by name only.
+         6. Verify the staged content, not just the names: each path's staged blob (`git ls-files -s -- <path>`) must equal `git hash-object -- <path>`, and `git diff --cached --name-only` must equal the approved set exactly. A mismatch is **STOP**; do not reset or unstage.
+         7. `git commit -m "<message>"`, with no pathspec. Never `git add -A`, `git add .`, `git add -f`, `git reset`, `git restore --staged`, or a commit that includes unrelated staged work.
 
-6.  **Cleanup**:
+6.  **Post-Patch Validation and Acceptance**:
+    - Verify the applied files against the write set and backups: before-state to after-state for each path, valid frontmatter and syntax (run the applicable checks and report the commands and results, not assumed runtime validation), and the handoff and version marker matching the approved list.
+    - **Live placeholders (Completion Contract).** Scan the files written and the active files they link to. For each live `{{PLACEHOLDER}}`:
+      - Runtime variable, example, or intentional template text: leave it untouched, and say why.
+      - Required and ordinary, in a file this patch wrote: propose the exact repair in a follow-up write set. If the value cannot be cited from the project, ask the user and park the dependent work until answered. Follow-up repairs go through this same loop: review, approval, revalidation, write, and after-state evidence.
+      - Required, in a protected or customized file that this patch preserves: leave the file as it is and mark it **blocked pending calibration**. Do not overwrite it, and do not defer it silently to a later bootstrap.
+    - A follow-up write set is a new proposal. It never extends the approved set without approval.
+    - **Post-apply review loop.** Dispatch the same independent read-only reviewer on the actual applied outcome, its approval scope, and the validation evidence, using the same verdict contract as step 4. Orchestrator verification failures are CHANGES in this same loop, not a new approval vote. On findings or failed checks, repair only within the approved scope, rerun validation, and re-review until PASS. Stop on identical findings with no new evidence, or on a missing authority or data, and ask.
+    - Any change outside the approved write set returns to step 4 and needs approval again before it is written.
+    - Report two statuses. **Applied**: the write set as written, and anything **pending** (parked, blocked, or waiting on an answer). **Reviewer-accepted**: only when the current outcome has a review PASS and verified evidence for every acceptance check. A missing reviewer or evidence is **BLOCKED**, never completion. For `--dry-run`, report only the reviewed preview: nothing was applied or post-apply verified. Reviewer acceptance does not authorize extra writes, deletions, or a commit, and it needs no separate final human vote.
+
+7.  **Cleanup (terminal)**: keep the temp source until final acceptance or the last rework has passed its scoped checks. Then remove it:
 
     ```bash
     rm -rf "$TOOLKIT_TEMP"
     ```
 
-7.  **Post-Patch Validation**:
-    - Verify no `{{PLACEHOLDER}}` syntax was accidentally re-introduced
-    - Confirm all files are valid (no broken frontmatter, no syntax errors)
-    - List any new placeholders that need manual `bootstrap` to fill
-    - Inspect the actual applied diff/files against the approved proposal and backups: verify preserved project values/config, relevance/retirements, approved merges/removals, and the target version marker. Run the applicable syntax/frontmatter checks and report commands/results, not assumed runtime validation.
-    - Dispatch the independent read-only reviewer on the actual applied outcome, approval scope, and validation evidence using the same verdict contract above. On findings or failed checks, repair only within the approved scope, rerun validation, and re-review; any new/unapproved change must return through proposal review and user approval before writes.
-    - Only the orchestrator reports **ACCEPTED** when the current outcome has review PASS and verified evidence for every acceptance check. Missing reviewer/evidence means **BLOCKED**, never completion. For `--dry-run`, accept only the reviewed preview and explicitly report that nothing was applied or post-apply verified. Acceptance never authorizes extra writes, deletions, or a commit.
+    If the temp source is gone when a rework or resume needs it, rerun the source gate: fetch again and compare with the recorded identity (npm `dist.integrity`, or the tag commit) before reuse. A mismatch or an unavailable source is **STOP**.
 
 ## Smart Merge Strategy
 

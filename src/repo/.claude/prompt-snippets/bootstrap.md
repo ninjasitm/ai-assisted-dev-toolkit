@@ -10,6 +10,20 @@ Analyze the project structure and customize AI instruction templates for this co
 - If the CLI is missing, fails, or output is unparseable, **STOP OpenCode steps** and leave the version marker unchanged; ask the user to confirm/install a supported OpenCode version, then rerun this check. Never assume V2.
 - If oh-my-opencode-slim >=3.0.0 is used or planned, require OpenCode >=2.0.7 (compare version components numerically); otherwise **STOP** before changes and ask to upgrade. Proceed only after this gate passes.
 
+## Completion Contract
+
+This is the single completion checklist for bootstrap, patch, and upgrade. Guided patch and upgrade load it once, before any change (see `bootstrap-patch.md`), and hold it unchanged through apply.
+
+- **Cite before you fill.** Before filling an active setting or choosing a skill, cite what you read: the root and applicable nested `AGENTS.md`, package scripts and lockfile, CI and config files, and representative code and tests.
+- **No guessed required facts.** Do not fill a required value from a stack or framework default, a toolkit default (a port, `main`, `human`, `5100`), or a stale toolkit value kept without confirmation. Never change a custom value silently.
+- **Ask, then park.** Ask the user a targeted question: the native question tool when the harness has one, otherwise in chat as a numbered list or fill-in template. Park only the work that depends on the answer and finish the rest. Do not accept while required work is unresolved.
+- **Omit unsupported optional blocks** instead of filling them with guesses.
+- **Verify what you changed.** Run the syntax, frontmatter, and link checks that apply to the files you changed and to the active files they link to or affect. Confirm no required `{{PLACEHOLDER}}` is still live in any of them. Intent-specific runtime variables, examples, template literals, and preserved legacy runtime text are not leftovers.
+- **Statuses.** *Applied* means written. *Pending* means not yet written, parked, or waiting on an answer. *Reviewer-accepted* means an independent reviewer returned PASS on the current outcome, after verification. Guided patch and upgrade need the user's approval to write and answers to unresolved required questions, but no final human acceptance vote. Human approvals given during bootstrap are established. Name anything blocked or needing a decision, with its exact next action.
+- **Removals need explicit approval.** Remove only toolkit-owned files that match the template unmodified, after a backup, separate approval, and scoped reference cleanup. Never remove custom, modified, global, or unknown files.
+- **Retirement is not removal.** Retiring a skill in `.nitm/retired.json` stops the toolkit re-adding it; it does not unload a skill already on disk. Do not install external skills or change permissions automatically.
+- `npx nitm-ai-dev-toolkit doctor` is advisory. Its output does not decide completion.
+
 ## Usage
 
 ```
@@ -131,7 +145,7 @@ Map discovered information to template variables:
 | `{{FRAMEWORK}}`             | Detected framework with version                                                                                                                                                                            |
 | `{{PACKAGE_MANAGER}}`       | Lock file or config (npm, composer, dotnet, pip, bundler, go, cargo, maven)                                                                                                                                |
 | `{{SETUP_COMMAND}}`         | Install step from the lock file (`npm ci`, `pnpm install --frozen-lockfile`, `composer install`, `dotnet restore`, `pip install -r requirements.txt`); a `setup` script or Makefile target wins if present |
-| `{{DEV_PORT}}`              | Scripts, config, or framework default                                                                                                                                                                      |
+| `{{DEV_PORT}}`              | Cite the dev script or config value. Framework defaults are not a source; ask if none                                                                                                                                                                      |
 | `{{DEV_COMMAND}}`           | `dev` or `start` script, Makefile `dev` target, or framework CLI (`php artisan serve`, `dotnet run`, `cargo run`)                                                                                          |
 | `{{DEV_PORT_FLAG}}`         | Flag or env var that sets the dev port: `--port <port>`, `-- --port <port>` (npm script passthrough), or `PORT=<port>`; check the script and framework config. Ask if none                                 |
 | `{{SRC_DIR}}`               | Source directory structure                                                                                                                                                                                 |
@@ -148,10 +162,10 @@ Map discovered information to template variables:
 | `{{PM_URL}}`                | Project management tool URL/workspace (if applicable)                                                                                                                                                      |
 | `{{PROJECT_KEY}}`           | Project ID or workspace ID (if applicable)                                                                                                                                                                 |
 | `{{PM_ISSUE_KEY}}`          | Issue key format (e.g., PROJ-###)                                                                                                                                                                          |
-| `{{DEFAULT_BRANCH}}`        | `git symbolic-ref --short refs/remotes/origin/HEAD`, minus `origin/`; else `main`                                                                                                                          |
-| `{{FACTORY_PORT_BASE}}`     | Only if Factory is installed. Default `5100`                                                                                                                                                                                             |
-| `{{APPROVAL_MODE}}`         | Only if Factory is installed. Default `human`                                                                                                                                                                                            |
-| `{{FACTORY_REVIEW_LENSES}}` | Only if Factory is installed. Default `code, security`; add `ux, ui` only if the project has a UI and a browser tool is configured (for example a browser MCP server)                                                                    |
+| `{{DEFAULT_BRANCH}}`        | `git symbolic-ref --short refs/remotes/origin/HEAD`, minus `origin/`; otherwise ask (never assume `main`)                                                                                                                          |
+| `{{FACTORY_PORT_BASE}}`     | Only if Factory is installed. Toolkit default `5100` is not confirmed until the user confirms it                                                                                                                                                                                             |
+| `{{APPROVAL_MODE}}`         | Only if Factory is installed. Toolkit default `human` is not confirmed until the user confirms it                                                                                                                                                                                            |
+| `{{FACTORY_REVIEW_LENSES}}` | Only if Factory is installed. Ask which review lenses to run (`code`, `security`, `ux`, `ui`); `ux` and `ui` need a UI and a browser tool (for example a browser MCP server). If none is chosen, omit the setting; no default is assumed                                                                    |
 | `{{NEW_RELEVANT_VARIABLE}}` | ...other inferred values...                                                                                                                                                                                |
 
 ### Step 2.5: Project Management Detection
@@ -204,7 +218,7 @@ Map discovered information to template variables:
 
 ### Step 3: User Confirmation
 
-Present inferred values and ask for missing ones:
+Present inferred values and ask for missing ones. A value you cannot cite from the project is a question, not a default; park the work that depends on it:
 
 ```markdown
 ## 📊 Project Analysis Results
@@ -646,12 +660,12 @@ Install only the skills named here, nothing else. Which of these should be insta
 - Verify the installer's reported paths; Codex uses `.agents/skills/{skill-name}/` (by skill name, not org/repo)
 - Update `AGENTS.md` to reference installed skills
 
-### Step 7: Completion Report
+### Step 7: Status Report
 
 Populate this example with only files actually changed and skills actually installed. Omit unconfirmed harness targets; for Codex, include native targets and shared reference standards only when changed. This is a change inventory, not proof of runtime loading or trust.
 
 ```markdown
-## ✅ Bootstrap Complete!
+## Bootstrap Status (write only after Step 10 verification passes)
 
 ### Ecosystem: {{LANGUAGE}} / {{FRAMEWORK}}
 
@@ -996,7 +1010,7 @@ Report only actual changes and checks for confirmed harnesses. For Codex, distin
 
 ### Quality Checks
 
-- [ ] All placeholders replaced (list any remaining)
+- [ ] No required `{{PLACEHOLDER}}` left live in changed files (list any remaining; runtime variables excluded)
 - [ ] Framework patterns match detected stack
 - [ ] No duplicate skills
 - [ ] AGENTS.md configured

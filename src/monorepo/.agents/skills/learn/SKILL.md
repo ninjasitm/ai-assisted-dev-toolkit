@@ -1,6 +1,6 @@
 ---
 name: learn
-description: Opt-in, advisory learning step for a Factory job that has been verifiably merged. Runs only with durable merge evidence and a current APPROVE, reads the job's final decision and QA (and its retro, when it provably matches), and proposes at most one candidate: no change, one short project memory entry, or a small targeted diff to an existing doc or skill. Writes one redacted advisory learn.md in the job folder. Never edits project files, memory, AGENTS.md, skills, or job state, and never commits, pushes, or publishes. Human approval of an exact patch is a separate task.
+description: "Opt-in, advisory learning step for a Factory job that has been verifiably merged. Runs only with durable merge evidence and a current APPROVE, reads the job's final decision and QA (and its retro, when it provably matches), and proposes at most one candidate: no change, one short project memory entry, or a small targeted diff to an existing doc or skill. Writes one redacted advisory learn.md in the job folder. Never edits project files, memory, AGENTS.md, skills, or job state, and never commits, pushes, or publishes. Human approval of an exact patch is a separate task."
 ---
 
 # Learn
