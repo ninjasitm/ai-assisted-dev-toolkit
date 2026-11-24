@@ -1,50 +1,9 @@
 # Cursor Skills
 
-This folder is for skills installed via `npx -y skills add <owner/repo> --skill <confirmed name> --agent github-copilot cursor`.
+This directory is a target for skills only after their exact contents have been reviewed and explicitly approved. A skill name, repository, listing, or installer report is not a safety endorsement.
 
-## About Skills
+## Adding an external skill
 
-Skills are folders of instructions and resources that help AI agents perform specific tasks more accurately. They use the [Agent Skills](https://agentskills.io/) open format.
+Treat external repositories as source candidates, not vetted recommendations. Obtain the provenance and exact revision, inspect `SKILL.md` and every referenced or helper file as inert data, and have the exact bytes independently reviewed. Reject suspicious or unreviewable content. Never execute an unreviewed skill. After explicit approval, add only the reviewed bytes; any change requires a new review. A recorded trusted local review may be reused only for byte-identical contents. Preserve existing skills unless separately approved for change.
 
-## Installing Skills
-
-Install skills from [skills.sh](https://skills.sh/) using the `-a cursor` flag:
-
-```bash
-# For Cursor only
-npx -y skills add -a cursor <owner/repo> --skill <confirmed name> --agent github-copilot cursor
-
-# For multiple agents (e.g., Cursor + GitHub Copilot)
-npx -y skills add -a cursor -a github-copilot <owner/repo> --skill <confirmed name> --agent github-copilot cursor
-```
-
-**Tip:** The skills CLI automatically detects installed agents. If you omit `-a cursor`, you'll be prompted to choose from detected agents. Use `--skill <confirmed name> --agent github-copilot cursor` when installing one named skill from a repo.
-
-**Important:** Always use `-a cursor` to install only for Cursor (or add multiple `-a` flags if you use multiple agents). This prevents creating unnecessary configuration files for other agents.
-
-## Pre-installed Skills
-
-Universal workflow skills are pre-installed in `.agents/skills/`. These include:
-
-- test-driven-development
-- systematic-debugging
-- verification-before-completion
-- writing-plans
-- executing-plans
-- And more...
-
-## Examples
-
-```bash
-# Frontend skills
-npx -y skills add -a cursor onmax/nuxt-skills --skill vue --agent github-copilot cursor
-npx -y skills add -a cursor vercel-labs/agent-skills --skill vercel-react-best-practices --agent github-copilot cursor
-
-# Security skills
-npx -y skills add -a cursor trailofbits/skills --skill <confirmed name> --agent github-copilot cursor
-
-# Framework-specific
-npx -y skills add -a cursor better-auth/skills --skill <confirmed name> --agent github-copilot cursor
-```
-
-See the main README.md for a full list of recommended skills.
+See [Skill Trust and Integrity](../../README.md#skill-trust-and-integrity) for the project review and integrity process. The toolkit's universal workflow skills are bundled in `.agents/skills/` and are separate from external candidates; their presence or integrity match is not safety certification.

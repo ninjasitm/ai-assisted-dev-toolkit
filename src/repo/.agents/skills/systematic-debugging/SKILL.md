@@ -76,8 +76,7 @@ You MUST complete each phase before proceeding to the next.
    **BEFORE proposing fixes, add diagnostic instrumentation:**
    ```
    For EACH component boundary:
-     - Log what data enters component
-     - Log what data exits component
+      - Record only redacted data type, count, or status at each boundary; never log raw inputs, outputs, secrets, identifiers, or personal data
      - Verify environment/config propagation
      - Check state at each layer
 
@@ -90,19 +89,19 @@ You MUST complete each phase before proceeding to the next.
    ```bash
    # Layer 1: Workflow
    echo "=== Secrets available in workflow: ==="
-   echo "IDENTITY: ${IDENTITY:+SET}${IDENTITY:-UNSET}"
+    if [ -n "${IDENTITY:-}" ]; then echo "IDENTITY is set (value redacted)"; else echo "IDENTITY is unset"; fi
 
    # Layer 2: Build script
    echo "=== Env vars in build script: ==="
-   env | grep IDENTITY || echo "IDENTITY not in environment"
+   if [ -n "${IDENTITY:-}" ]; then echo "IDENTITY is set (value redacted)"; else echo "IDENTITY is unset"; fi
 
    # Layer 3: Signing script
    echo "=== Keychain state: ==="
-   security list-keychains
-   security find-identity -v
+    if security list-keychains >/dev/null 2>&1; then echo "Keychain query completed"; else echo "Keychain query failed"; fi
+    if security find-identity -v -p codesigning >/dev/null 2>&1; then echo "Signing identity query completed"; else echo "Signing identity query failed"; fi
 
    # Layer 4: Actual signing
-   codesign --sign "$IDENTITY" --verbose=4 "$APP"
+    if codesign --sign "$IDENTITY" "$APP" >/dev/null 2>&1; then echo "Signing succeeded"; else echo "Signing failed"; fi
    ```
 
    **This reveals:** Which layer fails (secrets → workflow ✓, workflow → build ✗)

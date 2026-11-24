@@ -7,13 +7,16 @@
   },
   "scripts": {
     "test": "node --test",
-    "prepack": "node --test test/skill-yaml.test.js"
+    "prepack": "node --test test/skill-yaml.test.js && node bin/skill-integrity.js check",
+    "skills:check": "node bin/skill-integrity.js check"
   },
   "devDependencies": {
     "yaml": "2.8.3"
   },
   "files": [
     "bin",
+    "bin/skill-integrity.js",
+    "bin/skill-integrity.manifest.json",
     "src",
     "README.md",
     "CHANGELOG.md",

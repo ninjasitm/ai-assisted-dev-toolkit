@@ -30,11 +30,9 @@ const ALLOWLIST = [
     '.github/prompts/', '.opencode/agents/', '.opencode/commands/', '.opencode/opencode.jsonc',
     '.opencode/rules/']
     .map((target) => ({ file: 'AGENTS.md', target })),
-  // TODO(owner: bootstrap prompt fixers): `README.md` here means the project's README, not the template's.
-  { file: '.claude/prompt-snippets/bootstrap.md', target: 'README.md' },
   // TODO(owner: unassigned): create-skill examples name a script and reference file the new skill
   // creates. The lines are prose examples, not links to shipped files.
-  ...['references/REFERENCE.md', 'scripts/filename', 'scripts/script.ps1']
+  ...['references/REFERENCE.md', 'scripts/script.ps1']
     .map((target) => ({ file: '.claude/prompt-snippets/create-skill.md', target })),
   // TODO(owner: unassigned): docs scaffold index links to example documents that do not ship.
   { file: 'docs/architecture/README.md', target: './0001-example-decision.md' },
