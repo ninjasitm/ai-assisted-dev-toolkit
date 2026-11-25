@@ -53,4 +53,4 @@ ADRs can have the following statuses:
 
 | ADR  | Title                                          | Status   | Date     |
 | ---- | ---------------------------------------------- | -------- | -------- |
-| 0001 | [Example Decision](./0001-example-decision.md) | Accepted | {{DATE}} |
+| 0001 | Example Decision (`0001-example-decision.md`) | Accepted | {{DATE}} |

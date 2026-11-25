@@ -1,0 +1,9 @@
+{
+  "name": "push-mr checks pin the reviewed SHA: a build location with HEAD B, branch factory/<id> and reviewedSha both A, runs no test and records no green evidence; the MR update path is refused the same way",
+  "job": { "reviewedSha": "A", "pushedSha": null, "mr": null },
+  "build_location": { "branch": "factory/001-x", "branch_tip": "A", "HEAD": "B", "tracked_clean": true, "index_clean": true },
+  "cases": [
+    { "name": "MR creation", "preconditions": { "HEAD_equals_reviewed": false }, "test_run": false, "push": false, "green_evidence": null },
+    { "name": "MR update", "preconditions": { "HEAD_equals_reviewed": false }, "test_run": false, "push": false, "green_evidence": null, "mr": "https://forge.example/mr/17" }
+  ]
+}

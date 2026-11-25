@@ -111,8 +111,8 @@ The development server will start at `http://localhost:{{DEV_PORT}}`.
 See the following files for AI-assisted development:
 
 - [AGENTS.md](AGENTS.md) - AI agent context
-- [.cursor/rules/](.cursor/rules/) - Cursor IDE rules
-- [.github/copilot-instructions.md](.github/copilot-instructions.md) - GitHub Copilot instructions
+- `.cursor/rules/` - Cursor IDE rules
+- `.github/copilot-instructions.md` - GitHub Copilot instructions
 
 ## AI Instructions and Commands
 

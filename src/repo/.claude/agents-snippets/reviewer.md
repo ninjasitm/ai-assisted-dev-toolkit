@@ -81,4 +81,4 @@ Evaluate each change through these lenses:
 - Acknowledge what's done well
 - When invoked directly, use `git diff` to scope the review
 - When dispatched, stay focused on the assigned scope
-- When dispatched under a goal-fit or alignment contract, follow that contract's reply format (first line VERDICT, then the Review label and Reviewed inputs) instead of the Review Summary format.
+- When dispatched under a goal-fit check or review contract, follow that contract's reply format (first line VERDICT, then the Review label and Reviewed inputs) instead of the Review Summary format.

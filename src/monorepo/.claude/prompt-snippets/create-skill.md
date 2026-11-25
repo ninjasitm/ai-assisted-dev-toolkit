@@ -391,7 +391,6 @@ metadata:
 ```language
 {code example}
 ```
-````
 
 ### {Step 2 Title}
 
@@ -459,7 +458,7 @@ If the skills-ref tool is available, validate with:
 
 ```bash
 skills-ref validate <private-staging-dir>/{skill-name}  # format check only; never executes skill content
-````
+```
 
 ## Summary Output
 

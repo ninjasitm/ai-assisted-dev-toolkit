@@ -1,0 +1,51 @@
+{
+  "name": "an in-place preview job refused by the first collision check before preparation: the record is eligibility with previewFailure, start reports and mutates nothing, and a fresh APPROVE after the collision clears prepares and switches without a manual branch switch",
+  "config": {
+    "APPROVAL_MODE": "human",
+    "MERGE_MODE": "local",
+    "DEFAULT_BRANCH": "main"
+  },
+  "job": {
+    "id": "007-cfg",
+    "worktree": false,
+    "stage": "needs-human",
+    "substate": "preview",
+    "previewStep": "eligibility"
+  },
+  "scenario": "Main renames old/ to new/ while the job adds old/extra.json. Directory renames are enabled, so the merge relocates the job file to new/extra.json. An ignored local file already sits at new/extra.json in the in-place checkout, which is on factory/007-cfg.",
+  "events": [
+    {"step": "eligibility", "actor": "orchestrator", "effect": "fresh APPROVE: checks (a) to (c) pass from the pinned job SHA"},
+    {"step": "preparation-check", "actor": "orchestrator", "effect": "first collision check before the in-place switch and set-aside: refused on new/extra.json"},
+    {"step": "record", "actor": "orchestrator", "effect": "previewStep eligibility with previewFailure {step eligibility, blocking paths}; no previewBase, no switch, no set-aside"},
+    {"step": "start", "actor": "orchestrator", "effect": "reports the refusal and mutates nothing; eligibility is not re-run"},
+    {"step": "operator", "actor": "operator", "effect": "moves the ignored local file out of the way"},
+    {"step": "rework", "actor": "operator", "effect": "rework retires the attempt (the eligibility row allows rework)"},
+    {"step": "fresh-entry", "actor": "orchestrator", "effect": "a fresh APPROVE enters eligibility; the preparation check passes"},
+    {"step": "switch", "actor": "orchestrator", "effect": "git switch --no-overwrite-ignore main, run by the procedure with no operator action"},
+    {"step": "persist-base", "actor": "orchestrator", "effect": "previewBase persisted with previewStep prepare, before the switch"},
+    {"step": "merge-check", "actor": "orchestrator", "effect": "collision check again immediately before the merge"},
+    {"step": "merge", "actor": "orchestrator", "effect": "git merge --no-ff --no-overwrite-ignore factory/007-cfg succeeds and relocates the job file"}
+  ],
+  "expected": {
+    "after_refusal": {
+      "checkout": "factory/007-cfg",
+      "stage": "needs-human",
+      "previewStep": "eligibility",
+      "previewFailure_step": "eligibility",
+      "previewRollback": "none",
+      "previewBase": null,
+      "merge_ran": false,
+      "collisions": ["new/extra.json"],
+      "local_bytes": "LOCAL SECRET\n"
+    },
+    "after_retry": {
+      "checkout": "main",
+      "collisions": [],
+      "merge_status": 0,
+      "merged_file": "new/extra.json",
+      "merged_content": "job\n",
+      "previewBase_is_default_head_before_merge": true,
+      "manual_switch_needed": false
+    }
+  }
+}

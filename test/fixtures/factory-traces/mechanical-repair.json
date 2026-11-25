@@ -1,0 +1,12 @@
+{
+  "name": "a mechanical repair after review still runs checkpoint D; preview eligibility accepts the fresh D PASS and refuses a Skipped record",
+  "events": [
+    { "step": "repair", "kind": "mechanical", "round": 2 },
+    { "step": "post-build-fit-check", "checkpoint": "D", "verdict": "PASS", "writes": "round-2/post-build-fit-2.md" },
+    { "step": "eligibility", "post_build_fit": "fresh PASS", "result": "eligible" },
+    { "step": "preview-entry", "previewJobSha": "J3", "merge": true }
+  ],
+  "contrast": [
+    { "step": "eligibility", "post_build_fit": "Skipped: mechanical change after the applicable PASS", "result": "ineligible", "merge": false }
+  ]
+}

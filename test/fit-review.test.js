@@ -19,10 +19,10 @@ const count = (text, pattern) => (text.match(pattern) || []).length;
 for (const layout of LAYOUTS) {
   test(`${layout}: shared brief states sources, verdicts, and decision rules`, () => {
     const brief = read(layout, BRIEF);
-    assert.match(brief, /^# Goal-Fit Review Brief/);
-    assert.match(brief, /Oracle when it is available read-only/);
+    assert.match(brief, /^# Goal-Fit Brief/);
+    assert.match(brief, /When Oracle is not available read-only, a fresh independent reviewer runs the goal-fit check/);
     assert.match(brief, /self-review/);
-    assert.match(brief, /the caller reports `BLOCKED`/);
+    assert.match(brief, /the caller reports `BLOCKED/);
     assert.match(brief, /Review the current artifacts from scratch on every run, including resumed runs/);
     assert.match(brief, /original user request, verbatim, and every explicit user amendment/);
     assert.match(brief, /passes them to you as text in the dispatch/);
@@ -46,16 +46,16 @@ for (const layout of LAYOUTS) {
 
   test(`${layout}: /plan extends the existing review gate without a second one`, () => {
     const plan = read(layout, '.claude/prompt-snippets/plan.md');
-    assert.equal(count(plan, /independent, read-only reviewer/g), 1);
+    assert.equal(count(plan, /The orchestrator runs the plan goal-fit check \(B\)/g), 1);
     assert.equal(count(plan, /\*\*Review and Accept Planning Artifacts\*\*/g), 1);
     assert.match(plan, /read and follow \[fit-review\]\(\.\.\/rules-snippets\/fit-review\.md\)/);
-    assert.match(plan, /Oracle when available read-only, otherwise a separate reviewer; the author's self-review does not count\./);
+    assert.match(plan, /Use read-only Oracle for this goal-fit check; if Oracle is unavailable, use a fresh independent reviewer\. Report BLOCKED only when neither can run\./);
     assert.match(plan, /trace goals and plan items both ways/);
     assert.match(plan, /`VERDICT: PASS` or `VERDICT: CHANGES`/);
     assert.match(plan, /A finding that needs a user decision is blocking, marked `requires user decision; do not auto-repair`; stop and ask the user\./);
     assert.match(plan, /Repeat until PASS or blocked, or until the user decides\./);
     assert.match(plan, /Stop as BLOCKED with the reason when a repair changes nothing or the same finding returns unchanged/);
-    assert.match(plan, /A goal change from the review is a user decision, not a repair\./);
+    assert.match(plan, /A goal change from the check is a user decision, not a repair\./);
     assert.match(plan, /Open decisions block PASS until the user resolves them\./);
     assert.doesNotMatch(plan, /round limit|3 rounds|three rounds/i);
   });
@@ -67,7 +67,7 @@ for (const layout of LAYOUTS) {
     assert.match(specify, /original request \(verbatim, with any later user amendments\)/);
     assert.match(specify, /A finding that needs a user decision is blocking, marked `requires user decision; do not auto-repair`; stop and ask the user\./);
     assert.match(specify, /self-review cannot substitute for independent acceptance/);
-    assert.match(specify, /Only the orchestrator accepts, after an independent PASS/);
+    assert.match(specify, /Only the orchestrator presents the spec for human confirmation, and only after an explicit independent PASS/);
     assert.match(specify, /Stop as BLOCKED with the reason when a repair changes nothing/);
     assert.match(specify, /Open decisions block PASS until the user resolves them\./);
     assert.match(specify, /Acceptance is separate from human approval/);
@@ -129,9 +129,9 @@ for (const layout of LAYOUTS) {
     assert.ok(start > 0 && end > start, 'Subagent dispatch section found');
     const section = skill.slice(start, end);
     assert.match(section, /Every dispatch of the planner, builder, reviewers, and approver also passes the goal sources as text, not as paths alone/);
-    assert.match(section, /the confirmed original request and every explicit user amendment \(see Fit review: Baseline first and Goal sources\)/);
+    assert.match(section, /the confirmed original request and every explicit user amendment \(see Goal-fit checks: Baseline first and Goal sources\)/);
     assert.match(section, /This applies to first runs, reruns, repairs, rework, and resumes alike/);
-    assert.match(section, /run the Baseline first procedure of Fit review before dispatching, and do not invent goals or omit these inputs/);
+    assert.match(section, /run the Baseline first procedure of Goal-fit checks before dispatching, and do not invent goals or omit these inputs/);
     assert.match(section, /Reviewer findings passed as dispatch context are never goal sources/);
   });
 
@@ -150,18 +150,18 @@ for (const layout of LAYOUTS) {
 
   test(`${layout}: confirm handlers require an explicit PASS, not absence of findings`, () => {
     const skill = read(layout, FACTORY);
-    assert.match(skill, /1\. Confirm the spec\. Offered only when no `\[PRODUCT DECISION\]` item is open and the current fit review is an explicit `VERDICT: PASS`\./);
-    assert.match(skill, /1\. Confirm the plan\. Offered only when the current fit review is an explicit `VERDICT: PASS`\./);
-    assert.match(skill, /or the current fit review is not an explicit `VERDICT: PASS`, do not continue/);
-    assert.match(skill, /or the current fit review is not an explicit `VERDICT: PASS`, ask again/);
+    assert.match(skill, /1\. Confirm the spec\. Offered only when no `\[PRODUCT DECISION\]` item is open and the current goal-fit check is an explicit `VERDICT: PASS`\./);
+    assert.match(skill, /1\. Confirm the plan\. Offered only when the current goal-fit check is an explicit `VERDICT: PASS`\./);
+    assert.match(skill, /or the current goal-fit check is not an explicit `VERDICT: PASS`, do not continue/);
+    assert.match(skill, /or the current goal-fit check is not an explicit `VERDICT: PASS`, ask again/);
     assert.match(skill, /Confirm is offered only when the reply on this gate visit starts with `VERDICT: PASS`\. The absence of blocking findings is not a PASS\./);
     assert.doesNotMatch(skill, /fit review has blocking findings, ask again|the fit review is `PASS`\./);
   });
 
   test(`${layout}: timeouts and failures are explicit BLOCKED or needs-human, never a bare stage hold`, () => {
     const skill = read(layout, FACTORY);
-    assert.match(skill, /A timed-out fit reviewer is never re-dispatched \(see Harness notes\)\./);
-    assert.match(skill, /Set stage `needs-human`, `failed_stage` `spec` or `plan`, and the reason `fit reviewer timed out after <N> min; it may still be running`/);
+    assert.match(skill, /A timed-out goal-fit reviewer is never re-dispatched \(see Harness notes\)\./);
+    assert.match(skill, /Set stage `needs-human`, `failed_stage` `spec` or `plan`, and the reason `goal-fit reviewer timed out after <N> min; it may still be running`/);
     assert.match(skill, /Confirm is not offered\./);
     assert.match(skill, /No valid first line: re-dispatch once\. If it still has none, set `needs-human` with `failed_stage` `spec` or `plan`/);
     assert.match(skill, /A `BLOCKED` gate \(baseline, independence, or an unproductive loop\) leaves the stage at `awaiting-spec` or `awaiting-plan`\. A failed agent or a timeout uses `needs-human`/);
@@ -170,11 +170,11 @@ for (const layout of LAYOUTS) {
 
   test(`${layout}: factory resume paths and stage list cannot skip the fit review`, () => {
     const skill = read(layout, FACTORY);
-    assert.match(skill, /\| `awaiting-spec` \| Show the spec gate \(it runs the fit review first\) \|/);
-    assert.match(skill, /\| `awaiting-plan` \| Show the plan gate \(it runs the fit review first\) \|/);
+    assert.match(skill, /\| `awaiting-spec` \| Show the spec gate \(it runs the goal-fit check first\) \|/);
+    assert.match(skill, /\| `awaiting-plan` \| Show the plan gate \(it runs the goal-fit check first\) \|/);
     assert.doesNotMatch(skill, /\| `awaiting-(?:spec|plan)` \| Show the (?:spec|plan) gate \|/);
     assert.match(skill, /Later visits\.\*\* Once a `BLOCKED` or `needs-human` outcome is resolved/);
-    assert.ok(skill.includes('Stages, in order: `spec` (spec-writer running), `awaiting-spec` (spec gate), `plan` (plan writer running), `awaiting-plan` (plan gate), `build`, `review`, `approve`, `awaiting-human`, `merged`, `needs-human`.'), 'stage list unchanged');
+    assert.ok(skill.includes('Stages, in order: `spec` (spec-writer running), `awaiting-spec` (spec gate), `plan` (plan writer running), `awaiting-plan` (plan gate), `build`, `review`, `approve`, `awaiting-human`, `merged`, `needs-human` (with `substate` `preview` while a preview merge'), 'stage list unchanged');
   });
 
   test(`${layout}: no request.md, no hash tracking, and no new agent`, () => {

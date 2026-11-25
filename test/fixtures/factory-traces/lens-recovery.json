@@ -1,0 +1,12 @@
+{
+  "name": "a BLOCKED security lens reruns and returns CHANGES while code is PASS: resume at the verdict gate, not the approver; a later all-PASS round reaches the approver",
+  "before": { "stage": "needs-human", "failed_stage": "review", "round": 2, "reviews": { "code": "PASS", "security": "BLOCKED" } },
+  "events": [
+    { "step": "start", "resume": "review", "rerun": ["security"], "keep": ["code"] },
+    { "step": "review-security", "lens": "security", "verdict": "CHANGES", "fresh_context": true, "writes": ["round-2/review-security.md"] },
+    { "step": "verdicts", "resume_at": "step 8", "approver_dispatched": false, "reason": "not all lenses PASS" },
+    { "step": "repair", "round": 2, "writes": ["build.md"] },
+    { "step": "review-round-3", "lenses": { "code": "PASS", "security": "PASS" } },
+    { "step": "verdicts", "resume_at": "step 9", "approver_dispatched": true, "reason": "all lenses PASS" }
+  ]
+}

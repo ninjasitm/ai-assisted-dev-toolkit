@@ -7,31 +7,106 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.5.0] - 2026-11-25
+
+### Added
+
+- Factory `previewMerge` (opt-in config next to the approval mode; on by default for local merge mode when a stack is configured): an automatic local `--no-ff` merge, a clean-checkout full suite, a rebuild-only deploy to the configured local stack, and a `needs-human` `preview` substate with `previewCommit` and `stack` in `job.json`. The QA message is actionable (URLs, pages, steps, pass criteria, commit). It never pushes, migrates, or changes data without approval, and the preview merge removes its own eligibility checkout after the run.
+- Factory UI builder: ux/ui-only repair and rework rounds go to `designer` (UI-only) or `frontend-developer` (combined UI/UX) using `roles/build.md`. Mixed rounds (ux/ui plus code findings, including server, data, or API findings) go wholly to `frontend-developer` (fallback `implementer`). Rounds with security findings stay on `implementer`; pure build and code repairs stay on `implementer`. The role table uses the toolkit's shipped agents, with Slim's `oracle` (read-only goal-fit checks only) and `designer`; `fixer` never fills a Factory role. Routing follows the work in each dispatch, never the approval or autonomy mode, and an explicit precedence rule settles conflicts with project routing guidance. The builder dispatch mode `autonomous` is renamed `guided`, because autonomous is an operating mode, not a task.
+- UI work routing: simple UI fixes are implemented directly. Anything beyond simple asks the user once, at spec/plan time, whether they want mockups before dispatching to `designer` or `frontend-developer` (subagent-workflow and Factory). Mockups with several states to review include a small floating control that switches between them.
+
 ### Changed
 
-- Patch-capable CLI releases preserve customized or ownership-unknown `.nitm/BOOTSTRAP.md` handoffs, support per-run exact-path omissions without changing saved category preferences, bind apply to the reviewed preview, and report metadata writes. The version marker is written last; manifest entries are updated only for bytes matching the release.
-- `patch` now detects all conflicts before writing, so a conflict cannot leave a partially applied patch.
-- Guided bootstrap patch instructions require the preview token and exact matching invocation, stop on stale targets, and treat unsupported older CLIs as a blocker before writes. The README now describes the handoff ownership behavior and preview/apply safety.
-- Factory plan-only guidance is conditional on the configured workflow supporting that route. Alignment checkpoint guidance is likewise conditional; Oracle advice can recommend consideration but does not authorize scope expansion. Existing human confirmation and independent review gates remain.
+- Fit review terminology: goal-fit checks A (spec), B (plan), and C (approach) are run by Oracle (read-only, PASS/CHANGES direction verdict; a fresh independent reviewer if Oracle is unavailable). D (implementation review), code review, and the post-build Factory review are run by a fresh independent reviewer, never Oracle. Oracle never approves gates, scope, publication, or merges. C and D apply only when there is an accepted spec or plan.
+- The post-build alignment record is renamed post-build fit record (`round-<U>/post-build-fit-<j>.md`), and the user-directed rework classification is renamed R. All Factory post-build reviewers and the approver require fresh independent context; without it the step is BLOCKED, and a role switch in one session is not fresh.
+- The `auto` approval mode now says "publish procedure": it removes only the human step before publishing after an agent APPROVE. Spec and plan gates always run, and forge merges stay human.
+- Factory consistency: plan-only routes start at `plan`; a manual `/factory approve` writes no synthetic APPROVE; the Retro note contract is `retro-<decision>.md`; Learn is opt-in with MR-match and bounded recovery; legacy jobs without batch records have a resume path.
+- `executing-plans` and `subagent-driven-development` name the reviewer role and checkpoint.
+- Single QA answer: a preview job takes one QA answer from the operator, and that answer is bound to the tested commit.
+- Routing rule is chosen before work is split, so a round's owner is fixed before builders are dispatched.
+- Post-build fit record naming: the implementation review (D) and the post-build record use the names in the Factory brief, and the goal-fit checker applies one stated rule.
+- Local preview recovery is simplified. An interrupted or unexpected preview state now stops without changing anything and reports the expected and observed branch and HEAD, the recorded SHAs, affected paths, backups, and next steps. Only a failed verify, deploy, or health step is retried automatically, after it is rechecked on the recorded commit. Before every preview deploy, the main checkout must be at the verified SHA with a clean tracked tree; an interrupted eligibility attempt stops and reports instead of retrying; rework and abandon follow the preview state table. Batch dissolution and per-state resume rules are removed. Ordinary rollback restore copies nothing when a destination differs, is a symlink, or cannot be checked.
+
+### Fixed
+
+- Skill README trust links point to an installed anchor (`using-superpowers`, "Trust and Security Gate").
+- The systematic-debugging signing example exits 1 on failure.
+- The create-skill template fence no longer closes early (repo and monorepo).
+- Installed-output link check for repo, monorepo, and every `--env` (`test/links-installed.test.js`). It scans every first-party installed Markdown file, including the generated `.nitm/BOOTSTRAP.md` handoff and `templates/`. It has no allowlist and asserts zero dead links; the scaffold links it flagged (example logs and decision records, cross-harness directory references) are now plain text.
+- Preview merge safety: preflight checks run before the first command, the local target is verified before any write, QA is bound to the tested SHA, and rollback is safe.
+- Preview recovery hardening: one preview state machine persists `previewStep`, including eligibility states; the reviewed job SHA is pinned; merge, abort, and rollback are guarded; and a QA answer that reports failure is not acceptance.
+- Preview recovery binds reviews and approval to the reviewed SHA, retires previews atomically on rework, and verifies the running identity before a job is marked ready.
+- Round-5 publication hardening: local merge and push-mr publication are pinned to the reviewed SHA, MR finish verifies the forge-merged source SHA, the bootstrap baseline covers invoked lifecycle scripts, D runs after every repair before preview.
+- Round-6 hardening: moved-tip recovery runs before merge, push-mr tests use a pinned checkout, preview acceptance checks default-branch ancestry, the operator can accept a current-round ESCALATE outside preview, plan-only planners ignore a stale spec, and the Factory README separates blocking from suggested QA.
+- Round-7 Factory hardening: batch rollback is guarded and uses `git reset --keep`. MR finish verifies that the target branch equals the default branch. Monorepo push-mr test selection diffs against the default branch. The plan-only docs commit stages only plan and task files.
+- Factory plan-only docs commits: plan-only jobs move and stage only `plan.md` and intended `tasks.md` changes, refusing any other staged path (including a same-folder `spec.md`).
+- Round-9 Factory hardening: feature docs commits use an exact-path `--only` commit, so unrelated staged paths never ride along. Spec-route keyed renames pass the index allowlist. Plan-only set-aside leaves `spec.md` and unrelated files in place.
+- Round-10 Factory hardening: plan restore uses exact paths. A spec-route rename never deletes unmatched tracked docs. Set-aside refuses staged feature paths. Merges use `--no-overwrite-ignore`, and the pinned push uses `--no-follow-tags --recurse-submodules=no`. README approve and builder wording is updated.
+- Factory hardening: the tracking rename uses filesystem `mv`, so the main checkout's index stays untouched, and merge set-aside no longer refuses the job's own rename. In-place switches use `--no-overwrite-ignore`, and merges run an explicit pre-merge ignored-file collision check that stops and preserves the file. Pushes require exactly one verified push destination for `origin`.
+- Factory round-12 hardening: the pre-merge collision check reads NUL-delimited output and uses `git merge-tree --write-tree` (Git 2.38+), so non-ASCII paths and directory renames onto ignored files are caught. MR/PR creation passes the verified origin repository explicitly (`gh --repo`, `glab --repo`) and records the returned URL only when it belongs to that repository. Preview preflight runs on the exact SHA used, and preview failure reports say whether a merge occurred.
+- Factory round-13 hardening: the pre-merge collision check compares changed paths and their parent directories by the checkout filesystem's name rules (case-insensitive when the filesystem is), and stops when those rules cannot be established. The preview state table's failure row now matches the failure report.
+- Factory round-14 hardening: the preview merge's case-name rule is now established in the checkout directories, not the Git metadata directory, using an exclusively created unique probe that never overwrites or removes an existing entry. Any indeterminate result stops before switch, set-aside, or merge. The case-behaviour tests are portable to case-insensitive filesystems.
+- Factory round-15 hardening: the case-name check walks every existing ancestor directory, and a lookup failure counts as indeterminate. `previewCommit` is recorded only for a real preview merge with the expected parents, so a no-op merge is never reverted. Ordinary local rollback never overwrites newer feature docs when it restores backups.
+- Factory round-18 hardening: the preview deploy gate names the expected SHA for each deploy purpose, so revert redeploys and batch rollback restores preflight and deploy their own SHA. Abandon checks the default branch to report whether a preview merge remains, and members can be abandoned once a batch rollback completes.
+- Factory round-19 hardening: batch and step rollback restores target only the recorded prior running SHA (never `PRE_BATCH`); if the checkout can't meet the deploy gate, the rollback is marked `unverified` and Factory stops without deploying. The Factory README no longer promises to keep the branch and worktree of every abandoned job.
+- Root README: the Factory placeholder table lists `{{PREVIEW_MERGE}}`, and `auto` is described with its three outcomes (local merge, local preview awaiting QA, remote publication awaiting a forge merge). The README previously said the factory never pushes, which was wrong under `push-mr`.
+
+## [5.4.4] - 2026-11-25
 
 ### Added
 
 - Added phase-start and post-reconciliation guidance to split broad implementation into focused owners and dispatch all ready independent work together, while preserving scope ownership and approval gates. Factory workers follow the same rule; one integration owner reconciles their results under existing review and approval gates.
+
+### Changed
+
+- Patch-capable CLI releases preserve customized or ownership-unknown `.nitm/BOOTSTRAP.md` handoffs, support per-run exact-path omissions without changing saved category preferences, bind apply to the reviewed preview, and report metadata writes. The version marker is written last; manifest entries are updated only for bytes matching the release.
+- Guided bootstrap patch instructions require the preview token and exact matching invocation, stop on stale targets, and treat unsupported older CLIs as a blocker before writes. The README now describes the handoff ownership behavior and preview/apply safety.
+- Factory plan-only guidance is conditional on the configured workflow supporting that route. Alignment checkpoint guidance is likewise conditional; Oracle advice can recommend consideration but does not authorize scope expansion. Existing human confirmation and independent review gates remain.
+
+## [5.4.3] - 2026-11-24
+
+### Added
+
 - Added a trust gate for skill recommendations and creation: external skills are unvetted source candidates, require exact-revision inspection and independent review before explicit approval, and are not executed or auto-enabled. Skills are staged outside discoverable paths; `npm run skills:check` detects inventory drift but does not certify safety.
-- Added the opt-in `improve-codebase-architecture` skill to both templates; it reports findings in chat without writing files.
-- Documented the specific Matt Pocock skills and patterns adapted by the toolkit, with upstream links and MIT attribution. The existing project license is unchanged.
-- Adopted patterns from Matt Pocock's PR guidance, blocker-only disposable prototypes, domain modeling for requirement-blocking terms, and cross-person/tool handoffs; expanded the README credits.
 
 ### Changed
 
 - Removed mutable external skill-installer recommendations and tightened bundled skill guidance against unreviewed instructions, secret disclosure, and unapproved publication.
+
+## [5.4.2] - 2026-11-24
+
+### Changed
+
+- `patch` now detects all conflicts before writing, so a conflict cannot leave a partially applied patch.
 - Bootstrap completion checklist: `bootstrap.md` gains one short `## Completion Contract`, identical in both templates and inlined into `.nitm/BOOTSTRAP.md`. It covers the active files each change affects or links to. It requires cited project evidence before filling a setting or choosing a skill, forbids guessed required values, asks and parks unresolved questions, and removes files only with approval and a backup. Retiring a skill stops re-adding it, not loading. Statuses are applied, pending, and reviewer-accepted; the bootstrap completion report is written only after verification. Tests: `test/bootstrap-completion-contract.test.js`.
 - Guided `bootstrap-patch` and `bootstrap-upgrade` run from one verified source (an exact npm archive or `refs/tags/<version>`, minimum 5.2.0), with one CLI invocation for preview and apply. Patch compiles one write set (CLI state, manual changes, before-states, and the handoff backup), has it reviewed and approved, and revalidates it before any write. Upgrade runs the native migration first, then a separately approved pinned marker refresh, and checks the refresh against the actual state before it writes. Patch step 6 resolves live placeholders in the same loop, and the temp source is removed only at the terminal cleanup. Commits use one rule in `bootstrap-patch.md` step 5f: explicit request only, a baseline, an empty index, content and mode checks, and no broad staging. Tests: `test/bootstrap-patch-review.test.js`, `test/bootstrap-completion-contract.test.js`.
 - Upgrade's version-marker step no longer runs an unpinned `npx ... patch`. On the v3 route the CLI action stops on any protected or unapproved mutation. Hook `chmod` covers only the exact copied files.
 - README: the handoff is documented as backed up and replaced when it differs, and a new selection as saved to `.nitm/toolkit.json`.
 - The Factory lens setting is asked or omitted instead of defaulting to `code, security` in the bootstrap prompt.
-- Alignment checkpoints realign build work with the goals before it goes on, so scope cannot drift silently. The existing goal-fit brief gains four checkpoints: **A** (Factory, after a build or an alignment-relevant repair, before review), **B** (Factory, before a rework writes any file, classifying the note as repair, plan change, or spec change), **C** (`/implement`, `/implement-feature`, and `/implement-fixes`, on the approach note before the first build of a task), and **D** (`/implement-feature`, after reconciliation, before aggregate verification and review). Reviews use Oracle when available read-only, otherwise a fresh-context reviewer. Only an explicit `VERDICT: PASS` releases the next step. Any user decision in a verdict wins over repairable findings in it. Repairs happen only when every finding is repairable, and a `CHANGES` is always followed by a new check. A PASS is reused only for a mechanical change made after it. Checkpoint A is saved per round without overwriting earlier replies. `/factory approve` refuses unless the current alignment record passes, and resume restores pending alignment findings. Checkpoint A persists the upcoming round and stage before it dispatches, and resume recovers the round without an off-by-one. A routed rework runs Tracking before its doc sync, and it reuses the existing worktree or in-place branch. A rework that changes the spec goes through the spec gate and then a regenerated plan confirmation. A plan-only change goes through the plan gate. A reviewer finding alone never authorizes scope. Oracle may authorize a justified expansion within the original goals: the planner revises the plan, and an independent review checks it. Accepted spec and plan changes keep their human confirmations, and goal-changing, out-of-goal, or ambiguous expansions go to the user. Fallback reviewers never authorize expansion. Without an independent reviewer, the affected acceptance and progression are blocked. Plan review is a named goal-fit review of a written execution plan or a multi-task plan, separate from checkpoints A to D, and it excludes bookkeeping todos, single-task approach notes, and focused single-file work. Plan and spec changes route through the planner, then plan review, then any applicable confirmation; the skills, prompts, and agent snippets reference that routing. These are prompt instructions, not host enforcement. Tests: `test/alignment-checkpoints.test.js` and `test/orchestration-guidance.test.js`.
-- Functional QA in the implement loop and Factory. Each acceptance criterion gets every feasible automated check (`local`, `covered`, or `na`), and a human check is added only where a person must judge it. Missing necessary tests and unavailable evidence stay pending or block acceptance rather than passing. A human check needs a `PASS` and an explicit `accept` for the tested tree. The Factory `qa.md` carries the functional QA record: `/factory approve` refuses failed, not-run, missing, or stale automated evidence, and a human check holds the merge even under `auto`. Human answers are kept in `build.md`. The manual checklist stays non-gating. Tests: `test/functional-qa-contract.test.js`.
+
+### Fixed
+
+- An unknown command (`nitm-ai-dev-toolkit <command>`) prints the error and help, and exits 1; it exited 0 before. No arguments and `--help` still exit 0. Tests: `test/cli.test.js`.
+- `doctor` no longer suggests running `patch` to record `.toolkit-version`; the guided flow records it after preview and approval. A successful `upgrade` reports that the scaffold was applied and setup is not finished.
+- The README now says `patch` also updates files you never changed and writes its state files, and it corrects the guided-patch instruction to require `bootstrap.md` beside `bootstrap-patch.md`.
+
+## [5.4.1] - 2026-11-24
+
+### Added
+
+- Added the opt-in `improve-codebase-architecture` skill to both templates; it reports findings in chat without writing files.
+- Documented the specific Matt Pocock skills and patterns adapted by the toolkit, with upstream links and MIT attribution. The existing project license is unchanged.
+- Adopted patterns from Matt Pocock's PR guidance, blocker-only disposable prototypes, domain modeling for requirement-blocking terms, and cross-person/tool handoffs; expanded the README credits.
+
+## [5.4.0] - 2026-11-24
+
+### Changed
+
+- Minor version bump to 5.4.0 (`package.json` only). The PR #46 features shipped in 5.3.4 and are listed there.
+
+## [5.3.4] - 2026-11-24
+
+### Changed
 
 - Factory plan-only route: a small, well-defined job with clear requirements and acceptance criteria, and a total working context confidently below the 100,000-token budget with a reasonable margin, for a new feature only, can skip `spec.md` and the spec gate when intake proposes it and you confirm. Its plan keeps the original requirements verbatim and still needs an independent fit PASS and your plan confirmation. Any other job, including legacy jobs, keeps the spec route. A plan that turns out larger, unclear, or broader returns the job to the spec route. Factory jobs can also opt in to an advisory retro report per acceptance decision (`--retro`, or `"retro": true`), saved in the job folder; it never changes a gate. Intake can also call the `grill-me` skill for genuinely blocking ambiguity, under the same question limits and confirmation gate.
 - Factory autonomous build: after plan confirmation, the build finishes every unblocked approved item before it stops. Technical blockers go to a read-only Oracle once per unchanged input; conclusive in-scope evidence re-dispatches the build for newly eligible work only, and anything else stays parked. Work that needs a person is grouped as exact next steps under `needs-human`. The approver escalates on any parked required item, and no build is READY while one is parked. Retro reports are now one per round and decision, in `round-<R>/retro-<D>.md`.
@@ -46,12 +121,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `/assign-tasks`: its step is now "Preview and Approve", and that preview is the single approval point before any tracker write.
 - Removed `opencode-mem` from the plugin lists of both OpenCode templates (authorized). Other plugins are unchanged.
 
-### Fixed
+## [5.3.3] - 2026-11-16
 
-- An unknown command (`nitm-ai-dev-toolkit <command>`) prints the error and help, and exits 1; it exited 0 before. No arguments and `--help` still exit 0. Tests: `test/cli.test.js`.
-- `doctor` no longer suggests running `patch` to record `.toolkit-version`; the guided flow records it after preview and approval. A successful `upgrade` reports that the scaffold was applied and setup is not finished.
-- The README now says `patch` also updates files you never changed and writes its state files, and it corrects the guided-patch instruction to require `bootstrap.md` beside `bootstrap-patch.md`.
+### Changed
 
+- Alignment checkpoints realign build work with the goals before it goes on, so scope cannot drift silently. The existing goal-fit brief gains four checkpoints: **A** (Factory, after a build or an alignment-relevant repair, before review), **B** (Factory, before a rework writes any file, classifying the note as repair, plan change, or spec change), **C** (`/implement`, `/implement-feature`, and `/implement-fixes`, on the approach note before the first build of a task), and **D** (`/implement-feature`, after reconciliation, before aggregate verification and review). Reviews use Oracle when available read-only, otherwise a fresh-context reviewer. Only an explicit `VERDICT: PASS` releases the next step. Any user decision in a verdict wins over repairable findings in it. Repairs happen only when every finding is repairable, and a `CHANGES` is always followed by a new check. A PASS is reused only for a mechanical change made after it. Checkpoint A is saved per round without overwriting earlier replies. `/factory approve` refuses unless the current alignment record passes, and resume restores pending alignment findings. Checkpoint A persists the upcoming round and stage before it dispatches, and resume recovers the round without an off-by-one. A routed rework runs Tracking before its doc sync, and it reuses the existing worktree or in-place branch. A rework that changes the spec goes through the spec gate and then a regenerated plan confirmation. A plan-only change goes through the plan gate. A reviewer finding alone never authorizes scope. Oracle may authorize a justified expansion within the original goals: the planner revises the plan, and an independent review checks it. Accepted spec and plan changes keep their human confirmations, and goal-changing, out-of-goal, or ambiguous expansions go to the user. Fallback reviewers never authorize expansion. Without an independent reviewer, the affected acceptance and progression are blocked. Plan review is a named goal-fit review of a written execution plan or a multi-task plan, separate from checkpoints A to D, and it excludes bookkeeping todos, single-task approach notes, and focused single-file work. Plan and spec changes route through the planner, then plan review, then any applicable confirmation; the skills, prompts, and agent snippets reference that routing. These are prompt instructions, not host enforcement. Tests: `test/alignment-checkpoints.test.js` and `test/orchestration-guidance.test.js`.
+
+## [5.3.2] - 2026-11-15
+
+### Added
+
+- Slim model-availability guidance in both template workflows: confirm the active preset and ordered configured fallback, verify the model/variant, then retry once or report the blocker.
+
+## [5.3.1] - 2026-11-15
+
+### Changed
+
+- Functional QA in the implement loop and Factory. Each acceptance criterion gets every feasible automated check (`local`, `covered`, or `na`), and a human check is added only where a person must judge it. Missing necessary tests and unavailable evidence stay pending or block acceptance rather than passing. A human check needs a `PASS` and an explicit `accept` for the tested tree. The Factory `qa.md` carries the functional QA record: `/factory approve` refuses failed, not-run, missing, or stale automated evidence, and a human check holds the merge even under `auto`. Human answers are kept in `build.md`. The manual checklist stays non-gating. Tests: `test/functional-qa-contract.test.js`.
 ## [5.3.0] - 2026-11-14
 
 Retirement/relevance and wrapper-audit entries below were already shipped in 5.2.0.
@@ -104,10 +190,6 @@ Retirement/relevance and wrapper-audit entries below were already shipped in 5.2
 - UI detection reads only the root and `apps/*`, `packages/*` manifests. A UI app in another directory (for example `web/` or `services/*`) is not detected, so UI rules are skipped there.
 - Playwright detection matches any mention of "playwright" in the root manifests, not only a dependency or config.
 - Skills that restate snippet policy are not detected. Copilot instruction files and the Codex README are not audited for inlined policy.
-
-### Added
-
-- Slim model-availability guidance in both template workflows: confirm the active preset and ordered configured fallback, verify the model/variant, then retry once or report the blocker.
 
 ## [5.1.2] - 2026-10-21
 
@@ -333,6 +415,7 @@ Retirement/relevance and wrapper-audit entries below were already shipped in 5.2
 - Documentation structure templates (`docs/features/`, `docs/fixes/`)
 - Monthly fix log template
 
-[Unreleased]: https://github.com/ninjasitm/ai-assisted-dev-toolkit/compare/v4.0.0...HEAD
+[Unreleased]: https://github.com/ninjasitm/ai-assisted-dev-toolkit/compare/5.5.0...HEAD
+[5.5.0]: https://github.com/ninjasitm/ai-assisted-dev-toolkit/compare/5.4.4...5.5.0
 [4.0.0]: https://github.com/ninjasitm/ai-assisted-dev-toolkit/compare/v3.0.23...v4.0.0
 [0.1.0]: https://github.com/ninjasitm/ai-assisted-dev-toolkit/releases/tag/v0.1.0

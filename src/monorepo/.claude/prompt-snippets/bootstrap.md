@@ -107,7 +107,8 @@ The template ships files for every stack, tracker and test tool. Decide what app
    | `{{PM_ISSUE_KEY}}`          | Issue key format (e.g., PROJ-###, #42)                                                                                                          |
    | `{{FACTORY_PORT_BASE}}`     | Only if Factory is installed. Toolkit default `5100` is not confirmed until the user confirms it                                                                                                                                  |
    | `{{APPROVAL_MODE}}`         | Only if Factory is installed. Toolkit default `human` is not confirmed until the user confirms it                                                                                                                                 |
-   | `{{FACTORY_REVIEW_LENSES}}` | Only if Factory is installed. Ask which review lenses to run (`code`, `security`, `ux`, `ui`); `ux` and `ui` need a UI and a browser tool (for example a browser MCP server). If none is chosen, omit the setting; no default is assumed         |
+   | `{{PREVIEW_MERGE}}` | Only if Factory is installed. Local preview settings (JSON object). Toolkit default `{"enabled": true, "stack": null, "deployCommand": null, "deployAgent": null, "healthChecks": []}` is not confirmed until the user confirms it |
+| `{{FACTORY_REVIEW_LENSES}}` | Only if Factory is installed. Ask which review lenses to run (`code`, `security`, `ux`, `ui`); `ux` and `ui` need a UI and a browser tool (for example a browser MCP server). If none is chosen, omit the setting; no default is assumed         |
 
 3. **Analyze Apps**:
 

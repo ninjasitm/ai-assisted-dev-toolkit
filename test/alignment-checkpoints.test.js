@@ -1,6 +1,6 @@
 'use strict';
 
-// Static contract checks for the alignment checkpoints (A, B, C, D). They read template text only: they
+// Static contract checks for the post-build fit checks (A, B, C, D). They read template text only: they
 // show that the instructions name each checkpoint, its gate, its no-scope-expansion and decision branches,
 // its repair and rework ordering, its Oracle-or-reviewer fallback, its evidence freshness, its per-round and
 // per-family file rules, its approve and resume blockers, its persistence ordering, its round recovery, its
@@ -46,20 +46,19 @@ test('source of truth: brief and implement loop are identical across src/repo an
 for (const layout of LAYOUTS) {
   test(`${layout}: brief defines checkpoints A, B, C and D with their trigger and users`, () => {
     const brief = read(layout, BRIEF);
-    assert.match(brief, /## Alignment checkpoints \(build flows\)/);
-    assert.match(brief, /\*\*A, before review:\*\*.*Factory uses it/);
-    assert.match(brief, /\*\*B, before user-directed rework:\*\*/);
-    assert.match(brief, /\*\*C, before the first build of a task:\*\*.*`\/implement-fixes` use it/s);
-    assert.match(brief, /\*\*D, after reconciliation:\*\*.*`\/implement-feature` uses it/);
+    assert.match(brief, /## Letters \(one meaning each\)/);
+    assert.match(brief, /\| \*\*A\*\* \| Spec goal-fit check/);
+    assert.match(brief, /\| \*\*B\*\* \| Plan goal-fit check/);
+    assert.match(brief, /\| \*\*C\*\* \| Approach goal-fit check/);
+    assert.match(brief, /\| \*\*D\*\* \| Implementation review/);
   });
 
   test(`${layout}: brief requires the reply to name the checkpoint, the reviewed inputs, and B's classification`, () => {
     const brief = read(layout, BRIEF);
     assert.match(brief, /Checkpoint: <A\|B\|C\|D>/);
-    assert.match(brief, /Reviewed inputs: <paths, commit, changed files, or approach note>/);
-    assert.match(brief, /Classification: repair/);
-    assert.match(brief, /Classification: plan change/);
-    assert.match(brief, /Classification: spec change/);
+    assert.match(brief, /Reviewed inputs: <paths, commit, changed files, plan and sources, or approach note>/);
+    assert.match(brief, /CLASSIFICATION: <repair\|plan change\|spec change>/);
+
   });
 
   test(`${layout}: brief forbids findings from authorizing scope and sends goal changes to the user`, () => {
@@ -71,7 +70,7 @@ for (const layout of LAYOUTS) {
     assert.match(brief, /A fallback reviewer \(not Oracle\) reports a possible expansion as a blocking finding marked `requires user decision; do not auto-repair`/);
     assert.match(brief, /A goal-changing, out-of-goal, or ambiguous expansion always requires a user decision/);
     assert.doesNotMatch(brief, /never authorizes new scope or plan expansion/, 'no absolute prohibition on every expansion');
-    assert.match(brief, /A goal, accepted spec, or accepted plan change goes through the flow's existing reconfirm gate when it has one/);
+    assert.match(brief, /a goal, spec, or plan change still needs the user's confirmation through the existing gate/);
     assert.match(brief, /Unrelated authorized work continues/);
   });
 
@@ -83,24 +82,24 @@ for (const layout of LAYOUTS) {
 
   test(`${layout}: brief never reuses a PASS after a CHANGES`, () => {
     const brief = read(layout, BRIEF);
-    assert.match(brief, /After any `CHANGES`, the checkpoint runs again on the changed inputs; reuse is never allowed after a `CHANGES`/);
+    assert.match(brief, /After any `CHANGES`, the check runs again on the changed inputs; reuse is never allowed after a `CHANGES`/);
     assert.match(brief, /Reuse is allowed only after an applicable `PASS`/);
-    assert.match(brief, /a mechanical change \(wording, formatting, a fix that keeps the reviewed goals, files, and approach\) made after that PASS does not need a new review/);
+    assert.match(brief, /a mechanical change \(wording, formatting, a fix that keeps the reviewed goals, files, and approach\) made after that PASS does not need a new check/);
   });
 
   test(`${layout}: brief judges freshness by content and records the PASS relied on by file`, () => {
     const brief = read(layout, BRIEF);
     assert.match(brief, /A `PASS` covers the inputs named in its reply/);
-    assert.match(brief, /Judge alignment relevance by what the change does to the goals, not by filenames or path lists alone/);
-    assert.match(brief, /Run the checkpoint again when the inputs change in an alignment-relevant way/);
+    assert.match(brief, /Judge relevance by what the change does to the goals, not by filenames or path lists alone/);
+    assert.match(brief, /Run the check again when the inputs change in a goal-relevant way/);
     assert.match(brief, /The caller records the PASS it relies on, by file, and which case applied\./);
-    assert.match(brief, /B always runs for each rework request, including a resumed one/);
+    assert.match(brief, /Every rework's R classification runs again on resume or rework/);
   });
 
   test(`${layout}: brief gives an Oracle-or-reviewer fallback and blocks progression without an independent reviewer`, () => {
     const brief = read(layout, BRIEF);
-    assert.match(brief, /Use Oracle when it is available read-only; otherwise a separate reviewer in fresh context/);
-    assert.match(brief, /With no independent reviewer the caller reports `BLOCKED: no independent reviewer`/);
+    assert.match(brief, /When Oracle is not available read-only, a fresh independent reviewer runs the goal-fit check/);
+    assert.match(brief, /With no independent checker or reviewer, the caller reports `BLOCKED: no independent reviewer`/);
     assert.match(brief, /The affected acceptance and progression stop; unrelated authorized work continues/);
   });
 
@@ -113,13 +112,13 @@ for (const layout of LAYOUTS) {
 
   test(`${layout}: implement.md runs checkpoint C before the round-1 build, with an explicit PASS gate`, () => {
     const content = read(layout, IMPLEMENT);
-    assert.ok(content.includes('**Approach checkpoint C (before the first build of a task):**'), 'checkpoint C missing');
-    order(content, '**Approach checkpoint C (before the first build of a task):**', '**Round 1 (build):**');
-    assert.match(content, /Dispatch the independent read-only reviewer with the checkpoint C brief \(read and follow \[fit-review\]\(\.\.\/rules-snippets\/fit-review\.md\)\)/);
+    assert.ok(content.includes('**Approach goal-fit check C (before the first build of a task, where C applies; see fit-review Applicability):**'), 'checkpoint C missing');
+    order(content, '**Approach goal-fit check C (before the first build of a task, where C applies; see fit-review Applicability):**', '**Round 1 (build):**');
+    assert.match(content, /Run goal-fit check C with its brief \(read and follow \[fit-review\]\(\.\.\/rules-snippets\/fit-review\.md\)\)/);
     assert.match(content, /Dispatch the planner for a lightweight approach note only/);
     assert.match(content, /The planner writes no spec or plan file for this and makes no edits or build/);
-    assert.match(content, /Only the explicit `VERDICT: PASS` releases the round-1 build/);
-    assert.match(content, /No independent reviewer: this task is `BLOCKED`, and independent tasks continue/);
+    assert.match(content, /only the explicit `VERDICT: PASS` releases the round-1 build/);
+    assert.match(content, /No independent checker \(Oracle or a fresh reviewer\): this task is `BLOCKED`, and independent tasks continue/);
   });
 
   test(`${layout}: implement.md checkpoint C lets a user decision win and never reuses after CHANGES`, () => {
@@ -127,13 +126,13 @@ for (const layout of LAYOUTS) {
     assert.match(content, /A `CHANGES` with any finding marked `requires user decision; do not auto-repair` stops this task and its dependents as needs-decision, even when other findings are repairable/);
     assert.match(content, /A `CHANGES` where every finding is repairable: the planner revises the approach note/);
     order(content, 'stops this task and its dependents as needs-decision', 'where every finding is repairable');
-    assert.match(content, /Later repair rounds reuse checkpoint C only under the freshness rule in fit-review: after an applicable `PASS`, never after a `CHANGES`\./);
+    assert.match(content, /Later repair rounds reuse approach goal-fit check C only under the freshness rule in fit-review: after an applicable `PASS`, never after a `CHANGES`\./);
   });
 
   test(`${layout}: implement.md round 1 builds from the approved approach note`, () => {
     const content = read(layout, IMPLEMENT);
-    order(content, 'Only the explicit `VERDICT: PASS` releases the round-1 build', 'the approved approach note for its lane');
-    assert.match(content, /after each ready task's checkpoint C `VERDICT: PASS`/, 'round 1 must stay gated by checkpoint C');
+    order(content, 'only the explicit `VERDICT: PASS` releases the round-1 build', 'the approved approach note for its lane');
+    assert.match(content, /after each ready task's C `VERDICT: PASS`/, 'round 1 must stay gated by checkpoint C');
   });
 
   test(`${layout}: Oracle role row names its checkpoint C reviewer duty and still forbids building`, () => {
@@ -141,7 +140,7 @@ for (const layout of LAYOUTS) {
     const row = content.split('\n').find((line) => line.startsWith('| Oracle'));
     assert.ok(row, 'Oracle row exists');
     assert.match(row, /never builds/);
-    assert.match(row, /alignment review at a checkpoint when asked/);
+    assert.match(row, /goal-fit checks A, B, and C/);
     assert.match(row, /Its feedback is guidance\. It may recommend considering a justified in-goal expansion; that recommendation is a planner revision request under the Expansion rule in fit-review and never authorizes scope\./);
     assert.doesNotMatch(row, /may authorize/, 'the Oracle row must never grant expansion authority');
   });
@@ -149,14 +148,14 @@ for (const layout of LAYOUTS) {
   test(`${layout}: implement-feature runs checkpoint D after reconciliation and before aggregate verify and review`, () => {
     const content = read(layout, FEATURE);
     const aggregate = section(content, '5. **Feature Review**', '6. **Create Pull Request**');
-    assert.ok(aggregate.includes('**Alignment checkpoint D** (before aggregate verification and review)'), 'checkpoint D missing');
-    order(aggregate, 'Restore the saved full-feature text', '**Alignment checkpoint D**');
-    order(aggregate, '**Alignment checkpoint D**', 'Run implement.md steps 3, 4 and 5');
+    assert.ok(aggregate.includes('**Implementation review D** (before aggregate verification and review, where D applies; see fit-review Applicability)'), 'checkpoint D missing');
+    order(aggregate, 'Restore the saved full-feature text', '**Implementation review D**');
+    order(aggregate, '**Implementation review D**', 'Run implement.md steps 3, 4 and 5');
     assert.match(aggregate, /Only the explicit `VERDICT: PASS` releases aggregate verification and review/);
     assert.match(aggregate, /A `CHANGES` with any finding marked `requires user decision; do not auto-repair` stops the feature's aggregate acceptance until the user answers, even when other findings are repairable/);
     assert.match(aggregate, /A `CHANGES` where every finding is repairable goes to one root-cause owner per finding \(step 5, Route each ordinary repair finding once\), and D runs again on the changed inputs: reuse is never allowed after a `CHANGES`/);
     assert.doesNotMatch(aggregate, /(Repairs|goes) to the builder that owns each file/, 'the per-file repair routing must be gone');
-    assert.match(aggregate, /With no independent reviewer, aggregate acceptance is `BLOCKED`/);
+    assert.match(aggregate, /With no fresh independent reviewer, aggregate acceptance is `BLOCKED`/);
     assert.match(aggregate, /including uncommitted and new files/);
   });
 
@@ -166,26 +165,26 @@ for (const layout of LAYOUTS) {
     assert.doesNotMatch(content, /git diff \{\{DEFAULT_BRANCH\}\}\.\.\.HEAD/);
   });
 
-  test(`${layout}: implement-fixes checks the approach before the single builder runs`, () => {
+  test(`${layout}: implement-fixes skips C as a supplied-only task`, () => {
     const content = read(layout, FIXES);
-    order(content, 'approach checkpoint C of [implement.md](implement.md) before the build', 'Dispatch one builder with the bug report');
-    assert.match(content, /only `VERDICT: PASS` releases the build/);
-    assert.match(content, /approved approach note/);
+    order(content, 'Determine whether C applies using', 'Dispatch one builder with the bug report');
+    assert.doesNotMatch(content, /approach note is reviewed against the bug report/);
+    assert.doesNotMatch(content, /approved approach note/);
   });
 
-  test(`${layout}: factory runs checkpoint A after READY and before the upcoming review round`, () => {
+  test(`${layout}: factory runs post-build fit check after READY and before the upcoming review round`, () => {
     const content = read(layout, FACTORY);
-    assert.match(content, /Valid `READY` → run alignment checkpoint A \(see Alignment checkpoint A\), then step 7\./);
-    order(content, 'run alignment checkpoint A (see Alignment checkpoint A), then step 7.', '7. **Review round N.**');
-    order(content, '### Repair', '### Alignment checkpoint A');
-    const a = section(content, '### Alignment checkpoint A', '### Builder continuity');
+    assert.match(content, /Valid `READY` → run the post-build fit check \(see Post-build fit check\), then step 7\./);
+    order(content, 'run the post-build fit check (see Post-build fit check), then step 7.', '7. **Review round N.**');
+    order(content, '### Repair', '### Post-build fit check');
+    const a = section(content, '### Post-build fit check', '### Builder continuity');
     assert.match(a, /Runs before the upcoming review round `U` starts: after the first build \(`U` is `N`\), and after a review repair/);
   });
 
-  test(`${layout}: factory checkpoint A persists round U and stage review before it dispatches, for normal callers only`, () => {
+  test(`${layout}: factory post-build fit check persists round U and stage review before it dispatches, for normal callers only`, () => {
     const content = read(layout, FACTORY);
-    const a = section(content, '### Alignment checkpoint A', '### Builder continuity');
-    order(a, '0. Normal callers only (the initial build and a review repair). Persist first: set `round` to `U` and stage `review` in `job.json` before any dispatch', '1. Dispatch an independent, read-only reviewer');
+    const a = section(content, '### Post-build fit check', '### Builder continuity');
+    order(a, '0. Normal callers only (the initial build and a review repair). Persist first: set `round` to `U` and stage `review` in `job.json` before any dispatch', '1. Dispatch a fresh, independent, read-only `reviewer`, never Oracle');
     assert.match(a, /so a blocked or interrupted `U` is visible/);
     assert.match(a, /Step 7 writes the same values again when reviews start; that write is idempotent\./);
     assert.match(content, /Resume also runs it, as a resume caller \(see Resume of build and review state\)\./);
@@ -193,52 +192,56 @@ for (const layout of LAYOUTS) {
     assert.doesNotMatch(a, /`VERDICT: PASS`: continue to step 7\./, 'no unconditional step 7 after PASS');
   });
 
-  test(`${layout}: factory step 8 sets the upcoming round before checkpoint A runs after a review repair`, () => {
+  test(`${layout}: factory step 8 sets the upcoming round before post-build fit check runs after a review repair`, () => {
     const content = read(layout, FACTORY);
-    assert.match(content, /Then set `N` to `N \+ 1` \(the upcoming review round `U`\), run checkpoint A for `U` when the repair requires it \(see Repair\), and go to step 7\./);
-    const repair = section(content, '### Repair', '### Alignment checkpoint A');
+    assert.match(content, /Then set `N` to `N \+ 1` \(the upcoming review round `U`\), run the post-build fit check for `U` \(see Repair\), and go to step 7\./);
+    const repair = section(content, '### Repair', '### Post-build fit check');
     assert.match(repair, /Here `Round` is the round just reviewed \(`R`\)\. The upcoming review round is `U`/);
-    assert.match(repair, /Classify the result with the Build status rules, as step 6 does\. A valid `READY`: run alignment checkpoint A for `U` before step 7, unless the repair is a mechanical change after an applicable `PASS`/);
+    assert.match(repair, /Classify the result with the Build status rules, as step 6 does\. A valid `READY`: run the post-build fit check for `U` before step 7 after every completed repair, mechanical ones included/);
+    assert.match(repair, /a `Skipped:` record does not satisfy preview eligibility/);
     assert.match(repair, /Never reuse a PASS after a `CHANGES`\./);
+    order(content, 'Then set `N` to `N + 1` (the upcoming review round `U`)', 'run the post-build fit check for `U` (see Repair)');
+    assert.match(content, /round-<U>\/post-build-fit-<j>\.md/);
   });
 
-  test(`${layout}: factory checkpoint A uses Oracle-or-reviewer, per-round files, and blocks without a reviewer`, () => {
-    const a = section(read(layout, FACTORY), '### Alignment checkpoint A', '### Builder continuity');
-    assert.match(a, /`oracle` when the harness has it configured read-only, otherwise `reviewer` in fresh context/);
-    assert.match(a, /The task line is `alignment checkpoint A: round <U>`/);
-    assert.match(a, /Save the reply as a new file `round-<U>\/alignment-A-<j>\.md`, where `j` is the next free index in that folder\. Never overwrite an earlier reply\./);
+  test(`${layout}: factory post-build fit check is reviewer-only, never Oracle, with per-round files, and blocks without a reviewer`, () => {
+    const a = section(read(layout, FACTORY), '### Post-build fit check', '### Builder continuity');
+    assert.match(a, /a fresh, independent, read-only `reviewer`, never Oracle/);
+    assert.match(a, /The task line is `post-build fit check: round <U>`/);
+    assert.doesNotMatch(a, /Dispatch `?oracle`?/i, 'the post-build fit check never dispatches Oracle');
+    assert.match(a, /Save the reply, which starts `VERDICT:` and carries `Checkpoint: D`, as a new file `round-<U>\/post-build-fit-<j>\.md`, where `j` is the next free index in that folder\. Never overwrite an earlier reply\./);
     assert.match(a, /The current record for a round is its highest-`j` file\./);
-    assert.match(a, /A skipped check is saved the same way with one line, `Skipped: mechanical change after the applicable PASS in round-<U'>\/alignment-A-<j'>\.md`, naming the retained PASS it relies on\./);
-    assert.match(a, /save a file whose first line is `BLOCKED: no independent alignment reviewer`, stage `needs-human` with that reason, and do not start the review round/);
-    assert.doesNotMatch(a, /alignment-A\.md`/, 'the single shared alignment-A.md file must not return');
+    assert.match(a, /A skipped check is saved the same way with one line, `Skipped: mechanical change after the applicable PASS in round-<U'>\/post-build-fit-<j'>\.md`, naming the retained PASS it relies on\./);
+    assert.match(a, /save a file whose first line is `BLOCKED: no independent reviewer`, stage `needs-human` with that reason, and do not start the review round/);
+    assert.doesNotMatch(a, /alignment-A\.md`/, 'the single shared post-build-fit.md file must not return');
   });
 
-  test(`${layout}: factory checkpoint A repairs stay non-expanding and a user decision wins`, () => {
-    const a = section(read(layout, FACTORY), '### Alignment checkpoint A', '### Builder continuity');
-    assert.match(a, /Alignment repair findings \(reviewer findings, not operator requests, not goal authority\)/);
+  test(`${layout}: factory post-build fit check repairs stay non-expanding and a user decision wins`, () => {
+    const a = section(read(layout, FACTORY), '### Post-build fit check', '### Builder continuity');
+    assert.match(a, /Post-build fit repair findings \(reviewer findings, not operator requests, not goal authority\)/);
     assert.match(a, /Repeat until `PASS`, `needs-human`, or `BLOCKED`/);
-    assert.match(a, /using the rules in Fit review for a repair that changes nothing or a finding that returns unchanged/);
-    assert.match(a, /alignment repairs do not use the review-round budget/);
+    assert.match(a, /using the rules in Goal-fit checks for a repair that changes nothing or a finding that returns unchanged/);
+    assert.match(a, /post-build fit repairs do not use the review-round budget/);
     assert.match(a, /`VERDICT: CHANGES` with any finding marked `requires user decision; do not auto-repair`: a user decision wins, even when other findings are repairable/);
-    assert.match(a, /Stage `needs-human` with the reason `alignment decision: <finding>`/);
+    assert.match(a, /Stage `needs-human` with the reason `post-build fit decision: <finding>`/);
     assert.match(a, /`VERDICT: CHANGES` where every finding is repairable/);
     order(a, 'with any finding marked `requires user decision', 'where every finding is repairable');
-    assert.match(a, /\/factory rework <id> <note>` \(checkpoint B classifies it\)/);
-    assert.match(a, /Then run checkpoint A for `U` again\. A `CHANGES` is always followed by a new check\./);
+    assert.match(a, /\/factory rework <id> <note>` \(rework classification classifies it\)/);
+    assert.match(a, /Then run the post-build fit check for `U` again\. A `CHANGES` is always followed by a new check\./);
     assert.doesNotMatch(a, /round limit of|up to 3|3 rounds|three rounds/i);
   });
 
-  test(`${layout}: factory resume pointer keeps alignment findings and points to the resume procedure`, () => {
+  test(`${layout}: factory resume pointer keeps post-build fit findings and points to the resume procedure`, () => {
     const content = read(layout, FACTORY);
     assert.match(content, /\*\*Resume\.\*\* A resumed job decides what runs next with the procedure in Resume of build and review state/);
-    assert.match(content, /Pending alignment findings are never dropped on resume\./);
+    assert.match(content, /Pending post-build fit findings are never dropped on resume\./);
   });
 
   test(`${layout}: factory resume is one branch that captures the stage first and never adds 1 to round`, () => {
     const resume = section(read(layout, FACTORY), '### Resume of build and review state', 'A rerun of a failed stage');
-    assert.match(resume, /Resume is one branch\. It starts by capturing the persisted values: `R` = `round`, `S` = `stage`, and `failed_stage`\. Nothing is written until a branch below says so\./);
+    assert.match(resume, /Resume is one branch\. (?:A job with `previewStep` set resumes through Preview merge first, before any row below\. )?Otherwise it starts by capturing the persisted values: `R` = `round`, `S` = `stage`, and `failed_stage`\. Nothing is written until a branch below says so\./);
     assert.match(resume, /Never add 1 to `round` on resume, because `round` already holds the round in progress\./);
-    assert.match(resume, /A resume caller runs checkpoint A without step 0: it keeps `round` and `stage` as persisted/);
+    assert.match(resume, /A resume caller runs post-build fit check without step 0: it keeps `round` and `stage` as persisted/);
   });
 
   test(`${layout}: decision table: stop conditions come first and never repair or run A`, () => {
@@ -248,27 +251,27 @@ for (const layout of LAYOUTS) {
     assert.match(resume, /a `Not verified:` item in any `round-R\/review-\*\.md`/);
     assert.match(resume, /`decision\.md` starts with `ESCALATE`/);
     assert.match(resume, /step 8's third-review-round rule applies to `R` \(`CHANGES` with the retries already used\)/);
-    assert.match(resume, /the current alignment record for `R` is `CHANGES` with a user decision/);
-    assert.match(resume, /print the reason and its remediation, and stop\. Do not repair, do not run checkpoint A, and do not change `S`/);
+    assert.match(resume, /the current post-build fit record for `R` is `CHANGES` with a user decision/);
+    assert.match(resume, /print the reason and its remediation, and stop\. Do not repair, do not run the post-build fit check, and do not change `S`/);
   });
 
   test(`${layout}: decision table: an authorized repair is recovered only after the stop rules pass`, () => {
     const resume = section(read(layout, FACTORY), '### Resume of build and review state', 'A rerun of a failed stage');
-    assert.match(resume, /\*\*Repair not finished\.\*\* The same `CHANGES` reviews, with no newer READY `build\.md`\. The stop rules above already passed, so the repair is authorized: rerun it with `Round` `R` \(step 8\), then checkpoint A for `R \+ 1` as a normal caller\./);
+    assert.match(resume, /\*\*Repair not finished\.\*\* The same `CHANGES` reviews, with no newer READY `build\.md`\. The stop rules above already passed, so the repair is authorized: rerun it with `Round` `R` \(step 8\), then the post-build fit check for `R \+ 1` as a normal caller\./);
     assert.match(resume, /\*\*Repair finished\.\*\* `round-R\/` holds a `review-\*\.md` with `VERDICT: CHANGES`/);
-    assert.match(resume, /Set `round` to `R \+ 1` and stage `review` \(persist\), then run checkpoint A for `U = R \+ 1` as a normal review-repair caller\. On PASS, step 7 runs for `U`\./);
+    assert.match(resume, /Set `round` to `R \+ 1` and stage `review` \(persist\), then run the post-build fit check for `U = R \+ 1` as a normal review-repair caller\. On PASS, step 7 runs for `U`\./);
   });
 
   test(`${layout}: decision table: needs-human is never converted into a repair on start`, () => {
     const resume = section(read(layout, FACTORY), '### Resume of build and review state', 'A rerun of a failed stage');
-    assert.match(resume, /\*\*`needs-human` with `failed_stage` null\.\*\* A valid BLOCKED `build\.md` with parked records is the parked-task resume, not an alignment stop/);
+    assert.match(resume, /\*\*`needs-human` with `failed_stage` null\.\*\* A valid BLOCKED `build\.md` with parked records is the parked-task resume, not an? post-build fit stop/);
     assert.match(resume, /Any other reason prints its remediation and waits\. A `needs-human` stop is never converted into a repair on start\./);
     assert.doesNotMatch(resume, /needs-human[^\n]*rerun the repair/);
   });
 
-  test(`${layout}: decision table: a resumed prior PASS gets a fresh checkpoint A and then the captured action`, () => {
+  test(`${layout}: decision table: a resumed prior PASS gets a fresh post-build fit check and then the captured action`, () => {
     const resume = section(read(layout, FACTORY), '### Resume of build and review state', 'A rerun of a failed stage');
-    assert.match(resume, /\*\*Reviews exist for `R`\.\*\* An explicit PASS is needed before any review or approval\. Run checkpoint A fresh for `R` as a resume caller, then:/);
+    assert.match(resume, /\*\*Reviews exist for `R`\.\*\* An explicit PASS is needed before any review or approval\. Run post-build fit check fresh for `R` as a resume caller, then:/);
     assert.match(resume, /`PASS`: resume the captured action\./);
   });
 
@@ -290,45 +293,45 @@ for (const layout of LAYOUTS) {
 
   test(`${layout}: decision table: BLOCKED recovery retries through start and never reruns reviews silently`, () => {
     const resume = section(read(layout, FACTORY), '### Resume of build and review state', 'A rerun of a failed stage');
-    assert.match(resume, /`BLOCKED`: stage `needs-human` with the alignment reason\. Retry with `\/factory start <id>` after the cause is fixed\./);
-    assert.match(resume, /A timed-out alignment reviewer is never re-dispatched\. Set `needs-human`, `failed_stage` `null`, and the reason `alignment reviewer timed out after <N> min; it may still be running`/);
+    assert.match(resume, /`BLOCKED`: stage `needs-human` with the post-build fit reason\. Retry with `\/factory start <id>` after the cause is fixed\./);
+    assert.match(resume, /A timed-out post-build fit reviewer is never re-dispatched\. Set `needs-human`, `failed_stage` `null`, and the reason `post-build fit reviewer timed out after <N> min; it may still be running`/);
     assert.match(resume, /The operator confirms it has stopped, then `\/factory start <id>` runs the resume above, which writes a new `j`\./);
   });
 
   test(`${layout}: factory resume of build state recognizes a finished READY build without rerunning the builder`, () => {
     const resume = section(read(layout, FACTORY), '### Resume of build and review state', 'A rerun of a failed stage');
-    assert.match(resume, /A valid `STATUS: READY` newer than `job\.json`: the builder finished this round\. Do not rerun it: go to step 6's READY path \(checkpoint A for `U = R`, then step 7\)/);
+    assert.match(resume, /A valid `STATUS: READY` in `build\.md`, not superseded by a newer `rework-<r>\.md`: the builder finished this round\. Do not rerun it: go to step 6's READY path \(post-build fit check for `U = R`, then step 7\)/);
     order(resume, 'the builder finished this round', 'rework if a `rework-<r>.md` is newer than `build.md`');
   });
 
   test(`${layout}: factory resume table keeps review, approve, awaiting-human, and needs-human actions explicit`, () => {
     const content = read(layout, FACTORY);
-    assert.match(content, /\| `review` \| Review and alignment state resume \(see Resume of build and review state below\)/);
-    assert.match(content, /\| `approve` \| Review and alignment state resume \(see Resume of build and review state below\)\. Only after an explicit PASS, rerun the approval/);
-    assert.match(content, /\| `awaiting-human` \| Print the approver's rationale, the QA record and any human handoff from `qa\.md` \(see QA guidance\)\. Check the current alignment record first: print the `\/factory approve` command only when it is an applicable PASS; otherwise print its remediation \(see Approve step 3\)/);
-    assert.match(content, /Print the reason from `decision\.md`, `merge-conflict\.md`, `bootstrap\.md`, `build\.md`, or the current `round-<N>\/alignment-A-<j>\.md`/);
+    assert.match(content, /\| `review` \| Review and post-build fit state resume \(see Resume of build and review state below\)/);
+    assert.match(content, /\| `approve` \| Review and post-build fit state resume \(see Resume of build and review state below\)\. Only after an explicit PASS, rerun the approval/);
+    assert.match(content, /\| `awaiting-human` \| Print the approver's rationale, the QA record and any human handoff from `qa\.md` \(see QA guidance\)\. Check the current post-build fit record first: print the `\/factory approve` command only when it is an applicable PASS; otherwise print its remediation \(see Approve step 3\)/);
+    assert.match(content, /Print the reason from `decision\.md`, `merge-conflict\.md`, `bootstrap\.md`, `build\.md`, or the current `round-<N>\/post-build-fit-<j>\.md`/);
   });
 
   test(`${layout}: factory approve refuses on missing, CHANGES, BLOCKED, or stale alignment in every mode`, () => {
     const approve = section(read(layout, FACTORY), '## Approve', '## Abandon');
-    assert.match(approve, /Also refuse, in every mode and from `needs-human` too, unless the current alignment record passes/);
-    assert.match(approve, /the highest-`j` `round-<round>\/alignment-A-<j>\.md` for the job's `round` has first line `VERDICT: PASS`, or is a `Skipped:` line that names a `VERDICT: PASS` file/);
-    assert.match(approve, /A `CHANGES` record, a `BLOCKED` record, a missing record, or a record made stale by a later change that needs a new checkpoint under fit-review Freshness refuses/);
+    assert.match(approve, /Also refuse, in every mode and from `needs-human` too, unless the current post-build fit record passes/);
+    assert.match(approve, /the highest-`j` `round-<round>\/post-build-fit-<j>\.md` for the job's `round` has first line `VERDICT: PASS`, or is a `Skipped:` line that names a `VERDICT: PASS` file/);
+    assert.match(approve, /A `CHANGES` record, a `BLOCKED` record, a missing record, or a record made stale by a later change that needs a new post-build fit check under fit-review Freshness refuses/);
     assert.match(approve, /Remediation: a missing, stale, `BLOCKED`, or repairable `CHANGES` record is fixed with `\/factory start <job-id>`/);
     assert.match(approve, /A decision `CHANGES` is answered with `\/factory rework <job-id> <note>` or `\/factory abandon <job-id>`\./);
-    assert.match(approve, /the current alignment record's blocker/);
+    assert.match(approve, /the current post-build fit record's blocker/);
   });
 
-  test(`${layout}: factory rework runs checkpoint B before any file is written and after the refusal check`, () => {
+  test(`${layout}: factory rework runs rework classification R before any file is written and after the refusal check`, () => {
     const content = read(layout, FACTORY);
     const rework = section(content, '`/factory rework <job-id> <note>`:', '## Functional QA');
-    order(rework, '1. Refuse unless stage is', '**Checkpoint B (before any file is written).**');
-    order(rework, '**Checkpoint B (before any file is written).**', '2. `r` = the reserved index');
-    assert.match(rework, /Reserve the next free index `b` of `alignment-B-<b>\.md`/);
-    assert.match(rework, /Save the reply as `alignment-B-<b>\.md` with a header line `Note: <first line of the note>`, the reserved indices, and `Starts at round <N>`, where `N` = `round \+ 1` from `job\.json` as it is now/);
+    order(rework, '1. Refuse unless stage is', '**Rework classification R (before any file is written).**');
+    order(rework, '**Rework classification R (before any file is written).**', '2. `r` = the reserved index');
+    assert.match(rework, /Reserve the next free index `b` of `rework-classification-<b>\.md`/);
+    assert.match(rework, /Save the reply as `rework-classification-<b>\.md` with a header line `Note: <first line of the note>`, the reserved indices, and `Starts at round <N>`, where `N` = `round \+ 1` from `job\.json` as it is now/);
     assert.match(rework, /The gates never change `round`/);
     assert.match(rework, /Each family keeps its own index, and no existing file of any family is overwritten\./);
-    assert.match(rework, /`VERDICT: PASS` with `Classification: repair`: continue with steps 2 to 4/);
+    assert.match(rework, /`CLASSIFICATION: repair`, with no finding marked `requires user decision`: continue with steps 2 to 4/);
     assert.match(rework, /A finding marked `requires user decision; do not auto-repair`, or any `plan change` or `spec change`: do not start the rework/);
     assert.match(rework, /No independent reviewer: stop with `BLOCKED: no independent reviewer`\. The stage stays where it was, and no rework starts\./);
     assert.match(rework, /It classifies the note as `repair`, `plan change`, or `spec change`, and it does not repair the note\./);
@@ -350,7 +353,7 @@ for (const layout of LAYOUTS) {
 
   test(`${layout}: factory routed continuation is pending from the artifacts and ends when round is persisted`, () => {
     const rework = section(read(layout, FACTORY), '`/factory rework <job-id> <note>`:', '## Functional QA');
-    assert.match(rework, /Continuation: a routed rework continues from the plan gate's Confirm\. It is pending while the newest `alignment-B-<b>\.md` has a `Route:` line and `job\.round` is lower than its `Starts at round` value/);
+    assert.match(rework, /Continuation: a routed rework continues from the plan gate's Confirm\. It is pending while the newest `rework-classification-<b>\.md` has a `Route:` line and `job\.round` is lower than its `Starts at round` value/);
     assert.match(rework, /Its Confirm does not run Start's create or resume path, and it does not run the initial build-location setup/);
     assert.match(rework, /A routed job at `awaiting-spec` or `awaiting-plan` resumes at its gate, and its Confirm follows this procedure\./);
   });
@@ -375,27 +378,29 @@ for (const layout of LAYOUTS) {
   test(`${layout}: factory routed doc sync carries qa and optional tasks without broad deletion`, () => {
     const rework = section(read(layout, FACTORY), '`/factory rework <job-id> <note>`:', '## Functional QA');
     assert.match(rework, /if the worktree still has the old unkeyed folder, `git mv` its `qa\.md` into `feature_dir` when that folder has none; if both have one, stop and ask/);
-    assert.match(rework, /Copy `spec\.md` \(when the main checkout has it\) and `plan\.md` from the main checkout's `feature_dir` over the worktree's copies/);
+    assert.match(rework, /Copy `spec\.md` on the spec route only \(by `spec_route`, never by file existence: a plan-only job copies no `spec\.md`, even a stale one\), and `plan\.md`, from the main checkout's `feature_dir` over the worktree's copies/);
     assert.match(rework, /Copy `tasks\.md` when the main checkout has it; when the main checkout lacks it and the worktree has one, remove only that worktree `tasks\.md`/);
     assert.match(rework, /Never copy, delete, or overwrite `qa\.md` or any other file\./);
-    assert.match(rework, /its step 1 removes the old unkeyed folder only after `qa\.md` has moved/);
+    assert.match(rework, /Then run Feature docs commit using its route-specific removal rule; on plan-only, leave the old folder and every unmoved path untouched/);
+    order(rework, 'if the worktree still has the old unkeyed folder', 'Then run Feature docs commit using its route-specific removal rule');
     assert.doesNotMatch(rework, /git rm -r[^\n]*feature_dir/, 'no broad deletion of the feature folder in the sync');
   });
 
   test(`${layout}: factory routed continuation takes N from job.round once and persists it before the builder`, () => {
     const rework = section(read(layout, FACTORY), '`/factory rework <job-id> <note>`:', '## Functional QA');
     order(rework, '4. **Round and note.** Set `N` = `round + 1` from `job.json` now.', '5. Continue with Rework step 4 below.');
-    assert.match(rework, /Compare it with `Starts at round` in `alignment-B-<b>\.md`; if they differ, stop and ask\./);
+    assert.match(rework, /Compare it with `Starts at round` in `rework-classification-<b>\.md`; if they differ, stop and ask\./);
     assert.match(rework, /It persists `round` = `N` and stage `build`, which ends the pending state\./);
     assert.match(rework, /Steps 1 to 4 are idempotent, so a crash before that persist reruns them safely\./);
     const step4 = rework.slice(rework.indexOf('4. Set `round` to `N`, stage `build`'));
     assert.ok(step4.startsWith('4. Set `round` to `N`, stage `build`'), 'Rework step 4 persists round and stage');
+    order(step4, 'Set `round` to `N`, stage `build`', 'Run the Build lanes procedure in rework mode');
   });
 
   test(`${layout}: factory layout lists per-round and per-family alignment files`, () => {
     const content = read(layout, FACTORY);
-    assert.match(content, /round-<N>\/alignment-A-<j>\.md {3}checkpoint A replies, one file each, never overwritten/);
-    assert.match(content, /alignment-B-<b>\.md {5}you, checkpoint B reply on a rework note, with its reserved file indices/);
+    assert.match(content, /round-<N>\/post-build-fit-<j>\.md {3}post-build fit records, one file each, never overwritten/);
+    assert.match(content, /rework-classification-<b>\.md {5}you, the rework classification \(R\) of a user-directed rework note, with its reserved file indices/);
     assert.doesNotMatch(content, /round-<N>\/alignment-A\.md/);
   });
 
@@ -407,14 +412,14 @@ for (const layout of LAYOUTS) {
     assert.doesNotMatch(content, /sha256|content hash|fit hash/i);
   });
 
-  test(`${layout}: build role treats alignment repair findings as CHANGES items and never expands scope`, () => {
+  test(`${layout}: build role treats post-build repair findings as CHANGES items and never expands scope`, () => {
     const content = read(layout, BUILD_ROLE);
-    assert.match(content, /Alignment repair findings in the dispatch context are the same kind of item: fix them within the goals, and never expand scope to satisfy one\./);
+    assert.match(content, /Post-build fit repair findings in the dispatch context are the same kind of item: fix them within the goals, and never expand scope to satisfy one\./);
   });
 
   test(`${layout}: no new round cap or third verdict word in the checkpoint text`, () => {
     // The Factory file keeps its existing three-review-round budget for review repairs, so it is checked
-    // through the checkpoint A, resume, and rework sections only (see the tests above).
+    // through the post-build fit check, resume, and rework sections only (see the tests above).
     for (const file of [BRIEF, IMPLEMENT, FEATURE, FIXES]) {
       const text = read(layout, file);
       assert.doesNotMatch(text, /VERDICT: DECISION|`DECISION`/, `${layout}/${file}`);
@@ -441,7 +446,7 @@ for (const layout of LAYOUTS) {
   test(`${layout}: role table: Oracle is read-only guidance, Planner authors plans, Builder never authors plans`, () => {
     const c = read(layout, IMPLEMENT);
     const oracle = c.split('\n').find((line) => line.startsWith('| Oracle'));
-    assert.match(oracle, /Read-only guidance and feedback only/);
+    assert.match(oracle, /Read-only steering only/);
     assert.match(oracle, /Never authors or edits a plan, approach note, or code, and never builds/);
     const planner = c.split('\n').find((line) => line.startsWith('| Planner'));
     assert.ok(planner, 'Planner row exists');
@@ -453,23 +458,31 @@ for (const layout of LAYOUTS) {
 
   test(`${layout}: brief: reviewers never author or edit, and planner revisions get review and user confirmation`, () => {
     const b = read(layout, BRIEF);
-    assert.match(b, /Read-only guidance: the reviewer, Oracle included, never authors or edits a spec, plan, approach note, or code\. A planner authors any revision\./);
-    assert.match(b, /Reviewer feedback is guidance; the Expansion rule is the only path to added work, and no reviewer changes a goal\./);
-    assert.match(b, /Every alignment dispatch also carries the overall work's summary and goals as context/);
+    assert.match(b, /Read-only guidance: the checker, Oracle included, never authors or edits a spec, plan, approach note, or code\. A planner authors any revision\./);
+    assert.match(b, /Checker feedback is guidance; the Expansion rule is the only path to added work, and no checker changes a goal\./);
+    assert.match(b, /Every dispatch also carries the overall work's summary and goals as context/);
     assert.match(b, /The verbatim original request and explicit amendments remain the authority, and the summary never replaces them\./);
-    assert.match(b, /A planner revision made in response to a finding goes back through an independent read-only review/);
+    assert.match(b, /A planner revision made in response to a finding goes back through an independent read-only check/);
     assert.match(b, /the planner's read-only approach note against the supplied task/);
   });
 
-  test(`${layout}: implement-fixes reviews the planner's approach note before the single builder`, () => {
+  test(`${layout}: implement-fixes runs D right after the builder reports done, before verify and review`, () => {
+    const content = read(layout, FIXES);
+    order(content, 'Dispatch one builder with the bug report', 'Implementation review D: where D applies');
+    order(content, 'Implementation review D: where D applies', '- Verify: rerun');
+    order(content, '- Verify: rerun', '- Review: the independent read-only reviewer');
+    assert.match(content, /run it immediately after the builder declares done, before verification and code review, and again after every repair/);
+  });
+
+  test(`${layout}: implement-fixes has no approach note: a fix skips C`, () => {
     const f = read(layout, FIXES);
-    assert.match(f, /the planner's approach note is reviewed against the bug report/);
+    assert.doesNotMatch(f, /approach note is reviewed against the bug report/);
     assert.doesNotMatch(f, /builder's read-only approach note/);
   });
 
-  test(`${layout}: factory alignment reviewer is read-only guidance and never a plan author`, () => {
+  test(`${layout}: factory fresh reviewer is read-only guidance and never a plan author`, () => {
     const content = read(layout, FACTORY);
-    assert.match(content, /Oracle reads and advises only: it never authors or edits a plan or code\./);
+    assert.match(content, /It reads and advises only: it never authors or edits a plan or code\./);
   });
 }
 
@@ -478,11 +491,11 @@ for (const layout of LAYOUTS) {
 // independent review, and any applicable confirmation authorize it. Fallback reviewers may not; the overall summary and goals travel with every dispatch.
 for (const layout of LAYOUTS) {
   test(`${layout}: factory A routes a justified expansion through the plan gate, not a direct repair`, () => {
-    const a = section(read(layout, FACTORY), '### Alignment checkpoint A', '### Builder continuity');
+    const a = section(read(layout, FACTORY), '### Post-build fit check', '### Builder continuity');
     order(a, 'with a justified expansion (the fit-review Expansion rule) and no decision finding', '`VERDICT: CHANGES` where every finding is repairable');
     assert.match(a, /the expansion changes an accepted plan, so it is not applied directly/);
-    assert.match(a, /Stage `needs-human` with the reason `alignment expansion: <finding>`/);
-    assert.match(a, /checkpoint B classifies it as a plan change, and the plan gate confirms the planner's revision/);
+    assert.match(a, /Stage `needs-human` with the reason `post-build fit expansion: <finding>`/);
+    assert.match(a, /rework classification classifies it as a plan change, and the plan gate confirms the planner's revision/);
   });
 
   test(`${layout}: implement-feature D routes an expansion to the planner and keeps the user confirmation for accepted artifacts`, () => {
@@ -494,8 +507,8 @@ for (const layout of LAYOUTS) {
     const c = read(layout, IMPLEMENT);
     assert.match(c, /the overall work's summary and goals as context \(for a task inside a feature, the whole feature, not only the task\)/);
     const feature = read(layout, FEATURE);
-    assert.match(feature, /Dispatch the independent read-only reviewer with the saved full-feature text and every amendment, the feature's summary and goals as context,/);
-    assert.match(feature, /Each task's checkpoint C also receives the full-feature summary and goals as context, not only the task\./);
+    assert.match(feature, /Dispatch a fresh independent reviewer, never Oracle, with the saved full-feature text and every amendment, the feature's summary and goals as context,/);
+    assert.match(feature, /Each task's goal-fit check C, where it applies, also receives the full-feature summary and goals as context, not only the task\./);
     const factory = read(layout, FACTORY);
     assert.match(factory, /the goal sources, the job's overall summary and goals as context, the accepted spec \(spec route\) or the plan's requirements sections \(plan-only\), the accepted plan, and the brief\./);
     assert.match(factory, /with the original request and every explicit amendment verbatim, the job's overall summary and goals as context, `spec\.md`/);
@@ -507,7 +520,7 @@ for (const layout of LAYOUTS) {
     assert.match(b, /Oracle advice may recommend considering an in-goal expansion .* this advice is not permission to expand scope/);
     assert.match(b, /A fallback reviewer \(not Oracle\) reports a possible expansion as a blocking finding/);
     const factory = read(layout, FACTORY);
-    assert.match(factory, /`oracle` when the harness has it configured read-only, otherwise `reviewer` in fresh context\. Oracle reads and advises only: it never authors or edits a plan or code\./);
+    assert.match(factory, /a fresh, independent, read-only `reviewer`, never Oracle: the post-build fit check is not a goal-fit check\. It reads and advises only: it never authors or edits a plan or code\./);
   });
 }
 
@@ -519,7 +532,7 @@ for (const layout of LAYOUTS) {
     const b = read(layout, BRIEF);
     assert.match(b, /A proposed expansion is never a PASS: its verdict is `VERDICT: CHANGES` with a blocking finding marked `pending expansion; planner revision required`/);
     assert.match(b, /Oracle's stated basis is not authority to implement an unrevised plan\./);
-    assert.match(b, /PASS is possible only after the planner's revision is independently reviewed again, and any applicable human confirmation for an accepted spec or plan is complete\./);
+    assert.match(b, /The revised artifact must pass its applicable goal-fit check before it is offered for human confirmation\. Neither the proposed expansion nor the checker's PASS authorizes implementation; wait for the required human confirmation\./);
     const c = read(layout, IMPLEMENT);
     assert.match(c, /A pending expansion is a `CHANGES`, never a PASS, until the planner's revision is reviewed again\./);
   });
@@ -537,7 +550,7 @@ for (const layout of LAYOUTS) {
     const content = read(layout, FACTORY);
     assert.match(content, /Write the acceptance basis header under the first line, for both `APPROVE` and `ESCALATE`: line 2 `Round: <N>`/);
     const rework = section(content, '`/factory rework <job-id> <note>`:', '## Functional QA');
-    assert.match(rework, /4\. Set `round` to `N`, stage `build`\. If `decision\.md` exists and `decision-<R>\.md` does not, copy `decision\.md` unchanged to `decision-<R>\.md`, where `R` is the round it names\. This is a copy, never a deletion, so the historical decision stays\./);
+    assert.match(rework, /4\. Set `round` to `N`, stage `build`, and retire the active preview attempt[\s\S]*?copy `decision\.md` unchanged to `decision-<R>\.md`, where `R` is the round it names\. This is a copy, never a deletion, so the historical decision stays\./);
   });
 }
 
@@ -564,31 +577,31 @@ test('plan review: shared routing text is identical across src/repo and src/mono
 for (const layout of LAYOUTS) {
   test(`plan review: ${layout} brief names a plan review section before checkpoints A to D`, () => {
     const brief = read(layout, BRIEF);
-    assert.match(brief, /## Plan review/);
-    order(brief, '## Plan review', '## Alignment checkpoints (build flows)');
-    assert.match(brief, /It is not a new checkpoint, and it does not change checkpoints A to D\./);
+    assert.match(brief, /## Plan goal-fit check \(B\)/);
+    order(brief, '## Plan goal-fit check (B)', '## Checkpoints and dispatch');
+    assert.match(brief, /It is letter B\. It is not a separate checkpoint\./);
   });
 
   test(`plan review: ${layout} brief lists what is excluded and resists evasion by format`, () => {
     const brief = read(layout, BRIEF);
-    assert.match(brief, /It excludes bookkeeping-only in-session todos, single-task approach notes already covered by checkpoint C, and trivial or focused single-file work with no consequential execution plan\./);
-    assert.match(brief, /Substance decides, not format: a consequential scope, approach, requirement, or acceptance change cannot escape review by being called a todo, note, or single-file edit\./);
+    assert.match(brief, /It excludes bookkeeping-only in-session todos, single-task approach notes already covered by C, and trivial or focused single-file work with no consequential execution plan\./);
+    assert.match(brief, /Substance decides, not format: a consequential scope, approach, requirement, or acceptance change cannot escape the check by being called a todo, note, or single-file edit\./);
   });
 
   test(`plan review: ${layout} brief fixes the exact reply labels for a plan review`, () => {
     const brief = read(layout, BRIEF);
-    assert.match(brief, /the first line is `VERDICT: PASS` or `VERDICT: CHANGES`\. The second line is `Review: plan review`\. The third is `Reviewed inputs: <plan and authoritative sources>`/);
+    assert.match(brief, /the first line is `VERDICT: PASS` or `VERDICT: CHANGES`\. The second line is `Checkpoint: B`\. The third is `Reviewed inputs: <plan and authoritative sources>`/);
   });
 
   test(`plan review: ${layout} brief applies expansion, planner, independence, baseline, and human gates by reference`, () => {
     const brief = read(layout, BRIEF);
     assert.match(brief, /The expansion rule, planner authorship of revisions, independence, the baseline, and the human gates apply by reference\./);
-    assert.match(brief, /A revised plan is reviewed again before PASS\./);
+    assert.match(brief, /A revised plan is checked again before PASS\./);
   });
 
   test(`plan review: ${layout} brief makes the coordinator own freshness and reuse, with no duplicate from the entry point`, () => {
     const brief = read(layout, BRIEF);
-    assert.match(brief, /The coordinator owns freshness and reuse: it reuses an applicable PASS only as the Freshness rule allows, and a skill entry point alone never starts a second review\./);
+    assert.match(brief, /The coordinator owns freshness and reuse: it reuses an applicable PASS only as the Freshness rule allows, and a skill entry point alone never starts a second check\./);
   });
 
   test(`plan review: ${layout} subagent-workflow has one routing section and orders plan changes`, () => {
@@ -597,8 +610,8 @@ for (const layout of LAYOUTS) {
     const sec = section(s, '## Plan and Spec Changes', '## Quality Gates');
     assert.match(sec, /An ordinary repair \(a fix inside the accepted plan and goals\) stays with the builder or specialist that owns the files/);
     assert.match(sec, /the planner authors the revision/);
-    order(sec, 'the planner authors the revision', 'independent plan review (fit-review, Plan review)');
-    order(sec, 'independent plan review (fit-review, Plan review)', 'applicable existing confirmation');
+    order(sec, 'the planner authors the revision', 'a plan goal-fit check (B) (fit-review)');
+    order(sec, 'a plan goal-fit check (B) (fit-review)', 'applicable existing confirmation');
     order(sec, 'applicable existing confirmation', 'resume the affected work');
     assert.match(sec, /verbatim original request and explicit amendments/);
     assert.match(sec, /overall summary and goals as context/);
@@ -610,29 +623,29 @@ for (const layout of LAYOUTS) {
 
   test(`plan review: ${layout} subagent-workflow gates plans and bypasses and follows the calling reviewer contract`, () => {
     const s = read(layout, SUBWF);
-    assert.match(s, /Every plan must pass plan review \(fit-review, Plan review\) before implementation begins/);
+    assert.match(s, /Every plan must pass the plan goal-fit check \(B\) \(fit-review\) before implementation begins/);
     assert.match(s, /A standalone Planner-to-Implementer handoff is a bypass: it must get the plan gate and classify each feedback item/);
-    assert.match(s, /A reviewer dispatched under a goal-fit or alignment contract follows that contract's reply format, not the generic review summary/);
+    assert.match(s, /A reviewer dispatched under a goal-fit check or review contract follows that contract's reply format, not the generic review summary/);
   });
 
   test(`plan review: ${layout} writing-plans gates execution-ready handoff on an explicit PASS`, () => {
     const w = read(layout, WRITING);
     order(w, '## Plan Review Before Handoff', '## Execution Handoff');
     assert.match(w, /The plan is execution-ready only after an explicit PASS and any applicable human confirmation/);
-    assert.match(w, /A revised plan is reviewed again before it is handed off/);
+    assert.match(w, /A revised plan is checked again before it is handed off/);
   });
 
   test(`plan review: ${layout} executing-plans checks review evidence, classifies feedback, and reroutes partner plan updates`, () => {
     const e = read(layout, EXEC);
-    assert.match(e, /check for applicable plan review evidence: an explicit PASS for this plan \(fit-review, Plan review\)/);
+    assert.match(e, /check for applicable plan goal-fit evidence: an explicit B PASS for this plan \(fit-review\)/);
     assert.match(e, /Classify each feedback item first: an ordinary repair stays within the plan; a plan or spec change follows Plan and Spec Changes in subagent-workflow/);
     assert.doesNotMatch(e, /^- Partner updates the plan based on your feedback$/m, 'bare partner line must be rerouted');
-    assert.match(e, /- Partner updates the plan based on your feedback: Planner revises it → independent plan review → applicable existing confirmation → resume the affected work\. The partner's amendment remains the authoritative goal input\./);
+    assert.match(e, /- Partner updates the plan based on your feedback: Planner revises it → plan goal-fit check \(B\) → applicable existing confirmation → resume the affected work\. The partner's amendment remains the authoritative goal input\./);
   });
 
   test(`plan review: ${layout} subagent-driven entry requires an explicit plan review PASS AND any applicable confirmation`, () => {
     const para = section(read(layout, SDD), '## Direct Entry and Plan Changes', '## The Process');
-    assert.match(para, /starts only from a plan that has an explicit plan review PASS and any applicable existing confirmation/);
+    assert.match(para, /starts only from a plan that has an explicit plan goal-fit check \(B\) PASS and any applicable existing confirmation/);
     assert.doesNotMatch(para, /explicit plan review PASS,? or from a plan the user has confirmed/, 'PASS-or-confirmation bypass');
     assert.doesNotMatch(para, /PASS or /, 'no alternative to the PASS');
   });
@@ -640,7 +653,7 @@ for (const layout of LAYOUTS) {
   test(`plan review: ${layout} subagent-driven process diagram classifies every finding before any implementer repair`, () => {
     const dot = read(layout, SDD).match(/```dot\s*\ndigraph process[\s\S]*?```/)[0];
     assert.match(dot, /"Implementer subagent implements, tests, self-reviews; no staging or commits" -> "Consequential change needed\?";/);
-    assert.match(dot, /"Consequential change needed\?" -> "Exit: coordinator sends to planner \(revision, plan review, confirmation\)" \[label="yes"\];/);
+    assert.match(dot, /"Consequential change needed\?" -> "Exit: coordinator sends to planner \(revision, plan goal-fit check \(B\), confirmation\)" \[label="yes"\];/);
     assert.match(dot, /"Consequential change needed\?" -> "Dispatch spec reviewer with reconciled scoped changes, including relevant uncommitted and untracked paths" \[label="no"\];/);
     assert.match(dot, /"Spec reviewer subagent confirms code matches spec\?" -> "Implementer subagent fixes spec gaps" \[label="no: ordinary gap"\];/);
     assert.match(dot, /"Spec reviewer subagent confirms code matches spec\?" -> "Exit: [^"]*" \[label="no: consequential gap"\];/);
@@ -655,7 +668,7 @@ for (const layout of LAYOUTS) {
 
   test(`plan review: ${layout} subagent-driven example runs the plan gate before extracting or dispatching`, () => {
     const ex = section(read(layout, SDD), '## Example Workflow', '## Advantages');
-    order(ex, '[Check the explicit plan review PASS and any applicable confirmation first: stop if either is missing]', '[Extract all 5 tasks with full text and context]');
+    order(ex, '[Check the explicit plan goal-fit check (B) PASS and any applicable confirmation first: stop if either is missing]', '[Extract all 5 tasks with full text and context]');
     order(ex, '[Extract all 5 tasks with full text and context]', '[Dispatch implementation subagent with full task text + context]');
   });
 
@@ -696,29 +709,29 @@ for (const layout of LAYOUTS) {
     assert.match(impl, /## Scope Changes/);
     assert.match(impl, /Return the proposed expansion to the coordinator/);
     assert.match(read(layout, SDD_SPEC), /## Goal Context/);
-    assert.match(read(layout, SDD_QUAL), /follow the reply format of any goal-fit or alignment contract/);
+    assert.match(read(layout, SDD_QUAL), /follow that contract's reply format instead of that template/);
   });
 
   test(`plan review: ${layout} plan adaptation orders planner, plan review PASS, confirmation, then execution, with plan-specific repairs and freshness`, () => {
-    const sec = section(read(layout, BRIEF), '## Plan review', '## Alignment checkpoints (build flows)');
-    const adapt = sec.slice(sec.indexOf('Plan-specific adaptation.'));
+    const sec = section(read(layout, BRIEF), '## Plan goal-fit check (B)', '## Checkpoints and dispatch');
+    const adapt = sec.slice(sec.indexOf("A plan's order is:"));
     assert.ok(adapt.length > 0, 'adaptation paragraph exists');
-    order(adapt, 'planner revision', 'an independent plan review PASS');
-    order(adapt, 'an independent plan review PASS', 'the applicable human confirmation');
+    order(adapt, 'planner revision', 'a B PASS');
+    order(adapt, 'a B PASS', 'the applicable human confirmation');
     order(adapt, 'the applicable human confirmation', 'then execution.');
-    assert.match(adapt, /A justified expansion is never executed on a plan review PASS alone: the revised plan must PASS plan review and receive its applicable confirmation first\./);
-    assert.match(adapt, /Repairs from a plan review go to the planner, not the builder\./);
-    assert.match(adapt, /The record of a plan review PASS is the conversation or the existing progress record, noting the plan version reviewed; no new file or schema is required/);
-    assert.match(adapt, /the by-file record in Freshness does not apply to plan reviews\./);
+    assert.match(adapt, /A justified expansion is never executed on a B PASS alone: the revised plan must pass B and receive its applicable confirmation first\./);
+    assert.match(adapt, /Repairs from B go to the planner, not the builder\./);
+    assert.match(adapt, /The record of a B PASS is the conversation or the existing progress record, noting the plan version checked; no new file or schema is required/);
+    assert.match(adapt, /the by-file record in Freshness does not apply to B\./);
   });
 
   test(`plan review: ${layout} checkpoints A to D keep their exact baseline bullets and order`, () => {
-    const sec = section(read(layout, BRIEF), '## Alignment checkpoints (build flows)', '## Output');
+    const sec = section(read(layout, BRIEF), '## Checkpoints and dispatch', '## Rules');
     const bullets = [
-      '- **A, before review:** after a build round or a batch of repairs, before the review round starts. Factory uses it.',
-      '- **B, before user-directed rework:** the user\'s rework note, before any build restarts. It reviews the note and does not repair it.',
-      '- **C, before the first build of a task:** the planner\'s read-only approach note against the supplied task, before any edit. `/implement`, `/implement-feature`, and `/implement-fixes` use it.',
-      '- **D, after reconciliation:** the whole feature\'s changes against the full-feature text, before aggregate verification and review. `/implement-feature` uses it.',
+      '- **A, spec goal-fit check:** the spec, before the spec gate, and again after any spec change.',
+      '- **B, plan goal-fit check:** the written plan, before the plan gate or execution, and again after any plan change. See the section above.',
+      '- **C, approach goal-fit check:** the planner\'s read-only approach note against the supplied task, before the task\'s first build. Applicability above governs it.',
+      '- **D, implementation review:** runs immediately after the builder declares done (after reconciling multiple builders, if any), before verification and code review, and again after every repair. Applicability above governs it.',
     ];
     for (const b of bullets) assert.ok(sec.includes(b), `A-D bullet kept: ${b.slice(0, 40)}`);
     for (let i = 1; i < bullets.length; i++) order(sec, bullets[i - 1], bullets[i]);
@@ -734,30 +747,30 @@ for (const layout of LAYOUTS) {
 
   test(`plan review: ${layout} agent snippets: planner authors revisions, reviewer follows the calling contract, feature builder gates the bypass`, () => {
     assert.match(read(layout, PLANNER_SNIP), /You author every plan revision: revise only the listed findings within the goals and return the revised plan\. Reviewers and Oracle never author or edit plans\./);
-    assert.match(read(layout, REVIEWER_SNIP), /When dispatched under a goal-fit or alignment contract, follow that contract's reply format/);
+    assert.match(read(layout, REVIEWER_SNIP), /When dispatched under a goal-fit check or review contract, follow that contract's reply format/);
     const fb = read(layout, BUILDER_SNIP);
     assert.match(fb, /A standalone Planner-to-Implementer handoff is a bypass: it needs the same plan gate and feedback classification/);
   });
 
   test(`plan review: ${layout} CHANGELOG and README extend the pending entries with plan review`, () => {
     assert.match(read('.', 'CHANGELOG.md'), /Plan review/);
-    assert.match(read('.', 'README.md'), /Plan review/);
+    assert.match(read('.', 'README.md'), /Plan goal-fit check \(B\)/);
   });
 }
 
 test('parity: the checkpoint wording in implement-feature and implement-fixes matches across layouts', () => {
   for (const sentence of [
     'Only the explicit `VERDICT: PASS` releases aggregate verification and review.',
-    'With no independent reviewer, aggregate acceptance is `BLOCKED`.',
+    'With no fresh independent reviewer, aggregate acceptance is `BLOCKED`.',
   ]) {
     for (const layout of LAYOUTS) assert.ok(read(layout, FEATURE).includes(sentence), `${layout} feature: ${sentence}`);
   }
   for (const layout of LAYOUTS) {
-    assert.ok(read(layout, FIXES).includes('approach checkpoint C of [implement.md](implement.md)'), `${layout} fixes`);
+    assert.ok(read(layout, FIXES).includes('Determine whether C applies using'), `${layout} fixes`);
   }
 });
 
-test('parity: factory SKILL checkpoint A, repair, resume, approve, and rework blocks are identical across layouts', () => {
+test('parity: factory SKILL post-build fit check, repair, resume, approve, and rework blocks are identical across layouts', () => {
   const block = (layout) => section(read(layout, FACTORY), '### Repair', '### Builder continuity');
   assert.equal(block('src/repo'), block('src/monorepo'));
   const resume = (layout) => section(read(layout, FACTORY), '### Resume of build and review state', 'A rerun of a failed stage');

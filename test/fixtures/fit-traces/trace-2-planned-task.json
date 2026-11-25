@@ -1,0 +1,37 @@
+{
+  "trace": 2,
+  "title": "planned task with an accepted plan: C before the first build, then D after reconciliation",
+  "expected_sequence": ["routing", "approach-C-check", "round-1-build", "implementation-D", "human-confirmation-separate"],
+  "steps": [
+    {
+      "id": "routing",
+      "file": ".agents/skills/autonomous-mode/SKILL.md",
+      "must": ["Autonomous mode never picks an agent: each task routes to its specialist by its content", "\\*\\*Goal-fit checks and reviews\\*\\* are independent and read-only"],
+      "must_not": ["defaults? to (the )?implementer"]
+    },
+    {
+      "id": "approach-C-check",
+      "file": ".claude/prompt-snippets/implement.md",
+      "must": ["\\*\\*Approach goal-fit check C \\(before the first build of a task, where C applies", "Run goal-fit check C with its brief", "Oracle when it is available read-only, otherwise a fresh reviewer\\. The planner's self-review does not count\\."],
+      "must_not": ["Dispatch the independent read-only reviewer with the checkpoint C brief"],
+      "after": [["Approach goal-fit check C (before the first build of a task", "**Round 1 (build):**"]]
+    },
+    {
+      "id": "round-1-build",
+      "file": ".claude/prompt-snippets/implement.md",
+      "must": ["Where C applies, only the explicit `VERDICT: PASS` releases the round-1 build", "the approved approach note for its lane \\(only where C applied\\)"]
+    },
+    {
+      "id": "implementation-D",
+      "file": ".claude/prompt-snippets/implement-feature.md",
+      "must": ["\\*\\*Implementation review D\\*\\* \\(before aggregate verification and review, where D applies", "Dispatch a fresh independent reviewer, never Oracle, with", "Only the explicit `VERDICT: PASS` releases aggregate verification and review\\."],
+      "after": [["Implementation review D", "Run implement.md steps 3, 4 and 5"]]
+    },
+    {
+      "id": "human-confirmation-separate",
+      "file": ".claude/rules-snippets/fit-review.md",
+      "must": ["Human spec and plan confirmation stays separate and mandatory\\.", "Oracle steers: it runs only goal-fit checks A, B, and C, read-only\\."],
+      "must_not": ["Oracle may approve", "Oracle approves"]
+    }
+  ]
+}

@@ -136,8 +136,8 @@ How will we measure the success of this feature?
 ## References
 
 - [Related Issue]({{ISSUE_TRACKER_URL}})
-- [Design Document](link)
-- [Technical RFC](link)
+- Design Document: `link`
+- Technical RFC: `link`
 
 ---
 

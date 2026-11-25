@@ -1,0 +1,23 @@
+{
+  "description": "Detector fixtures for Oracle authority in sentences. must_flag sentences give Oracle review, approval, scope, publication, merge, or D authority, and must be reported. A negation counts only when it sits between Oracle (the subject) and the authority verb, so 'Without consultation, Oracle approves' is flagged. must_pass sentences are prohibitions or read-only steering.",
+  "must_flag": [
+    "`oracle` runs D.",
+    "Oracle runs D but never merges.",
+    "Oracle approves the spec gate.",
+    "Oracle may ACCEPT the implementation review.",
+    "Oracle merges the branch when checks are green.",
+    "Oracle approves without consultation.",
+    "Without consultation, Oracle approves the release.",
+    "Oracle, without consultation, approves the release.",
+    "Oracle is not consulted and approves the release.",
+    "Oracle never consults and approves the release.",
+    "Oracle is the code reviewer for every change."
+  ],
+  "must_pass": [
+    "Oracle steers: it runs only goal-fit checks A, B, and C, read-only.",
+    "Oracle never runs D, code review, or the post-build fit check, and it never approves a human gate, a scope expansion, a publication, or a merge.",
+    "Oracle never approves the release without consultation.",
+    "A fresh independent reviewer, never Oracle, runs D.",
+    "Oracle advice may recommend considering an in-goal expansion; this advice is not permission to expand scope."
+  ]
+}

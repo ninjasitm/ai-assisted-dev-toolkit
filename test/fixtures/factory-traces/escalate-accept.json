@@ -1,0 +1,9 @@
+{
+  "name": "the same third-round CHANGES on one lens: ordinary publication accepts the operator's explicit answer to the current-round ESCALATE once every other gate passes; preview refuses it because eligibility needs every lens PASS",
+  "job": { "round": 3, "lenses": { "code": "CHANGES", "security": "PASS" }, "decision": "ESCALATE", "decision_round": 3 },
+  "gates": { "no_missing_or_blocked_lens": true, "goal_fit_gates_pass": true, "no_parked_work": true, "post_build_fit_pass": true, "qa_rules_pass": true },
+  "cases": [
+    { "name": "ordinary route", "preview": false, "operator_answer": "accept the escalation", "accepted": true, "published": true },
+    { "name": "preview route", "preview": true, "operator_answer": "accept the escalation", "accepted": false, "stage": "needs-human", "eligibility_failure": "lens code is CHANGES, not PASS", "merged": false }
+  ]
+}

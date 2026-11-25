@@ -8,6 +8,6 @@ description: "Subagent workflow patterns and orchestrator-first approach. Loaded
 Follow the rules defined in [.claude/rules-snippets/subagent-workflow.md](../../.claude/rules-snippets/subagent-workflow.md).
 
 Key points:
-- Default to orchestrator-first for non-trivial work (2+ of research, planning, implementation, testing, review); use single agent only for focused single-file tasks without a consequential execution plan (plan review applies to those).
+- Default to orchestrator-first for non-trivial work (2+ of research, planning, implementation, testing, review); use single agent only for focused single-file tasks without a consequential execution plan (the plan goal-fit check (B) applies to those).
 - Run parallelization analysis before dispatching: build dependency graph, apply independence test, group by domain, and dispatch accordingly.
 - Every implementation must pass Reviewer before proceeding; coordinators should not skip review even for "simple" changes.

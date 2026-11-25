@@ -1,0 +1,14 @@
+{
+  "name": "feature docs commit: a path staged between the index check and the commit stays staged and is absent from the commit; an empty changed set skips the commit",
+  "route": "plan-only",
+  "feature_dir": "docs/features/PROJ-9-export",
+  "index_check": { "allowed": ["docs/features/PROJ-9-export/plan.md"], "staged_before": ["docs/features/PROJ-9-export/plan.md"], "passed": true },
+  "events": [
+    { "step": "stage-intended", "command": "git add -- docs/features/PROJ-9-export/plan.md" },
+    { "step": "unrelated-stage-after-check", "staged_by_other": "docs/other-feature/notes.md" },
+    { "step": "recheck-index", "staged": ["docs/features/PROJ-9-export/plan.md", "docs/other-feature/notes.md"], "allowed_only": false, "action": "refuse, commit nothing" }
+  ],
+  "commit_collect": { "changed_paths": ["docs/features/PROJ-9-export/plan.md"], "command": "git --literal-pathspecs commit --only -m \"docs: feature docs for 009-export\" -- docs/features/PROJ-9-export/plan.md", "commit_contains": ["docs/features/PROJ-9-export/plan.md"], "staged_remaining": [] },
+  "race_case": { "changed_paths": ["docs/features/PROJ-9-export/plan.md"], "staged_between_check_and_commit": ["docs/other-feature/notes.md"], "commit_contains": ["docs/features/PROJ-9-export/plan.md"], "commit_absent": ["docs/other-feature/notes.md"], "staged_remaining": ["docs/other-feature/notes.md"] },
+  "empty_case": { "changed_paths": [], "commit": false, "reason": "skip when the set is empty" }
+}

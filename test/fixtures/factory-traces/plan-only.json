@@ -1,0 +1,16 @@
+{
+  "name": "plan-only Factory job (intake confirmed the plan-only route)",
+  "config": { "APPROVAL_MODE": "human", "MERGE_MODE": "local", "DEFAULT_BRANCH": "main" },
+  "events": [
+    { "step": "intake-gate", "choice": 1, "route": "plan-only", "writes": ["intake.md"] },
+    { "step": "create-job", "stage": "plan", "spec_route": "plan-only", "writes": ["job.json"] },
+    { "step": "dispatch", "agent": "planner", "mode": "plan", "reads": ["intake.md"], "writes": ["plan.md", "tasks.md?"] },
+    { "step": "plan-size", "size": "small", "reads": ["plan.md"] },
+    { "step": "plan-gate-fit", "agent": "reviewer", "task": "goal-fit check: plan", "reads": ["intake.md", "plan.md"], "verdict": "VERDICT: PASS" },
+    { "step": "plan-gate", "choice": 1, "reads": ["plan.md"] },
+    { "step": "tracking", "tracking": "none" },
+    { "step": "build-location", "worktree": true, "copies": ["plan.md"] },
+    { "step": "feature-docs-commit", "writes": ["feature docs on factory/<id>"] },
+    { "step": "build", "agent": "implementer", "mode": "build", "reads": ["plan.md"], "writes": ["build.md", "qa.md"] }
+  ]
+}

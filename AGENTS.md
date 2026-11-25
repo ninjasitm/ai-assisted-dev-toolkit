@@ -263,6 +263,18 @@ The toolkit includes 40 pre-installed universal skills in `src/repo/.agents/skil
 
 For toolkit-maintainer work, branch from the current `dev` branch, including release preparation; `main` is the production branch and is a work base only when the user explicitly asks to patch a production issue. Keep `dev` synchronized with `main`: promptly backport or otherwise safely sync every change made on `main`—including production patches and release bookkeeping—back to `dev` after deployment. Preserve the repository’s normal review/approval gates and use a non-destructive sync; do not overwrite divergent work. If synchronization cannot be completed safely, stop and report the divergence for resolution.
 
+### Maintainer change loop
+
+Every toolkit-maintainer change beyond a trivial fix (typo, version bump, isolated doc line) runs a Factory-style loop before it is committed for a PR, merged or released:
+
+1. **Requirements** — Save the user's request(s) verbatim, plus later decisions, in a scratchpad requirements file. That file is the review baseline.
+2. **Build** — Builders own disjoint paths. For shipped template changes, update both `src/repo` and `src/monorepo`; for maintainer-only changes, leave the templates untouched. Update the CHANGELOG, `package.json` version and `bin/skill-integrity.manifest.json` when affected.
+3. **Verify** — `npm test` and `scripts/check-parity.sh` exit 0 on the settled tree. Record the exact commands and exit codes.
+4. **Review** — Fresh, independent, read-only reviewers run in parallel, one per applicable lens: code, security, and ux (instruction clarity for operators and agents). A further reviewer checks the change against the requirements file. Each reply starts with `VERDICT:`. A builder never reviews its own work, and switching roles inside one session does not count as fresh context.
+5. **Repair** — Send `CHANGES` findings back to the builder session that owns them. Then rerun verification and re-review the affected lenses, and repeat until every lens returns PASS. After three review rounds, only blocker findings, or findings that touch something the user asked for, reopen a lens. Record other majors as follow-up issues and list them at Accept. If the same area keeps drawing new findings, simplify it rather than adding more procedure.
+6. **Approve** — A fresh approver checks the final diff, the evidence and every lens verdict, then returns APPROVE or CHANGES. On `CHANGES`, return to Repair, verify the settled tree, repeat the affected reviews, and get a fresh approval before Accept.
+7. **Accept** — Report to the user with the evidence and wait. Commit, push, PR, merge, release and deploy each need the user's explicit go-ahead, and the branch and sync rules above still apply.
+
 ## Working on This Repository
 
 When modifying templates:

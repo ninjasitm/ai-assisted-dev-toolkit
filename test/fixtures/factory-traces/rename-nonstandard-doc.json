@@ -1,0 +1,10 @@
+{
+  "name": "spec-route keyed rename with a tracked nonstandard doc design.md: the old folder is removed only after every tracked old path has a keyed counterpart; a missing counterpart stops the docs commit and is named; the deletion is never committed without it",
+  "route": "spec",
+  "old_feature_dir": "docs/features/export",
+  "feature_dir": "docs/features/PROJ-9-export",
+  "tracked_before": ["docs/features/export/spec.md", "docs/features/export/plan.md", "docs/features/export/qa.md", "docs/features/export/design.md"],
+  "build_location_after_rename": ["docs/features/PROJ-9-export/spec.md", "docs/features/PROJ-9-export/plan.md", "docs/features/PROJ-9-export/qa.md"],
+  "counterpart_check": { "old": "docs/features/export/design.md", "keyed_counterpart": null, "result": "stop", "named": "docs/features/export/design.md", "deletion_committed": false, "commit": false },
+  "counterpart_fixed": { "old": "docs/features/export/design.md", "copied_to": "docs/features/PROJ-9-export/design.md", "keyed_counterpart": "docs/features/PROJ-9-export/design.md", "result": "continue", "deletion_committed": true, "commit": true }
+}

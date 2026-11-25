@@ -19,31 +19,6 @@ const CLI = path.join(ROOT, 'bin', 'cli.js');
 const LAYOUTS = ['repo', 'monorepo'];
 const ENVS = ['claude', 'codex', 'copilot', 'cursor', 'opencode'];
 
-// Known broken links that other in-flight work owns. Matched by file (relative to the layout
-// root) and target as written, in both layouts. Remove an entry once its owner fixes it;
-// the stale-entry test fails when one no longer matches.
-const ALLOWLIST = [
-  // TODO(owner: src/*/AGENTS.md fixers): the structure index links to other harnesses'
-  // directories. A scoped install keeps AGENTS.md but not those directories.
-  ...['.claude/commands/', '.claude/rules/', '.cursor/agents/', '.cursor/commands/', '.cursor/rules/',
-    '.github/agents/', '.github/instructions/', '.github/instructions/documentation.instructions.md',
-    '.github/prompts/', '.opencode/agents/', '.opencode/commands/', '.opencode/opencode.jsonc',
-    '.opencode/rules/']
-    .map((target) => ({ file: 'AGENTS.md', target })),
-  // TODO(owner: unassigned): create-skill examples name a script and reference file the new skill
-  // creates. The lines are prose examples, not links to shipped files.
-  ...['references/REFERENCE.md', 'scripts/script.ps1']
-    .map((target) => ({ file: '.claude/prompt-snippets/create-skill.md', target })),
-  // TODO(owner: unassigned): docs scaffold index links to example documents that do not ship.
-  { file: 'docs/architecture/README.md', target: './0001-example-decision.md' },
-  ...['2025-11.md', '2025-12.md', '2026-01.md']
-    .map((target) => ({ file: 'docs/fixes/README.md', target })),
-  // TODO(owner: unassigned): template README and Copilot instructions link to other harnesses' directories.
-  { file: 'README.md', target: '.cursor/rules/' },
-  { file: 'README.md', target: '.github/copilot-instructions.md' },
-  { file: '.github/copilot-instructions.md', target: '../.cursor/rules/' },
-];
-
 const LINK = /\[[^\]\n]*\]\(([^)\s]+)(?:\s+"[^"\n]*")?\)/g;
 const IMPORT = /^@(\S+)$/gm;
 
@@ -101,22 +76,18 @@ function scanLinks(root) {
   return broken;
 }
 
-function isAllowlisted({ file, target }) {
-  return ALLOWLIST.some((entry) => entry.file === file && entry.target === target);
-}
-
 function describe(broken) {
   return broken.map(({ file, target }) => `  ${file} -> ${target}`).join('\n');
 }
 
 for (const layout of LAYOUTS) {
   test(`links: every relative link and @import in src/${layout} resolves`, () => {
-    const broken = scanLinks(path.join(ROOT, 'src', layout)).filter((link) => !isAllowlisted(link));
+    const broken = scanLinks(path.join(ROOT, 'src', layout));
     assert.deepEqual(broken, [], `broken links in src/${layout}:\n${describe(broken)}`);
   });
 }
 
-// Each scoped install is built once and shared by the dangling-link test and the stale-entry check.
+// Each scoped install is built once and shared by the dangling-link tests.
 const installs = new Map();
 function scopedInstall(layout, env) {
   const key = `${layout}/${env}`;
@@ -137,18 +108,8 @@ for (const layout of LAYOUTS) {
     test(`links: scoped ${layout} install for --env ${env} has no dangling links`, () => {
       const install = scopedInstall(layout, env);
       assert.equal(install.status, 0, install.output);
-      const broken = scanLinks(install.dir).filter((link) => !isAllowlisted(link));
+      const broken = scanLinks(install.dir);
       assert.deepEqual(broken, [], `dangling links after --env ${env} ${layout} install:\n${describe(broken)}`);
     });
   }
 }
-
-test('links: every allowlist entry still matches a real broken link', () => {
-  const found = [
-    ...LAYOUTS.flatMap((layout) => scanLinks(path.join(ROOT, 'src', layout))),
-    ...LAYOUTS.flatMap((layout) => ENVS.flatMap((env) => scanLinks(scopedInstall(layout, env).dir))),
-  ];
-  const stale = ALLOWLIST.filter((entry) =>
-    !found.some(({ file, target }) => file === entry.file && target === entry.target));
-  assert.deepEqual(stale, [], 'remove stale allowlist entries');
-});

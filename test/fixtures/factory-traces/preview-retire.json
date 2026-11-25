@@ -1,0 +1,19 @@
+{
+  "name": "ready preview; accepted rework retires it; the interrupted new round resumes; old identity is refused",
+  "config": { "APPROVAL_MODE": "human", "MERGE_MODE": "local", "DEFAULT_BRANCH": "main" },
+  "before": {
+    "stage": "needs-human", "substate": "preview", "previewStep": "ready", "round": 1,
+    "previewRound": 1, "previewJobSha": "a1b2c3", "previewCommit": "d4e5f6",
+    "previewRunning": "d4e5f6", "previewStackName": "dev-stack", "previewStackUrl": "http://localhost:3300",
+    "previewFailure": null, "previewRollback": "none", "previewHistory": []
+  },
+  "events": [
+    { "step": "rework", "note": "fix contrast on the export button", "writes": ["rework-2.md"],
+      "retire": ["substate", "previewStep", "previewRunning", "previewStackName", "previewStackUrl", "previewFailure", "previewRollback"],
+      "append": { "history": { "round": 1, "previewCommit": "d4e5f6", "previewRunning": "d4e5f6" } },
+      "stage": "build", "round": 2, "single_write": true },
+    { "step": "build", "agent": "implementer", "mode": "rework", "interrupted": true, "reads": ["rework-2.md"], "writes": ["build.md (partial)"] },
+    { "step": "start", "resume": "build", "round": 2, "reads": ["rework-2.md", "build.md"], "dispatch": "rework build for round 2" },
+    { "step": "approve-attempt", "command": "/factory approve 001-export", "allowed": false, "reason": "no ready preview for round 2" }
+  ]
+}

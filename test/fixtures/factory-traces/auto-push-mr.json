@@ -1,0 +1,16 @@
+{
+  "name": "auto job under push-mr (forge merge stays human)",
+  "config": { "APPROVAL_MODE": "auto", "MERGE_MODE": "push-mr", "DEFAULT_BRANCH": "main" },
+  "job": { "id": "007-export-csv", "stage": "approve", "round": 2, "mr": null, "approvalMode": "auto" },
+  "events": [
+    { "step": "decision", "agent": "reviewer", "mode": "approval", "decision": "APPROVE", "writes": ["decision.md"] },
+    { "step": "routing", "approval": "auto", "merge": "push-mr", "action": "publish procedure, push-mr" },
+    { "step": "precondition", "check": "build location has no tracked changes" },
+    { "step": "test-gate", "command": "AGENTS.md test command, in the build location", "result": "pass" },
+    { "step": "push", "command": "git -C <build location> push -u origin factory/007-export-csv", "result": "pushed" },
+    { "step": "open-request", "command": "glab mr create --source-branch factory/007-export-csv --target-branch main --title \"CSV export\" --description-file pr-body.md --yes", "mr": "https://forge.example/mr/17" },
+    { "step": "stage", "stage": "awaiting-human", "mr": "https://forge.example/mr/17" },
+    { "step": "print", "text": "Review and merge it on the forge, then run /factory approve 007-export-csv to finish." }
+  ],
+  "forbidden": ["git merge", "git branch -d", "git worktree remove", "merged"]
+}

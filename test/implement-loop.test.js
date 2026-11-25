@@ -347,7 +347,7 @@ for (const layout of LAYOUTS) {
 
   test(`implement dispatch: ${layout} after checkpoint C PASS, ready disjoint lanes dispatch together; serial hosts run in order`, () => {
     const content = read(implement);
-    assertOrder(content, 'checkpoint C `VERDICT: PASS`', 'dispatches every ready lane whose writable scope is disjoint, together');
+    assertOrder(content, 'C `VERDICT: PASS`', 'dispatches every ready lane whose writable scope is disjoint, together');
     assert.match(content, /Nested delegation is not required/);
     assert.match(content, /A serial host runs the lanes in order/);
     assert.match(content, /A host with no dispatch keeps each independent gate pending/);
@@ -365,7 +365,7 @@ for (const layout of LAYOUTS) {
     const content = read(feature);
     assert.match(content, /Batch all ready lanes per \[Split Before Dispatch\]/);
     assert.match(content, /Check whole-feature and integration constraints/);
-    assert.match(content, /Checkpoint C still gates each task's first build, and checkpoint D still runs before aggregate review/);
+    assert.match(content, /Approach goal-fit check C still gates each task's first build where C applies, and implementation review D still runs before aggregate review where D applies/);
     assert.doesNotMatch(content, /completing tasks sequentially/);
     assert.doesNotMatch(content, /3\+ independent tasks/);
     assert.equal((content.match(/Batch all ready lanes/g) || []).length, 1, 'batch rule must appear once');
@@ -494,7 +494,7 @@ for (const layout of LAYOUTS) {
     assert.match(content, /Route each ordinary repair finding once, to one root-cause owner/);
     assert.match(content, /not the builder that owns each file/);
     assert.match(content, /first stop the prior writers \(each confirmed done or stopped\)/);
-    assert.match(content, /Checkpoint D runs again on the changed inputs/);
+    assert.match(content, /D runs again on the changed inputs/);
     assert.doesNotMatch(content, /Repairs go to the builder that owns each file/);
   });
 }

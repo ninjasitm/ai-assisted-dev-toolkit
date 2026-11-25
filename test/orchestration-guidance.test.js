@@ -63,7 +63,7 @@ for (const file of ['AGENTS.md', 'src/repo/AGENTS.md', 'src/monorepo/AGENTS.md']
 for (const layout of LAYOUTS) {
   test(`orchestration: ${layout} Factory paragraph requires independent goal-fit and blocks single-session switching`, () => {
     const s = read(`${layout}/AGENTS.md`);
-    assert.match(s, /Spec and plan goal-fit must be confirmed by an independent Oracle or read-only reviewer/);
+    assert.match(s, /Spec and plan goal-fit checks \(A and B\) are run by an independent Oracle or read-only reviewer/);
     assert.match(s, /Single-session role switching, including the Codex fallback, does not satisfy that and blocks these gates/);
     assert.match(s, /Spec and plan confirmations stay mandatory human steps in every approval mode/);
   });
@@ -218,7 +218,7 @@ test('plan review propagation: repo reviewer agent keeps its read-only snippet r
 
 test('plan review propagation: repo instructions wrapper summary names the consequential-plan exception only', () => {
   const s = read('src/repo/.github/instructions/subagent-workflow.instructions.md');
-  assert.match(s, /use single agent only for focused single-file tasks without a consequential execution plan \(plan review applies to those\)/);
+  assert.match(s, /use single agent only for focused single-file tasks without a consequential execution plan \(the plan goal-fit check \(B\) applies to those\)/);
   assert.match(s, /Follow the rules defined in \[\.claude\/rules-snippets\/subagent-workflow\.md\]/);
 });
 
@@ -226,7 +226,7 @@ for (const layout of LAYOUTS) {
   test(`plan review propagation: ${layout} AGENTS routes plan and spec changes through the planner and plan review`, () => {
     const s = read(`${layout}/AGENTS.md`);
     assert.match(s, /Plan and spec changes/);
-    assert.match(s, /route through the planner and plan review, then any applicable confirmation, then resume/);
+    assert.match(s, /route through the planner and the matching goal-fit check \(A for a spec, B for a plan\), then any applicable confirmation, then resume/);
     assert.match(s, /see subagent-workflow Plan and Spec Changes/);
   });
 
@@ -238,7 +238,7 @@ for (const layout of LAYOUTS) {
 
   test(`plan review propagation: ${layout} feature builder shows plan review and gate before implement`, () => {
     const fb = read(`${layout}/.claude/agents-snippets/feature-builder.md`);
-    assert.match(fb, /Plan review \(fit-review, Plan review\) and any applicable confirmation must pass before step 3/);
+    assert.match(fb, /The plan goal-fit check \(B\) \(fit-review\) and any applicable confirmation must pass before step 3/);
   });
 }
 

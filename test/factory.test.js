@@ -910,7 +910,7 @@ test('plan-only route: job.json records spec_route, and legacy or unknown jobs k
 test('plan-only route: plan confirmation needs size small and an explicit fit PASS, and a non-small size re-enters the spec route', () => {
   for (const tpl of SPEC_ROUTE_LAYOUTS) {
     const skill = factorySkill(tpl);
-    assert.match(skill, /1\. Confirm the plan\. Offered only when the current fit review is an explicit `VERDICT: PASS`\. On plan-only, also only when size is `small`\./, tpl + ': confirm needs PASS and small');
+    assert.match(skill, /1\. Confirm the plan\. Offered only when the current goal-fit check is an explicit `VERDICT: PASS`\. On plan-only, also only when size is `small`\./, tpl + ': confirm needs PASS and small');
     assert.match(skill, /On plan-only, a size other than `small` is not confirmed: run Plan-only re-entry\./, tpl + ': non-small is not confirmed');
     assert.match(skill, /On a plan-only route, a size other than `small`, or an open `\[PRODUCT DECISION\]` item in the plan, triggers Plan-only re-entry/, tpl + ': planner size or decision triggers re-entry');
     assert.match(skill, /Every job stops at `awaiting-plan` before anything is ticketed or built, in every `APPROVAL_MODE` and on either route\./, tpl + ': plan gate on both routes');
@@ -919,7 +919,7 @@ test('plan-only route: plan confirmation needs size small and an explicit fit PA
 
 test('plan-only route: scope re-entry returns to the spec route before the build, and clears earlier approvals', () => {
   for (const tpl of SPEC_ROUTE_LAYOUTS) {
-    const reentry = section(factorySkill(tpl), '## Plan-only re-entry', '## Fit review (spec and plan gates)');
+    const reentry = section(factorySkill(tpl), '## Plan-only re-entry', '## Goal-fit checks (spec and plan gates)');
     assert.match(reentry, /the plan's size is not `small` \(`large` or `unclear`\)/, tpl + ': size trigger');
     assert.match(reentry, /the scope broadened past the original request/, tpl + ': scope trigger');
     assert.match(reentry, /set `spec_route` to `spec` and stage `spec`/, tpl + ': route flips to spec');
@@ -946,10 +946,10 @@ test('plan-only route: resume tells an intentional missing spec.md from a missin
 test('plan-only route: checkpoints, rework, and the paths block carry the route without requiring spec.md', () => {
   for (const tpl of SPEC_ROUTE_LAYOUTS) {
     const skill = factorySkill(tpl);
-    assert.match(skill, /Spec route: `spec` or `plan-only`\. On plan-only there is no `spec\.md`, and its absence is expected\./, tpl + ': paths block route');
+    assert.match(skill, /Spec route: `spec` or `plan-only`\. On plan-only the paths block omits `spec\.md`, even when a stale one exists; its absence is expected\./, tpl + ': paths block route');
     assert.match(skill, /the accepted spec \(spec route\) or the plan's `## Requirements Source` and `## Acceptance Criteria` \(plan-only\), and the plan, are traced against them\./, tpl + ': checkpoint A sources');
-    assert.match(skill, /Copy `spec\.md` \(when the main checkout has it\) and `plan\.md`/, tpl + ': doc sync skips missing spec');
-    assert.match(skill, /Copy the job's `spec\.md` \(when it exists\), `plan\.md`, and `tasks\.md`/, tpl + ': worktree copy skips missing spec');
+    assert.match(skill, /Copy `spec\.md` on the spec route only \(by `spec_route`, never by file existence: a plan-only job copies no `spec\.md`, even a stale one\), and `plan\.md`/, tpl + ': doc sync skips missing spec');
+    assert.match(skill, /Copy the job's `spec\.md` \(spec route only: a plan-only job has none, and never reads or copies one\), `plan\.md`, and `tasks\.md`/, tpl + ': worktree copy skips missing spec');
   }
 });
 
@@ -960,7 +960,7 @@ test('plan-only route: source priority puts the verbatim original request first 
     assert.match(priority, /\(1\) the verbatim original request and every explicit amendment/, tpl + ': original request first');
     assert.match(priority, /\(2\) the accepted spec, or on a plan-only route the plan's `## Requirements Source` and `## Acceptance Criteria`\. Each must quote \(1\) and is checked against it\./, tpl + ': copies checked against original');
     assert.match(priority, /A copy that differs is a conflict: report it with both quotes, and repair it to the verbatim text/, tpl + ': mismatch is a scoped repair');
-    assert.match(priority, /\(3\) the plan[^\n]*never override them\./, tpl + ': plan never overrides');
+    assert.match(priority, /\(3\) the plan[^\n]*never overrides them\./, tpl + ': plan never overrides');
   }
 });
 
@@ -968,7 +968,7 @@ test('plan-only route: the human plan gate, the plan fit PASS, and the QA and ap
   for (const tpl of SPEC_ROUTE_LAYOUTS) {
     const skill = factorySkill(tpl);
     assert.match(skill, /- \*\*Confirm needs an explicit PASS\.\*\*/, tpl + ': fit PASS still required');
-    assert.match(skill, /On plan-only, the fit review checks the plan against the original request and its `## Requirements Source`, and the confirmation is the same\./, tpl + ': same confirmation');
+    assert.match(skill, /On plan-only, the goal-fit check checks the plan against the original request and its `## Requirements Source`, and the confirmation is the same\./, tpl + ': same confirmation');
     assert.match(skill, /Required QA evidence\.\*\* Refuse, in every mode and from `needs-human` too/, tpl + ': QA evidence still required');
     assert.match(skill, /Do not waive this with the approve command/, tpl + ': QA not waivable');
     assert.match(skill, /Refuse unless the first line of `build.md` is exactly `STATUS: READY`/, tpl + ': approve readiness unchanged');
@@ -978,8 +978,8 @@ test('plan-only route: the human plan gate, the plan fit PASS, and the QA and ap
   const a = section(factorySkill('repo'), '3. **Spec route.**', '4. **Intake gate.**');
   const b = section(factorySkill('monorepo'), '3. **Spec route.**', '4. **Intake gate.**');
   assert.equal(a, b, 'spec route intake text is identical across src/repo and src/monorepo');
-  const r1 = section(factorySkill('repo'), '## Plan-only re-entry', '## Fit review (spec and plan gates)');
-  const r2 = section(factorySkill('monorepo'), '## Plan-only re-entry', '## Fit review (spec and plan gates)');
+  const r1 = section(factorySkill('repo'), '## Plan-only re-entry', '## Goal-fit checks (spec and plan gates)');
+  const r2 = section(factorySkill('monorepo'), '## Plan-only re-entry', '## Goal-fit checks (spec and plan gates)');
   assert.equal(r1, r2, 'plan-only re-entry text is identical across layouts');
 });
 
@@ -1133,7 +1133,7 @@ test('spec audit: the repair, builder, and fit-review text no longer require spe
     const skill = factorySkill(tpl);
     assert.match(skill, /It reads `spec\.md` \(spec route only\), `plan\.md`, `build\.md`/, tpl + ': repair reads spec only on spec route');
     assert.match(skill, /point it at `spec\.md` \(spec route only\), `plan\.md`, `build\.md`/, tpl + ': builder continuity');
-    assert.match(skill, /One match:\*\* continue that feature\. Whichever of its `spec\.md`, `plan\.md`, and `tasks\.md` exist/, tpl + ': resume inputs');
+    assert.match(skill, /One match:\*\* continue that feature\. Planner inputs are selected by `spec_route`: on the spec route, an existing `spec\.md`, `plan\.md`, and `tasks\.md` are inputs; on plan-only, an existing `spec\.md` is ignored/, tpl + ': resume inputs');
     const fit = srcText(tpl, '.claude', 'rules-snippets', 'fit-review.md');
     assert.match(fit, /or, on a factory plan-only route with no spec, the plan's Requirements Source and Acceptance Criteria/, tpl + ': fit-review goal source without spec');
   }
@@ -1177,7 +1177,7 @@ test('parked records: the Factory skill documents the same shape, and the step 6
 
 test('autonomous classification: the pass cites Blocker Classification, not Scheduling, and its human-only items match autonomous-mode', () => {
   for (const tpl of SPEC_ROUTE_LAYOUTS) {
-    const pass = section(factorySkill(tpl), '### Autonomous pass', '### Alignment checkpoint A');
+    const pass = section(factorySkill(tpl), '### Autonomous pass', '### Post-build fit check');
     assert.match(pass, /section Canonical Blocker Classification, and its Oracle Semantics/, tpl + ': cites classification');
     assert.match(pass, /Do not apply its Scheduling section\./, tpl + ': no batch scheduling');
     assert.match(pass, /A requirement meaning, a role, permission, credential, or environment the flow does not grant, an undefined check command, a human approval or decision/, tpl + ': human classes are never technical');
@@ -1192,7 +1192,7 @@ test('autonomous classification: the pass cites Blocker Classification, not Sche
 test('Oracle: permissions are explicit in the Factory skill and the prompt summary; the key is task id plus cited input identity, and a task is never asked twice', () => {
   for (const tpl of SPEC_ROUTE_LAYOUTS) {
     const skill = factorySkill(tpl);
-    const pass = section(skill, '### Autonomous pass', '### Alignment checkpoint A');
+    const pass = section(skill, '### Autonomous pass', '### Post-build fit check');
     assert.match(pass, /Oracle's permissions are fixed: read-only, advice only\. It never edits, never approves, never changes a goal, a gate, or a check, and never answers a human-only item\./, tpl + ': permissions');
     assert.match(pass, /A key is the task id plus the content identity of each cite\./, tpl + ': key is content identity');
     assert.match(pass, /The blocker's free text, citation-free text, and the build location's HEAD are never part of the key\./, tpl + ': key excludes text and HEAD');
@@ -1224,7 +1224,7 @@ test('autonomous build: step 6 classifies the build, READY is refused with a par
     assert.match(brief, /Tag a blocker `technical` only when you can cite the input that settles it\./, tpl + ': cite-to-tag rule');
     assert.doesNotMatch(brief, /When unsure, tag `technical`/, tpl + ': old unsure rule removed');
     assert.doesNotMatch(brief, /<!-- with BLOCKED/, tpl + ': no commented parked heading');
-    assert.match(section(skill, '### Autonomous pass', '### Alignment checkpoint A'), /it never runs a full rerun, a repair, or a review/, tpl + ': resume never repairs');
+    assert.match(section(skill, '### Autonomous pass', '### Post-build fit check'), /it never runs a full rerun, a repair, or a review/, tpl + ': resume never repairs');
   }
 });
 
@@ -1235,7 +1235,7 @@ test('resume: a finished BLOCKED build re-enters the pass by dispatch priority, 
     assert.match(resume, /A `rework-<r>\.md` newer than `build\.md` is an accepted rework note the builder has not built\./, tpl + ': rework note beats older BLOCKED');
     assert.match(resume, /A valid `STATUS: BLOCKED` with parked records, newer than every `rework-<k>\.md`: the builder finished and the autonomous pass is due\. Do not rerun the builder\./, tpl + ': finished BLOCKED is not a rerun');
     assert.match(resume, /Otherwise the build was interrupted or never finished: rerun `implementer`/, tpl + ': interrupted build reruns');
-    const pass = section(factorySkill(tpl), '### Autonomous pass', '### Alignment checkpoint A');
+    const pass = section(factorySkill(tpl), '### Autonomous pass', '### Post-build fit check');
     assert.match(pass, /First check the build location\. If it has uncommitted changes, they are operator state the builder did not write, so do not run the pass\./, tpl + ': operator state');
     assert.match(pass, /A human-only item stays parked until the operator reworks it\./, tpl + ': human-only needs rework');
     assert.match(pass, /A changed key is reported in `## Needs you`, and it is asked only after a rework/, tpl + ': changed key needs rework');
@@ -1272,7 +1272,7 @@ test('merge record: job.json, the local merge, and the push-mr finish write the 
     const pushStep = section(skill, '   - **Merged:**', '   - **Open:**');
     for (const k of ['`mode` `push-mr`', '`state` `MERGED`', '`mr` equal to the job', '`commit`', '`tested_commit`', 'in one job.json update']) assert.ok(pushStep.includes(k), tpl + ' push-mr writes ' + k);
     const closeout = section(skill, '## Closeout (opt-in Learn)', '## Approve\n');
-    assert.match(closeout, /`merge` is present, and it is either `mode` `local` with a `commit`, or `mode` `push-mr` with `state` `MERGED` and `mr` equal to `job\.mr`/, tpl + ': gate reads the same fields');
+    assert.match(closeout, /`merge` is present, and it is either `mode` `local` with a `commit`, or `mode` `push-mr` with `state` `MERGED` and `mr` exactly equal \(same string\) to `job\.mr`/, tpl + ': gate reads the same fields');
   }
 });
 
@@ -1324,11 +1324,11 @@ test('acceptance basis header: decision.md, the Factory Retro section, and the r
 test('retro: one report per round and decision; the same two header lines decide skip, mismatch, or write', () => {
   for (const tpl of SPEC_ROUTE_LAYOUTS) {
     const retro = section(factorySkill(tpl), '## Retro (opt-in, advisory)', '## Closeout (opt-in Learn)');
-    assert.match(retro, /The report is `round-<R>\/retro-<D>\.md` in the job folder, where `D` is `approve` or `escalate`\./, tpl + ': file per round and decision');
+    assert.match(retro, /`D` is the decision type: `approve` for an `APPROVE` decision \(`retro-approve\.md`\), `escalate` for an `ESCALATE` decision \(`retro-escalate\.md`\)/, tpl + ': file per round and decision');
     assert.match(retro, /If `round-<R>\/retro-<D>\.md` exists and its first two lines equal them, skip the write/, tpl + ': same header skips');
     assert.match(retro, /If it exists with different lines, do not overwrite it, and print `Retro skipped: existing report does not match current decision`/, tpl + ': mismatch never overwrites');
     assert.match(retro, /Reports are never copied between decisions\./, tpl + ': no copy');
-    assert.match(retro, /a repair or rework starts a new round with its own report/, tpl + ': new round, new report');
+    assert.match(retro, /A repair or rework starts a new round with its own report/, tpl + ': new round, new report');
     assert.match(retro, /Retro skipped: <reason>/, tpl + ': unavailable');
     assert.doesNotMatch(retro, /sha256|hash|git status|git rev-parse/, tpl + ': no fingerprint, no git query');
     assert.match(srcText(tpl, '.agents', 'skills', 'retro', 'SKILL.md'), /The first two lines are the basis header copied from the current `decision\.md`/, tpl + ': retro skill mirrors the rule');
@@ -1341,7 +1341,7 @@ test('Learn: opt-in and fallback text, one minimal memory read, and Learn reads 
     const closeout = section(skill, '## Closeout (opt-in Learn)', '## Approve\n');
     assert.match(closeout, /Run Closeout only when all of these hold:/, tpl + ': opt-in gate');
     assert.match(closeout, /`job\.json` has `"learn": true` \(independent of `retro`\)/, tpl + ': independent of retro');
-    assert.match(closeout, /A retro report passes to Learn only when its two header lines equal the current `decision\.md` header/, tpl + ': retro only on match');
+    assert.match(closeout, /Learn accepts a retro report only when the report's `Decision:` type, its `round`, and its `Tested commit:` equal the same three values read from the current `decision\.md`/, tpl + ': retro only on match');
     assert.match(closeout, /A `none` tested commit is no identity, so Learn gets no retro\./, tpl + ': none is no identity');
     assert.match(closeout, /Name each missing optional input in the report and continue with what remains/, tpl + ': optional missing continues');
     assert.match(closeout, /Skip \(`Learn skipped: <reason>`, nothing written\) only when the mandatory proof is missing/, tpl + ': mandatory missing skips');
@@ -1416,7 +1416,7 @@ test('autonomous build and documentation: README, AGENTS pointer, and the plan-o
 // Bounds and seams for the autonomous pass, the dispatch priority, the single merge write, and Learn's inputs.
 test('autonomous pass bounds: a RESOLVED row is consumed once, keys are frozen per pass, and a spent task is never re-dispatched', () => {
   for (const tpl of SPEC_ROUTE_LAYOUTS) {
-    const pass = section(factorySkill(tpl), '### Autonomous pass', '### Alignment checkpoint A');
+    const pass = section(factorySkill(tpl), '### Autonomous pass', '### Post-build fit check');
     assert.match(pass, /Before dispatch, rewrite each executable root's row to `state: dispatched` in `build\.md`\./, tpl + ': consumed before dispatch');
     assert.match(pass, /A root whose row is `dispatched` and is still parked stays parked, with reason "guided attempt spent: still parked after RESOLVED", and is never dispatched again in this cycle\./, tpl + ': spent is terminal');
     assert.match(pass, /Return to step 1 for tasks that have no row yet\./, tpl + ': new tasks only');
@@ -1437,13 +1437,13 @@ test('dispatch priority: a newer rework note beats an older BLOCKED build, Repai
     const repair = section(skill, '### Repair', '### Autonomous pass');
     assert.match(repair, /Classify the result with the Build status rules, as step 6 does\./, tpl + ': repair classifies');
     assert.match(repair, /run the Autonomous pass for round `U`, with the same bounds and permissions/, tpl + ': repair pass round U, no wider permissions');
-    assert.match(repair, /after its valid `READY`, run checkpoint A for `U` before step 7/, tpl + ': repair checkpoint after pass');
+    assert.match(repair, /after its valid `READY`, run the post-build fit check for `U` before step 7/, tpl + ': repair checkpoint after pass');
     const row = section(skill, '| Stage | Resume action |', '| `abandoned` |');
     assert.match(row, /a newer rework note reruns the builder in rework mode/, tpl + ': build row names rework first');
     const stepNine = section(skill, '9. **Approve.**', '### Repair');
     assert.doesNotMatch(stepNine, /No builder, repair, or review runs/, tpl + ': no contradictory no-builder claim');
     assert.doesNotMatch(row, /No builder, repair, or review runs/, tpl + ': table has no contradictory claim');
-    assert.match(row, /No full rerun, repair, or review runs\. The pass may dispatch the builder in autonomous mode/, tpl + ': table names the bounded dispatch');
+    assert.match(row, /No full rerun, repair, or review runs\. The pass may dispatch the builder in guided mode/, tpl + ': table names the bounded dispatch');
   }
 });
 
@@ -1489,7 +1489,7 @@ test('B2: only a parked technical root with a RESOLVED row whose key matches the
     const step4 = section(skill, '4. **Guided re-dispatch, once.**', '5. **Inconclusive.**');
     assert.match(step4, /Executable advice: a task is executable only when it is parked, tagged `technical`, its row is `RESOLVED` with cited evidence, and the row's `key` equals that task's current key \(computed at pass start, or now on resume\)\./, tpl + ': executable definition');
     assert.match(step4, /A row whose key differs is not executable: the task stays parked with reason "advice key no longer matches current inputs; rework to ask again", and it is listed in `## Needs you`\./, tpl + ': mismatch stays parked and reported');
-    const step7 = section(skill, '7. **Resume (parked-task resume).**', '### Alignment checkpoint A');
+    const step7 = section(skill, '7. **Resume (parked-task resume).**', '### Post-build fit check');
     assert.match(step7, /Rows are handled as in step 3 and step 4/, tpl + ': resumed unconsumed rows use the step 4 key check');
   }
 });
@@ -1516,7 +1516,7 @@ test('build lanes: one procedure section, linked to the split rules, adds no app
     assert.match(lanes, /Stage, mode, round, Oracle, approval, and guided-attempt budgets are unchanged\./, tpl + ': budgets unchanged');
     assert.match(lanes, /Units come from settled inputs and owned paths, not `\[P\]` markers, so add no markers\./, tpl + ': no fake [P]');
     assert.doesNotMatch(lanes, /numbered choice/, tpl + ': no approval choice');
-    assert.match(skill, /1\. Confirm the plan\. Offered only when the current fit review is an explicit `VERDICT: PASS`\./, tpl + ': plan confirmation unchanged');
+    assert.match(skill, /1\. Confirm the plan\. Offered only when the current goal-fit check is an explicit `VERDICT: PASS`\./, tpl + ': plan confirmation unchanged');
     assert.match(skill, /1\. Confirm the spec\. Offered only when no `\[PRODUCT DECISION\]` item is open/, tpl + ': spec confirmation unchanged');
   }
   assert.equal(laneSection('repo'), laneSection('monorepo'), 'procedure identical in both layouts');
@@ -1527,12 +1527,12 @@ test('build lanes: every builder dispatch path names the procedure with its mode
   for (const tpl of LANE_LAYOUTS) {
     const skill = factorySkill(tpl);
     assert.match(section(skill, '6. **Build.**', '7. **Review round N.**'), /Run the Build lanes procedure in build mode \(brief `roles\/build\.md`, paths block\)/, tpl + ': initial build');
-    assert.match(section(skill, '### Repair', '### Autonomous pass'), /Run the Build lanes procedure in repair mode \(brief `roles\/build\.md`, paths block\), where `Round` is the round just reviewed/, tpl + ': review repair');
-    assert.match(section(skill, '### Alignment checkpoint A', '### Builder continuity'), /run the Build lanes procedure in repair mode \(brief `roles\/build\.md`, paths block\) with `Round` set to `U`/, tpl + ': checkpoint A repair');
-    assert.match(section(skill, '4. **Guided re-dispatch, once.**', '5. **Inconclusive.**'), /Run the Build lanes procedure in `autonomous` mode \(brief `roles\/build\.md`, paths block\) over the executable roots/, tpl + ': autonomous re-dispatch');
+    assert.match(section(skill, '### Repair', '### Autonomous pass'), /Run the Build lanes procedure in repair mode \(brief `roles\/build\.md`, paths block; the builder agent comes from the repair routing in Subagent dispatch\), where `Round` is the round just reviewed/, tpl + ': review repair');
+    assert.match(section(skill, '### Post-build fit check', '### Builder continuity'), /run the Build lanes procedure in repair mode \(brief `roles\/build\.md`, paths block\) with `Round` set to `U`/, tpl + ': checkpoint A repair');
+    assert.match(section(skill, '4. **Guided re-dispatch, once.**', '5. **Inconclusive.**'), /Run the Build lanes procedure in `guided` mode \(brief `roles\/build\.md`, paths block\) over the executable roots/, tpl + ': autonomous re-dispatch');
     assert.match(section(skill, '`/factory rework <job-id> <note>`:', '## Functional QA'), /Run the Build lanes procedure in rework mode \(brief `roles\/build\.md`, paths block\), as a fresh builder\./, tpl + ': rework');
     assert.match(section(skill, '| Stage | Resume action |', '| `abandoned` |'), /otherwise an interrupted build runs the Build lanes procedure in build mode \(brief `roles\/build\.md`\) \|/, tpl + ': interrupted build row');
-    assert.match(section(skill, '### Autonomous pass', '### Alignment checkpoint A'), /\(legacy jobs; a job with a batch record resumes as Build lanes, step 10 directs\)\./, tpl + ': parked-task resume scoped');
+    assert.match(section(skill, '### Autonomous pass', '### Post-build fit check'), /\(legacy jobs; a job with a batch record resumes as Build lanes, step 10 directs\)\./, tpl + ': parked-task resume scoped');
   }
 });
 
@@ -1696,7 +1696,7 @@ test('build lanes: the autonomous pass defers scheduling to the procedure and ke
   for (const tpl of LANE_LAYOUTS) {
     const skill = factorySkill(tpl);
     assert.doesNotMatch(skill, /one serial run at a time|runs no parallel batch|A Factory build has one builder/, tpl + ': former serial rule removed');
-    const pass = section(skill, '### Autonomous pass', '### Alignment checkpoint A');
+    const pass = section(skill, '### Autonomous pass', '### Post-build fit check');
     assert.match(pass, /Factory scheduling is the Build lanes procedure: the pass's newly eligible items are split into lanes and dispatched there, in ready batches\./, tpl + ': scheduling by the procedure');
     assert.match(pass, /Do not apply its Scheduling section\./, tpl + ': autonomous-mode Scheduling still not applied');
     assert.match(pass, /one Oracle ask per task per cycle, one guided re-dispatch per task per cycle/, tpl + ': Oracle and guided budgets unchanged');
@@ -1772,7 +1772,7 @@ test('push-mr body: a creation-time snapshot tied to the recorded push SHA, with
   for (const tpl of SPEC_ROUTE_LAYOUTS) {
     const skill = factorySkill(tpl);
     const step3 = section(skill, '3. **Push.**', '4. **Open the request, once.**');
-    assert.match(step3, /On success, record the pushed SHA \(the build location's `HEAD`\) for the body's verification snapshot\./, tpl + ': step 3 records the SHA');
+    assert.match(step3, /On success, record it for the body's verification snapshot and persist it as `pushedSha` in `job\.json`\./, tpl + ': step 3 records the SHA');
     const step4 = section(skill, '4. **Open the request, once.**', 'Record the URL the command prints in `mr`.');
     assert.match(step4, /Verification \(a creation-time snapshot\. Its label displays two SHAs: the branch SHA that step 3 recorded, and the accepted Tested commit\./, tpl + ': snapshot label shows both SHAs');
     assert.match(step4, /Show `unknown` for either one that is not recorded\./, tpl + ': unknown SHA shown');

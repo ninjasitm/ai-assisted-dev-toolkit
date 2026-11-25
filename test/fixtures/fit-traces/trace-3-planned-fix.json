@@ -1,0 +1,31 @@
+{
+  "trace": 3,
+  "title": "planned fix with an accepted plan: C applies before the build, D applies right after the builder reports done",
+  "expected_sequence": ["fix-applicability", "approach-C-check", "fix-builder-with-note", "implementation-D"],
+  "steps": [
+    {
+      "id": "fix-applicability",
+      "file": ".claude/prompt-snippets/implement-fixes.md",
+      "must": ["Determine whether C applies using \\[fit-review Applicability\\]\\(\\.\\./rules-snippets/fit-review\\.md#applicability\\)"]
+    },
+    {
+      "id": "approach-C-check",
+      "file": ".claude/prompt-snippets/implement.md",
+      "must": ["\\*\\*Approach goal-fit check C \\(before the first build of a task, where C applies", "Run goal-fit check C with its brief", "Oracle when it is available read-only, otherwise a fresh reviewer\\. The planner's self-review does not count\\."],
+      "after": [["Approach goal-fit check C (before the first build of a task", "**Round 1 (build):**"]]
+    },
+    {
+      "id": "fix-builder-with-note",
+      "file": ".claude/prompt-snippets/implement-fixes.md",
+      "must": ["Pass the approach note to the builder only where C ran", "Dispatch one builder with the bug report"],
+      "must_not": ["Run the approach checkpoint C"],
+      "after": [["Pass the approach note to the builder only where C ran", "Dispatch one builder with the bug report"]]
+    },
+    {
+      "id": "implementation-D",
+      "file": ".claude/prompt-snippets/implement-fixes.md",
+      "must": ["Implementation review D: where D applies \\(fit-review Applicability\\)", "run it immediately after the builder declares done, before verification and code review", "again after every repair"],
+      "after": [["Dispatch one builder with the bug report", "Implementation review D: where D applies"], ["Implementation review D: where D applies", "- Verify: rerun"], ["- Verify: rerun", "- Review: the independent read-only reviewer"]]
+    }
+  ]
+}

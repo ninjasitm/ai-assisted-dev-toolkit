@@ -1,0 +1,10 @@
+{
+  "name": "a non-pass answer is recorded as a note; a later bare approve on the same SHA writes the pass; a crash after the pass reuses that block",
+  "before": { "stage": "needs-human", "substate": "preview", "previewStep": "ready", "round": 1, "previewRunning": "R1", "previewStackUrl": "http://localhost:3300" },
+  "events": [
+    { "step": "approve", "words": "row 2 not tested", "classification": "not a pass", "writes": ["## Preview QA note (R1)"], "writes_pass_block": false, "merged": false },
+    { "step": "approve", "words": "", "classification": "pass", "writes": ["## Preview QA answer (R1)"], "written_before_merged": true, "merged": true },
+    { "step": "crash-after-pass", "stage": "needs-human", "previewStep": "ready" },
+    { "step": "approve-recovery", "reuse": "## Preview QA answer (R1)", "writes_new_block": false, "merged": true }
+  ]
+}

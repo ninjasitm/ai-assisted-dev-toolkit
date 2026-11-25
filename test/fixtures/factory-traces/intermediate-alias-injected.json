@@ -1,0 +1,28 @@
+{
+  "name": "name rule walks every containing directory from the checkout root: a fold in one intermediate directory makes the rule fold, so an ignored local file and an incoming path that differ only by an intermediate directory name are refused",
+  "rule_injection": "core.ignorecase is false; the injected probe folds only the directory named in fold_dir and is exact everywhere else",
+  "cases": [
+    {
+      "name": "(a) src/Config vs src/config",
+      "ignored": "src/Config/local.json",
+      "incoming": "src/config/local.json",
+      "fold_dir": "src",
+      "expected": { "refused": true, "rule": "fold", "collisions": ["src/Config/local.json"], "probed_fold_dir": true }
+    },
+    {
+      "name": "(b) shared/Config vs shared/config",
+      "ignored": "shared/Config/local.env",
+      "incoming": "shared/config/local.env",
+      "fold_dir": "shared",
+      "expected": { "refused": true, "rule": "fold", "collisions": ["shared/Config/local.env"], "probed_fold_dir": true }
+    }
+  ],
+  "control": {
+    "fold_dir": null,
+    "expected": { "refused": false, "rule": "exact", "collisions": [] }
+  },
+  "after_refusal": {
+    "head_unchanged": true,
+    "ignored_bytes_unchanged": true
+  }
+}

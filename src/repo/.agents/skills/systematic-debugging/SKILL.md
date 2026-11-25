@@ -101,7 +101,7 @@ You MUST complete each phase before proceeding to the next.
     if security find-identity -v -p codesigning >/dev/null 2>&1; then echo "Signing identity query completed"; else echo "Signing identity query failed"; fi
 
    # Layer 4: Actual signing
-    if codesign --sign "$IDENTITY" "$APP" >/dev/null 2>&1; then echo "Signing succeeded"; else echo "Signing failed"; fi
+    if codesign --sign "$IDENTITY" "$APP" >/dev/null 2>&1; then echo "Signing succeeded"; else echo "Signing failed"; exit 1; fi
    ```
 
    **This reveals:** Which layer fails (secrets → workflow ✓, workflow → build ✗)

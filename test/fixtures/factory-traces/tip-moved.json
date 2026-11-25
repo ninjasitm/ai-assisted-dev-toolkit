@@ -1,0 +1,12 @@
+{
+  "name": "lenses and approval read HEAD A; the branch tip moves to B before preview entry; preview refuses to pin B",
+  "job": { "stage": "approve", "round": 2, "reviewedSha": "A" },
+  "events": [
+    { "step": "review-round", "reviewedSha": "A", "lenses": { "code": "PASS", "security": "PASS" }, "writes": ["round-2/review-code.md", "round-2/review-security.md"] },
+    { "step": "approve", "decision": "APPROVE", "reviewedSha": "A", "writes": ["decision.md"] },
+    { "step": "tip-moved", "branchTip": "B", "by": "commit outside Factory" },
+    { "step": "preview-entry", "previewJobSha": "A", "branchTip": "B", "matches": false, "preview": false, "action": "rerun the applicable checks, lenses and approval for B" },
+    { "step": "review-round-again", "reviewedSha": "B", "lenses": { "code": "PASS", "security": "PASS" } },
+    { "step": "preview-entry-again", "previewJobSha": "B", "branchTip": "B", "matches": true, "preview": true }
+  ]
+}

@@ -99,7 +99,7 @@ IF reviewer suggests "implementing properly":
 
 ## Plan and Spec Feedback
 
-Classify feedback as an ordinary repair or a plan or spec change, and follow Plan and Spec Changes in subagent-workflow. A plan or spec change goes to the planner and back through plan review. This skill adds no gate of its own.
+Classify feedback as an ordinary repair or a plan or spec change, and follow Plan and Spec Changes in subagent-workflow. A plan or spec change goes to the planner and back through the matching goal-fit check (A for a spec, B for a plan). This skill adds no gate of its own.
 
 ## Implementation Order
 

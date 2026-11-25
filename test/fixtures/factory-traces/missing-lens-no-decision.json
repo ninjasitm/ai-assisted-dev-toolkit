@@ -1,0 +1,10 @@
+{
+  "name": "security lens BLOCKED and no approver decision: approve refuses and names the lens; start reruns only security; the approver runs only after every lens is PASS",
+  "before": { "stage": "needs-human", "failed_stage": "review", "round": 2, "reviews": { "code": "PASS", "security": "BLOCKED" }, "decision": null },
+  "events": [
+    { "step": "approve", "command": "/factory approve 001-x", "allowed": false, "refused_for": ["security BLOCKED", "decision missing"], "named": ["security"] },
+    { "step": "start", "command": "/factory start 001-x", "resume": "review", "rerun": ["security"], "keep": ["code"], "approver_dispatched": false },
+    { "step": "review-security", "lens": "security", "verdict": "PASS", "writes": ["round-2/review-security.md"] },
+    { "step": "approver", "dispatched": true, "reason": "all lenses PASS and decision missing", "writes": ["decision.md"] }
+  ]
+}

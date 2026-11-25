@@ -96,7 +96,7 @@ git commit -m "feat: add specific feature"
 
 ## Plan Review Before Handoff
 
-Before the execution handoff, run plan review (fit-review, Plan review) on the saved plan, with the original request, amendments, and the overall summary and goals as context. The plan is execution-ready only after an explicit PASS and any applicable human confirmation. A revised plan is reviewed again before it is handed off.
+Before the execution handoff, run the plan goal-fit check (B) (fit-review) on the saved plan, with the original request, amendments, and the overall summary and goals as context. The plan is execution-ready only after an explicit PASS and any applicable human confirmation. A revised plan is checked again before it is handed off.
 
 ## Execution Handoff
 

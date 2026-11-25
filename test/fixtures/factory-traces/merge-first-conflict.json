@@ -1,0 +1,11 @@
+{
+  "name": "first-attempt ordinary merge conflicts with no prior merge fields: the parent and job tip are saved before the merge, and mergeSha stays absent",
+  "before": { "stage": "merged-pending", "round": 1, "mergeParent": null, "mergeJobTip": null, "mergeSha": null },
+  "events": [
+    { "step": "preconditions", "default_checked_out": true, "head": "P" },
+    { "step": "save-before-merge", "mergeParent": "P", "mergeJobTip": "T" },
+    { "step": "merge", "command": "git merge --no-ff factory/<id> -m \"Merge factory/<id>\"", "result": "conflict" },
+    { "step": "abort-guard", "checks": { "default_checked_out": true, "HEAD": "P", "MERGE_HEAD": "T" }, "abort": true },
+    { "step": "state", "mergeSha": null, "mergeParent": "P", "mergeJobTip": "T" }
+  ]
+}

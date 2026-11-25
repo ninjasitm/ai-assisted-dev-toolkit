@@ -1,0 +1,8 @@
+{
+  "name": "ready preview: the running SHA matches, but the default branch was reset to the base: the acceptance is refused; with a later commit on top, the same pass is accepted",
+  "ready": { "previewCommit": "M1", "previewRunning": "M1", "previewStackUrl": "http://localhost:3300", "previewBase": "P0" },
+  "cases": [
+    { "name": "default branch reset to previewBase", "default_branch_head": "P0", "running_matches": true, "is_ancestor": false, "accepted": false, "wrote": { "acceptance_block": false, "merged": false }, "cleanup": false, "reported": ["previewCommit M1", "branch main"] },
+    { "name": "later commit on top", "default_branch_head": "L1", "running_matches": true, "is_ancestor": true, "accepted": true, "wrote": { "acceptance_block": true, "merged": true } }
+  ]
+}

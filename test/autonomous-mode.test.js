@@ -63,10 +63,10 @@ for (const layout of LAYOUTS) {
 
   // Gate placement: checkpoints control only their own places and are not reordered.
   test(`autonomous-mode: ${layout} checkpoints control only their existing places and are not reordered`, () => {
-    assert.match(text, /Checkpoints do not gate loading/);
-    assert.match(text, /\*\*Checkpoint C\*\* gates each task's first build/);
-    assert.match(text, /\*\*Checkpoint D\*\* gates aggregate verification and review/);
-    assert.match(text, /\*\*Checkpoint A\*\* gates the Factory review round/);
+    assert.match(text, /Goal-fit checks and reviews do not gate loading/);
+    assert.match(text, /\*\*Approach goal-fit check C\*\* gates each task's first build where C applies/);
+    assert.match(text, /\*\*Implementation review D\*\* gates aggregate verification and review where D applies/);
+    assert.match(text, /\*\*Post-build fit check\*\* gates the Factory review round/);
     assert.match(text, /none is reordered/);
     assert.match(text, /plan gate must be confirmed by the human/);
     assert.match(text, /grants no approval, no scope, and no checkpoint waiver/);
@@ -97,14 +97,14 @@ for (const layout of LAYOUTS) {
   test(`autonomous-mode: ${layout} /implement keeps the supplied-task exception and C`, () => {
     assert.match(text, /`\/implement` with a supplied authorized task:\*\* the supplied task is the authority/);
     assert.match(text, /supplied-task exception covers the missing spec, plan, and task files/);
-    assert.match(text, /Checkpoint C still applies to each task before its first build/);
+    assert.match(text, /A supplied-only task skips C/);
   });
 
   test(`autonomous-mode: ${layout} /implement-feature keeps plan approval, alignment, and D`, () => {
     assert.match(text, /`\/implement-feature`:\*\* a supplied authorized feature or task list is the authority, and no spec or plan gate is invented for it/);
-    assert.match(text, /Any approval or alignment that already applies to the feature must be in place before dispatch/);
+    assert.match(text, /Any approval or goal-fit check that already applies to the feature must be in place before dispatch/);
     assert.match(text, /Factory's separate human spec and plan confirmation is unchanged/);
-    assert.match(text, /Checkpoint D still runs before aggregate verification and review/);
+    assert.match(text, /D runs before aggregate verification and review where it applies/);
     assert.match(text, /Autonomous mode does not replace D/);
   });
 
@@ -119,8 +119,8 @@ for (const layout of LAYOUTS) {
     assert.match(text, /Grill-me and Fit Review Are Different Steps/);
     assert.match(text, /pre-approval clarification of the user's own questions/);
     assert.match(text, /Do not run it during autonomous execution/);
-    assert.match(text, /independent read-only goal-fit review/);
-    assert.match(text, /never replaces a human gate/);
+    assert.match(text, /\*\*Goal-fit checks and reviews\*\* are independent and read-only/);
+    assert.match(text, /never replace a human gate/);
   });
 
   // Scheduling.
@@ -164,7 +164,7 @@ for (const layout of LAYOUTS) {
     assert.match(text, /Requirement meaning[^\n]*Human-only\. Park\. No Oracle/);
     assert.match(text, /Role or permission[^\n]*No Oracle/);
     assert.match(text, /Human approval or decision[^\n]*No Oracle/);
-    assert.match(text, /\*\*Scope of Oracle:\*\* Technical-unknown blockers only/);
+    assert.match(text, /\*\*Scope of blocker consultations:\*\* Technical-unknown blockers only/);
     assert.match(text, /record that Oracle result as `inconclusive` and park the blocker in its human class/);
   });
 
@@ -186,7 +186,7 @@ for (const layout of LAYOUTS) {
 
   test(`autonomous-mode: ${layout} Oracle guidance is not authority and cannot expand scope`, () => {
     assert.match(text, /\*\*Guidance, not authority\.\*\* Oracle cannot change goals, scope, the plan, an acceptance criterion, or a check/);
-    assert.match(text, /It cannot approve or accept anything/);
+    assert.match(text, /It cannot approve, accept, or review anything/);
     assert.match(text, /\*\*Expansion:\*\* guidance cannot expand scope/);
     assert.match(text, /not eligible work under this skill until the existing revision and approval steps are complete/);
     assert.doesNotMatch(text, /Its only path to new work/);
@@ -252,7 +252,7 @@ for (const layout of LAYOUTS) {
     assert.match(content, /park only a blocked task and its dependents/);
     assert.match(content, /A single trivial task loads it only at its first blocker; multiple tasks load it once the supplied input is accepted/);
     assert.match(content, /The supplied task stays the authority/);
-    assert.match(content, /checkpoint C still gates each task's first build/);
+    assert.match(content, /approach goal-fit check C still gates each task's first build where C applies/);
     assert.match(content, /A run is not finished while a task has a parked mandatory item/);
   });
 
@@ -268,7 +268,7 @@ for (const layout of LAYOUTS) {
     assert.match(content, /This flow adds no new spec or plan approval requirement/);
     assert.doesNotMatch(content, /Once the task list and plan are approved/, 'no universal plan-approval prerequisite');
     assert.match(content, /Schedule with \[autonomous-mode\]/);
-    assert.match(content, /Checkpoint C still gates each task's first build, and checkpoint D still runs before aggregate review/);
+    assert.match(content, /Approach goal-fit check C still gates each task's first build where C applies, and implementation review D still runs before aggregate review where D applies/);
     assert.match(content, /a parked mandatory task is never ticked or reported complete/);
     assert.match(content, /start aggregate review only once every mandatory task is accepted/);
   });

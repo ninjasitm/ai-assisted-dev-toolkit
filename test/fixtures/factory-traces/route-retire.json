@@ -1,0 +1,14 @@
+{
+  "name": "ready preview; a plan change accepted from preview retires it in the plan write while round stays 1 through both plan gates; round advances only on entering build; interruption after plan confirm resumes the continuation",
+  "before": { "stage": "needs-human", "substate": "preview", "previewStep": "ready", "round": 1, "previewRound": 1, "previewBase": "P0", "previewJobSha": "J1", "previewCommit": "M1", "previewRunning": "M1", "previewStackUrl": "http://localhost:3300" },
+  "events": [
+    { "step": "rework-classification", "classification": "plan change", "route": "plan", "user_accepts": true },
+    { "step": "retire-and-enter-plan", "single_write": true, "stage": "plan", "round": 1, "retire": "every preview* field except previewHistory", "history": { "round": 1, "previewCommit": "M1", "previewRunning": "M1" } },
+    { "step": "planner", "mode": "plan", "writes": ["plan-1.md", "plan.md"] },
+    { "step": "plan-gate-confirm", "stage": "plan", "round": 1 },
+    { "step": "interruption", "before": "build entry", "round": 1 },
+    { "step": "start", "resume": "routed continuation", "round": 1, "reads": ["plan.md", "plan-1.md"] },
+    { "step": "enter-build", "single_write": true, "stage": "build", "round": 2 },
+    { "step": "merge-and-preview", "previewBase": "M1", "previewJobSha": "J2", "stage": "needs-human", "substate": "preview", "previewStep": "eligibility" }
+  ]
+}

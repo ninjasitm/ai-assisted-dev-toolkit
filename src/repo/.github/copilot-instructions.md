@@ -32,7 +32,7 @@ Detailed standards are organized into focused instruction files. Copilot will au
 
 - [AGENTS.md](../AGENTS.md) - AI agent context and project overview
 - [README.md](../README.md) - Project documentation
-- [.cursor/rules/](../.cursor/rules/) - Cursor IDE rules
+- `.cursor/rules/` - Cursor IDE rules
 
 ## Ponytail, lazy senior dev mode
 

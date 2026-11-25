@@ -9,14 +9,14 @@ description: Use when you have a written implementation plan to execute in a sep
 
 Load plan, review critically, execute tasks in batches, report for review between batches.
 
-**Core principle:** Batch execution with checkpoints for architect review.
+**Core principle:** Batch execution with checkpoints for the plan goal-fit check (B): Oracle when available read-only, otherwise a fresh reviewer.
 
 **Announce at start:** "I'm using the executing-plans skill to implement this plan."
 
 ## The Process
 
 ### Step 1: Load and Review Plan
-1. Read plan file, and check for applicable plan review evidence: an explicit PASS for this plan (fit-review, Plan review). Without it, request plan review before executing.
+1. Read plan file, and check for applicable plan goal-fit evidence: an explicit B PASS for this plan (fit-review). Without it, request the plan goal-fit check (B) before executing.
 2. Review critically - identify any questions or concerns about the plan
 3. If concerns: Raise them with your human partner before starting
 4. If no concerns: Create TodoWrite and proceed
@@ -63,7 +63,7 @@ After all tasks complete and verified:
 ## When to Revisit Earlier Steps
 
 **Return to Review (Step 1) when:**
-- Partner updates the plan based on your feedback: Planner revises it → independent plan review → applicable existing confirmation → resume the affected work. The partner's amendment remains the authoritative goal input.
+- Partner updates the plan based on your feedback: Planner revises it → plan goal-fit check (B) → applicable existing confirmation → resume the affected work. The partner's amendment remains the authoritative goal input.
 - Fundamental approach needs rethinking
 
 **Don't force through blockers** - stop and ask.
