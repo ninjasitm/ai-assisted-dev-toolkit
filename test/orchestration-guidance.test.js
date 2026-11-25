@@ -24,7 +24,8 @@ test('orchestration: root AGENTS carries the shared contract and points to the c
   assert.match(s, /\*\*Batch by dependency\*\*/);
   assert.match(s, /\*\*Never end silently\*\*/);
   assert.match(s, /DONE, WAITING \(pending task handle and resume trigger\), or BLOCKED/);
-  assert.match(s, /`\[P\]` markers are optional/);
+  assert.match(s, /\*\*Batch by dependency\*\*/);
+  assert.match(s, /find all substantial ready independent work/);
   assert.match(s, /src\/repo\/\.claude\/rules-snippets\/subagent-workflow\.md/);
 });
 
@@ -75,8 +76,11 @@ for (const layout of LAYOUTS) {
     assert.doesNotMatch(s, /\*\*Sequential\*\*: Tasks with dependencies are implemented one at a time\./);
   });
 
-  test(`orchestration: ${layout} dispatch skill requires exclusive writable scopes`, () => {
-    assert.match(read(`${layout}/${SKILL}`), /exclusive writable scopes/);
+  test(`orchestration: ${layout} dispatch skill defers to the shared workflow and requires exclusive writable paths`, () => {
+    const s = read(`${layout}/${SKILL}`);
+    assert.match(s, /subagent-workflow\.md#split-before-dispatch/);
+    assert.match(s, /exclusive writable paths/);
+    assert.match(s, /Writers have disjoint writable scopes/);
   });
 }
 
@@ -235,5 +239,53 @@ for (const layout of LAYOUTS) {
   test(`plan review propagation: ${layout} feature builder shows plan review and gate before implement`, () => {
     const fb = read(`${layout}/.claude/agents-snippets/feature-builder.md`);
     assert.match(fb, /Plan review \(fit-review, Plan review\) and any applicable confirmation must pass before step 3/);
+  });
+}
+
+// Split before dispatch: each authorized phase actively looks for independent work, keeps ready lanes
+// moving past blockers, and never splits ahead of gates or fakes a split.
+for (const layout of LAYOUTS) {
+  test(`orchestration: ${layout} snippet has one canonical Split Before Dispatch section`, () => {
+    const s = read(`${layout}/${SNIPPET}`);
+    assert.equal(s.match(/^### Split Before Dispatch$/gm)?.length, 1);
+    assert.match(s, /Run this at the start of each authorized phase \(discovery, planning, implementation, verification, review\) and again after each batch is reconciled/);
+    assert.match(s, /Dispatch all ready units whose writable scopes and inputs do not interfere, as one batch/);
+    assert.match(s, /A blocker pauses only its own lane and that lane's dependents/);
+    assert.match(s, /No work ahead of gates/);
+    assert.match(s, /No fake splits/);
+    assert.match(s, /No repeated checks/);
+    assert.match(s, /\*\*Match dispatch to host capability\.\*\* With native parallel dispatch, run ready lanes concurrently/);
+    assert.match(s, /With serial-only subagent dispatch, run the ready lanes one after another and say so in the report/);
+    assert.match(s, /With no subagent dispatch, follow Delegation Default/);
+    assert.match(s, /never self-review in place of an independent gate/);
+    assert.doesNotMatch(s, /No concurrency the host cannot run/);
+  });
+
+  test(`orchestration: ${layout} snippet requires a split or one-builder reason for every implementation unit`, () => {
+    const s = read(`${layout}/${SNIPPET}`);
+    assert.match(s, /Examine every broad accepted unit, even one that looks like a single task/);
+    assert.match(s, /Record either the split or a one-builder reason/);
+    assert.match(s, /one verifiable outcome and a focused brief/);
+    assert.match(s, /the exact focused check to run/);
+    assert.match(s, /The brief adds no task, acceptance criterion, or plan approval/);
+    assert.match(s, /Independent API and UI work may share a settled contract and run together/);
+    assert.match(s, /A UI unit waits only for unfinished output it consumes, or for a writable file it overlaps with/);
+    assert.match(s, /Shared read-only files create no wait/);
+    assert.match(s, /Split only when units can be completed and checked independently/);
+  });
+
+  test(`orchestration: ${layout} snippet keeps ownership and per-task commit safety`, () => {
+    const s = read(`${layout}/${SNIPPET}`);
+    assert.doesNotMatch(s, /A unit with an unknown scope is provisional/);
+    assert.match(s, /A task whose write set is unknown or undeclared runs serially until its scope is established/);
+    assert.match(s, /a successor must not overwrite unintegrated work from an earlier task/);
+    assert.match(s, /Before assigning a new writer to a prior scope, confirm the prior writer is done or stopped/);
+    assert.match(s, /Required review gates, the independent review or no-subagent fallback in Quality Gates, same-root repair, and settled-state verification still apply/);
+  });
+
+  test(`orchestration: ${layout} dispatch shape names the lane rule without the old 3+/2 shorthand`, () => {
+    const s = read(`${layout}/${SNIPPET}`);
+    assert.match(s, /\*\*Dispatch shape:\*\* 2\+ independent ready lanes → parallel dispatch, one agent per lane/);
+    assert.doesNotMatch(s, /3\+ independent tasks → `dispatching-parallel-agents`/);
   });
 }

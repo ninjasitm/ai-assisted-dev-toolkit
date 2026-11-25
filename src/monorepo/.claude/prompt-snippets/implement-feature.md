@@ -1,6 +1,6 @@
 # Implement Feature
 
-Implement a feature by completing tasks sequentially with proper tracking.
+Implement a feature by running its ready independent task lanes with proper tracking.
 
 ## Usage
 
@@ -26,13 +26,12 @@ Implement a feature by completing tasks sequentially with proper tracking.
    - Preserve the original full-feature text, acceptance criteria, and real checks separately for aggregate feature review; task-local inputs must not overwrite them.
 
 2. **Parallelization Analysis**:
-   - Scan task list for `[P]` markers and independent tasks
-   - Group tasks by domain (backend, frontend, docs, tests)
-   - Tasks that touch **different files with no shared state** → run their loops in parallel
-   - Tasks with dependencies or shared files → keep sequential
-   - Tasks with an unknown or undeclared write set → keep sequential until the scope is established
-   - Use `dispatching-parallel-agents` skill when 3+ independent tasks exist
-   - Once the task list and plan are approved, schedule the ready tasks with [autonomous-mode](../../.agents/skills/autonomous-mode/SKILL.md): run every dependency-ready task, park only a blocked task and its dependents, and queue human-only items for the developer last. Checkpoint C still gates each task's first build, and checkpoint D still runs before aggregate review.
+   - Scan the task list for independent tasks. `[P]` markers are optional hints that you verify against the write sets.
+   - Group tasks by domain (backend, frontend, docs, tests) and route each lane to the matching builder at the coordinator.
+   - If an approval gate already applies to this feature (for example a Factory spec or plan gate), it must be confirmed before any task is dispatched; honor it. This flow adds no new spec or plan approval requirement.
+   - Batch all ready lanes per [Split Before Dispatch](../rules-snippets/subagent-workflow.md#split-before-dispatch): dispatch every dependency-ready task whose writable scope is disjoint and whose inputs are settled as one batch. Tasks that share a writable path or read another task's output stay sequential. Tasks with an unknown or undeclared write set → keep sequential until the scope is established. Check whole-feature and integration constraints (shared files, shared config, feature-level checks, and any fixture or generated output with one owner) before batching, since a task-local view can miss them. A serial host runs the batch in order.
+   - Use `dispatching-parallel-agents` for a ready batch whose lanes are independent investigations or non-overlapping tasks.
+   - Schedule with [autonomous-mode](../../.agents/skills/autonomous-mode/SKILL.md): park only a blocked task and its dependents, and queue human-only items for the developer last. Checkpoint C still gates each task's first build, and checkpoint D still runs before aggregate review.
 
 3. **Create Feature Branch** (before any build):
 
@@ -45,7 +44,7 @@ Implement a feature by completing tasks sequentially with proper tracking.
 
 4. **Task Implementation** (sequential or parallel per analysis):
 
-   For each task, in dependency order:
+   For each dependent task, in dependency order (independent ready lanes run as a batch per step 2, and their loops may continue while the coordinator's integration writes run one at a time):
 
    a. **Mark Task In Progress**
 
@@ -60,22 +59,22 @@ Implement a feature by completing tasks sequentially with proper tracking.
    - Orchestrator: verify the checks yourself, dispatch the independent read-only reviewer, then decide.
    - Repair goes back to the builder. Repeat until the task is accepted or blocked. Do not commit or tick the task before acceptance. A blocked task parks itself and its dependents only (autonomous-mode); a parked mandatory task is never ticked or reported complete.
 
-   d. **Commit the Task** (after acceptance, only when there are accepted changes): stage only this task's paths, never `git add -A` or a foreign change, then commit. Skip the commit when nothing is staged.
+   d. **Commit the Task** (coordinator only, after acceptance, only when there are accepted changes and the flow authorizes commits): follow the Commit rule in [implement.md](implement.md). The index must be empty before staging: `git diff --cached --name-only` exits 0 and prints nothing. Stage only the task's accepted paths from the reconciled lane reports, by name and never `git add -A`. Then `git diff --cached --name-only` must list exactly those paths, and `git diff --cached --binary` must contain only the accepted changes, not a preexisting hunk. Any mismatch or git error parks the commit with the index left as it is. Commit only after both checks pass. Workers never stage or commit. Skip the commit when nothing is staged.
 
    ```bash
    git commit -m "feat({{SCOPE}}): {{DESCRIPTION}}"
    ```
 
-   e. **Mark Task Complete** (after the commit):
+   e. **Mark Task Complete** (coordinator only, after the commit):
    - Slim `tasks.md`: tick `- [x]` on the task's line
    - Legacy `tasks.md`: tick `- [x]` only on checkboxes under the current task's heading (until the next heading). Never tick checkboxes under other headings. If that heading has no checkboxes, report "no checkboxes under <heading>; nothing ticked" and continue
 
 5. **Feature Review** (aggregate loop, every round):
    - Restore the saved full-feature text, acceptance criteria, and real checks as the inputs for aggregate verification, independent review, and acceptance.
-   - **Alignment checkpoint D** (before aggregate verification and review): read and follow [fit-review](../rules-snippets/fit-review.md) for checkpoint D. Dispatch the independent read-only reviewer with the saved full-feature text and every amendment, the feature's summary and goals as context, the accepted spec and plan when the feature has them, and the reviewed inputs: the changed-file list of the current tree against the merge-base, including uncommitted and new files. Oracle when it is available read-only, otherwise a reviewer in fresh context. Only the explicit `VERDICT: PASS` releases aggregate verification and review. A `CHANGES` with any finding marked `requires user decision; do not auto-repair` stops the feature's aggregate acceptance until the user answers, even when other findings are repairable. A `CHANGES` where every finding is repairable goes to the builder that owns each file, and D runs again on the changed inputs: reuse is never allowed after a `CHANGES`, and a PASS is reused only under the fit-review freshness rule. A justified expansion (the fit-review Expansion rule) is a planner revision request; if the feature has accepted spec or plan files it changes, the user confirms it before the work continues. Unrelated authorized work continues. With no independent reviewer, aggregate acceptance is `BLOCKED`.
+   - **Alignment checkpoint D** (before aggregate verification and review): read and follow [fit-review](../rules-snippets/fit-review.md) for checkpoint D. Dispatch the independent read-only reviewer with the saved full-feature text and every amendment, the feature's summary and goals as context, the accepted spec and plan when the feature has them, and the reviewed inputs: the changed-file list of the current tree against the merge-base, including uncommitted and new files. Oracle when it is available read-only, otherwise a reviewer in fresh context. Only the explicit `VERDICT: PASS` releases aggregate verification and review. A `CHANGES` with any finding marked `requires user decision; do not auto-repair` stops the feature's aggregate acceptance until the user answers, even when other findings are repairable. A `CHANGES` where every finding is repairable goes to one root-cause owner per finding (step 5, Route each ordinary repair finding once), and D runs again on the changed inputs: reuse is never allowed after a `CHANGES`, and a PASS is reused only under the fit-review freshness rule. A justified expansion (the fit-review Expansion rule) is a planner revision request; if the feature has accepted spec or plan files it changes, the user confirms it before the work continues. Unrelated authorized work continues. With no independent reviewer, aggregate acceptance is `BLOCKED`.
    - Run implement.md steps 3, 4 and 5 for the **whole feature**, against every requirement from step 1, not only the last task.
    - Review scope: the current working tree against the merge-base, `git diff $(git merge-base {{DEFAULT_BRANCH}} HEAD)`. This covers committed task work, uncommitted repairs, and new files (read the untracked ones directly). Do not review only `{{DEFAULT_BRANCH}}...HEAD`: it misses uncommitted repairs and new files. Compare preexisting files against the saved baseline copies from step 1, as in implement.md step 4.
-   - Repairs go to the builder that owns each file, uncommitted. Then run steps 3–5 again on the current tree.
+   - Route each ordinary repair finding once, to one root-cause owner: the lane whose root cause it is, not the builder that owns each file. If a finding spans several scopes, first stop the prior writers (each confirmed done or stopped), reconcile their changed paths, then give one bounded handoff to one owner that covers the whole root cause. Repairs stay uncommitted. Checkpoint D runs again on the changed inputs before steps 3–5 run again on the current tree, and the independent review repeats.
    - Exits are the same as implement.md step 5: accepted, blocked, or needs a user decision. There is no round limit. Only acceptance ends the feature review successfully.
    - Autonomous mode: start aggregate review only once every mandatory task is accepted. While a mandatory task is parked, the feature is not accepted, and its human-only items go in the queued list from autonomous-mode.
 

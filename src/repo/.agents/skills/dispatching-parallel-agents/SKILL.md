@@ -7,15 +7,17 @@ description: Use when facing 2+ independent tasks that can be worked on without 
 
 ## Overview
 
-When you have multiple unrelated failures (different test files, different subsystems, different bugs), investigating them sequentially wastes time. Each investigation is independent and can happen in parallel.
+When multiple substantial units of work can proceed without interfering, doing them sequentially wastes time. This applies to discovery, implementation, testing, and review—not just investigating failures.
 
-**Core principle:** Dispatch one agent per independent problem domain. Let them work concurrently.
+**Core principle:** At each authorized phase, dispatch all ready, independent lanes together; reconcile the batch, then find the next ready lanes. Do not force one agent per file or create artificial splits.
 
 ## When to Use
 
+Read and follow [the shared subagent workflow](../../../.claude/rules-snippets/subagent-workflow.md#split-before-dispatch) for phase-by-phase splitting, ownership, dependencies, and host fallbacks. This skill gives examples; it does not redefine that workflow.
+
 ```dot
 digraph when_to_use {
-    "Multiple failures?" [shape=diamond];
+    "2+ substantial independent lanes?" [shape=diamond];
     "Are they independent?" [shape=diamond];
     "Single agent investigates all" [shape=box];
     "One agent per problem domain" [shape=box];
@@ -23,7 +25,7 @@ digraph when_to_use {
     "Sequential agents" [shape=box];
     "Parallel dispatch" [shape=box];
 
-    "Multiple failures?" -> "Are they independent?" [label="yes"];
+    "2+ substantial independent lanes?" -> "Are they independent?" [label="yes"];
     "Are they independent?" -> "Single agent investigates all" [label="no - related"];
     "Are they independent?" -> "Can they work in parallel?" [label="yes"];
     "Can they work in parallel?" -> "Parallel dispatch" [label="yes"];
@@ -34,6 +36,7 @@ digraph when_to_use {
 **Use when:**
 
 - 3+ test files failing with different root causes
+- 2+ substantial implementation lanes with settled, independent inputs
 - Multiple subsystems broken independently
 - Each problem can be understood without context from others
 - No shared state between investigations
@@ -77,12 +80,14 @@ Task("Fix tool-approval-race-conditions.test.ts failures");
 
 ### 4. Review and Integrate
 
-When agents return:
+When a batch returns:
 
 - Read each summary
 - Verify fixes don't conflict
-- Run full test suite
-- Integrate all changes
+- Reconcile outputs before dispatching dependent lanes
+- Run the appropriate settled verification once
+
+For implementation, pass each builder the original task requirements, exclusive writable paths, settled contracts and dependencies, and the exact focused check. Independent work can proceed against a shared settled contract; wait only for unfinished outputs or overlapping writes. Coupled work stays with one owner or runs serially.
 
 ## Agent Prompt Structure
 
@@ -139,8 +144,8 @@ For full-stack or cross-cutting features, dispatch domain specialists in paralle
 | Multi-subsystem fix | Backend Architect (service A) + Backend Architect (service B) | Independent service bugs                                     |
 | Cross-app monorepo  | Specialist per app                                            | Same feature in `apps/web` + `apps/api` (no shared packages) |
 
-**Safe to parallelize:** Agents have exclusive writable scopes (no shared files/directories) and no shared state. Build the dependency graph first; see `.claude/rules-snippets/subagent-workflow.md`.
-**Still sequential:** Tasks that share files, database migrations, or API contracts that one depends on.
+**Safe to parallelize:** Writers have disjoint writable scopes and settled inputs. A shared read-only file or settled contract does not require waiting.
+**Wait:** A lane that needs another lane's unfinished output, or that writes a conflicting file or shared mutable resource, runs after that dependency is reconciled. Build the dependency graph first; see `.claude/rules-snippets/subagent-workflow.md`.
 
 ## When NOT to Use
 

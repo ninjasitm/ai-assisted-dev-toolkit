@@ -1118,7 +1118,8 @@ test('contradictions: AGENTS keeps the confirmations and states plan-only; the w
     const agents = srcText(tpl, 'AGENTS.md');
     assert.doesNotMatch(agents, /stops at a spec gate and a plan gate for your confirmation/, tpl + ': old contradiction gone');
     assert.match(agents, /stops at a plan gate for your confirmation before any ticket or build/, tpl + ': plan gate stated');
-    assert.match(agents, /Spec and plan confirmations stay mandatory human steps in every approval mode\. On the plan-only route there is no spec to confirm/, tpl + ': confirmations and plan-only');
+    assert.match(agents, /Spec and plan confirmations stay mandatory human steps in every approval mode\./, tpl + ': mandatory human confirmations');
+    assert.match(agents, /When the configured workflow supports and selects the plan-only route, there is no spec to confirm/, tpl + ': plan-only is conditional on configured support');
     assert.match(agents, /With `--retro`, each acceptance decision also saves an advisory retro report, which never changes a gate\./, tpl + ': retro sentence');
     const wrapper = srcText(tpl, '.claude', 'prompt-snippets', 'factory.md');
     assert.match(wrapper, /Spec before plan, on the spec route only: the spec gate holds the spec, and no plan is written until the operator confirms it in chat\. Drafting a spec is not approval\./, tpl + ': spec before plan');
@@ -1490,6 +1491,215 @@ test('B2: only a parked technical root with a RESOLVED row whose key matches the
     assert.match(step4, /A row whose key differs is not executable: the task stays parked with reason "advice key no longer matches current inputs; rework to ask again", and it is listed in `## Needs you`\./, tpl + ': mismatch stays parked and reported');
     const step7 = section(skill, '7. **Resume (parked-task resume).**', '### Alignment checkpoint A');
     assert.match(step7, /Rows are handled as in step 3 and step 4/, tpl + ': resumed unconsumed rows use the step 4 key check');
+  }
+});
+
+// Build lanes: one procedure that is every builder dispatch. Pins the simplified contract only: a batch record with
+// dispatch identity and four statuses, parallel disjoint lanes, one owner that integrates only when no writer is live,
+// literal-path commits in a fixed order, resume from recorded rows (never mtime), and no automatic replay or retry.
+const LANE_LAYOUTS = ['repo', 'monorepo'];
+const laneBrief = (tpl) => srcText(tpl, '.agents', 'skills', 'factory', 'roles', 'build.md');
+const laneSection = (tpl) => section(factorySkill(tpl), '## Build lanes', '## Loop');
+const briefLanes = (tpl) => section(laneBrief(tpl), '## Lanes', '## Rules');
+// Backticked git commands, excluding the prohibitions and the read-only `git log`.
+const gitCommands = (text) => [...text.matchAll(/`(git [^`]+)`/g)].map((m) => m[1]).filter((c) => !/add -A|commit -a|add \.(\s|$)|^git log\b|^git hash-object --stdin$/.test(c));
+
+test('build lanes: one procedure section, linked to the split rules, adds no approval, and matches across layouts', () => {
+  for (const tpl of LANE_LAYOUTS) {
+    const skill = factorySkill(tpl);
+    assert.equal(skill.match(/^## Build lanes$/gm)?.length, 1, tpl + ': one Build lanes section');
+    const lanes = laneSection(tpl);
+    assert.match(lanes, /\[subagent-workflow\]\(\.\.\/\.\.\/\.\.\/\.claude\/rules-snippets\/subagent-workflow\.md#split-before-dispatch\)/, tpl + ': links canonical split rule');
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'src', tpl, '.claude', 'rules-snippets', 'subagent-workflow.md')), tpl + ': link target exists');
+    assert.match(lanes, /The procedure is the dispatch, and its phases are dispatches\./, tpl + ': the procedure is the dispatch');
+    assert.match(lanes, /It runs on both routes, adds no approval, confirmation, or stop, and never asks the operator\./, tpl + ': no new approval');
+    assert.match(lanes, /Stage, mode, round, Oracle, approval, and guided-attempt budgets are unchanged\./, tpl + ': budgets unchanged');
+    assert.match(lanes, /Units come from settled inputs and owned paths, not `\[P\]` markers, so add no markers\./, tpl + ': no fake [P]');
+    assert.doesNotMatch(lanes, /numbered choice/, tpl + ': no approval choice');
+    assert.match(skill, /1\. Confirm the plan\. Offered only when the current fit review is an explicit `VERDICT: PASS`\./, tpl + ': plan confirmation unchanged');
+    assert.match(skill, /1\. Confirm the spec\. Offered only when no `\[PRODUCT DECISION\]` item is open/, tpl + ': spec confirmation unchanged');
+  }
+  assert.equal(laneSection('repo'), laneSection('monorepo'), 'procedure identical in both layouts');
+  assert.equal(briefLanes('repo'), briefLanes('monorepo'), 'builder Lanes brief identical in both layouts');
+});
+
+test('build lanes: every builder dispatch path names the procedure with its mode, paths block, and brief', () => {
+  for (const tpl of LANE_LAYOUTS) {
+    const skill = factorySkill(tpl);
+    assert.match(section(skill, '6. **Build.**', '7. **Review round N.**'), /Run the Build lanes procedure in build mode \(brief `roles\/build\.md`, paths block\)/, tpl + ': initial build');
+    assert.match(section(skill, '### Repair', '### Autonomous pass'), /Run the Build lanes procedure in repair mode \(brief `roles\/build\.md`, paths block\), where `Round` is the round just reviewed/, tpl + ': review repair');
+    assert.match(section(skill, '### Alignment checkpoint A', '### Builder continuity'), /run the Build lanes procedure in repair mode \(brief `roles\/build\.md`, paths block\) with `Round` set to `U`/, tpl + ': checkpoint A repair');
+    assert.match(section(skill, '4. **Guided re-dispatch, once.**', '5. **Inconclusive.**'), /Run the Build lanes procedure in `autonomous` mode \(brief `roles\/build\.md`, paths block\) over the executable roots/, tpl + ': autonomous re-dispatch');
+    assert.match(section(skill, '`/factory rework <job-id> <note>`:', '## Functional QA'), /Run the Build lanes procedure in rework mode \(brief `roles\/build\.md`, paths block\), as a fresh builder\./, tpl + ': rework');
+    assert.match(section(skill, '| Stage | Resume action |', '| `abandoned` |'), /otherwise an interrupted build runs the Build lanes procedure in build mode \(brief `roles\/build\.md`\) \|/, tpl + ': interrupted build row');
+    assert.match(section(skill, '### Autonomous pass', '### Alignment checkpoint A'), /\(legacy jobs; a job with a batch record resumes as Build lanes, step 10 directs\)\./, tpl + ': parked-task resume scoped');
+  }
+});
+
+test('build lanes: the batch record is the only record, written before dispatch, with dispatch identity and four statuses', () => {
+  for (const tpl of LANE_LAYOUTS) {
+    const skill = factorySkill(tpl);
+    const lanes = laneSection(tpl);
+    assert.match(lanes, /Before the first dispatch of a batch, write `round-<K>\/lanes-<w>\.md`/, tpl + ': record before dispatch');
+    assert.match(lanes, /`w` is the next free index in the job, never reused\)/, tpl + ': index never reused');
+    assert.match(lanes, /Each dispatch has a row with its token `W<w>\.<plan \| L<n> \| integrate \| single>`/, tpl + ': token identity');
+    assert.match(lanes, /`launched`: written before dispatch\. No reply is recorded, so the writer may still be running\./, tpl + ': launched');
+    assert.match(lanes, /`returned`: the reply is recorded with its paths and check results\./, tpl + ': returned');
+    assert.match(lanes, /`done`: the owner's return step has been applied to a final\./, tpl + ': done');
+    assert.match(lanes, /`stopped`: the operator confirmed the agent stopped\. Its unit is parked\./, tpl + ': stopped');
+    assert.match(lanes, /The header holds the mode, round, stage at start, input/, tpl + ': header keeps mode, input, return, budget');
+    assert.match(skill, /round-<N>\/lanes-<w>\.md   build batch record/, tpl + ': layout names the batch record');
+  }
+});
+
+test('build lanes: ready disjoint work runs in parallel, only intersecting work waits, and integration waits for every live writer', () => {
+  for (const tpl of LANE_LAYOUTS) {
+    const lanes = laneSection(tpl);
+    assert.match(lanes, /Dispatch every ready unit whose owned paths do not intersect another open unit's paths, as one batch\./, tpl + ': disjoint runs together');
+    assert.match(lanes, /Intersecting units wait until the other unit is integrated or parked\./, tpl + ': only intersecting work waits');
+    assert.match(lanes, /Independent lanes never wait for a stalled one\./, tpl + ': stall does not block independents');
+    assert.match(lanes, /Integrate runs only when no row is `launched`: no writer is live, and nothing new is dispatched while it runs\./, tpl + ': owner barrier');
+  }
+});
+
+test('build lanes: a stalled writer holds only its unit, drains other safe work, escalates last, and never loses partial work', () => {
+  for (const tpl of LANE_LAYOUTS) {
+    const lanes = laneSection(tpl);
+    assert.match(lanes, /A `launched` row with no reply may still be running, so its unit is held\./, tpl + ': held unit');
+    assert.match(lanes, /All other ready, disjoint work still runs and returns first\./, tpl + ': drain first');
+    assert.match(lanes, /Only when no such work remains does the batch stop as `needs-human`: `<lane or owner> has no recorded reply for <token>`\./, tpl + ': escalate last');
+    assert.match(lanes, /Remedy: the operator stops the agent, confirms it in the resume request, and runs `\/factory start <id>`\./, tpl + ': remedy');
+    assert.match(lanes, /its partial paths stay in place, parked: never reverted, restored, or committed\./, tpl + ': partial kept');
+    assert.match(lanes, /only through an authorized rework note\. The next batch records each baseline path with its expected content \(blob id\), mode, and index state/, tpl + ': baseline only via rework, with expected state');
+    assert.match(lanes, /checks each entry against the current state before dispatch\. A path that cannot be ascertained, or that differs, parks the unit, and nothing is dispatched on it\./, tpl + ': baseline checked before dispatch');
+    assert.match(lanes, /Attribution judges the lane's delta from that recorded baseline against its claim, never equality with the baseline after the lane's writes\./, tpl + ': delta from baseline, not equality');
+    assert.doesNotMatch(lanes, /Byte equality with an expected end state/, tpl + ': no end-state byte equality');
+  }
+});
+
+test('build lanes: a unit is committed against a frozen staged patch and a mismatch parks rather than undoes', () => {
+  for (const tpl of LANE_LAYOUTS) {
+    const lanes = laneSection(tpl);
+    const brief = briefLanes(tpl);
+    assert.match(lanes, /Freeze the candidate: `git --literal-pathspecs diff --cached --binary --full-index -- <paths>`\. It must exit 0, be non-empty, and match the reply's paths and statuses\./, tpl + ': frozen staged binary patch');
+    assert.match(lanes, /Hold it for this commit only, as transient evidence; it is never written to the job folder\./, tpl + ': transient, not a record');
+    assert.match(lanes, /The working tree must equal the index for the unit's paths: `git --literal-pathspecs diff --binary --full-index -- <paths>` is empty\./, tpl + ': working tree equals index before check');
+    assert.match(lanes, /the same empty diff must hold after it\./, tpl + ': and after the check');
+    assert.match(lanes, /It must be byte-identical to the frozen candidate, and `git --literal-pathspecs diff --cached --name-status` must show the same entries as before step 1 for every path outside the unit\./, tpl + ': re-capture and unrelated index preserved');
+    assert.match(lanes, /is byte-identical to the frozen candidate\./, tpl + ': committed patch equals candidate');
+    assert.match(lanes, /On any mismatch, park the unit and do not undo: no reset, restore, checkout, or stash\./, tpl + ': mismatch parks, never undoes');
+    assert.doesNotMatch(lanes, /with the reported statuses\. Otherwise park\./, tpl + ': name-status alone no longer commits');
+    assert.match(brief, /freeze the staged binary patch, check the working tree equals the index/, tpl + ': brief freezes the patch');
+    assert.match(brief, /verify the commit's paths and binary patch against the frozen candidate\./, tpl + ': brief verifies the binary patch');
+  }
+});
+
+test('build lanes: the owner commits each unit with literal paths in a fixed order, and no forbidden git form appears', () => {
+  for (const tpl of LANE_LAYOUTS) {
+    const lanes = laneSection(tpl);
+    const brief = briefLanes(tpl);
+    order(lanes, '1. `git --literal-pathspecs add -- <paths>`', 'Freeze the candidate');
+    order(lanes, 'Freeze the candidate', 'Run the focused check');
+    order(lanes, 'Run the focused check', 'Re-capture the staged patch');
+    order(lanes, 'Re-capture the staged patch', '5. `git --literal-pathspecs commit -m <subject> -- <paths>`');
+    order(lanes, '5. `git --literal-pathspecs commit -m <subject> -- <paths>`', '6. Verify:');
+    for (const text of [lanes, brief]) {
+      for (const c of gitCommands(text)) {
+        assert.match(c, /^git --literal-pathspecs( |$)/, tpl + ': every git command is literal: ' + c);
+      }
+    }
+    assert.match(lanes, /This stages only the unit's paths, including new and deleted ones\./, tpl + ': stage is scoped');
+    assert.match(lanes, /It commits only those paths, and other staged entries stay staged\./, tpl + ': commit is scoped');
+    assert.match(lanes, /A success from before a change does not count\./, tpl + ': fresh check');
+    assert.match(lanes, /Never use `git add -A`, `git commit -a`, a path-less commit, `reset`, `stash`, `checkout`, or a forced operation\./, tpl + ': prohibitions');
+    assert.match(brief, /Never use `git add -A`, `git commit -a`, a path-less commit, `reset`, `stash`, or `checkout`\./, tpl + ': brief prohibitions');
+  }
+});
+
+test('build lanes: task ticks happen only on the task-list route, and plan-only never creates tasks.md', () => {
+  for (const tpl of LANE_LAYOUTS) {
+    const lanes = laneSection(tpl);
+    assert.match(lanes, /Only then, and only on the task-list route where the unit's `tasks\.md` line exists, tick it\./, tpl + ': tick on task-list route');
+    assert.match(lanes, /On plan-only, never create `tasks\.md`; the reply records the commit and the plan step ID\./, tpl + ': plan-only logs instead');
+    assert.match(laneBrief(tpl), /Tick `tasks\.md` only on the task-list route\./, tpl + ': brief tick rule');
+    assert.match(laneBrief(tpl), /tasks\.md` `\(task-list route\)|If `tasks\.md` exists \(task-list route; plan-only has none, so create none\)/, tpl + ': builder rule conditional');
+  }
+});
+
+test('build lanes: resume follows recorded rows, never modification times, and an unclear record parks instead of replaying', () => {
+  for (const tpl of LANE_LAYOUTS) {
+    const skill = factorySkill(tpl);
+    const lanes = laneSection(tpl);
+    assert.match(lanes, /`launched` with no reply: wait for the confirmation of step 5\. Nothing is replayed\./, tpl + ': launched waits');
+    assert.match(lanes, /A recorded `returned` plan reply: launch only lanes with no row yet\./, tpl + ': returned plan launches only undispatched lanes');
+    assert.match(lanes, /A `returned` lane row is never re-dispatched\. Its recorded reply stays its result, and it integrates only if the handoff is clear: the reply carries the current token, its paths match its row, and no later row touches them\./, tpl + ': returned lane kept, handoff must be clear');
+    assert.match(lanes, /Otherwise park it as `needs-human`, remedy `\/factory rework <id> <note>`\./, tpl + ': unclear handoff parks');
+    assert.match(lanes, /A `ready` reply with no later batch: write the next batch\./, tpl + ': ready continues');
+    assert.match(lanes, /No stop is requested for a returned writer\. Only a `launched` row with no reply needs confirmation \(step 5\)\./, tpl + ': no stop for returned writer');
+    assert.doesNotMatch(lanes, /returned` plan reply, or a `ready` reply with no later batch/, tpl + ': the merged rule is gone');
+    assert.match(lanes, /A `returned` final that is not `done`: the return may or may not have run, and the record cannot prove which\./, tpl + ': ambiguous final');
+    assert.match(lanes, /Park as `needs-human`, remedy `\/factory rework <id> <note>`\. Never rerun the return\./, tpl + ': park, never rerun');
+    assert.match(lanes, /A `done` final: resume from the persisted stage \(review, approval, or human handoff\)\./, tpl + ': done resumes from stage');
+    assert.match(lanes, /Anything unclear preserves every edit and index entry, and parks the affected work\./, tpl + ': preserve on unclear');
+    assert.match(lanes, /Nothing is retried, committed, ticked, or bypassed automatically, and a resume grants no approval, Oracle ask, or budget\./, tpl + ': no automatic action');
+    assert.match(lanes, /A job with no batch record is legacy and keeps the earlier rules\./, tpl + ': legacy keeps old rules');
+    assert.match(skill, /For a job with a batch record, no rule in this skill uses modification times or a READY in `build\.md` as evidence of a result/, tpl + ': mtime and READY are not evidence');
+    assert.match(skill, /0\. A job with a batch record resumes by its rows, for any stage \(Build lanes, step 10\)\. Rules 1 to 4 apply to legacy jobs \(no batch record\) only\./, tpl + ': rule 0');
+    assert.match(skill, /a batch row is `launched` with no recorded reply, and the operator has not confirmed in this request that its agent stopped \(Build lanes, step 5\)/, tpl + ': stop-first only for launched');
+  }
+});
+
+test('build lanes: the removed recovery machinery stays removed from the procedure and the brief', () => {
+  for (const tpl of LANE_LAYOUTS) {
+    for (const text of [laneSection(tpl), briefLanes(tpl)]) {
+      assert.doesNotMatch(text, /journal|consumed|intermediate|candidate key|snapshot|reconstruct|sha256|content hash/i, tpl + ': no journal, consume, or key machinery');
+    }
+    assert.doesNotMatch(laneSection(tpl), /While any row is `launched`|A stalled lane blocks only|staged blob matching the candidate/, tpl + ': earlier contradictions gone');
+  }
+});
+
+test('build lanes: step cross-references point at existing numbered steps with the stated topics', () => {
+  for (const tpl of LANE_LAYOUTS) {
+    const lanes = laneSection(tpl);
+    const topics = Object.fromEntries([...lanes.matchAll(/^(\d+)\. \*\*([^*]+)\.\*\*/gm)].map((m) => [Number(m[1]), m[2]]));
+    assert.equal(topics[5], 'Stalled writers', tpl + ': step 5 topic');
+    assert.equal(topics[7], 'Commit a unit (owner, literal paths)', tpl + ': step 7 topic');
+    assert.equal(topics[9], 'Results', tpl + ': step 9 topic');
+    assert.equal(topics[10], 'Resume', tpl + ': step 10 topic');
+    const refs = [...factorySkill(tpl).matchAll(/Build lanes, step (\d+)/g)].map((m) => Number(m[1]));
+    assert.ok(refs.length >= 4, tpl + ': the skill cross-references the procedure');
+    for (const r of refs) assert.ok(r in topics, tpl + ': cross-reference to missing step ' + r);
+    for (const m of laneBrief(tpl).matchAll(/Build lanes step (\d+)/g)) assert.ok(Number(m[1]) in topics, tpl + ': brief cross-reference to missing step ' + m[1]);
+  }
+});
+
+test('build lanes: the owner and lane briefs keep one writer and the reply echoes the token', () => {
+  for (const tpl of LANE_LAYOUTS) {
+    const brief = laneBrief(tpl);
+    const lanes = briefLanes(tpl);
+    assert.match(lanes, /You are the only writer of `qa\.md`, `tasks\.md`, commits, and `build\.md`\./, tpl + ': one writer');
+    assert.match(lanes, /Plan: write the QA plan rows into `qa\.md` before any lane writes code \(Output, item 2\)\./, tpl + ': QA plan before code');
+    assert.match(lanes, /accept only lane replies with the current token/, tpl + ': token check');
+    assert.match(lanes, /Reply `ready: <task ids>` while a ready unit remains, and write no file\./, tpl + ': intermediate reply');
+    assert.match(lanes, /Write only your owned paths\. Write no `build\.md`, `qa\.md`, `tasks\.md`, `job\.json`, or other job record\./, tpl + ': lane writes only its paths');
+    assert.match(lanes, /Never stage, commit, tick, stash, revert, reset, checkout, or touch the index or refs\./, tpl + ': lane never touches index');
+    assert.match(lanes, /Start no dev server, use no port, and touch no database or fixture\./, tpl + ': lane never uses shared resources');
+    assert.match(lanes, /Leave everything in place, including pre-existing dirt\./, tpl + ': dirt preserved');
+    assert.match(lanes, /Never write `STATUS`\./, tpl + ': lane never writes STATUS');
+    assert.match(brief, /A lane worker never commits \(see Lanes\)\./, tpl + ': worker never commits note kept');
+    assert.match(brief, /Commit your code, your `tasks\.md` ticks, and `qa\.md` with your work\./, tpl + ': existing commit rule kept');
+    assert.match(brief, /- \*\*Lanes:\*\* any mode can run as a lane worker or as the integration owner\./, tpl + ': modes name lanes');
+  }
+});
+
+test('build lanes: the autonomous pass defers scheduling to the procedure and keeps its Oracle and guided budgets', () => {
+  for (const tpl of LANE_LAYOUTS) {
+    const skill = factorySkill(tpl);
+    assert.doesNotMatch(skill, /one serial run at a time|runs no parallel batch|A Factory build has one builder/, tpl + ': former serial rule removed');
+    const pass = section(skill, '### Autonomous pass', '### Alignment checkpoint A');
+    assert.match(pass, /Factory scheduling is the Build lanes procedure: the pass's newly eligible items are split into lanes and dispatched there, in ready batches\./, tpl + ': scheduling by the procedure');
+    assert.match(pass, /Do not apply its Scheduling section\./, tpl + ': autonomous-mode Scheduling still not applied');
+    assert.match(pass, /one Oracle ask per task per cycle, one guided re-dispatch per task per cycle/, tpl + ': Oracle and guided budgets unchanged');
   }
 });
 

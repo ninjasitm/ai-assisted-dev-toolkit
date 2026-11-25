@@ -219,15 +219,18 @@ test('patch: the plan is printed before the first file is written', (t) => {
   const log = console.log;
   const copy = fs.copyFileSync;
   const write = fs.writeFileSync;
+  const writeSync = fs.writeSync;
   console.log = (...args) => events.push(`log:${args.join(' ')}`);
   fs.copyFileSync = (...args) => { events.push('write'); return copy(...args); };
   fs.writeFileSync = (...args) => { events.push('write'); return write(...args); };
+  fs.writeSync = (...args) => { events.push('write'); return writeSync(...args); };
   try {
     cli.cmdPatch(d, { repo: true });
   } finally {
     console.log = log;
     fs.copyFileSync = copy;
     fs.writeFileSync = write;
+    fs.writeSync = writeSync;
   }
   const planAt = events.findIndex((e) => e.startsWith('log:') && e.includes('Plan:'));
   const firstWrite = events.indexOf('write');

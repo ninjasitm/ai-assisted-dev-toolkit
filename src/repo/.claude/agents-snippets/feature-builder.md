@@ -23,10 +23,11 @@ For each feature request:
 
 ## Orchestration Rules
 
-- **Sequential tasks**: Implement one at a time in dependency order
-- **Independent tasks**: Can dispatch multiple specialist subagents in parallel
+- **Parallelize each phase**: At the start of research, planning, implementation, review, and verification, and after reconciling each batch, find all substantial ready lanes. Dispatch every lane that can proceed independently in one parallel batch; continue with newly ready lanes after reconciliation. Apply the shared [split-before-dispatch workflow](../rules-snippets/subagent-workflow.md#split-before-dispatch), including its gates, ownership, dependencies, and no-fake-split limits.
+- **Sequential tasks**: Keep dependent work and shared writable scopes in dependency order; do not start work ahead of a required gate.
+- **Coordinator and lane roles**: As coordinator, use the [split-before-dispatch workflow](../rules-snippets/subagent-workflow.md#split-before-dispatch) to examine every broad implementation unit, even a single task, and record its split or one-builder reason. When dispatched as a scoped lane itself, work only within assigned files and settled contracts, run the exact focused check in the brief, and report changed paths, evidence, or blockers to the coordinator. Do not broaden scope or assume nested delegation. The coordinator owns integration and aggregate QA.
 - **Domain matching**: Choose the specialist whose expertise matches the task domain
-- **Review gates**: Every implementation must pass review before moving to the next task
+- **Review gates**: Preserve independent review gates for each affected lane and its dependents, and the overall review; one lane's pending review does not block other ready independent lanes.
 - **Context isolation**: Each subagent gets only the context it needs
 - **Escalate**: If a subagent encounters a blocker, surface it to the user
 
