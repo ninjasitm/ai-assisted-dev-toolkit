@@ -259,6 +259,10 @@ The toolkit includes 40 pre-installed universal skills in `src/repo/.agents/skil
 | `writing-plans`                  | Creating implementation plans            |
 | `writing-skills`                 | Creating effective SKILL.md files        |
 
+## Maintainer Branch and Deployment Policy
+
+For toolkit-maintainer work, branch from the current `dev` branch, including release preparation; `main` is the production branch and is a work base only when the user explicitly asks to patch a production issue. Keep `dev` synchronized with `main`: promptly backport or otherwise safely sync every change made on `main`—including production patches and release bookkeeping—back to `dev` after deployment. Preserve the repository’s normal review/approval gates and use a non-destructive sync; do not overwrite divergent work. If synchronization cannot be completed safely, stop and report the divergence for resolution.
+
 ## Working on This Repository
 
 When modifying templates:
