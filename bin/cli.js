@@ -1108,11 +1108,69 @@ function printReview(review, dryRun) {
   review.writes.forEach((w, i) => console.log(`    ${i + 1}. ${w.path} [${w.kind}] sha256 ${w.sha256.slice(0, 12)}`));
 }
 
-// Writes the reviewed bytes in order. Each target is rechecked against its reviewed state first. A change
-// stops the run with the earlier writes in place and the version marker still at its prior value.
+// Opens one reviewed target and checks that the descriptor is the reviewed file. A missing target is created
+// with O_EXCL, so anything that appeared since the review makes the open fail (null). An existing regular file
+// is opened without create or truncate; its descriptor must match the reviewed identity and hold the reviewed
+// bytes. In both cases the path must still name the same file as the descriptor. Returns null on any mismatch.
+const NO_FOLLOW = fs.constants.O_NOFOLLOW || 0;
+
+// `opening.created` is set as soon as an exclusive create succeeds, so the caller knows the file now exists even
+// if a later check fails.
+function openReviewedTarget(to, reviewed, opening) {
+  const created = reviewed.kind === 'missing';
+  if (!created && reviewed.kind !== 'file') return null;
+  let fd;
+  try {
+    fd = created
+      ? fs.openSync(to, fs.constants.O_WRONLY | fs.constants.O_CREAT | fs.constants.O_EXCL | NO_FOLLOW, 0o666)
+      : fs.openSync(to, fs.constants.O_RDWR | NO_FOLLOW);
+  } catch (ex) {
+    if (['EEXIST', 'ENOENT', 'ELOOP'].includes(ex.code)) return null;
+    throw ex;
+  }
+  if (created) opening.created = true;
+  let keep = false;
+  try {
+    const st = fs.fstatSync(fd);
+    if (!st.isFile()) return null;
+    if (!created && (identityOf(st) !== reviewed.identity || sha256(fs.readFileSync(fd)) !== reviewed.sha256)) return null;
+    let onPath;
+    try {
+      onPath = fs.lstatSync(to);
+    } catch (ex) {
+      if (ex.code === 'ENOENT') return null;
+      throw ex;
+    }
+    if (!onPath.isFile() || onPath.dev !== st.dev || onPath.ino !== st.ino) return null;
+    keep = true;
+    return fd;
+  } finally {
+    if (!keep) fs.closeSync(fd);
+  }
+}
+
+// Writes the whole buffer at offset 0 through the descriptor. A short write continues from where it stopped.
+function writeAllSync(fd, buf) {
+  let off = 0;
+  while (off < buf.length) {
+    const n = fs.writeSync(fd, buf, off, buf.length - off, off);
+    if (!(n > 0)) throw new Error('no bytes were written');
+    off += n;
+  }
+}
+
+// Writes the reviewed bytes in order. Each target is rechecked against its reviewed state first, then opened once
+// and written through that descriptor (see openReviewedTarget). The mode is set on the descriptor. A change stops
+// the run with the earlier writes in place and the version marker still at its prior value. A failure after a
+// target was opened can leave that file partly written; it is reported, not removed by path.
+// Failure reporting. Before the version marker is touched, a failure means it was not advanced. From the first
+// change to the marker onward (an exclusive create, or the first write/truncate/mode/close on it), the marker's
+// state is unknown, so the message says so and does not claim it was not advanced. No rollback is attempted.
 function applyPatchReview(cwd, review) {
   let done = 0;
-  const stop = (why) => new Error(`${why} Stopped after ${done} of ${review.writes.length} write(s); the version marker was not advanced. Run patch --dry-run again.`);
+  const total = review.writes.length;
+  const stop = (why) => new Error(`${why} Stopped after ${done} of ${total} write(s); the version marker was not advanced. Run patch --dry-run again.`);
+  const unconfirmed = (why) => new Error(`${why} Stopped after ${done} of ${total} write(s). The version marker state is unconfirmed: it was being changed, so it may or may not have advanced. Inspect ${VERSION_KEY} and run patch --dry-run again.`);
   const written = new Map(review.writes.map((w) => [w.path, w]));
   for (const w of review.writes) {
     if (w.kind === 'version') {
@@ -1123,14 +1181,40 @@ function applyPatchReview(cwd, review) {
         if (!same) throw stop(`${g.path} changed during the writes.`);
       }
     }
+    const marker = w.kind === 'version';
     if (!sameState(w.reviewed, pathState(cwd, w.path))) throw stop(`${w.path} changed after review.`);
     const to = path.join(cwd, ...w.path.split('/'));
+    const opening = { created: false };
+    let fd = null;
     try {
       fs.mkdirSync(path.dirname(to), { recursive: true });
-      fs.writeFileSync(to, w.content);
-      if (w.mode !== null) fs.chmodSync(to, w.mode);
+      fd = openReviewedTarget(to, w.reviewed, opening);
     } catch (ex) {
-      throw stop(`Failed writing ${w.path} (${ex.message}).`);
+      const why = `Failed writing ${w.path} (${ex.message}).`;
+      throw marker && opening.created ? unconfirmed(why) : stop(why);
+    }
+    if (fd === null) {
+      const why = `${w.path} changed after review.`;
+      throw marker && opening.created ? unconfirmed(why) : stop(why);
+    }
+    // From here on, a change to the marker has started when it is the marker. Every later failure is unconfirmed.
+    let failure = null;
+    try {
+      writeAllSync(fd, w.content);
+      fs.ftruncateSync(fd, w.content.length);
+      if (w.mode !== null) fs.fchmodSync(fd, w.mode);
+    } catch (ex) {
+      failure = { what: 'Failed writing', ex };
+    }
+    try {
+      fs.closeSync(fd);
+    } catch (ex) {
+      if (failure) failure.closeEx = ex;
+      else failure = { what: 'Failed closing', ex };
+    }
+    if (failure) {
+      const why = `${failure.what} ${w.path} (${failure.ex.message}).${failure.closeEx ? ` Closing it also failed (${failure.closeEx.message}).` : ''}`;
+      throw marker ? unconfirmed(why) : stop(`${why} ${w.path} may be partly written and was not removed.`);
     }
     done++;
   }

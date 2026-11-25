@@ -198,6 +198,8 @@ For detailed standards on specific topics, refer to these skills in `.agents/ski
 
 ## ⚠️ CRITICAL: Orchestration Checkpoint (READ FIRST)
 
+At the start of each phase and after each reconciled batch, identify all substantial ready independent work. Split broad implementation before dispatch into focused owners with disjoint writable scopes and settled dependencies; dispatch the whole ready batch. Preserve approval and review gates. See [Split Before Dispatch](.claude/rules-snippets/subagent-workflow.md#split-before-dispatch).
+
 **BEFORE starting ANY multi-step task, MUST read this section:**
 
 If your work involves **2+ of these activities**, you MUST use orchestrator-first flow:
@@ -355,7 +357,7 @@ Workers are dispatched by coordinators and are not directly user-invocable.
 - General implementation → Implementer
 
 **Sequential**: Dependent tasks, and tasks that share a writable file or package, run one at a time in dependency order.
-**Parallel**: Ready tasks with exclusive writable scopes (e.g., changes in different apps) run together as one batch. Reconcile each batch's results before dispatching the next.
+**Parallel**: At the start of each phase and after reconciling each batch, find all substantial ready independent work and dispatch it together where scopes are disjoint and inputs settled. Split broad implementation before dispatch into focused owners; keep dependent and shared-write tasks sequential. Reconcile each batch's results before dispatching the next. Preserve approval and review gates. See [Split Before Dispatch](.claude/rules-snippets/subagent-workflow.md#split-before-dispatch).
 
 **Monorepo-specific**: When implementing features that span multiple apps, coordinate carefully:
 

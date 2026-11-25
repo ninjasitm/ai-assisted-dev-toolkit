@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added phase-start and post-reconciliation guidance to split broad implementation into focused owners and dispatch all ready independent work together, while preserving scope ownership and approval gates. Factory workers follow the same rule; one integration owner reconciles their results under existing review and approval gates.
 - Added a trust gate for skill recommendations and creation: external skills are unvetted source candidates, require exact-revision inspection and independent review before explicit approval, and are not executed or auto-enabled. Skills are staged outside discoverable paths; `npm run skills:check` detects inventory drift but does not certify safety.
 - Added the opt-in `improve-codebase-architecture` skill to both templates; it reports findings in chat without writing files.
 - Documented the specific Matt Pocock skills and patterns adapted by the toolkit, with upstream links and MIT attribution. The existing project license is unchanged.

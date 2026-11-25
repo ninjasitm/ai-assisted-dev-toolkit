@@ -7,7 +7,9 @@ description: Use when executing implementation plans with independent tasks in t
 
 Execute plan by dispatching fresh subagent per task, with two-stage review after each: spec compliance review first, then code quality review.
 
-**Core principle:** Fresh subagent per task + two-stage review (spec then quality) = high quality, fast iteration
+Read and follow [the shared subagent workflow](../../../.claude/rules-snippets/subagent-workflow.md#split-before-dispatch) to identify every ready independent lane in each authorized phase and after each reconciled batch. This skill retains per-task review requirements; it does not require implementation to be globally serial.
+
+**Core principle:** Fresh subagents for independently scoped planned work + two-stage review (spec then quality) = high quality, fast iteration
 
 ## When to Use
 
@@ -40,6 +42,10 @@ digraph when_to_use {
 
 This skill starts only from a plan that has an explicit plan review PASS and any applicable existing confirmation, including when it is invoked directly rather than from Factory or another gate. Each finding is classified before repair. An ordinary repair stays with the implementer. A consequential finding (scope, approach, requirement, or plan) exits the implementer loop: the implementer stops and reports it, the coordinator sends it to the planner for revision, plan review, and any applicable confirmation, and the work resumes from there. Spec compliance review still runs before code quality review.
 
+One broad planned task may use multiple scoped execution lanes when each lane's brief is bounded by the task's original acceptance criteria and has settled inputs and a disjoint writable scope. If the work is coupled or cannot be divided without changing those criteria, keep it with one owner or run it serially. When using `./implementer-prompt.md` for a lane, provide its bounded task context directly at dispatch and explicitly override its commit step: lane workers do not stage or commit; one coordinator owns integration and the index.
+
+Review each reconciled lane against its actual scoped changes, including the current uncommitted diff rather than relying only on `BASE_SHA..HEAD_SHA`. Include newly created untracked paths in the review input when relevant. Keep spec review before quality review and retain the same acceptance criteria.
+
 ## The Process
 
 ```dot
@@ -51,11 +57,11 @@ digraph process {
         "Dispatch implementer subagent (./implementer-prompt.md)" [shape=box];
         "Implementer subagent asks questions?" [shape=diamond];
         "Answer questions, provide context" [shape=box];
-        "Implementer subagent implements, tests, commits, self-reviews" [shape=box];
-        "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)" [shape=box];
+        "Implementer subagent implements, tests, self-reviews; no staging or commits" [shape=box];
+        "Dispatch spec reviewer with reconciled scoped changes, including relevant uncommitted and untracked paths" [shape=box];
         "Spec reviewer subagent confirms code matches spec?" [shape=diamond];
         "Implementer subagent fixes spec gaps" [shape=box];
-        "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" [shape=box];
+        "Dispatch code quality reviewer with reconciled scoped changes, including relevant uncommitted and untracked paths" [shape=box];
         "Code quality reviewer subagent approves?" [shape=diamond];
         "Implementer subagent fixes quality issues" [shape=box];
         "Mark task complete in TodoWrite" [shape=box];
@@ -73,23 +79,23 @@ digraph process {
     "Dispatch implementer subagent (./implementer-prompt.md)" -> "Implementer subagent asks questions?";
     "Implementer subagent asks questions?" -> "Answer questions, provide context" [label="yes"];
     "Answer questions, provide context" -> "Dispatch implementer subagent (./implementer-prompt.md)";
-    "Implementer subagent asks questions?" -> "Implementer subagent implements, tests, commits, self-reviews" [label="no"];
-    "Implementer subagent implements, tests, commits, self-reviews" -> "Consequential change needed?";
+    "Implementer subagent asks questions?" -> "Implementer subagent implements, tests, self-reviews; no staging or commits" [label="no"];
+    "Implementer subagent implements, tests, self-reviews; no staging or commits" -> "Consequential change needed?";
     "Consequential change needed?" -> "Exit: coordinator sends to planner (revision, plan review, confirmation)" [label="yes"];
-    "Consequential change needed?" -> "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)" [label="no"];
-    "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)" -> "Spec reviewer subagent confirms code matches spec?";
+    "Consequential change needed?" -> "Dispatch spec reviewer with reconciled scoped changes, including relevant uncommitted and untracked paths" [label="no"];
+    "Dispatch spec reviewer with reconciled scoped changes, including relevant uncommitted and untracked paths" -> "Spec reviewer subagent confirms code matches spec?";
     "Spec reviewer subagent confirms code matches spec?" -> "Implementer subagent fixes spec gaps" [label="no: ordinary gap"];
     "Spec reviewer subagent confirms code matches spec?" -> "Exit: coordinator sends to planner (revision, plan review, confirmation)" [label="no: consequential gap"];
-    "Implementer subagent fixes spec gaps" -> "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)" [label="re-review"];
-    "Spec reviewer subagent confirms code matches spec?" -> "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" [label="yes"];
-    "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" -> "Code quality reviewer subagent approves?";
+    "Implementer subagent fixes spec gaps" -> "Dispatch spec reviewer with reconciled scoped changes, including relevant uncommitted and untracked paths" [label="re-review"];
+    "Spec reviewer subagent confirms code matches spec?" -> "Dispatch code quality reviewer with reconciled scoped changes, including relevant uncommitted and untracked paths" [label="yes"];
+    "Dispatch code quality reviewer with reconciled scoped changes, including relevant uncommitted and untracked paths" -> "Code quality reviewer subagent approves?";
     "Code quality reviewer subagent approves?" -> "Implementer subagent fixes quality issues" [label="no: ordinary issue"];
     "Code quality reviewer subagent approves?" -> "Exit: coordinator sends to planner (revision, plan review, confirmation)" [label="no: consequential issue"];
-    "Implementer subagent fixes quality issues" -> "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" [label="re-review"];
+    "Implementer subagent fixes quality issues" -> "Dispatch code quality reviewer with reconciled scoped changes, including relevant uncommitted and untracked paths" [label="re-review"];
     "Code quality reviewer subagent approves?" -> "Mark task complete in TodoWrite" [label="yes"];
-    "Mark task complete in TodoWrite" -> "More tasks remain?";
-    "More tasks remain?" -> "Dispatch implementer subagent (./implementer-prompt.md)" [label="yes"];
-    "More tasks remain?" -> "Dispatch final code reviewer subagent for entire implementation" [label="no"];
+    "Mark task complete in TodoWrite" -> "Reconcile batch and dispatch next ready lanes";
+    "Reconcile batch and dispatch next ready lanes" -> "Dispatch implementer subagent (./implementer-prompt.md)" [label="ready lane"];
+    "Reconcile batch and dispatch next ready lanes" -> "Dispatch final code reviewer subagent for entire implementation" [label="all tasks complete"];
     "Dispatch final code reviewer subagent for entire implementation" -> "Use superpowers:finishing-a-development-branch";
 }
 ```
@@ -124,12 +130,12 @@ Implementer: "Got it. Implementing now..."
   - Implemented install-hook command
   - Added tests, 5/5 passing
   - Self-review: Found I missed --force flag, added it
-  - Committed
+  - Left changes uncommitted for coordinator integration
 
 [Dispatch spec compliance reviewer]
 Spec reviewer: ✅ Spec compliant - all requirements met, nothing extra
 
-[Get git SHAs, dispatch code quality reviewer]
+[Reconcile changed paths and the lane's uncommitted diff, including relevant untracked paths; dispatch code quality reviewer with those changes]
 Code reviewer: Strengths: Good test coverage, clean. Issues: None. Approved.
 
 [Mark Task 1 complete]
@@ -144,7 +150,7 @@ Implementer:
   - Added verify/repair modes
   - 8/8 tests passing
   - Self-review: All good
-  - Committed
+  - Left changes uncommitted for coordinator integration
 
 [Dispatch spec compliance reviewer]
 Spec reviewer: ❌ Issues:
@@ -220,7 +226,7 @@ Done!
 
 - Skip reviews (spec compliance OR code quality)
 - Proceed with unfixed issues
-- Dispatch multiple implementation subagents in parallel (conflicts)
+- Dispatch overlapping writers concurrently
 - Make subagent read plan file (provide full text instead)
 - Skip scene-setting context (subagent needs to understand where task fits)
 - Ignore subagent questions (answer before letting them proceed)
@@ -228,7 +234,9 @@ Done!
 - Skip review loops (reviewer found ordinary issues = implementer fixes = review again; consequential findings go to the coordinator)
 - Let implementer self-review replace actual review (both are needed)
 - **Start code quality review before spec compliance is ✅** (wrong order)
-- Move to next task while either review has open issues
+- Dispatch a dependent lane before its prerequisite output or shared write is reconciled
+
+Independent tasks may be implemented or reviewed in parallel when their writable scopes and inputs are independent. Keep each task's spec review before its quality review, and complete ordinary repairs and their re-review before treating that task as accepted. Dependents wait for reconciled reviews; do not duplicate settled verification.
 
 **If subagent asks questions:**
 

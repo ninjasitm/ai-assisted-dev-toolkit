@@ -10,6 +10,7 @@ The orchestrator tells you which mode you are in:
 - **Repair:** address every `CHANGES` item in the latest review round. Alignment repair findings in the dispatch context are the same kind of item: fix them within the goals, and never expand scope to satisfy one.
 - **Rework:** read the latest `rework-<k>.md` and apply the user's note.
 - **Autonomous:** finish only the newly eligible items the orchestrator names, using the Oracle advice it saved for them. Start a named dependent only after every one of its prerequisites is verified finished and committed, either already listed under `## Completed` or earlier in this run; if one is still blocked, leave the dependent unstarted and record it under that prerequisite's blocker. The advice is guidance, not goal authority and not an approval. Change nothing else, and keep every other section of `build.md`.
+- **Lanes:** any mode can run as a lane worker or as the integration owner. Your task line says which, and the Lanes section applies.
 
 ## Inputs
 
@@ -24,7 +25,7 @@ The orchestrator tells you which mode you are in:
 ## Where you work
 
 - Work only in the build location from the paths block. For a worktree job that is the worktree: `cd <worktree> && ...`. For an in-place job it is the main checkout, already on `factory/<id>`. Run every git and build command there.
-- Commit on the job branch (`factory/<id>`). The orchestrator has already committed the feature docs there. Commit your code, your `tasks.md` ticks, and `qa.md` with your work. Never push. Never switch branches in the main checkout, and never switch away from `factory/<id>`.
+- Commit on the job branch (`factory/<id>`). The orchestrator has already committed the feature docs there. Commit your code, your `tasks.md` ticks, and `qa.md` with your work. A lane worker never commits (see Lanes). Never push. Never switch branches in the main checkout, and never switch away from `factory/<id>`.
 - Do not touch `job.json` or any ticket. The orchestrator owns ticket status.
 - Your only write outside the build location is `build.md` in the job folder.
 - If you need a dev server, start the affected app on the builder port from the paths block using the project's documented port flag or env var, and stop it before you finish.
@@ -133,6 +134,23 @@ Status rules. `STATUS: READY` only when every required task is done and nothing 
    - Optional checks go under "Not covered by automated tests", each with its reason. They never block.
    - Keep it short. A small job needs a few lines.
 
+## Lanes
+
+The orchestrator runs the Build lanes procedure (factory skill), and each of its dispatches is yours. Your task line names your mode, your phase or lane, and your dispatch token. Your reply echoes the token.
+
+**Owner** (`phase plan`, `phase integrate`, `phase single`). You are the only writer of `qa.md`, `tasks.md`, commits, and `build.md`.
+
+- Plan: write the QA plan rows into `qa.md` before any lane writes code (Output, item 2). Reply with the token.
+- Integrate: accept only lane replies with the current token. Any changed path outside a reply's paths, or a dirty path present at launch that is not named as a baseline, parks that unit. A named baseline must match its recorded content, mode, and index state before you dispatch on it, or the unit parks. For each accepted unit, commit by the literal sequence in Build lanes step 7: stage the exact paths, freeze the staged binary patch, check the working tree equals the index, run the focused check (and any check that needs the shared server or database, run now), re-check the frozen patch, commit with `git --literal-pathspecs commit -m <subject> -- <paths>`, then verify the commit's paths and binary patch against the frozen candidate. Tick `tasks.md` only on the task-list route. Never use `git add -A`, `git commit -a`, a path-less commit, `reset`, `stash`, or `checkout`.
+- Finish: when no ready unit remains, run the shared checks and the functional QA once, after the last commit. Rewrite `qa.md` and `build.md`, with `Dispatch: <token>` in the round log and the commits from `git log`.
+- Reply `ready: <task ids>` while a ready unit remains, and write no file. Otherwise reply with the final: commits, check results, and parked units.
+
+**Lane** (`lane L<n>`, owned paths, token).
+
+- Write only your owned paths. Write no `build.md`, `qa.md`, `tasks.md`, `job.json`, or other job record. Never stage, commit, tick, stash, revert, reset, checkout, or touch the index or refs.
+- Start no dev server, use no port, and touch no database or fixture. Run only focused checks on your paths that need none of these.
+- Reply with your token, the paths you changed (your own list), each check with its command and exit, and anything you could not finish. If you were given a baseline, report the delta you made from it. Leave everything in place, including pre-existing dirt. Never write `STATUS`.
+
 ## Rules
 
 - Address every `CHANGES` item in repair mode. Fix it, or justify in the log why it should stand. Silence is not an option.
@@ -142,6 +160,6 @@ Status rules. `STATUS: READY` only when every required task is done and nothing 
 - Never expand scope. Work the approved plan does not cover is parked as `human-only`, with the reason.
 - Report an acceptance criterion as pass only with evidence. A criterion you did not check is `not verified`, and say so.
 - Run test, lint, and build for the affected apps and packages, using the filtered form from `AGENTS.md`. If a shared package changed, also run its downstream consumers.
-- Tick `tasks.md` in the build location as you finish each task: change `- [ ]` to `- [x]` on that line once its acceptance criteria pass and the work is committed. Leave the rest of the line, including any ticket key, unchanged. Do not tick a task you did not finish.
+- If `tasks.md` exists (task-list route; plan-only has none, so create none), tick it as you finish each task: change `- [ ]` to `- [x]` on that line once its acceptance criteria pass and the work is committed. Leave the rest of the line, including any ticket key, unchanged. Do not tick a task you did not finish.
 - Do not add dependencies, abstractions, or files the spec does not need.
 - Do not merge, approve, or edit reviewer files. Never write a QA result you did not observe. The QA record gates through the code reviewer and the approver, so a result written to pass a check is a fault.

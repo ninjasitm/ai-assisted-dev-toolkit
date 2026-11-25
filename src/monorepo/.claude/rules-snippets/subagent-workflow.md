@@ -83,10 +83,37 @@ When dispatching implementation tasks, match the specialist to the domain:
 
 ### Delegation Default
 
-- **Delegate by default.** Hand substantial, safely separable discovery, implementation, test, and review work to subagents. Use a single agent only for trivial work, as listed under "When to Use a Single Agent Directly".
+- **Delegate by default.** Hand substantial, safely separable discovery, implementation, test, and review work to subagents. Do trivial work directly, as listed under "When to Use a Single Agent Directly". A single builder for substantial coupled work is still delegation; see Split Before Dispatch.
 - **The coordinator keeps outcome responsibility.** It defines each task's scope, reconciles every result, makes sure verification runs, and reports the final outcome. A subagent reporting success is not the outcome.
 - **Work directly only** for trivial changes (one small edit, a quick answer) or when the context is too heavy to hand off cheaply, such as work that depends on large context the coordinator already holds. Say why when you skip delegation.
 - **No delegation capability.** If the host offers no subagent dispatch, say so explicitly in the report. Do permitted direct work where it is safe. Never self-review in place of an independent gate: record the gate as pending and end as BLOCKED or WAITING.
+
+### Split Before Dispatch
+
+Run this at the start of each authorized phase (discovery, planning, implementation, verification, review) and again after each batch is reconciled.
+
+1. **Find independent work.** List every substantial unit the phase can start now. Dispatch all ready units whose writable scopes and inputs do not interfere, as one batch. Do not hold a ready lane back to wait for an unrelated one.
+2. **Keep unrelated lanes moving.** A blocker pauses only its own lane and that lane's dependents. Record the blocker on that task and continue the other ready lanes.
+3. **No work ahead of gates.** Do not start work that needs a gate not yet passed, such as an unpassed review, an unsettled plan, or a missing approval.
+4. **No fake splits.** Do not create tasks that restate the same work, add acceptance criteria, or add plan approvals. Split only when units can be completed and checked independently.
+5. **No repeated checks.** Do not rerun discovery or status checks that the last batch already covered, unless their inputs changed.
+6. **Match dispatch to host capability.** With native parallel dispatch, run ready lanes concurrently. With serial-only subagent dispatch, run the ready lanes one after another and say so in the report. With no subagent dispatch, follow Delegation Default: do permitted direct work where it is safe, never self-review in place of an independent gate, and record that gate as pending.
+
+**Implementation units.** Examine every broad accepted unit, even one that looks like a single task:
+
+- Record either the split or a one-builder reason (for example, "one file, one owner").
+- Give each builder one verifiable outcome and a focused brief with: the applicable requirements, owned files, settled input and output contracts and dependencies, and the exact focused check to run.
+- The brief adds no task, acceptance criterion, or plan approval. The project lead still owns review of the original request as a whole.
+- Independent API and UI work may share a settled contract and run together. A UI unit waits only for unfinished output it consumes, or for a writable file it overlaps with. Shared read-only files create no wait.
+
+**Ownership.** Use the Dependency Graph steps below for read and write sets, and apply these rules on top of them:
+
+- Give each shared resource one owner. Separate shared writes into their own batch.
+- With per-task commits, a successor must not overwrite unintegrated work from an earlier task.
+- Before assigning a new writer to a prior scope, confirm the prior writer is done or stopped.
+- Reconcile exact paths and validation evidence for every result before dispatching dependents.
+
+Required review gates, the independent review or no-subagent fallback in Quality Gates, same-root repair, and settled-state verification still apply to every split.
 
 ### Dependency Graph and Parallel Batches (REQUIRED before dispatching)
 
@@ -95,13 +122,13 @@ Before dispatching any task list, the orchestrator builds the dependency graph. 
 1. **Read and write sets.** For each task, list the files, directories, or packages it reads and writes.
 2. **Exclusive writable scopes.** Each writer gets a scope no other concurrent task writes. Two tasks that share any writable path are dependent. A task whose write set is unknown or undeclared runs serially until its scope is established from the changed-file list.
 3. **Data dependencies.** A task that reads what another task writes waits for that task.
-4. **Ready batch.** Tasks whose dependencies are satisfied and whose writable scopes are disjoint form one batch. Dispatch the whole batch together. Dependent and shared-write tasks run in later batches, one at a time.
+4. **Ready batch.** Tasks whose dependencies are satisfied and whose writable scopes are disjoint form one batch. Dispatch the whole batch together. Tasks with unfinished dependencies or shared writable paths wait until those finish. Their newly ready, disjoint successors then join the next ready batch.
 5. **Route by domain.** Backend tasks → Backend Architect; frontend → Frontend Developer; API contracts → API Specialist; docs → Documenter; cross-cutting → Implementer.
 6. **Track handles.** Record each dispatched task's handle, agent, writable scope, and status until its result is reconciled.
 7. **Reconcile before dependents.** Inspect each result (changed files, summary, verification) before dispatching any task that depends on it. If a result changed a path the graph did not expect, stop the affected tasks and re-plan the batch.
 8. **Continue the chain.** When a batch's results are reconciled, compute the next ready batch and dispatch it. Do not wait for the user unless a mandatory gate applies or no authorized, unblocked work remains (see Autonomous Execution and Blockers).
 
-**Dispatch shape:** 3+ independent tasks → `dispatching-parallel-agents`, one agent per task. 2 independent tasks → parallel dispatch. All tasks dependent → sequential with `subagent-driven-development`. Mixed → run each ready batch in parallel, then continue the sequential chain.
+**Dispatch shape:** 2+ independent ready lanes → parallel dispatch, one agent per lane. Use `dispatching-parallel-agents` for independent investigations or problems, and `subagent-driven-development` for planned task lists. One ready lane → one builder, with the reason recorded (see Split Before Dispatch). All lanes dependent → sequential. Mixed → dispatch each ready batch together, then continue the chain. A batch with one lane runs alone.
 
 ```
 Example: 5 tasks → T1 (setup) → T2 (backend API) + T3 (frontend UI) + T4 (docs) → T5 (integration tests)
@@ -153,7 +180,7 @@ Spec and plan confirmations remain mandatory human steps; final approval, escala
 - **Route by substance.** An ordinary repair (a fix inside the accepted plan and goals) stays with the builder or specialist that owns the files. A plan or spec change, or any expansion, goes to the planner: the planner authors the revision, and no reviewer, Oracle, or builder does.
 - **Order.** The planner authors the revision, then independent plan review (fit-review, Plan review), then the applicable existing confirmation (Factory's spec and plan gates, or none where the flow has no gate), then resume the affected work. A PASS on an earlier plan does not cover the revised one.
 - **Handoff and resume.** Every handoff and resume carries the verbatim original request and explicit amendments as the goal authority, plus the overall summary and goals as context. The summary is not authority and never replaces them. No new record schema or structured-file field is added: use the existing progress record or the conversation.
-- **Expansion.** Oracle may authorize a justified in-goal expansion only as fit-review's Expansion rule allows. The expansion then goes to the planner as a revision request.
+- **Expansion.** Oracle may recommend considering a justified in-goal expansion; this is advice, not authorization. Under fit-review's Expansion rule it goes to the planner as a revision request, and no expansion is authorized until the planner's revision passes independent review and any applicable confirmation.
 - **Feature Builder.** A standalone Planner-to-Implementer handoff is a bypass: it must get the plan gate and classify each feedback item as a repair or a plan or spec change before implementation.
 - **Reviewers.** A reviewer dispatched under a goal-fit or alignment contract follows that contract's reply format, not the generic review summary.
 

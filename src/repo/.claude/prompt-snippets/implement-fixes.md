@@ -15,8 +15,8 @@ Implement bug fixes and corrections with proper validation and documentation.
 > before any reproduction or build. Then one builder reproduces and fixes the bug, and the orchestrator
 > repeats verify, review and decide until the fix is accepted or a stop condition is reached. Do not
 > fix the bug inline, and do not write a spec or plan first.
-> For several unrelated bugs, run one loop per bug, each with its own builder. Use
-> `dispatching-parallel-agents` only when their root causes and files do not overlap.
+> Same bug, same root cause: one builder and one owner for the whole fix, with no split across owners.
+> Independent, genuinely separate defects (their own root cause, with disjoint files) may run as parallel ready batches, each with its own builder and loop, per [Split Before Dispatch](../rules-snippets/subagent-workflow.md#split-before-dispatch). Each lane keeps the same reproduction, verify, and review requirements; no new gate is added. Use `dispatching-parallel-agents` for such a batch.
 
 ## Workflow Modes
 
@@ -45,7 +45,7 @@ Implement bug fixes and corrections with proper validation and documentation.
 
 3. **Reproduce and Build** (builder, implement.md step 2):
    - Run the approach checkpoint C of [implement.md](implement.md) before the build: the planner's approach note is reviewed against the bug report, and only `VERDICT: PASS` releases the build.
-   - Dispatch one builder with the bug report, the AC list, the discovered checks, the base commit, the baseline, and the approved approach note.
+   - Dispatch one builder with the bug report, the AC list, the discovered checks, the base commit, the baseline, and the approved approach note, for this root cause. A genuinely separate defect gets its own builder in its own lane.
    - The builder identifies the root cause and writes a **failing test that reproduces the bug**. It watches the test fail for the right reason, then makes the minimal change that passes it. The reproduction belongs to the builder, not to the orchestrator.
    - Fix only the reported issue. Maintain backward compatibility. Leave all changes uncommitted, including new files.
 
@@ -54,7 +54,7 @@ Implement bug fixes and corrections with proper validation and documentation.
    - Review: the independent read-only reviewer checks the fix, the reproducing test, and the untracked files.
    - Decide: repair goes back to the same builder. Repeat until `ACCEPTED`, `BLOCKED`, or `NOT ACCEPTED: needs decision` (which includes a pending human QA check, reason `awaiting human QA`). There is no round limit. A review PASS alone never accepts.
 
-5. **Commit and Push** (only after `ACCEPTED`, and only when there are accepted changes): stage only the fix's paths, never `git add -A` or a foreign change. Skip the commit when nothing is staged.
+5. **Commit and Push** (only after `ACCEPTED`, and only when there are accepted changes): coordinator only; workers never touch the index. Follow the Commit rule in [implement.md](implement.md): the index must be empty before staging, the staged paths must match the accepted paths exactly, and the cached diff must match the accepted changes exactly, with any git error parking the commit. Stage only the fix's paths, never `git add -A` or a foreign change. Skip the commit when nothing is staged.
    ```bash
    git commit -m "fix({{SCOPE}}): {{FIX_DESCRIPTION}}"
    git push -u origin fix/{{FIX_DESCRIPTION}}

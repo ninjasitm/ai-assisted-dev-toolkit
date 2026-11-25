@@ -132,7 +132,8 @@ for (const layout of LAYOUTS) {
 
   test(`${layout}: implement.md round 1 builds from the approved approach note`, () => {
     const content = read(layout, IMPLEMENT);
-    order(content, 'Only the explicit `VERDICT: PASS` releases the round-1 build', 'the approved approach note. The builder must:');
+    order(content, 'Only the explicit `VERDICT: PASS` releases the round-1 build', 'the approved approach note for its lane');
+    assert.match(content, /after each ready task's checkpoint C `VERDICT: PASS`/, 'round 1 must stay gated by checkpoint C');
   });
 
   test(`${layout}: Oracle role row names its checkpoint C reviewer duty and still forbids building`, () => {
@@ -141,7 +142,8 @@ for (const layout of LAYOUTS) {
     assert.ok(row, 'Oracle row exists');
     assert.match(row, /never builds/);
     assert.match(row, /alignment review at a checkpoint when asked/);
-    assert.match(row, /Its feedback is guidance\. It may authorize a justified expansion within the original goals only as the Expansion rule allows\./);
+    assert.match(row, /Its feedback is guidance\. It may recommend considering a justified in-goal expansion; that recommendation is a planner revision request under the Expansion rule in fit-review and never authorizes scope\./);
+    assert.doesNotMatch(row, /may authorize/, 'the Oracle row must never grant expansion authority');
   });
 
   test(`${layout}: implement-feature runs checkpoint D after reconciliation and before aggregate verify and review`, () => {
@@ -152,7 +154,8 @@ for (const layout of LAYOUTS) {
     order(aggregate, '**Alignment checkpoint D**', 'Run implement.md steps 3, 4 and 5');
     assert.match(aggregate, /Only the explicit `VERDICT: PASS` releases aggregate verification and review/);
     assert.match(aggregate, /A `CHANGES` with any finding marked `requires user decision; do not auto-repair` stops the feature's aggregate acceptance until the user answers, even when other findings are repairable/);
-    assert.match(aggregate, /A `CHANGES` where every finding is repairable goes to the builder that owns each file, and D runs again on the changed inputs: reuse is never allowed after a `CHANGES`/);
+    assert.match(aggregate, /A `CHANGES` where every finding is repairable goes to one root-cause owner per finding \(step 5, Route each ordinary repair finding once\), and D runs again on the changed inputs: reuse is never allowed after a `CHANGES`/);
+    assert.doesNotMatch(aggregate, /(Repairs|goes) to the builder that owns each file/, 'the per-file repair routing must be gone');
     assert.match(aggregate, /With no independent reviewer, aggregate acceptance is `BLOCKED`/);
     assert.match(aggregate, /including uncommitted and new files/);
   });
@@ -471,8 +474,8 @@ for (const layout of LAYOUTS) {
 }
 
 
-// Expansion amendment: Oracle may authorize a justified in-goal expansion through the planner and an
-// independent review; fallback reviewers may not; the overall summary and goals travel with every dispatch.
+// Expansion amendment: Oracle may only recommend a justified in-goal expansion; the planner's revision, an
+// independent review, and any applicable confirmation authorize it. Fallback reviewers may not; the overall summary and goals travel with every dispatch.
 for (const layout of LAYOUTS) {
   test(`${layout}: factory A routes a justified expansion through the plan gate, not a direct repair`, () => {
     const a = section(read(layout, FACTORY), '### Alignment checkpoint A', '### Builder continuity');
@@ -601,7 +604,8 @@ for (const layout of LAYOUTS) {
     assert.match(sec, /overall summary and goals as context/);
     assert.match(sec, /The summary is not authority/);
     assert.match(sec, /No new record schema or structured-file field is added/);
-    assert.match(sec, /Oracle may authorize a justified in-goal expansion only as fit-review's Expansion rule allows/);
+    assert.match(sec, /Oracle may recommend considering a justified in-goal expansion; this is advice, not authorization/);
+    assert.doesNotMatch(sec, /Oracle may authorize/, 'Oracle must never be given expansion authority');
   });
 
   test(`plan review: ${layout} subagent-workflow gates plans and bypasses and follows the calling reviewer contract`, () => {
@@ -635,9 +639,9 @@ for (const layout of LAYOUTS) {
 
   test(`plan review: ${layout} subagent-driven process diagram classifies every finding before any implementer repair`, () => {
     const dot = read(layout, SDD).match(/```dot\s*\ndigraph process[\s\S]*?```/)[0];
-    assert.match(dot, /"Implementer subagent implements, tests, commits, self-reviews" -> "Consequential change needed\?";/);
+    assert.match(dot, /"Implementer subagent implements, tests, self-reviews; no staging or commits" -> "Consequential change needed\?";/);
     assert.match(dot, /"Consequential change needed\?" -> "Exit: coordinator sends to planner \(revision, plan review, confirmation\)" \[label="yes"\];/);
-    assert.match(dot, /"Consequential change needed\?" -> "Dispatch spec reviewer subagent \(\.\/spec-reviewer-prompt\.md\)" \[label="no"\];/);
+    assert.match(dot, /"Consequential change needed\?" -> "Dispatch spec reviewer with reconciled scoped changes, including relevant uncommitted and untracked paths" \[label="no"\];/);
     assert.match(dot, /"Spec reviewer subagent confirms code matches spec\?" -> "Implementer subagent fixes spec gaps" \[label="no: ordinary gap"\];/);
     assert.match(dot, /"Spec reviewer subagent confirms code matches spec\?" -> "Exit: [^"]*" \[label="no: consequential gap"\];/);
     assert.match(dot, /"Code quality reviewer subagent approves\?" -> "Implementer subagent fixes quality issues" \[label="no: ordinary issue"\];/);
@@ -646,7 +650,7 @@ for (const layout of LAYOUTS) {
     assert.doesNotMatch(dot, /confirms code matches spec\?" -> "Implementer subagent fixes spec gaps" \[label="no"\]/);
     assert.doesNotMatch(dot, /approves\?" -> "Implementer subagent fixes quality issues" \[label="no"\]/);
     // Spec compliance still gates the quality review.
-    assert.match(dot, /"Spec reviewer subagent confirms code matches spec\?" -> "Dispatch code quality reviewer subagent \(\.\/code-quality-reviewer-prompt\.md\)" \[label="yes"\];/);
+    assert.match(dot, /"Spec reviewer subagent confirms code matches spec\?" -> "Dispatch code quality reviewer with reconciled scoped changes, including relevant uncommitted and untracked paths" \[label="yes"\];/);
   });
 
   test(`plan review: ${layout} subagent-driven example runs the plan gate before extracting or dispatching`, () => {

@@ -171,6 +171,8 @@ For detailed standards on specific topics, refer to these skills in `.agents/ski
 
 ## ⚠️ CRITICAL: Orchestration Checkpoint (READ FIRST)
 
+At the start of each phase and after each reconciled batch, identify all substantial ready independent work. Split broad implementation before dispatch into focused owners with disjoint writable scopes and settled dependencies; dispatch the whole ready batch. Preserve approval and review gates. See [Split Before Dispatch](.claude/rules-snippets/subagent-workflow.md#split-before-dispatch).
+
 **BEFORE starting ANY multi-step task, MUST read this section:**
 
 If your work involves **2+ of these activities**, you MUST use orchestrator-first flow:
@@ -317,7 +319,7 @@ Use the appropriate sub-agents when the task benefits from specialized expertise
 3. **Set constraints** — Use tool restrictions for read-only agents (researcher, reviewer)
 4. **Chain when needed** — Planner → Developer → Reviewer for complex changes
 5. **Delegate by default** — Delegate substantial, safely separable discovery, implementation, test, and review work. The coordinator keeps outcome responsibility; trivial or context-heavy work stays direct.
-6. **Batch by dependency** — Build the dependency graph. Dispatch ready tasks with exclusive writable scopes as one parallel batch; dependent or shared-write tasks run sequentially. Reconcile each result before dispatching its dependents. `[P]` markers are optional.
+6. **Batch by dependency** — At the start of each phase and after reconciling each batch, find all substantial ready independent work and dispatch it together where scopes are disjoint and inputs settled. Split broad implementation before dispatch into focused owners. Dependent or shared-write tasks run sequentially. Reconcile each result before dispatching dependents; never bypass approval or review gates. See [Split Before Dispatch](.claude/rules-snippets/subagent-workflow.md#split-before-dispatch).
 7. **Never end silently** — During active multi-step execution, end each turn as DONE, WAITING (pending task handle and resume trigger), or BLOCKED / NEEDS-DECISION (what completed, what remains, exact next user action). Dispatch or partial progress is not completion. Spec and plan confirmations remain mandatory human steps; final approval, escalation, and merge behavior follow the job's `APPROVAL_MODE` and `MERGE_MODE`. Delegation or autonomy alone never satisfies a gate.
 8. **Autonomy with blockers** — Work autonomously within the approved goal, scope, and permissions. A blocker pauses only its task and dependents: record it, defer non-global questions, and continue independent authorized work. Stop for the user only when no authorized work remains or a mandatory gate applies, and ask through the harness's native question tool when one exists.
 9. **Plan and spec changes** — ordinary repairs stay in the loop. Otherwise route through the planner and plan review, then any applicable confirmation, then resume the affected work (see subagent-workflow Plan and Spec Changes).

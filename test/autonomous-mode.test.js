@@ -101,7 +101,9 @@ for (const layout of LAYOUTS) {
   });
 
   test(`autonomous-mode: ${layout} /implement-feature keeps plan approval, alignment, and D`, () => {
-    assert.match(text, /`\/implement-feature`:\*\* the task list and plan approval and alignment must already be in place/);
+    assert.match(text, /`\/implement-feature`:\*\* a supplied authorized feature or task list is the authority, and no spec or plan gate is invented for it/);
+    assert.match(text, /Any approval or alignment that already applies to the feature must be in place before dispatch/);
+    assert.match(text, /Factory's separate human spec and plan confirmation is unchanged/);
     assert.match(text, /Checkpoint D still runs before aggregate verification and review/);
     assert.match(text, /Autonomous mode does not replace D/);
   });
@@ -257,7 +259,15 @@ for (const layout of LAYOUTS) {
   test(`autonomous-mode: ${layout} implement-feature schedules after approval, keeps C and D, and gates aggregate review`, () => {
     const content = read(layout, FEATURE);
     assert.match(content, /\[autonomous-mode\]\(\.\.\/\.\.\/\.agents\/skills\/autonomous-mode\/SKILL\.md\)/);
-    assert.match(content, /Once the task list and plan are approved, schedule the ready tasks with \[autonomous-mode\]/);
+    // Approval, when one already applies, must gate dispatch: it has to appear before the batch-dispatch rule.
+    const approval = content.indexOf('If an approval gate already applies to this feature (for example a Factory spec or plan gate), it must be confirmed before any task is dispatched; honor it.');
+    const dispatch = content.indexOf('Batch all ready lanes per [Split Before Dispatch]');
+    assert.notEqual(approval, -1, 'approval-before-dispatch sentence missing');
+    assert.notEqual(dispatch, -1, 'batch dispatch rule missing');
+    assert.ok(approval < dispatch, 'an existing approval gate must come before any dispatch');
+    assert.match(content, /This flow adds no new spec or plan approval requirement/);
+    assert.doesNotMatch(content, /Once the task list and plan are approved/, 'no universal plan-approval prerequisite');
+    assert.match(content, /Schedule with \[autonomous-mode\]/);
     assert.match(content, /Checkpoint C still gates each task's first build, and checkpoint D still runs before aggregate review/);
     assert.match(content, /a parked mandatory task is never ticked or reported complete/);
     assert.match(content, /start aggregate review only once every mandatory task is accepted/);

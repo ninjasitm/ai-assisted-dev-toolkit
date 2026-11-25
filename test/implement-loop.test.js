@@ -94,7 +94,7 @@ for (const layout of LAYOUTS) {
 
   test(`implement loop: ${layout} feature binds task-local inputs before each task loop`, () => {
     const content = read(`${layout}/.claude/prompt-snippets/implement-feature.md`);
-    const task = content.slice(content.indexOf('For each task, in dependency order:'),
+    const task = content.slice(content.indexOf('For each dependent task, in dependency order'),
       content.indexOf('5. **Feature Review**'));
     assert.match(task, /bind the current task's original text unchanged, task-local acceptance criteria, and applicable real checks/);
     assert.match(task, /implement\.md step 1/);
@@ -323,5 +323,192 @@ for (const layout of LAYOUTS) {
     const content = read(fixes);
     assert.doesNotMatch(content, /single-agent/i);
     assert.match(content, /one builder/i);
+  });
+}
+
+// Parallel lanes: split before dispatch, lane batching per command, and repairs stay with the same owner.
+for (const layout of LAYOUTS) {
+  const implement = `${layout}/.claude/prompt-snippets/implement.md`;
+  const feature = `${layout}/.claude/prompt-snippets/implement-feature.md`;
+  const fixes = `${layout}/.claude/prompt-snippets/implement-fixes.md`;
+
+  test(`implement dispatch: ${layout} links the canonical Split Before Dispatch rule`, () => {
+    assert.ok(read(`${layout}/.claude/rules-snippets/subagent-workflow.md`).includes('### Split Before Dispatch'));
+    for (const rel of [implement, feature, fixes]) {
+      assert.ok(read(rel).includes('subagent-workflow.md#split-before-dispatch'), `${rel} must link the rule`);
+    }
+  });
+
+  test(`implement dispatch: ${layout} checkpoint C records focused lanes or a one-builder reason and adds no gate`, () => {
+    const content = read(implement);
+    assert.match(content, /either the focused lanes[\s\S]*or a concrete one-builder reason/);
+    assert.match(content, /adds no acceptance criteria, approval stage, or plan file/);
+  });
+
+  test(`implement dispatch: ${layout} after checkpoint C PASS, ready disjoint lanes dispatch together; serial hosts run in order`, () => {
+    const content = read(implement);
+    assertOrder(content, 'checkpoint C `VERDICT: PASS`', 'dispatches every ready lane whose writable scope is disjoint, together');
+    assert.match(content, /Nested delegation is not required/);
+    assert.match(content, /A serial host runs the lanes in order/);
+    assert.match(content, /A host with no dispatch keeps each independent gate pending/);
+  });
+
+  test(`implement dispatch: ${layout} lane repairs keep the same owner until the prior owner stops`, () => {
+    const content = read(implement);
+    assert.match(content, /send the open items back to the same root-cause owner for the lane/);
+    assert.match(content, /Do not assign a new owner until the prior owner is done or stopped/);
+    assert.match(content, /Reconcile each repair's changed paths and check evidence before any dependent repair, the whole-task review, or the final regression checks run/);
+    assert.match(content, /Repair adds no escalation and does not change whole-task QA/);
+  });
+
+  test(`implement dispatch: ${layout} feature batches all ready lanes with integration constraints and keeps gates C and D`, () => {
+    const content = read(feature);
+    assert.match(content, /Batch all ready lanes per \[Split Before Dispatch\]/);
+    assert.match(content, /Check whole-feature and integration constraints/);
+    assert.match(content, /Checkpoint C still gates each task's first build, and checkpoint D still runs before aggregate review/);
+    assert.doesNotMatch(content, /completing tasks sequentially/);
+    assert.doesNotMatch(content, /3\+ independent tasks/);
+    assert.equal((content.match(/Batch all ready lanes/g) || []).length, 1, 'batch rule must appear once');
+  });
+
+  test(`implement dispatch: ${layout} fixes keep one defect with one owner; unrelated bugs batch`, () => {
+    const content = read(fixes);
+    assert.match(content, /Same bug, same root cause: one builder and one owner for the whole fix/);
+    assert.match(content, /genuinely separate defects \(their own root cause, with disjoint files\) may run as parallel ready batches/);
+    assert.match(content, /no new gate is added/);
+    assert.doesNotMatch(content, /run one loop per bug, each with its own builder, batched per/);
+  });
+}
+
+// Reconciliation: [P] is an optional hint, round-1 context is scoped, resume uses the existing progress record,
+// and feature and fixes batching stay consistent with the single-builder rule for one root cause.
+for (const layout of LAYOUTS) {
+  const implement = `${layout}/.claude/prompt-snippets/implement.md`;
+  const feature = `${layout}/.claude/prompt-snippets/implement-feature.md`;
+
+  test(`implement reconcile: ${layout} [P] markers are optional hints, never a reason to serialize`, () => {
+    const content = read(implement);
+    assert.match(content, /`\[P\]` markers, when present, are optional hints/);
+    assert.match(content, /their absence never makes a task sequential/);
+    assert.doesNotMatch(content, /Dispatch `\[P\]` tasks in parallel only when/);
+  });
+
+  test(`implement reconcile: ${layout} round 1 gives scoped context; the original task is context only`, () => {
+    const content = read(implement);
+    assert.match(content, /exact assigned writable paths/);
+    assert.match(content, /applicable lane criteria by AC id/);
+    assert.match(content, /the original task text verbatim as context only/);
+    assert.match(content, /do not give every builder the whole AC suite/);
+    assert.match(content, /Route each lane by domain at the coordinator/);
+    assert.match(content, /Whole-task verification and review \(steps 3 and 4\) still run after every lane is reconciled/);
+    assert.match(content, /one owner/);
+  });
+
+  test(`implement reconcile: ${layout} resume records lanes in the existing progress record and does not re-dispatch early`, () => {
+    const content = read(implement);
+    assert.match(content, /Save each dispatched lane's handle, writable paths, and status in the existing progress record/);
+    assert.match(content, /with no new record format/);
+    assert.match(content, /do not re-dispatch a lane's writer until the prior writer is known stopped or done/);
+  });
+
+  test(`implement reconcile: ${layout} feature wording has no sequential-only framing`, () => {
+    const content = read(feature);
+    assert.match(content, /Scan the task list for independent tasks/);
+    assert.match(content, /For each dependent task, in dependency order/);
+  });
+}
+
+// Integration ownership: the coordinator alone stages, commits and ticks; workers never do; repair scopes batch only when independent.
+for (const layout of LAYOUTS) {
+  const implement = `${layout}/.claude/prompt-snippets/implement.md`;
+  const feature = `${layout}/.claude/prompt-snippets/implement-feature.md`;
+
+  test(`implement integration: ${layout} coordinator is the sole index, commit and tick owner; workers never stage`, () => {
+    const content = read(implement);
+    assert.match(content, /The coordinator is the sole owner of the index, the commits, and the task ticks\. Workers never stage, commit, or tick\./);
+    assert.match(content, /Collect the changed paths from the reconciled lane reports for the task, not from a single builder's list/);
+    assert.match(content, /a commit needs the calling flow's authorization and an accepted task/);
+    const f = read(feature);
+    assert.match(f, /Commit the Task\*\* \(coordinator only,/);
+    assert.match(f, /Mark Task Complete\*\* \(coordinator only,/);
+    assert.match(f, /Workers never stage or commit/);
+  });
+
+  test(`implement integration: ${layout} round 1 gives a bounded baseline handoff and lane-only AC and QA reporting`, () => {
+    const content = read(implement);
+    assert.match(content, /preexisting changed paths from the baseline's `status\.txt`, as a bounded prior contract/);
+    assert.match(content, /Report each applicable lane AC \(only the AC ids given to it\)/);
+    assert.match(content, /for its applicable lane ACs only/);
+  });
+
+  test(`implement integration: ${layout} feature order applies to dependent work; approval gates honored, none added`, () => {
+    const f = read(feature);
+    assert.match(f, /For each dependent task, in dependency order \(independent ready lanes run as a batch per step 2/);
+    assert.match(f, /honor it\. This flow adds no new spec or plan approval requirement/);
+  });
+
+  test(`implement integration: ${layout} later repairs and decide step use the same root-cause owner; batch only independent scopes`, () => {
+    const content = read(implement);
+    assert.match(content, /Batch repairs only when their scopes are genuinely independent/);
+    assert.match(content, /Send the open items back to the same root-cause owner \(step 2, Later rounds\)/);
+    assert.doesNotMatch(content, /dispatch the same builder again/);
+  });
+}
+
+// Index guard and single-owner repair routing: the coordinator never commits a foreign staged path, and each ordinary finding has one owner.
+for (const layout of LAYOUTS) {
+  const implement = `${layout}/.claude/prompt-snippets/implement.md`;
+  const feature = `${layout}/.claude/prompt-snippets/implement-feature.md`;
+  const fixes = `${layout}/.claude/prompt-snippets/implement-fixes.md`;
+
+  test(`index guard: ${layout} implement commit requires an empty index and an exact staged-set check before commit`, () => {
+    const content = read(implement);
+    assert.match(content, /the index must be empty: `git diff --cached --name-only` exits 0 and prints nothing/);
+    assert.match(content, /Check each git command's exit status first/);
+    assert.match(content, /it is never read as an empty index or an empty staged set/);
+    assert.match(content, /park the commit as blocked and report those foreign paths/);
+    assert.match(content, /Do not clear, unstage, or restage them/);
+    assert.match(content, /must list exactly the accepted paths, and `git diff --cached --binary` must contain only the accepted changes/);
+    assert.match(content, /so a preexisting hunk in a shared file is caught/);
+    assert.match(content, /Commit only after both checks pass/);
+    assert.doesNotMatch(content, /^\s*git add -A\s*$/m);
+  });
+
+  test(`index guard: ${layout} feature commit checks the staged set before the unrestricted commit and keeps the flow's authorization`, () => {
+    const content = read(feature);
+    assertOrder(content, 'git diff --cached --name-only` exits 0 and prints nothing', 'git commit -m');
+    assertOrder(content, 'must list exactly those paths, and `git diff --cached --binary` must contain only the accepted changes', 'git commit -m');
+    assert.match(content, /only when there are accepted changes and the flow authorizes commits/);
+    assert.match(content, /follow the Commit rule in \[implement\.md\]\(implement\.md\)/);
+  });
+
+  test(`index guard: ${layout} fixes honor the shared commit rule with one link before its commit`, () => {
+    const content = read(fixes);
+    assert.ok(content.includes('(implement.md)'), 'fixes must link the shared loop');
+    assert.match(content, /coordinator only; workers never touch the index/);
+    assertOrder(content, 'the cached diff must match the accepted changes exactly', 'git commit -m');
+  });
+
+  test(`index guard: ${layout} aggregate repairs route each ordinary finding once to a root-cause owner`, () => {
+    const content = read(feature);
+    assert.match(content, /Route each ordinary repair finding once, to one root-cause owner/);
+    assert.match(content, /not the builder that owns each file/);
+    assert.match(content, /first stop the prior writers \(each confirmed done or stopped\)/);
+    assert.match(content, /Checkpoint D runs again on the changed inputs/);
+    assert.doesNotMatch(content, /Repairs go to the builder that owns each file/);
+  });
+}
+
+// Single-owner repair wording and index guard: the obsolete per-file routing phrase is gone from every implement snippet.
+for (const layout of LAYOUTS) {
+  test(`index guard: ${layout} no snippet routes repairs to the builder that owns each file`, () => {
+    for (const name of ['implement', 'implement-feature', 'implement-fixes']) {
+      assert.doesNotMatch(read(`${layout}/.claude/prompt-snippets/${name}.md`), /(Repairs|goes) to the builder that owns each file/, `${layout} ${name}`);
+    }
+  });
+
+  test(`index guard: ${layout} checkpoint D routes each repairable finding to one root-cause owner`, () => {
+    assert.match(read(`${layout}/.claude/prompt-snippets/implement-feature.md`),
+      /goes to one root-cause owner per finding \(step 5, Route each ordinary repair finding once\)/);
   });
 }

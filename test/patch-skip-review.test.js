@@ -78,21 +78,37 @@ function installedRepo(t) {
   return d;
 }
 
-// Runs fn with fs.writeFileSync replaced by `wrap(p, data, rest, orig)`: an ordinary-file seam, restored after.
+// Runs fn with target writes observed. applyPatchReview opens each target with fs.openSync and writes it with
+// fs.writeSync on that descriptor, so this seam maps descriptors back to their paths. `wrap(p, buf, orig)` runs
+// once per target, before its first chunk; `orig()` performs the real write. Restored after.
 function withWriteWrapper(wrap, fn) {
-  const orig = fs.writeFileSync;
-  fs.writeFileSync = (p, data, ...rest) => wrap(String(p), data, rest, orig);
+  const origOpen = fs.openSync;
+  const origWrite = fs.writeSync;
+  const paths = new Map();
+  fs.openSync = (p, flags, ...rest) => {
+    const fd = origOpen(p, flags, ...rest);
+    if (flags & (fs.constants.O_WRONLY | fs.constants.O_RDWR)) paths.set(fd, String(p));
+    else paths.delete(fd);
+    return fd;
+  };
+  fs.writeSync = (fd, buf, off, len, pos) => {
+    const p = paths.get(fd);
+    const orig = () => origWrite(fd, buf, off, len, pos);
+    if (p === undefined || off !== 0) return orig();
+    return wrap(p, buf, orig);
+  };
   try {
     return fn();
   } finally {
-    fs.writeFileSync = orig;
+    fs.openSync = origOpen;
+    fs.writeSync = origWrite;
   }
 }
 
 // Writes in the order the filesystem saw them, for the duration of fn.
 function recordWrites(fn) {
   const seen = [];
-  withWriteWrapper((p, data, rest, orig) => { seen.push(p); return orig(p, data, ...rest); }, fn);
+  withWriteWrapper((p, buf, orig) => { seen.push(p); return orig(); }, fn);
   return seen;
 }
 
@@ -445,14 +461,111 @@ test('metadata: the version marker is the last write, after the manifest', (t) =
 test('guard: a failed template write leaves the version marker at its prior value', (t) => {
   const d = reviewFixture(t);
   fs.writeFileSync(path.join(d, '.toolkit-version'), '5.3.1\n');
-  withWriteWrapper((p, data, rest, orig) => {
+  withWriteWrapper((p, buf, orig) => {
     if (p.endsWith('AGENTS.md')) throw new Error('simulated write failure');
-    return orig(p, data, ...rest);
+    return orig();
   }, () => {
-    assert.throws(() => run(() => cli.cmdPatch(d, { repo: true })), /Failed writing AGENTS\.md[\s\S]*version marker was not advanced/);
+    assert.throws(() => run(() => cli.cmdPatch(d, { repo: true })), /Failed writing AGENTS\.md[\s\S]*may be partly written and was not removed[\s\S]*version marker was not advanced/);
   });
   assert.equal(fs.readFileSync(path.join(d, '.toolkit-version'), 'utf8'), '5.3.1\n');
-  assert.equal(fs.existsSync(path.join(d, 'AGENTS.md')), false);
+  // The target was created exclusively before the failed write. It is reported, not removed by path.
+  assert.equal(fs.readFileSync(path.join(d, 'AGENTS.md'), 'utf8'), '');
+});
+
+test('guard: a new file is opened with O_EXCL, and an existing file is opened without create or truncate', (t) => {
+  const d = reviewFixture(t);
+  fs.writeFileSync(path.join(d, '.toolkit-version'), '5.3.1\n');
+  const opens = new Map();
+  const origOpen = fs.openSync;
+  fs.openSync = (p, flags, ...rest) => {
+    if (flags & (fs.constants.O_WRONLY | fs.constants.O_RDWR)) opens.set(path.relative(d, String(p)).split(path.sep).join('/'), flags);
+    return origOpen(p, flags, ...rest);
+  };
+  try {
+    run(() => cli.cmdPatch(d, { repo: true }));
+  } finally {
+    fs.openSync = origOpen;
+  }
+  const { O_CREAT, O_EXCL, O_TRUNC } = fs.constants;
+  const created = opens.get('AGENTS.md');
+  assert.ok(created !== undefined, 'AGENTS.md was opened for writing');
+  assert.equal(created & (O_CREAT | O_EXCL), O_CREAT | O_EXCL, 'a missing file is created exclusively');
+  const existing = opens.get('.toolkit-version');
+  assert.ok(existing !== undefined, 'the version marker was opened for writing');
+  assert.equal(existing & (O_CREAT | O_TRUNC), 0, 'an existing file is opened without create or truncate');
+  assert.equal(fs.readFileSync(path.join(d, '.toolkit-version'), 'utf8'), require('../package.json').version + '\n');
+  assert.equal(fs.readFileSync(path.join(d, 'AGENTS.md'), 'utf8'), fs.readFileSync(path.join(SRC, 'repo', 'AGENTS.md'), 'utf8'));
+});
+
+// Ordinary fs failure stubs on the version marker only. `fail.write` makes the marker's write throw before any
+// byte is written; `fail.close` makes its close throw after the real close (so no descriptor is leaked).
+function withMarkerFailure(fail, fn) {
+  const origOpen = fs.openSync;
+  const origWrite = fs.writeSync;
+  const origClose = fs.closeSync;
+  const paths = new Map();
+  const isMarker = (p) => p !== undefined && p.endsWith('.toolkit-version');
+  fs.openSync = (p, flags, ...rest) => {
+    const fd = origOpen(p, flags, ...rest);
+    if (flags & (fs.constants.O_WRONLY | fs.constants.O_RDWR)) paths.set(fd, String(p));
+    return fd;
+  };
+  fs.writeSync = (fd, buf, off, len, pos) => {
+    if (fail.write && isMarker(paths.get(fd))) throw new Error('simulated marker write failure');
+    return origWrite(fd, buf, off, len, pos);
+  };
+  fs.closeSync = (fd) => {
+    const p = paths.get(fd);
+    paths.delete(fd);
+    origClose(fd);
+    if (fail.close && isMarker(p)) throw new Error('simulated marker close failure');
+  };
+  try {
+    return fn();
+  } finally {
+    fs.openSync = origOpen;
+    fs.writeSync = origWrite;
+    fs.closeSync = origClose;
+  }
+}
+
+test('guard: a failed marker write reports the marker as unconfirmed, not as not advanced', (t) => {
+  const d = reviewFixture(t);
+  fs.writeFileSync(path.join(d, '.toolkit-version'), '5.3.1\n');
+  withMarkerFailure({ write: true }, () => {
+    assert.throws(() => run(() => cli.cmdPatch(d, { repo: true })), (ex) => {
+      assert.match(ex.message, /Failed writing \.toolkit-version \(simulated marker write failure\)\./);
+      assert.match(ex.message, /version marker state is unconfirmed/);
+      assert.match(ex.message, /Inspect \.toolkit-version and run patch --dry-run again/);
+      assert.doesNotMatch(ex.message, /was not advanced/);
+      return true;
+    });
+  });
+  assert.equal(fs.readFileSync(path.join(d, '.toolkit-version'), 'utf8'), '5.3.1\n');
+});
+
+test('guard: a failed marker close is reported with context, and the marker is unconfirmed', (t) => {
+  const d = reviewFixture(t);
+  fs.writeFileSync(path.join(d, '.toolkit-version'), '5.3.1\n');
+  withMarkerFailure({ close: true }, () => {
+    assert.throws(() => run(() => cli.cmdPatch(d, { repo: true })), (ex) => {
+      assert.match(ex.message, /Failed closing \.toolkit-version \(simulated marker close failure\)\./);
+      assert.match(ex.message, /version marker state is unconfirmed/);
+      assert.doesNotMatch(ex.message, /was not advanced/);
+      return true;
+    });
+  });
+});
+
+test('guard: when the marker write and its close both fail, the write error is kept and the close error is added', (t) => {
+  const d = reviewFixture(t);
+  fs.writeFileSync(path.join(d, '.toolkit-version'), '5.3.1\n');
+  withMarkerFailure({ write: true, close: true }, () => {
+    assert.throws(() => run(() => cli.cmdPatch(d, { repo: true })), (ex) => {
+      assert.match(ex.message, /Failed writing \.toolkit-version \(simulated marker write failure\)\. Closing it also failed \(simulated marker close failure\)\./);
+      return true;
+    });
+  });
 });
 
 test('guard: a protected file that changes mid-run stops before the marker advances; earlier writes stay', (t) => {
@@ -460,9 +573,9 @@ test('guard: a protected file that changes mid-run stops before the marker advan
   fs.writeFileSync(path.join(d, '.toolkit-version'), '5.3.1\n');
   const manifestPath = path.join(d, '.nitm', 'manifest.json');
   const manifestText = fs.readFileSync(manifestPath, 'utf8');
-  withWriteWrapper((p, data, rest, orig) => {
-    const r = orig(p, data, ...rest);
-    if (p.endsWith('AGENTS.md')) orig(manifestPath, manifestText + '\n'); // a concurrent edit, after the first write
+  withWriteWrapper((p, buf, orig) => {
+    const r = orig();
+    if (p.endsWith('AGENTS.md')) fs.writeFileSync(manifestPath, manifestText + '\n'); // a concurrent edit, after the first write
     return r;
   }, () => {
     assert.throws(() => run(() => cli.cmdPatch(d, { repo: true })), /manifest\.json changed during the writes[\s\S]*version marker was not advanced/);

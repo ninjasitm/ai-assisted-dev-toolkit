@@ -40,7 +40,7 @@ Activation never weakens C, D, or the `/implement` supplied-task exception. See 
 **Per entry command:**
 
 - **`/implement` with a supplied authorized task:** the supplied task is the authority. The supplied-task exception covers the missing spec, plan, and task files. Checkpoint C still applies to each task before its first build.
-- **`/implement-feature`:** the task list and plan approval and alignment must already be in place. Checkpoint D still runs before aggregate verification and review. Autonomous mode does not replace D.
+- **`/implement-feature`:** a supplied authorized feature or task list is the authority, and no spec or plan gate is invented for it. Any approval or alignment that already applies to the feature must be in place before dispatch. Checkpoint D still runs before aggregate verification and review. Autonomous mode does not replace D. Factory's separate human spec and plan confirmation is unchanged and is not this entry.
 - **Factory (post-plan only):** the plan gate must be confirmed by the human. Autonomous mode never confirms the spec or plan gate, and never gives final approval when `APPROVAL_MODE=human`.
 
 ## Grill-me and Fit Review Are Different Steps
