@@ -1,0 +1,9 @@
+{
+  "name": "batch rollback guard: a pending operation, a dirty tree, or a restore-path collision restores nothing and keeps the backups; a failing reset is reported incomplete",
+  "cases": [
+    { "name": "operation in progress", "checks": { "no_operation": false, "tracked_clean": true, "index_clean": true, "no_collision": true }, "reset": false, "restore": false, "backups_kept": true, "previewRollback": "incomplete" },
+    { "name": "dirty tracked tree", "checks": { "no_operation": true, "tracked_clean": false, "index_clean": true, "no_collision": true }, "reset": false, "restore": false, "backups_kept": true, "previewRollback": "incomplete" },
+    { "name": "restore path collides with new content", "checks": { "no_operation": true, "tracked_clean": true, "index_clean": true, "no_collision": false }, "reset": false, "restore": false, "backups_kept": true, "previewRollback": "incomplete" },
+    { "name": "reset fails", "checks": { "no_operation": true, "tracked_clean": true, "index_clean": true, "no_collision": true }, "reset": "failed", "restore": false, "backups_kept": true, "previewRollback": "incomplete" }
+  ]
+}

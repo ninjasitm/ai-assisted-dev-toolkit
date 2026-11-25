@@ -1,0 +1,35 @@
+{
+  "trace": 1,
+  "title": "supplied-only fix (no accepted spec or plan): C and D do not apply, no approach note",
+  "expected_sequence": ["supplied-fix-applicability", "fix-rule", "fix-builder-dispatch", "fix-no-D", "code-review-fresh-reviewer"],
+  "steps": [
+    {
+      "id": "supplied-fix-applicability",
+      "file": ".claude/prompt-snippets/implement-fixes.md",
+      "must": ["Determine whether C applies using \\[fit-review Applicability\\]\\(\\.\\./rules-snippets/fit-review\\.md#applicability\\)", "Pass the approach note to the builder only where C ran"],
+      "must_not": ["approach goal-fit check C of", "only `VERDICT: PASS` releases the build"]
+    },
+    {
+      "id": "fix-rule",
+      "file": ".claude/rules-snippets/fit-review.md",
+      "must": ["C and D apply only when there is an accepted spec or plan\\.", "Supplied-only tasks and fixes skip C and D; they need no approach note\\.", "Builder inputs carry the approach note only where C ran\\."]
+    },
+    {
+      "id": "fix-builder-dispatch",
+      "file": ".claude/prompt-snippets/implement-fixes.md",
+      "must": ["Dispatch one builder with the bug report, the AC list, the discovered checks, the base commit, the baseline, for this root cause"],
+      "must_not": ["approved approach note"],
+      "after": [["Determine whether C applies using", "Dispatch one builder with the bug report"]]
+    },
+    {
+      "id": "fix-no-D",
+      "file": ".claude/prompt-snippets/implement-fixes.md",
+      "must": ["Implementation review D: where D applies \\(fit-review Applicability\\)", "A supplied-only fix skips D\\."]
+    },
+    {
+      "id": "code-review-fresh-reviewer",
+      "file": ".claude/rules-snippets/fit-review.md",
+      "must": ["Oracle never runs a review\\.", "\\*\\*Review\\*\\* \\(letter D, the post-build implementation check, and all code review\\)"]
+    }
+  ]
+}

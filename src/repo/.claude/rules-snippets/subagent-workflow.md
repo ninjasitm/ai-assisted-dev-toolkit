@@ -68,16 +68,36 @@ Runtime discovery/authentication must use the active instance and location; neve
 
 ## Domain Specialist Selection
 
-When dispatching implementation tasks, match the specialist to the domain:
+When dispatching implementation tasks, match the specialist to the domain. Autonomous runs use this same routing and never default to one agent (see [autonomous-mode](../../.agents/skills/autonomous-mode/SKILL.md)):
 
 | Domain                             | Specialist             |
 | ---------------------------------- | ---------------------- |
 | API design, databases, system arch | **Backend Architect**  |
-| UI components, state, responsive   | **Frontend Developer** |
+| UI components, state, responsive (UI-only repairs: see UI Work Routing) | **Frontend Developer** |
 | API contracts, docs, versioning    | **API Specialist**     |
 | Admin dashboards, RBAC, reporting  | **Admin Portal**       |
 | Project documentation              | **Documenter**         |
 | General / cross-cutting            | **Implementer**        |
+
+### UI Work Routing
+
+Factory's Subagent dispatch table is canonical for UI repairs and rework, and this section states the same rule for any UI dispatch. It overrides the domain table above for UI repairs.
+
+Agent choice:
+
+- **UI-only fixes** (visual-only fixes, regardless of which lens reported them; no interaction-flow, code-lens, or security finding) go to an edit-enabled `designer`. Fallback: `frontend-developer`, then `implementer`.
+- **Combined UI/UX work, or mixed UI and code,** goes wholly to an edit-enabled `frontend-developer`. Fallback: `implementer`. Never split a mixed task between agents.
+- **Security findings** stay on `implementer`, even when UI is involved.
+- A UI builder never reviews its own round. The ux and ui reviews run on a fresh `reviewer`.
+
+Mockups:
+
+- **Simple UI fixes** (contrast, focus states, spacing, copy, or a small layout fix on an existing screen) are implemented directly by the UI builder above, with no question about mockups.
+- **Work beyond simple** (a new screen, a layout or flow change, or a visual direction) asks the user once, at spec or plan time, whether they want mockups first. Record the answer in the spec or plan; Factory stores it as `mockups` in `job.json` (`true` or `false`). If no answer is recorded when the affected dispatch is due, obtain it before that dispatch: the UI work waits and is not sent to another agent.
+- If mockups are requested, the designer produces them before implementation. The mockup answer does not select the builder. In Factory, use its Subagent dispatch table, including `implementer` for every initial build.
+- When a mockup has more than one state to review (for example empty, loading, error and populated, open and closed, or different roles or breakpoints), the designer adds a small floating control to the mockup that switches between those states, so the reviewer can step through each one in place. Keep the control visually separate from the design, and leave it out of the implementation.
+
+Only the user answers the mockup question. Goal-fit checks and Oracle never decide it.
 
 ## Orchestration Patterns
 
@@ -123,7 +143,7 @@ Before dispatching any task list, the orchestrator builds the dependency graph. 
 2. **Exclusive writable scopes.** Each writer gets a scope no other concurrent task writes. Two tasks that share any writable path are dependent. A task whose write set is unknown or undeclared runs serially until its scope is established from the changed-file list.
 3. **Data dependencies.** A task that reads what another task writes waits for that task.
 4. **Ready batch.** Tasks whose dependencies are satisfied and whose writable scopes are disjoint form one batch. Dispatch the whole batch together. Tasks with unfinished dependencies or shared writable paths wait until those finish. Their newly ready, disjoint successors then join the next ready batch.
-5. **Route by domain.** Backend tasks → Backend Architect; frontend → Frontend Developer; API contracts → API Specialist; docs → Documenter; cross-cutting → Implementer.
+5. **Route by domain.** Backend tasks → Backend Architect; frontend → Frontend Developer (UI-only fixes: see UI Work Routing); API contracts → API Specialist; docs → Documenter; cross-cutting → Implementer.
 6. **Track handles.** Record each dispatched task's handle, agent, writable scope, and status until its result is reconciled.
 7. **Reconcile before dependents.** Inspect each result (changed files, summary, verification) before dispatching any task that depends on it. If a result changed a path the graph did not expect, stop the affected tasks and re-plan the batch.
 8. **Continue the chain.** When a batch's results are reconciled, compute the next ready batch and dispatch it. Do not wait for the user unless a mandatory gate applies or no authorized, unblocked work remains (see Autonomous Execution and Blockers).
@@ -178,16 +198,16 @@ Spec and plan confirmations remain mandatory human steps; final approval, escala
 ## Plan and Spec Changes
 
 - **Route by substance.** An ordinary repair (a fix inside the accepted plan and goals) stays with the builder or specialist that owns the files. A plan or spec change, or any expansion, goes to the planner: the planner authors the revision, and no reviewer, Oracle, or builder does.
-- **Order.** The planner authors the revision, then independent plan review (fit-review, Plan review), then the applicable existing confirmation (Factory's spec and plan gates, or none where the flow has no gate), then resume the affected work. A PASS on an earlier plan does not cover the revised one.
+- **Order.** The planner authors the revision, then a plan goal-fit check (B) (fit-review), then the applicable existing confirmation (Factory's spec and plan gates, or none where the flow has no gate), then resume the affected work. A PASS on an earlier plan does not cover the revised one.
 - **Handoff and resume.** Every handoff and resume carries the verbatim original request and explicit amendments as the goal authority, plus the overall summary and goals as context. The summary is not authority and never replaces them. No new record schema or structured-file field is added: use the existing progress record or the conversation.
 - **Expansion.** Oracle may recommend considering a justified in-goal expansion; this is advice, not authorization. Under fit-review's Expansion rule it goes to the planner as a revision request, and no expansion is authorized until the planner's revision passes independent review and any applicable confirmation.
 - **Feature Builder.** A standalone Planner-to-Implementer handoff is a bypass: it must get the plan gate and classify each feedback item as a repair or a plan or spec change before implementation.
-- **Reviewers.** A reviewer dispatched under a goal-fit or alignment contract follows that contract's reply format, not the generic review summary.
+- **Reviewers.** A reviewer dispatched under a goal-fit check or review contract follows that contract's reply format, not the generic review summary.
 
 ## Quality Gates
 
 - Every implementation must pass **Reviewer** before proceeding
-- Every plan must pass plan review (fit-review, Plan review) before implementation begins; the Reviewer gate applies to implementations
+- Every plan must pass the plan goal-fit check (B) (fit-review) before implementation begins; the Reviewer gate applies to implementations
 - Coordinators should not skip review even for "simple" changes
 - If a reviewer requests changes, the original specialist fixes them and re-review occurs
 

@@ -1,0 +1,152 @@
+{
+  "name": "plan-only job with a stale spec.md present: no baseline candidate and no planner or doc-sync copy; the docs commit stages only intended plan and task paths, with per-path adds, under a small plan, a keyed rename over a tracked stale spec, refusals, and a tracked tasks deletion",
+  "config": {
+    "APPROVAL_MODE": "human",
+    "MERGE_MODE": "local",
+    "DEFAULT_BRANCH": "main"
+  },
+  "job": {
+    "spec_route": "plan-only",
+    "stage": "plan",
+    "feature_dir": "docs/features/PROJ-9-export",
+    "issue_key": "PROJ-9"
+  },
+  "feature_folder": [
+    "intake.md",
+    "spec.md (stale, from an earlier spec route)",
+    "plan.md"
+  ],
+  "events": [
+    {
+      "step": "baseline-candidates",
+      "offered": [
+        "intake.md",
+        "tracker description (PROJ-9)"
+      ],
+      "excluded": [
+        "spec.md"
+      ],
+      "reason": "plan-only route never offers spec.md"
+    },
+    {
+      "step": "planner",
+      "agent": "planner",
+      "mode": "plan",
+      "paths_block_spec_md": "omitted",
+      "brief": "roles/spec.md",
+      "brief_inputs": [
+        "plan.md",
+        "tasks.md",
+        "intake.md"
+      ],
+      "reads": [
+        "intake.md"
+      ],
+      "writes": [
+        "plan.md"
+      ]
+    },
+    {
+      "step": "rework-doc-sync",
+      "route": "plan-only",
+      "copies": [
+        "plan.md"
+      ],
+      "copies_forbidden": [
+        "spec.md"
+      ]
+    }
+  ],
+  "docs_commit": {
+    "scenario": "small plan, tasks.md never created, untracked stale spec.md",
+    "tasks_md_ever": false,
+    "staged_commands": [
+      "git add -A -- docs/features/PROJ-9-export/plan.md"
+    ],
+    "staged": [
+      "docs/features/PROJ-9-export/plan.md"
+    ],
+    "left_untouched": [
+      "docs/features/PROJ-9-export/spec.md (stale, untracked)"
+    ],
+    "mr_diff": [
+      "docs/features/PROJ-9-export/plan.md"
+    ],
+    "mr_diff_excludes": [
+      "docs/features/PROJ-9-export/spec.md"
+    ],
+    "commit": true
+  },
+  "keyed_rename": {
+    "scenario": "keyed rename; the old unkeyed folder holds a TRACKED stale spec.md",
+    "old_feature_dir": "docs/features/export",
+    "feature_dir": "docs/features/PROJ-9-export",
+    "tracked_before": [
+      "docs/features/export/spec.md (stale)",
+      "docs/features/export/plan.md"
+    ],
+    "moves": [
+      {
+        "from": "docs/features/export/plan.md",
+        "to": "docs/features/PROJ-9-export/plan.md",
+        "git": "mv"
+      }
+    ],
+    "left_in_old_folder": [
+      "docs/features/export/spec.md"
+    ],
+    "staged": [
+      "docs/features/export/plan.md (deletion)",
+      "docs/features/PROJ-9-export/plan.md (add)"
+    ],
+    "mr_diff": [
+      "docs/features/export/plan.md",
+      "docs/features/PROJ-9-export/plan.md"
+    ],
+    "mr_diff_excludes": [
+      "docs/features/export/spec.md",
+      "docs/features/PROJ-9-export/spec.md"
+    ],
+    "commit": true
+  },
+  "refusals": [
+    {
+      "name": "same-folder spec already staged",
+      "already_staged": "docs/features/PROJ-9-export/spec.md",
+      "refused": true,
+      "commit": false,
+      "index_preserved": true,
+      "unstaged": false
+    },
+    {
+      "name": "unrelated path already staged",
+      "already_staged": "docs/other-feature/notes.md",
+      "refused": true,
+      "commit": false,
+      "index_preserved": true,
+      "unstaged": false
+    }
+  ],
+  "rework_tracked_tasks_removed": {
+    "intended_deletion": true,
+    "staged": [
+      "docs/features/PROJ-9-export/tasks.md (deletion)"
+    ],
+    "commit": true,
+    "deletion_committed": true
+  },
+  "setaside": {
+    "P": [
+      "docs/features/PROJ-9-export/plan.md",
+      "docs/features/PROJ-9-export/tasks.md"
+    ],
+    "pathspec_folder_on_plan_only": false,
+    "spec_left_in_place": "docs/features/PROJ-9-export/spec.md (stale)",
+    "copies_to_main_copies": [
+      "docs/features/PROJ-9-export/plan.md"
+    ],
+    "spec_moved": false,
+    "spec_cleaned": false,
+    "blocking_path_reported": null
+  }
+}

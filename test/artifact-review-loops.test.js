@@ -17,20 +17,21 @@ for (const layout of ['.', 'src/repo', 'src/monorepo']) {
 
     test(`${layout}/${command}: independent artifact review gates acceptance`, () => {
       const text = read(layout, snippet);
-      assert.match(text, /independent, read-only reviewer/);
+      // plan uses the goal-fit check brief (rule A): Oracle read-only, else a fresh reviewer.
+      assert.match(text, /independent, read-only reviewer|Oracle when available read-only, otherwise a fresh reviewer|read-only Oracle for this goal-fit check/);
       assert.match(text, /original request/);
       assert.match(text, /actual (?:files|artifact)/);
       assert.match(text, /`VERDICT: PASS` or `VERDICT: CHANGES`/);
       assert.match(text, /blocking findings/);
       assert.match(text, /[Rr]epair blocking findings/);
       assert.match(text, /repeat affected (?:validation|artifact) checks/);
-      assert.match(text, /re-review the changed artifacts? independently/);
+      assert.match(text, /(?:re-review|repeat the plan goal-fit check \(B\) on) the changed artifacts? independently/);
       assert.match(text, /Repeat until PASS or blocked/);
-      assert.match(text, /orchestrator (?:verifies every requirement|accepts)/);
+      assert.match(text, /orchestrator (?:verifies every requirement|accepts|presents)/);
       assert.match(text, /evidence/);
-      assert.match(text, /independent reviewer is unavailable, report BLOCKED/);
+      assert.match(text, /(?:independent reviewer is unavailable|neither Oracle nor a fresh independent reviewer can run), report BLOCKED/);
       assert.match(text, /self-review cannot substitute/);
-      assert.match(text, /human.*approval.*separate/);
+      assert.match(text, /human.*(?:approval|confirmation).*separate/);
 
       if (command === 'create-skill') {
         assert.match(text, /naming\/frontmatter, structure, reference resolution/);
@@ -42,7 +43,7 @@ for (const layout of ['.', 'src/repo', 'src/monorepo']) {
         assert.match(text, /amendment governance/);
       } else {
         assert.match(text, /completeness, dependencies\/order, actionability/);
-        assert.match(text, /lightweight artifact review, not a code build loop/);
+        assert.match(text, /lightweight artifact check, not a code build loop/);
         assert.match(text, /do not implement the plan/);
         assert.match(text, /Report [Cc]ompletion.*only after artifact acceptance/);
         const prefix = layout === 'src/monorepo' ? 'apps/{{APP_NAME}}/' : '';
@@ -151,7 +152,7 @@ for (const layout of ['src/repo', 'src/monorepo']) {
     assert.match(plan, /override that skill's execution handoff, worktree and commit procedures/);
     assert.match(plan, /Stop after reporting the accepted artifacts/);
     assert.match(plan, /do not implement the plan/);
-    assert.match(plan, /human approval separate from artifact acceptance/);
+    assert.match(plan, /human (?:approval|confirmation) separate from (?:artifact acceptance|the goal-fit PASS)/);
     assert.match(tasks, /shared delivery loop in `implement\.md`; only the orchestrator accepts and ticks/);
     assert.match(tasks, /This command only generates the checklist; do not dispatch implementation or bypass required human approval/);
     assert.doesNotMatch(tasks, /using `subagent-driven-development`|Implement it directly|third step in the development lifecycle/);

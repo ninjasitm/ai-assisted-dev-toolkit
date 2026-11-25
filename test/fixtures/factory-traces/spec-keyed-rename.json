@@ -1,0 +1,23 @@
+{
+  "name": "spec route, recorded keyed rename: the old qa.md moved by Doc sync and the staged deletions under the old folder pass both index checks; the spec-route commit uses the exact-pathspec commit",
+  "route": "spec",
+  "old_feature_dir": "docs/features/export",
+  "feature_dir": "docs/features/PROJ-9-export",
+  "tracked_before": ["docs/features/export/spec.md", "docs/features/export/plan.md", "docs/features/export/qa.md"],
+  "moves": [
+    { "from": "docs/features/export/qa.md", "to": "docs/features/PROJ-9-export/qa.md", "by": "Doc sync" }
+  ],
+  "staged_for_commit": [
+    "docs/features/export/spec.md (deletion)",
+    "docs/features/export/plan.md (deletion)",
+    "docs/features/export/qa.md (deletion)",
+    "docs/features/PROJ-9-export/spec.md (add)",
+    "docs/features/PROJ-9-export/plan.md (add)",
+    "docs/features/PROJ-9-export/qa.md (add)"
+  ],
+  "index_checks": [
+    { "name": "check before staging", "allowed_set": ["current feature_dir paths", "old-folder deletions of the recorded keyed rename", "old qa.md moved by Doc sync"], "passed": true },
+    { "name": "check before commit", "allowed_set": ["current feature_dir paths", "old-folder deletions of the recorded keyed rename", "old qa.md moved by Doc sync"], "passed": true }
+  ],
+  "commit": { "command": "git --literal-pathspecs commit --only -m \"docs: feature docs for 009-export\" -- <changed-paths>", "changed_paths_include_old_qa": true, "committed": true }
+}

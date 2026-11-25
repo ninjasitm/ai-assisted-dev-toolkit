@@ -378,10 +378,11 @@ Used by the opt-in factory (`.agents/skills/factory/SKILL.md` and `.agents/skill
 | --------------------------- | ------------------------------------------------------------------------------------------- | ------------------------ |
 | `{{DEFAULT_BRANCH}}`        | Branch factory jobs start from and merge into                                               | `main`, `master`         |
 | `{{FACTORY_PORT_BASE}}`     | Base dev-server port. Job `n` uses `base + 10n` for the builder, `+1` for ux, and `+2` for ui | `5100`                   |
-| `{{APPROVAL_MODE}}`         | `human` stops at `awaiting-human`; `auto` merges on approval                                | `human`, `auto`          |
+| `{{APPROVAL_MODE}}`         | `human` stops at `awaiting-human`; `auto` runs the publish procedure on approval (see below) | `human`, `auto`          |
 | `{{FACTORY_REVIEW_LENSES}}` | Review lenses to run. `ux` and `ui` need browser tooling                                    | `code, security`         |
 | `{{FACTORY_FEATURE_PATHS}}` | Comma-separated feature documentation paths; repo default is `docs/features`, monorepo default is `apps/*/docs/features, docs/features` | `docs/features` |
 | `{{MERGE_MODE}}`            | `local` merges locally (default); `push-mr` pushes and opens a merge request                | `local`, `push-mr`       |
+| `{{PREVIEW_MERGE}}`         | Local preview settings (JSON): `enabled`, `stack`, `deployCommand`, `deployAgent`, `healthChecks`. `stack` is `null` or `{name, url}`; locality is validated against `url`. Toolkit default `enabled: true` with `stack: null` stays inactive until a local `stack` and a `deployCommand` or `deployAgent` are set. Active only under `local`; off under `push-mr` | `{"enabled": true, "stack": {"name": "dev", "url": "http://localhost:3000"}, "deployCommand": "make deploy-local", "deployAgent": null, "healthChecks": []}` |
 
 ## Supported Ecosystems
 
@@ -719,14 +720,14 @@ The factory is an opt-in pipeline for feature-sized work. One orchestrator takes
 
 It runs alongside Feature Builder and TDD and does not replace them. Nothing runs until you invoke `/factory`. Quick fixes stay direct.
 
-- **Agents:** `planner` (spec and plan), `implementer` (build, repair, and rework), and `reviewer` (the code, security, ux, and ui lenses, and approval, each in the mode its dispatch names). The native agents ship for Claude Code, GitHub Copilot, Cursor, and OpenCode. Each role's Factory rules are in `.agents/skills/factory/roles/`. Codex runs those briefs directly.
+- **Agents:** `planner` (spec and plan), a builder selected by the Factory dispatch table (`implementer` for initial builds and code-only or security repairs; an edit-enabled `designer` or `frontend-developer` for UI work as specified there; mixed UI/code repairs go wholly to `frontend-developer`, falling back to `implementer`), and `reviewer` (the code, security, ux, and ui lenses, and approval, each in the mode its dispatch names). The native agents ship for Claude Code, GitHub Copilot, Cursor, and OpenCode. Each role's Factory rules are in `.agents/skills/factory/roles/`. Codex runs those briefs directly.
 - **Setup and reference:** [`src/repo/factory/README.md`](src/repo/factory/README.md) (the monorepo copy is in `src/monorepo/factory/`). The installer copies `factory/` into your project.
 
 | Command | What it does |
 | --- | --- |
 | `/factory <feature request>` | Intake: reads the project and the features it touches, asks only the glaring questions, then asks you to continue or change the answers. Nothing is created before you continue |
 | `/factory start <KEY \| slug \| job-id>` | Pick up an existing feature folder by ticket key or slug, or resume its open job (for example one waiting at a gate). Add `--in-place` only for a new job |
-| `/factory approve <job-id>` | Merge a job waiting for you (`awaiting-human` or `needs-human`); on a `merged` job, move its tickets to Done |
+| `/factory approve <job-id> [QA answer]` | At preview `ready`, use only after testing the displayed commit: the bare command means every listed check passed. It accepts the existing merge; it does not merge again. Outside preview, publish an eligible job (merge locally, or push and open an MR under `push-mr`); after the forge merges the MR, run it again to finish. On a `merged` job, reconcile its tickets to Done. |
 | `/factory rework <job-id> <note>` | Restart the builder with your note and a fresh retry budget |
 | `/factory status [--all]` | Summarize open jobs (read-only). Closed jobs are hidden unless `--all` |
 | `/factory watch [--all]` | Show the status table here, then print the command to run the live view in your terminal (read-only). Closed jobs are hidden unless `--all` |
@@ -741,11 +742,17 @@ Before these approvals, an independent, read-only Oracle (when available) or rev
 
 Single-session role switching, including the Codex fallback, cannot satisfy independent goal-fit review: those gates stay blocked until an independent reviewer is available.
 
-**Alignment checkpoints** apply only to workflows whose configured instructions include them; they are not a universal Factory capability. Where configured, they keep build work aligned to goals using the same brief and reviewer rules as goal-fit review. Factory runs checkpoints A and B, while `/implement`, `/implement-feature`, and `/implement-fixes` use C and `/implement-feature` also uses D. Only an explicit `PASS` releases the next step. A reviewer finding alone never adds scope. Oracle advice may identify a potentially justified in-goal expansion, but is not permission to widen scope: the planner must revise it, an independent reviewer must check it, and the existing human confirmation gate must approve it. A goal, spec, or plan change goes through the existing gates. Plan review is a named goal-fit review of a written execution plan or a multi-task plan, separate from checkpoints. Plan and spec changes go through the planner, plan review, and applicable confirmation. These are prompt instructions, not host enforcement.
+**Goal-fit checks and reviews** apply only to workflows whose configured instructions include them; they are not a universal Factory capability. Where configured, they use the same brief as the Factory gates. The letters are **A** spec goal-fit check, **B** plan goal-fit check, **C** approach goal-fit check, **D** implementation review (C and D apply only with an accepted spec or plan), and **R** user rework classification. Oracle runs A, B, and C when it is available read-only and steers; a fresh reviewer runs D, code review, and the post-build fit check. Factory runs A, B, and the post-build fit check, and R for rework notes; `/implement` and `/implement-feature` use C where a spec or plan is accepted, and `/implement-feature` also uses D. Only an explicit `PASS` releases the next step. A reviewer finding alone never adds scope. Oracle advice may identify a potentially justified in-goal expansion, but is not permission to widen scope: the planner must revise it, an independent reviewer must check it, and the existing human confirmation gate must approve it. A goal, spec, or plan change goes through the existing gates. Plan goal-fit check (B) covers a written execution plan or a multi-task plan. Plan and spec changes go through the planner, the matching goal-fit check (B for a plan, A for a spec), and applicable confirmation. These are prompt instructions, not host enforcement.
 
-**The builder also writes `qa.md`.** It lists how to run the feature, numbered manual checks tied to the acceptance criteria, and what the automated tests do not cover. The orchestrator shows it before approval as suggested checks. It is not a gate.
+**The builder also writes `qa.md`.** It lists how to run the feature, numbered manual checks tied to the acceptance criteria, and what the automated tests do not cover. Automated evidence is required, and any designated human checks must pass before acceptance. Only the suggested checks are optional. In local preview, the displayed per-job QA answer covers the required human rows on the running commit.
 
-**The approval gate is on by default.** With `{{APPROVAL_MODE}}` set to `human`, an approved job stops at `awaiting-human` until you run `/factory approve <job-id>`. Set `{{APPROVAL_MODE}}` to `auto` to merge on approval instead. The approver still escalates changes to auth, payments, migrations, and similar high-risk areas. Merges are local, and the factory never pushes.
+**The approval gate is on by default.** Outside active local preview, `human` waits at `awaiting-human` after agent approval. With eligible local preview, both modes merge and deploy locally first, then wait at `needs-human / preview` for your QA answer. Set `{{APPROVAL_MODE}}` to `auto` to run the publish procedure on approval instead. It removes only the human step before publishing, after an agent `APPROVE`; spec and plan gates still run, and the approver still escalates changes to auth, payments, migrations, and similar high-risk areas. Each approved job then ends in one of three outcomes:
+
+- **Local merge** (`{{MERGE_MODE}}` `local`, no preview): the job merges into `{{DEFAULT_BRANCH}}` locally. Nothing is pushed.
+- **Local preview** (`{{PREVIEW_MERGE}}` active): the job merges with `--no-ff` locally, is verified in a clean checkout, and is deployed to your local stack. It waits in `needs-human` (`preview`) until you answer the one QA prompt, showing the URLs, pages, steps, pass criteria, and commit. Nothing is pushed, migrated, or changed in data.
+- **Remote publication** (`push-mr`): the job branch is pushed and a merge or pull request is opened. A person merges it on the forge; the factory never merges there.
+
+Under `local`, the factory never pushes. Under `push-mr`, it pushes only the job branch and opens the request.
 
 Check jobs from a terminal:
 

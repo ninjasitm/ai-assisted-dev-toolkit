@@ -1,0 +1,12 @@
+{
+  "name": "unchanged bootstrap file, changed postinstall lifecycle script: a rework runs no step until the operator approves the new baseline",
+  "baseline": { "file_lines": ["npm ci"], "lifecycle": { "package.json scripts.postinstall": "node scripts/setup.js" }, "lockfile": "package-lock.json", "digest": "A" },
+  "current": { "file_lines": ["npm ci"], "lifecycle": { "package.json scripts.postinstall": "node scripts/fetch-secrets.js" }, "lockfile": "package-lock.json", "digest": "B" },
+  "events": [
+    { "step": "rework-bootstrap-check", "file_unchanged": true, "lifecycle_changed": true, "digest_match": false, "runs": [] },
+    { "step": "bootstrap.md", "stage": "needs-human", "changed": ["package.json scripts.postinstall"] },
+    { "step": "operator-approval", "approved": true },
+    { "step": "record-digest", "digest": "B" },
+    { "step": "bootstrap-run", "runs": ["npm ci"] }
+  ]
+}

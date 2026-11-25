@@ -1,0 +1,10 @@
+{
+  "name": "MR finish reads source SHA, target branch, and merge commit in one forge read; a target other than the default branch leaves the job unresolved",
+  "job": { "reviewedSha": "A", "pushedSha": "A", "mr": "https://forge.example/mr/17" },
+  "default_branch": "main",
+  "cases": [
+    { "name": "target is the release branch", "read": { "state": "MERGED", "headRefOid": "A", "baseRefName": "release", "mergeCommit": { "oid": "M9" } }, "verified": false, "cleanup": false, "ticket_done": false, "merged_written": false, "report": "forge merged; Factory verification does not match" },
+    { "name": "target field missing", "read": { "state": "MERGED", "headRefOid": "A", "mergeCommit": { "oid": "M9" } }, "verified": false, "cleanup": false, "ticket_done": false, "merged_written": false, "report": "forge merged; Factory verification does not match" },
+    { "name": "target matches and SHAs match", "read": { "state": "MERGED", "headRefOid": "A", "baseRefName": "main", "mergeCommit": { "oid": "M9" } }, "verified": true, "cleanup": true, "ticket_done": true, "merged_written": true }
+  ]
+}

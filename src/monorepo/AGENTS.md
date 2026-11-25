@@ -281,7 +281,7 @@ Use custom agents when you want explicit coordinator and worker roles. Use workf
 - Delegate substantial, separable work by default; the coordinator stays responsible for the outcome and reconciles each result before dispatching dependents.
 - **Never end silently** — During active multi-step execution, end each turn as DONE, WAITING (pending task handle and resume trigger), or BLOCKED / NEEDS-DECISION (what completed, what remains, exact next user action). Dispatch or partial progress is not completion. Spec and plan confirmations remain mandatory human steps; final approval, escalation, and merge behavior follow the job's `APPROVAL_MODE` and `MERGE_MODE`. Delegation or autonomy alone never satisfies a gate.
 - **Autonomy with blockers** — Work autonomously within the approved goal, scope, and permissions. A blocker pauses only its task and dependents: record it, defer non-global questions, and continue independent authorized work. Stop for the user only when no authorized work remains or a mandatory gate applies, and ask through the harness's native question tool when one exists.
-9. **Plan and spec changes** — ordinary repairs stay in the loop. Otherwise route through the planner and plan review, then any applicable confirmation, then resume the affected work (see subagent-workflow Plan and Spec Changes).
+9. **Plan and spec changes** — ordinary repairs stay in the loop. Otherwise route through the planner and the matching goal-fit check (A for a spec, B for a plan), then any applicable confirmation, then resume the affected work (see subagent-workflow Plan and Spec Changes).
 - For cross-app work, research boundaries first, sequence shared package changes before app-specific changes, and review downstream impact explicitly.
 
 #### Recommended Flow
@@ -379,11 +379,11 @@ Subagents are typically **agent-initiated** — the coordinator decides when to 
 
 ### Factory (opt-in)
 
-An optional file-driven pipeline for feature-sized work, alongside Feature Builder and TDD. Start it with `/factory <request>` in Claude Code, Copilot, Cursor, or OpenCode. The orchestrator reads the project and asks only the glaring questions before it creates anything, then asks you to continue or change the answers. Resume a feature with `/factory start <KEY | slug | job-id>`. Codex runs the orchestrator skill directly. Each job belongs to a feature folder in `docs/features/`, stops at a plan gate for your confirmation before any ticket or build (after a spec gate, unless the configured Factory workflow supports plan-only and intake proposes that route for a qualifying small new feature, which you confirm), builds in its own git worktree unless you ask for `--in-place`, and moves its tickets when the project tracks them. The orchestrator is [.agents/skills/factory/SKILL.md](.agents/skills/factory/SKILL.md). It runs on the native `planner` (spec and plan), `implementer` (build, repair, and rework), and `reviewer` (the code, security, ux, and ui lenses, and approval) agents. Each role's Factory rules are in its brief in `.agents/skills/factory/roles/`. Spec and plan goal-fit must be confirmed by an independent Oracle or read-only reviewer, not the spec or plan author. Single-session role switching, including the Codex fallback, does not satisfy that and blocks these gates. Spec and plan confirmations stay mandatory human steps in every approval mode. When the configured workflow supports and selects the plan-only route, there is no spec to confirm, and the plan confirmation still applies. With `--retro`, each acceptance decision also saves an advisory retro report, which never changes a gate. After plan confirmation, the build works through every unblocked item and asks you only for what needs you (see the [autonomous-mode](.agents/skills/autonomous-mode/SKILL.md) skill). Setup, placeholders, and approval modes are in [factory/README.md](factory/README.md). Jobs name the affected apps and packages in their spec, and checks run for those with the filtered commands in [Commands](#commands).
+An optional file-driven pipeline for feature-sized work, alongside Feature Builder and TDD. Start it with `/factory <request>` in Claude Code, Copilot, Cursor, or OpenCode. The orchestrator reads the project and asks only the glaring questions before it creates anything, then asks you to continue or change the answers. Resume a feature with `/factory start <KEY | slug | job-id>`. Codex runs the orchestrator skill directly. Each job belongs to a feature folder in `docs/features/`, stops at a plan gate for your confirmation before any ticket or build (after a spec gate, unless the configured Factory workflow supports plan-only and intake proposes that route for a qualifying small new feature, which you confirm), builds in its own git worktree unless you ask for `--in-place`, and moves its tickets when the project tracks them. The orchestrator is [.agents/skills/factory/SKILL.md](.agents/skills/factory/SKILL.md). Factory uses `planner` for spec and plan, selects each builder by the Factory skill's Subagent dispatch table, and uses fresh independent sessions for review and approval. Each role's Factory rules are in its brief in `.agents/skills/factory/roles/`. Spec and plan goal-fit checks (A and B) are run by an independent Oracle or read-only reviewer, not the spec or plan author. Single-session role switching, including the Codex fallback, does not satisfy that and blocks these gates. Spec and plan confirmations stay mandatory human steps in every approval mode. When the configured workflow supports and selects the plan-only route, there is no spec to confirm, and the plan confirmation still applies. With `--retro`, each acceptance decision also saves an advisory retro report, which never changes a gate. After plan confirmation, the build works through every unblocked item and asks you only for what needs you (see the [autonomous-mode](.agents/skills/autonomous-mode/SKILL.md) skill). Setup, placeholders, and approval modes are in [factory/README.md](factory/README.md). Jobs name the affected apps and packages in their spec, and checks run for those with the filtered commands in [Commands](#commands).
 
 ## Documentation Requirements
 
-Documentation updates are **mandatory before committing** any feature or fix. See [`.github/instructions/documentation.instructions.md`](.github/instructions/documentation.instructions.md) for the full pre-commit checklist, templates, and AI agent directives.
+Documentation updates are **mandatory before committing** any feature or fix. See ``.github/instructions/documentation.instructions.md`` for the full pre-commit checklist, templates, and AI agent directives.
 
 **Quick summary:**
 
@@ -406,18 +406,18 @@ Documentation updates are **mandatory before committing** any feature or fix. Se
 - [README.md](README.md) - Project overview
 - [{{APP_DIR}}/{{APP_NAME_1}}/AGENTS.md]({{APP_DIR}}/{{APP_NAME_1}}/AGENTS.md) - App context
 - [{{PACKAGES_DIR}}/{{PACKAGE_NAME_1}}/README.md]({{PACKAGES_DIR}}/{{PACKAGE_NAME_1}}/README.md) - Package docs
-- [.claude/rules/](.claude/rules/) - Claude Code rules (thin wrappers → rules-snippets)
-- [.claude/commands/](.claude/commands/) - Claude Code commands (thin wrappers → prompt-snippets)
+- `.claude/rules/` - Claude Code rules (thin wrappers → rules-snippets)
+- `.claude/commands/` - Claude Code commands (thin wrappers → prompt-snippets)
 - [.claude/rules-snippets/](.claude/rules-snippets/) - Rules content (source of truth)
 - [.claude/prompt-snippets/](.claude/prompt-snippets/) - Prompt content (source of truth)
 - [.claude/agents-snippets/](.claude/agents-snippets/) - Agent definitions (source of truth)
-- [.github/instructions/](.github/instructions/) - Copilot instructions (thin wrappers → rules-snippets)
-- [.github/prompts/](.github/prompts/) - Copilot prompts (thin wrappers → prompt-snippets)
-- [.github/agents/](.github/agents/) - Copilot agents (thin wrappers → agents-snippets)
-- [.cursor/rules/](.cursor/rules/) - Cursor IDE rules (thin wrappers → rules-snippets)
-- [.cursor/commands/](.cursor/commands/) - Cursor commands (thin wrappers → prompt-snippets)
-- [.cursor/agents/](.cursor/agents/) - Cursor agents (thin wrappers → agents-snippets)
-- [.opencode/rules/](.opencode/rules/) - OpenCode rules (thin wrappers → rules-snippets)
-- [.opencode/commands/](.opencode/commands/) - OpenCode commands (thin wrappers → prompt-snippets)
-- [.opencode/agents/](.opencode/agents/) - OpenCode agents (thin wrappers → agents-snippets)
-- [.opencode/opencode.jsonc](.opencode/opencode.jsonc) - OpenCode configuration
+- `.github/instructions/` - Copilot instructions (thin wrappers → rules-snippets)
+- `.github/prompts/` - Copilot prompts (thin wrappers → prompt-snippets)
+- `.github/agents/` - Copilot agents (thin wrappers → agents-snippets)
+- `.cursor/rules/` - Cursor IDE rules (thin wrappers → rules-snippets)
+- `.cursor/commands/` - Cursor commands (thin wrappers → prompt-snippets)
+- `.cursor/agents/` - Cursor agents (thin wrappers → agents-snippets)
+- `.opencode/rules/` - OpenCode rules (thin wrappers → rules-snippets)
+- `.opencode/commands/` - OpenCode commands (thin wrappers → prompt-snippets)
+- `.opencode/agents/` - OpenCode agents (thin wrappers → agents-snippets)
+- `.opencode/opencode.jsonc` - OpenCode configuration

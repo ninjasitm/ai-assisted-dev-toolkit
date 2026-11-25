@@ -66,7 +66,7 @@ for (const layout of LAYOUTS) {
     const text = read(layout, PLAN);
     assert.match(text, /Ask targeted questions only when the request is unclear; do not require creating a specification first\./);
     assert.match(text, /When it is unclear, run a grill-me round/);
-    assert.match(text, /On re-entry from plan-only, remove copied \*\*Requirements Source\*\* and \*\*Acceptance Criteria\*\* text that the approved specification supersedes; keep the original source link and the fit review and plan confirmation records\./);
+    assert.match(text, /On re-entry from plan-only, remove copied \*\*Requirements Source\*\* and \*\*Acceptance Criteria\*\* text that the approved specification supersedes; keep the original source link and the goal-fit check and plan confirmation records\./);
     assert.match(text, /\(\.\.\/\.\.\/\.agents\/skills\/grill-me\/SKILL\.md\)/);
   });
 

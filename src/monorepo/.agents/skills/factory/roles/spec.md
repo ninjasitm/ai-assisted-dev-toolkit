@@ -11,7 +11,7 @@ Read these, in this order:
 3. The existing code the feature touches. Inspect it. Do not write a spec or plan from the request alone.
 4. The `AGENTS.md` of each affected app or package, for its patterns and commands.
 5. [Feature spec template](../../../../templates/feature-spec.template.md) for the section structure.
-6. Any existing `spec.md`, `plan.md`, and `tasks.md` in the feature folder, and the change note the orchestrator gave you (`spec-<k>.md` in spec mode, `plan-<k>.md` in plan mode). Update them, do not start over blind.
+6. The existing `plan.md` and `tasks.md` in the feature folder, plus `spec.md` on the spec route only (on plan-only, an existing `spec.md` is ignored and never read), and the change note the orchestrator gave you (`spec-<k>.md` in spec mode, `plan-<k>.md` in plan mode). Update them, do not start over blind.
 7. `intake.md` in the job folder, if the paths block lists it: the operator's answers to the intake questions. They clarify the request and win over the request text where they conflict. They also state the spec route and any `Derived:` criteria the operator confirmed.
 
 ## Spec mode

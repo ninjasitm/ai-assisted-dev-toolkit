@@ -11,8 +11,9 @@ Rules:
   - `FACTORY_PORT_BUILDER`: the builder's dev-server port. Pass it with the flag or env var that `AGENTS.md` documents.
   - `FACTORY_WORKTREE`: the worktree path (also the current directory).
   - `FACTORY_MAIN_CHECKOUT`: the main checkout, where ignored local files such as `.env` live.
-- Steps must be safe to run again. Rework reruns the whole list.
+- Steps must be safe to run again. Rework reruns the whole list. Rework stops for the operator's approval if this file, or any script, lifecycle hook, or lockfile its steps invoke, changed since the last approved run (the factory records a SHA-256 digest of them; see Worktree bootstrap).
 - Keep secrets out of this file. Copy them from `FACTORY_MAIN_CHECKOUT` instead.
+- A build location with a copied `.env` or credentials is not isolated. Preview merge never runs its tests or setup there; it uses its own clean checkout with disposable storage and refuses to continue if that cannot be established.
 
 The list ships with no active steps. Uncomment the ones your project needs, or replace them. Examples:
 

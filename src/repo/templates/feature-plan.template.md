@@ -1,7 +1,7 @@
 # Implementation Plan: {{FEATURE_NAME}}
 
 **Issue:** {{ISSUE_ID}}
-**Spec:** [spec.md](spec.md)
+**Spec:** `spec.md`
 **Author:** {{AUTHOR}}
 **Created:** {{DATE}}
 **Status:** Draft | In Progress | Completed

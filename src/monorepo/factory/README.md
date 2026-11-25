@@ -20,10 +20,11 @@ Orchestrator: [.agents/skills/factory/SKILL.md](../.agents/skills/factory/SKILL.
 | --- | --- | --- |
 | DEFAULT_BRANCH | Branch jobs start from and merge into | `main` |
 | FACTORY_PORT_BASE | Base dev-server port. Job `n` uses builder `base + 10n`, ux `+1`, ui `+2` | `5100` |
-| APPROVAL_MODE | `human`: stop at `awaiting-human` for `/factory approve`. `auto`: merge on `APPROVE` | `human` |
+| APPROVAL_MODE | `human`: stop at `awaiting-human` for `/factory approve`. `auto`: run the publish procedure on an agent `APPROVE` (local merge, or push and open an MR under `push-mr`; the forge merge stays human). Spec and plan gates run in every mode | `human` |
 | FACTORY_REVIEW_LENSES | Comma list from `code, security, ux, ui` | `code, security` |
 | FACTORY_FEATURE_PATHS | Feature-folder roots, comma list, relative to the repo root. `*` matches one folder name. Search covers every root. New folders go to the first root without `*`, or to a `*` root when the request's code sits in one app | monorepo: `apps/*/docs/features, docs/features`; repo: `docs/features` |
 | MERGE_MODE | `local`: `--no-ff` merge here, never pushed. `push-mr`: push and open a merge or pull request (see Merge modes). Any other value is `local` | `local` |
+| PREVIEW_MERGE | Local preview settings, a JSON object: `enabled`, `stack`, `deployCommand`, `deployAgent`, `healthChecks`. Active only for `local` with `enabled` true, a local `stack`, and a deploy command or agent. See the Preview merge section of SKILL.md | `{"enabled": true, "stack": null, "deployCommand": null, "deployAgent": null, "healthChecks": []}` |
 
 `ux` and `ui` need browser tooling to verify anything. Without it they report every check as `Not verified`, and the job goes straight to `needs-human`. Enable them only when your agents can drive a browser.
 
@@ -33,7 +34,7 @@ Orchestrator: [.agents/skills/factory/SKILL.md](../.agents/skills/factory/SKILL.
 | --- | --- |
 | `/factory <request>` | Intake: the orchestrator reads the project and the features it touches, asks only the glaring questions, then asks you to continue or change the answers. Nothing is created before that |
 | `/factory start <request \| KEY \| slug \| job-id>` | Find or create the feature folder, then start a job, or resume the open job for it (for example one waiting at a gate) |
-| `/factory approve <job-id>` | Merge a job in `awaiting-human` or `needs-human` (`local`), or open its merge request (`push-mr`; approve again once the forge has merged it, to finish). On a `merged` job, moves its tickets to Done |
+| `/factory approve <job-id> [QA answer]` | At preview `ready`, use only after testing the displayed commit: the bare command means every listed check passed. It accepts the existing merge; it does not merge again. Outside preview, publish an eligible job (merge locally, or push and open an MR under `push-mr`); after the forge merges the MR, run it again to finish. On a `merged` job, reconcile its tickets to Done. |
 | `/factory rework <job-id> <note>` | Start a fresh builder with your note and a fresh retry budget |
 | `/factory abandon <job-id>` | Close a job that will not continue. Nothing is merged. Removes its worktree and branch only when the branch has no unmerged commits. Tickets stay as they are |
 | `/factory status [--all]` | Summarize open jobs from their `job.json` files. Closed jobs are hidden unless `--all` |
@@ -47,7 +48,7 @@ There is no queue. Start each feature with a request, a ticket key, or a slug.
 
 ## Harnesses
 
-The orchestrator and agents are the same in every harness. Each harness has its own entry point. Every role runs on a native agent: `planner` for the spec writer, `implementer` for the builder, and `reviewer` for each review lens and the approver, with the lens or approval mode named in the dispatch. The role briefs in `.agents/skills/factory/roles/` hold the Factory rules.
+The orchestrator and agents are the same in every harness. Each harness has its own entry point. Every role runs on a native agent: `planner` for the spec writer, the builder agent named by the routing rule (`implementer`, `designer`, or `frontend-developer`), and `reviewer` for each review lens and the approver, with the lens or approval mode named in the dispatch. The role briefs in `.agents/skills/factory/roles/` hold the Factory rules.
 
 | Harness | Entry point | Native agents |
 | --- | --- | --- |
@@ -57,7 +58,7 @@ The orchestrator and agents are the same in every harness. Each harness has its 
 | OpenCode | `/factory` (`.opencode/commands/factory.md`) | `.opencode/agents/` |
 | Codex | The factory skill (`.agents/skills/factory/SKILL.md`) | No native agent definitions. Role briefs run directly; spec and plan acceptance requires an independent review session. Single-session role switching cannot satisfy that gate (see Harness notes in SKILL.md). |
 
-In OpenCode with the Slim plugin, `oracle` and `designer` are optional alternatives to `reviewer`, if you configure them as edit-denied. The default is the native agents.
+In OpenCode with the Slim plugin, `oracle` runs only the read-only goal-fit checks (spec A, plan B) and never reviews or approves. Read-only blocker consultation in the autonomous pass stays allowed and never authorizes anything. `designer` can be a UI builder for UI-only fixes, or an optional ux/ui reviewer when configured edit-denied. Every other role uses the native agents; see Subagent dispatch in SKILL.md.
 
 ## Feature folders and sizing
 
@@ -81,7 +82,7 @@ Sizing is decided in `plan.md`:
 
 ### Spec route
 
-When the configured Factory workflow supports the plan-only route, intake may propose it; it skips `spec.md` and the spec gate, only for a small, well-defined job: its requirements and acceptance criteria are clear, it has no open product decision, and the total working context it needs (instructions, files, and expected tool results) stays confidently below 100,000 tokens with a reasonable margin. Near or unknown means the spec route. The estimate is judgment, not a tokenizer, and the limit is not enforced across harnesses. A new feature only: an existing feature folder, spec, plan, or job always takes the spec route. Intake shows the route and its basis; you confirm the skip there, or choose the spec route. Anything else takes the spec route, and so does a job with no recorded route. Plan-only still needs an independent plan fit review and your plan confirmation. If its plan turns out larger or unclear, or broader than the request, the job returns to the spec route and its spec gate. Jobs created before this route existed keep the spec route.
+When the configured Factory workflow supports the plan-only route, intake may propose it; it skips `spec.md` and the spec gate, only for a small, well-defined job: its requirements and acceptance criteria are clear, it has no open product decision, and the total working context it needs (instructions, files, and expected tool results) stays confidently below 100,000 tokens with a reasonable margin. Near or unknown means the spec route. The estimate is judgment, not a tokenizer, and the limit is not enforced across harnesses. A new feature only: an existing feature folder, spec, plan, or job always takes the spec route. Intake shows the route and its basis; you confirm the skip there, or choose the spec route. Anything else takes the spec route, and so does a job with no recorded route. Plan-only still needs the plan goal-fit check (B) and your plan confirmation. If its plan turns out larger or unclear, or broader than the request, the job returns to the spec route and its spec gate. Jobs created before this route existed keep the spec route.
 
 ## Autonomous build
 
@@ -107,8 +108,10 @@ Session ended at a gate? `/factory start <job-id | slug | KEY>` shows that gate 
 
 ## Approval modes
 
+When local preview is active and eligible, both modes merge and deploy locally first, then wait at `needs-human` with `substate` `preview` for your QA answer. The job never enters stage `merged` without that pass. Use `/factory approve <id>` to pass the displayed checks, or `/factory rework <id> <failed row and observation>` to report a problem. The `awaiting-human` instructions below apply only outside preview.
+
 - **`human`** (default). An approved job stops at `awaiting-human`. Read the branch and the QA handoff in `qa.md`, answer any pending human check, then run `/factory approve <job-id>`.
-- **`auto`**. An approved job merges automatically. The approver still escalates anything touching auth, payments, data security, deployment, migrations, email, production data, new dependencies, or unresolved product decisions. A job with a human QA check still stops at `awaiting-human`, because that check is required validation. Its tickets stay In Review until you run `/factory approve <job-id>`, which then moves them to Done.
+- **`auto`**. After an agent `APPROVE`, the job runs the publish procedure without the human step before publishing: a local merge, a preview on the local stack (which still waits for your QA pass), or a forge request under `push-mr` (the forge merge stays yours). The approver still escalates anything touching auth, payments, data security, deployment, migrations, email, production data, new dependencies, or unresolved product decisions. A job with a human QA check still stops at `awaiting-human`, because that check is required validation. Its tickets stay In Review until you run `/factory approve <job-id>`, which then moves them to Done.
 
 Any value other than exactly `auto` is treated as `human`.
 
@@ -129,7 +132,7 @@ Steps must be safe to run again, because rework reruns them. A failing step stop
 Ask for an in-place build with `--in-place`, or by saying so at intake or at the plan gate. The build then runs in the main checkout, on branch `factory/<id>`.
 
 - The job starts only when the main checkout is on the default branch with no tracked changes outside the feature folders, no other in-place job is open, and no worktree job holds its build location. Otherwise the job waits at the plan gate and says why.
-- While the job is open, the main checkout stays on `factory/<id>`. Do not switch it until the job is merged or abandoned.
+- While the job is open, the main checkout stays on `factory/<id>`, except during a local merge or preview: then it is on the default branch and stays there through preview QA and any stop-and-report state, and Factory switches it back to `factory/<id>` when a rework starts. Do not switch branches by hand during normal operation. If Factory stops and reports a checkout mismatch, use its expected branch and SHA to restore the checkout before requesting rework.
 - The feature docs are committed on the branch when the build starts, so the main checkout has no tracked feature-doc changes to block a merge.
 - The merge switches the main checkout back to the default branch and removes only the branch, not a worktree.
 - A worktree job cannot merge while an in-place job holds its build location, and an in-place job cannot start while a worktree job holds one. Each refusal names the job in the way.
@@ -139,7 +142,7 @@ Ask for an in-place build with `--in-place`, or by saying so at intake or at the
 Set `MERGE_MODE`. The approval gates are the same in both modes.
 
 - **`local`** (default). The merge runs in the main checkout: `--no-ff`, the test commands, then the worktree and branch are removed. Nothing is pushed. Use it for a solo repo with no forge review.
-- **`push-mr`**. Approve pushes `factory/<id>` after a local test run, then opens a merge request (GitLab, `glab mr create`) or a pull request (GitHub, `gh pr create`). The job waits in `awaiting-human` with the request's URL. Review and merge it on the forge, then run `/factory approve <job-id>` again. That run removes the worktree and branch and moves tickets to Done. It needs the matching CLI, authenticated.
+- **`push-mr`**. Approve pushes `factory/<id>` after a local test run, then opens a merge request (GitLab, `glab mr create`) or a pull request (GitHub, `gh pr create`). The job waits in `awaiting-human` with the request's URL. Review and merge it on the forge, then run `/factory approve <job-id>` again. That run removes the worktree and branch and moves tickets to Done. It needs the matching CLI, authenticated. The request opens in the one verified push repository, passed with `--repo`; a request URL outside that repository is not recorded.
 
 `push-mr` suits forge-reviewed setups, where required reviews or CI gates sit on the forge after your approval. It never force-pushes and never merges locally. Under `auto`, approve opens the request without a pause, but the forge merge and the second `/factory approve` stay yours.
 
@@ -151,7 +154,7 @@ The builder writes the QA plan into `qa.md` in the feature folder, on the job's 
 - **Human checks** are added only where a person must judge: a new flow, or a judgement no safe automated check settles. They supplement the automated checks. The job waits at `awaiting-human`, even in `auto`. Answer the handoff with `PASS` and `accept`. `/factory approve` saves your answer in `build.md` and merges only when every human check reads `PASS` with `accept`. A failure or rejection means `/factory rework <job-id> <note>`.
 - **Optional checks** are listed as limitations. They never block.
 
-The approver reads the functional QA record and escalates on a failed, missing, or stale check. The manual checklist never affects a verdict, and a missing `qa.md` is only noted when the job has no `local` or `human` criteria. When a job waits for you, the orchestrator prints the record and the reviewers' `Not verified` items under the line `Suggested checks before /factory approve — not a gate`.
+The approver reads the functional QA record and escalates on a failed, missing, or stale check. Automated evidence is required, and any designated human checks must pass before acceptance. Only the suggested checks are optional. In local preview, the displayed per-job QA answer covers the required human rows on the running commit, and a missing `qa.md` is only noted when the job has no `local` or `human` criteria. Outside preview, the orchestrator prints blocking `Not verified` items and failed, not-run, or stale automated checks first. Only `## Not covered by automated tests` items appear under `Suggested checks before /factory approve — not a gate`. At preview `ready`, use the per-job handoff instead.
 
 ## Tickets
 
@@ -184,7 +187,7 @@ Jobs that escalate (`needs-human`) keep their branch and worktree so you can ins
 
 ## Abandon
 
-`/factory abandon <job-id>` closes a job that will not continue. It merges nothing. The worktree and branch are removed only when the branch has no unmerged commits. Every job that reached its build keeps its branch and worktree, because its feature-docs commit is unmerged; review them and remove the branch yourself when you are done. Tickets stay where they are, and the report lists their keys. A `push-mr` request stays open on the forge; the report gives its URL for the operator to close. An abandoned job cannot be resumed: `/factory start <slug or KEY>` starts a new one.
+`/factory abandon <job-id>` closes a job that will not continue. It merges nothing. The worktree and branch are removed only when the branch has no unmerged commits. Tickets stay where they are, and the report lists their keys. A `push-mr` request stays open on the forge; the report gives its URL for the operator to close. An abandoned job cannot be resumed: `/factory start <slug or KEY>` starts a new one.
 
 ## Archive
 
@@ -209,7 +212,7 @@ Without `--abandoned`, abandoned jobs are kept and counted, and the flow offers 
     spec.md               spec route only
     plan.md
     tasks.md              large work only
-    qa.md                 builder, on the branch: suggested checks (not a gate)
+    qa.md                 builder, on the branch: automated evidence and required human checks (gate); suggested checks (optional)
 factory/
   README.md               this file
   .gitignore              ignores jobs/ and archive/

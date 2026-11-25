@@ -1,11 +1,11 @@
 ---
 name: autonomous-mode
-description: Use after an accepted task list or plan (or a supplied authorized task) to run every dependency-ready unit, get Oracle guidance once per technical-unknown blocker, park only blocked closures, and queue human-only items for the developer last. Never skips a checkpoint, approval, or human gate.
+description: Use after an accepted task list or plan (or a supplied authorized task) to run every dependency-ready unit, get Oracle guidance once per technical-unknown blocker, park only blocked closures, and queue human-only items for the developer last. Never skips a goal-fit check, review, approval, or human gate.
 ---
 
 # Autonomous Mode
 
-Run an accepted plan forward: every unit whose dependencies are satisfied and whose authority is in place runs now. A technical-unknown blocker gets one read-only Oracle consult. Human-only needs are never delegated or skipped; they are queued for the developer at the end.
+Run an accepted plan forward: every unit whose dependencies are satisfied and whose authority is in place runs now. A technical-unknown blocker gets one read-only Oracle consult. Human-only needs are never delegated or skipped; they are queued for the developer at the end. Autonomous mode never picks an agent: each task routes to its specialist by its content, exactly as it does outside autonomous mode (see [subagent-workflow](../../../.claude/rules-snippets/subagent-workflow.md), Domain Specialist Selection and UI Work Routing).
 
 **Announce at start:** "I'm using the autonomous-mode skill to run the accepted tasks."
 
@@ -23,13 +23,13 @@ Before an accepted source exists, do not load this skill.
 - **Multiple tasks:** load this skill only after the accepted input exists. Do not load it while the task list is still being formed.
 - **Units** are the accepted task list's lines, or on a plan-only job with no task list, the approved plan's numbered steps.
 
-Checkpoints do not gate loading. Each one controls only the work at its existing place in the flow, and none is reordered:
+Goal-fit checks and reviews do not gate loading. Each controls only the work at its existing place in the flow, and none is reordered:
 
-- **Checkpoint C** gates each task's first build (`/implement`, `/implement-feature`, `/implement-fixes`). A task's build does not start until its C has passed.
-- **Checkpoint D** gates aggregate verification and review (`/implement-feature`). Aggregate review does not start until D has passed.
-- **Checkpoint A** gates the Factory review round it precedes, where the Factory flow requires it.
+- **Approach goal-fit check C** gates each task's first build where C applies (`/implement`, `/implement-feature`, `/implement-fixes`). Such a build does not start until its C has passed.
+- **Implementation review D** gates aggregate verification and review where D applies (`/implement-feature`). Aggregate review does not start until D has passed.
+- **Post-build fit check** gates the Factory review round it precedes, where the Factory flow requires it.
 
-Activation never weakens C, D, or the `/implement` supplied-task exception. See [fit-review](../../../.claude/rules-snippets/fit-review.md) for each checkpoint's rules.
+Activation never weakens C, D, or the `/implement` supplied-task exception. See [fit-review](../../../.claude/rules-snippets/fit-review.md) for each letter's rules and its Applicability section.
 
 ## Calling Flow Authority
 
@@ -39,14 +39,14 @@ Activation never weakens C, D, or the `/implement` supplied-task exception. See 
 
 **Per entry command:**
 
-- **`/implement` with a supplied authorized task:** the supplied task is the authority. The supplied-task exception covers the missing spec, plan, and task files. Checkpoint C still applies to each task before its first build.
-- **`/implement-feature`:** a supplied authorized feature or task list is the authority, and no spec or plan gate is invented for it. Any approval or alignment that already applies to the feature must be in place before dispatch. Checkpoint D still runs before aggregate verification and review. Autonomous mode does not replace D. Factory's separate human spec and plan confirmation is unchanged and is not this entry.
+- **`/implement` with a supplied authorized task:** the supplied task is the authority. The supplied-task exception covers the missing spec, plan, and task files. A supplied-only task skips C (fit-review Applicability), so its build needs no approach note.
+- **`/implement-feature`:** a supplied authorized feature or task list is the authority, and no spec or plan gate is invented for it. Any approval or goal-fit check that already applies to the feature must be in place before dispatch. D runs before aggregate verification and review where it applies (fit-review Applicability); a supplied-only feature skips it, and code review still runs. Autonomous mode does not replace D. Factory's separate human spec and plan confirmation is unchanged and is not this entry.
 - **Factory (post-plan only):** the plan gate must be confirmed by the human. Autonomous mode never confirms the spec or plan gate, and never gives final approval when `APPROVAL_MODE=human`.
 
 ## Grill-me and Fit Review Are Different Steps
 
 - **[grill-me](../grill-me/SKILL.md)** is pre-approval clarification of the user's own questions. It runs before a plan or task list is accepted. Do not run it during autonomous execution.
-- **Fit review** is an independent read-only goal-fit review (checkpoints A to D, or plan review) by Oracle or a fresh reviewer. It checks the work against the goals. It is not a question to the user, and it never replaces a human gate.
+- **Goal-fit checks and reviews** are independent and read-only. Goal-fit checks A, B, and C go to Oracle when it is available read-only, otherwise a fresh reviewer. D and code review go to a fresh reviewer, never Oracle. They check the work against the goals. They are not a question to the user, and they never replace a human gate.
 
 ## Scheduling
 
@@ -63,7 +63,7 @@ Every blocker gets exactly one class. Classify by who can settle the question, n
 
 | Class | What it is | Route |
 | --- | --- | --- |
-| **Technical-unknown** | The cause or approach is not established by the sources, and the sources in scope may contain the answer. | Oracle, once per stable key (below). |
+| **Technical-unknown** | The cause or approach is not established by the sources, and the sources in scope may contain the answer. | Read-only blocker consultation: Oracle, once per stable key (below). |
 | **Requirement meaning** | The sources do not settle what the task requires (ambiguity). | Human-only. Park. No Oracle. |
 | **Role or permission** | The action needs a role, permission, credential, secret, or environment the calling flow does not grant. | Human-only. Park. No Oracle. |
 | **Undefined check command** | A required check is not defined by the project's manifests, CI, or docs. | Human-only. Ask for the command. No Oracle, because Oracle may not invent one. |
@@ -77,11 +77,11 @@ Rules for the table:
 
 ## Oracle Semantics
 
-- **Scope of Oracle:** Technical-unknown blockers only. Never Requirement meaning, Role or permission, Undefined check command, or Human approval or decision.
+- **Scope of blocker consultations:** Technical-unknown blockers only. Never Requirement meaning, Role or permission, Undefined check command, or Human approval or decision. Oracle's only Factory checking role is goal-fit checks A–C; a blocker consultation is separate, read-only, and never authorizes anything.
 - **Stable key:** a consult is keyed by the blocker's task identity plus the actual cited relevant inputs: the file paths with their content, the quoted acceptance criterion, and the check output the blocker cites. The key is not the global commit, and it is not other workers' activity. Unrelated commits or parallel work do not change it.
 - **One consult per key.** The same key is never consulted twice. If the key is unchanged, the blocker is parked, not re-asked.
-- **Detected change, not approval.** When a cited input changes in an alignment-relevant way (the freshness rule in fit-review), the key changes and one new consult is eligible. A detected change is evidence to re-examine the blocker. It is not scope approval, and it does not authorize new work.
-- **Guidance, not authority.** Oracle cannot change goals, scope, the plan, an acceptance criterion, or a check. It cannot approve or accept anything.
+- **Detected change, not approval.** When a cited input changes in a goal-relevant way (the freshness rule in fit-review), the key changes and one new consult is eligible. A detected change is evidence to re-examine the blocker. It is not scope approval, and it does not authorize new work.
+- **Guidance, not authority.** Oracle cannot change goals, scope, the plan, an acceptance criterion, or a check. It cannot approve, accept, or review anything.
 - **Acting on guidance** means the normal delivery loop: the builder repairs inside the task's goals, and the orchestrator verifies and reviews. It is not a shortcut to acceptance.
 - **No in-scope answer:** park the blocker. Do not retry it.
 - **Expansion:** guidance cannot expand scope. If a separate expansion is identified, the existing fit-review rules route it. It is not eligible work under this skill until the existing revision and approval steps are complete.

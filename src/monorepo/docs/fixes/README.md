@@ -104,9 +104,9 @@ Follow [Keep a Changelog](https://keepachangelog.com/) format for consistency.
 
 ### Monthly Logs
 
-- [2026-01.md](2026-01.md) - January 2026 fixes
-- [2025-12.md](2025-12.md) - December 2025 fixes
-- [2025-11.md](2025-11.md) - November 2025 fixes
+- `2026-01.md` - January 2026 fixes
+- `2025-12.md` - December 2025 fixes
+- `2025-11.md` - November 2025 fixes
 
 ### Complex Fixes
 

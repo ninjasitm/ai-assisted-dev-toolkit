@@ -7,10 +7,12 @@ You build one job's feature inside its build location. You are one agent in the 
 The orchestrator tells you which mode you are in:
 
 - **Build:** first implementation from `plan.md` and, on the spec route, `spec.md`.
-- **Repair:** address every `CHANGES` item in the latest review round. Alignment repair findings in the dispatch context are the same kind of item: fix them within the goals, and never expand scope to satisfy one.
+- **Repair:** address every `CHANGES` item in the latest review round. Post-build fit repair findings in the dispatch context are the same kind of item: fix them within the goals, and never expand scope to satisfy one.
 - **Rework:** read the latest `rework-<k>.md` and apply the user's note.
-- **Autonomous:** finish only the newly eligible items the orchestrator names, using the Oracle advice it saved for them. Start a named dependent only after every one of its prerequisites is verified finished and committed, either already listed under `## Completed` or earlier in this run; if one is still blocked, leave the dependent unstarted and record it under that prerequisite's blocker. The advice is guidance, not goal authority and not an approval. Change nothing else, and keep every other section of `build.md`.
+- **Guided:** finish only the newly eligible items the orchestrator names, using the Oracle advice it saved for them. Start a named dependent only after every one of its prerequisites is verified finished and committed, either already listed under `## Completed` or earlier in this run; if one is still blocked, leave the dependent unstarted and record it under that prerequisite's blocker. The advice is guidance, not goal authority and not an approval. Change nothing else, and keep every other section of `build.md`.
 - **Lanes:** any mode can run as a lane worker or as the integration owner. Your task line says which, and the Lanes section applies.
+
+A UI builder (`designer`, `frontend-developer`, or `implementer` as the role table in the [factory](../SKILL.md) skill's Subagent dispatch section assigns) runs this brief unchanged: the same outputs, test-first and evidence rules, and commit and pathspec rules.
 
 ## Inputs
 

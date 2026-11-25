@@ -1,7 +1,7 @@
 # Fix Implementation Plan: {{FIX_NAME}}
 
 **Issue:** {{ISSUE_ID}}
-**Spec:** [spec.md](spec.md)
+**Spec:** `spec.md`
 **Author:** {{AUTHOR}}
 **Created:** {{DATE}}
 **Priority:** P0 (Critical) | P1 (High) | P2 (Medium) | P3 (Low)

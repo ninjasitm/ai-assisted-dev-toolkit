@@ -150,9 +150,9 @@ After:
 ## References
 
 - [Issue Tracker]({{ISSUE_TRACKER_URL}})
-- [Related PR](link)
-- [Error Logs](link)
-- [Monitoring Dashboard](link)
+- Related PR: `link`
+- Error Logs: `link`
+- Monitoring Dashboard: `link`
 
 ---
 

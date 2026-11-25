@@ -1,0 +1,15 @@
+{
+  "description": "Detector fixtures for role tables. A row whose designated agent column (the second column) is `oracle` must name a goal-fit role (spec, plan, approach). A row whose first cell is Oracle is Oracle's own row, and its cells are checked for authority. Rows whose agent is not Oracle are checked only where they name Oracle. must_flag rows must be reported; must_pass rows must not.",
+  "must_flag": [
+    "| Code reviewer | oracle | yes |",
+    "| Approver | oracle | yes |",
+    "| Security reviewer | `oracle` | yes |",
+    "| Oracle | `oracle` | Runs D and approves the release |"
+  ],
+  "must_pass": [
+    "| Code reviewer | fresh reviewer; never Oracle | yes |",
+    "| Spec goal-fit check (A) | `oracle` read-only when configured, otherwise a fresh independent `reviewer` | yes |",
+    "| Oracle | `oracle` | Never runs D, code review, or merges |",
+    "| Approver | `reviewer` | Approves the release; Oracle never approves |"
+  ]
+}

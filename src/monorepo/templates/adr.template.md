@@ -138,8 +138,8 @@ How will we know if this decision was successful?
 
 ## Related Decisions
 
-- [ADR-XXX](./ADR-XXX-title.md) - Related decision
-- [ADR-YYY](./ADR-YYY-title.md) - Superseded by this ADR
+- ADR-XXX (`ADR-XXX-title.md`) - Related decision
+- ADR-YYY (`ADR-YYY-title.md`) - Superseded by this ADR
 
 ## References
 

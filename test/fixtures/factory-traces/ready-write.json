@@ -1,0 +1,5 @@
+{
+  "name": "the ready write carries the verified stack name and URL as one stack object, mirrored in the flat fields",
+  "verified_target": { "name": "dev", "url": "http://localhost:3300", "commit": "R1" },
+  "write": { "previewRunning": "R1", "stack": { "name": "dev", "url": "http://localhost:3300" }, "previewStackName": "dev", "previewStackUrl": "http://localhost:3300", "previewStep": "ready", "stage": "needs-human", "substate": "preview" }
+}

@@ -44,12 +44,13 @@ Implement bug fixes and corrections with proper validation and documentation.
    Then take the baseline snapshot as in implement.md step 1, before any build.
 
 3. **Reproduce and Build** (builder, implement.md step 2):
-   - Run the approach checkpoint C of [implement.md](implement.md) before the build: the planner's approach note is reviewed against the bug report, and only `VERDICT: PASS` releases the build.
-   - Dispatch one builder with the bug report, the AC list, the discovered checks, the base commit, the baseline, and the approved approach note, for this root cause. A genuinely separate defect gets its own builder in its own lane.
+   - Determine whether C applies using [fit-review Applicability](../rules-snippets/fit-review.md#applicability). Pass the approach note to the builder only where C ran.
+   - Dispatch one builder with the bug report, the AC list, the discovered checks, the base commit, the baseline, for this root cause. A genuinely separate defect gets its own builder in its own lane.
    - The builder identifies the root cause and writes a **failing test that reproduces the bug**. It watches the test fail for the right reason, then makes the minimal change that passes it. The reproduction belongs to the builder, not to the orchestrator.
    - Fix only the reported issue. Maintain backward compatibility. Leave all changes uncommitted, including new files.
 
 4. **Verify, Review and Decide** (repeat implement.md steps 3, 4 and 5 until an exit):
+   - Implementation review D: where D applies (fit-review Applicability), run it immediately after the builder declares done, before verification and code review, and again after every repair. A supplied-only fix skips D.
    - Verify: rerun the reproducing test and confirm it passes now, run every check that covers an AC, and run the full test suite for regressions.
    - Review: the independent read-only reviewer checks the fix, the reproducing test, and the untracked files.
    - Decide: repair goes back to the same builder. Repeat until `ACCEPTED`, `BLOCKED`, or `NOT ACCEPTED: needs decision` (which includes a pending human QA check, reason `awaiting human QA`). There is no round limit. A review PASS alone never accepts.

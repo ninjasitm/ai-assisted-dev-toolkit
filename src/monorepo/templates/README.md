@@ -77,7 +77,7 @@ cp templates/adr.template.md docs/architecture/0001-decision-title.md
 
 **❌ Never put app-specific docs in root docs/**
 
-See [documentation.instructions.md](../.github/instructions/documentation.instructions.md) for full guidelines.
+See `.github/instructions/documentation.instructions.md` for full guidelines.
 
 ## Placeholder Reference
 

@@ -1,0 +1,15 @@
+{
+  "name": "serialized missing-lens state: a malformed security reply twice, valid code reply kept",
+  "config": { "APPROVAL_MODE": "human", "MERGE_MODE": "local", "DEFAULT_BRANCH": "main" },
+  "job": {
+    "stage": "needs-human", "failed_stage": "review", "round": 2,
+    "lenses": ["code", "security"],
+    "reviews": { "code": "PASS", "security": "BLOCKED" }
+  },
+  "round_2_files": ["review-code.md (VERDICT: PASS)", "review-security.md (BLOCKED: no independent reviewer; malformed reply twice)"],
+  "events": [
+    { "step": "start", "resume": "review", "rerun": ["security"], "keep": ["code"], "reads": ["review-code.md"] },
+    { "step": "review-security", "agent": "reviewer", "lens": "security", "fresh_context": true, "writes": ["review-security.md"] },
+    { "step": "approve-gate", "dispatch": "approver", "after": ["review-code.md", "review-security.md"] }
+  ]
+}

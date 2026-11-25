@@ -40,7 +40,7 @@ digraph when_to_use {
 
 ## Direct Entry and Plan Changes
 
-This skill starts only from a plan that has an explicit plan review PASS and any applicable existing confirmation, including when it is invoked directly rather than from Factory or another gate. Each finding is classified before repair. An ordinary repair stays with the implementer. A consequential finding (scope, approach, requirement, or plan) exits the implementer loop: the implementer stops and reports it, the coordinator sends it to the planner for revision, plan review, and any applicable confirmation, and the work resumes from there. Spec compliance review still runs before code quality review.
+This skill starts only from a plan that has an explicit plan goal-fit check (B) PASS and any applicable existing confirmation, including when it is invoked directly rather than from Factory or another gate. Each finding is classified before repair. An ordinary repair stays with the implementer. A consequential finding (scope, approach, requirement, or plan) exits the implementer loop: the implementer stops and reports it, the coordinator sends it to the planner for revision, the plan goal-fit check (B), and any applicable confirmation, and the work resumes from there. Spec compliance review still runs before code quality review.
 
 One broad planned task may use multiple scoped execution lanes when each lane's brief is bounded by the task's original acceptance criteria and has settled inputs and a disjoint writable scope. If the work is coupled or cannot be divided without changing those criteria, keep it with one owner or run it serially. When using `./implementer-prompt.md` for a lane, provide its bounded task context directly at dispatch and explicitly override its commit step: lane workers do not stage or commit; one coordinator owns integration and the index.
 
@@ -73,7 +73,7 @@ digraph process {
     "Use superpowers:finishing-a-development-branch" [shape=box style=filled fillcolor=lightgreen];
 
     "Consequential change needed?" [shape=diamond];
-    "Exit: coordinator sends to planner (revision, plan review, confirmation)" [shape=box];
+    "Exit: coordinator sends to planner (revision, plan goal-fit check (B), confirmation)" [shape=box];
 
     "Read plan, extract all tasks with full text, note context, create TodoWrite" -> "Dispatch implementer subagent (./implementer-prompt.md)";
     "Dispatch implementer subagent (./implementer-prompt.md)" -> "Implementer subagent asks questions?";
@@ -81,16 +81,16 @@ digraph process {
     "Answer questions, provide context" -> "Dispatch implementer subagent (./implementer-prompt.md)";
     "Implementer subagent asks questions?" -> "Implementer subagent implements, tests, self-reviews; no staging or commits" [label="no"];
     "Implementer subagent implements, tests, self-reviews; no staging or commits" -> "Consequential change needed?";
-    "Consequential change needed?" -> "Exit: coordinator sends to planner (revision, plan review, confirmation)" [label="yes"];
+    "Consequential change needed?" -> "Exit: coordinator sends to planner (revision, plan goal-fit check (B), confirmation)" [label="yes"];
     "Consequential change needed?" -> "Dispatch spec reviewer with reconciled scoped changes, including relevant uncommitted and untracked paths" [label="no"];
     "Dispatch spec reviewer with reconciled scoped changes, including relevant uncommitted and untracked paths" -> "Spec reviewer subagent confirms code matches spec?";
     "Spec reviewer subagent confirms code matches spec?" -> "Implementer subagent fixes spec gaps" [label="no: ordinary gap"];
-    "Spec reviewer subagent confirms code matches spec?" -> "Exit: coordinator sends to planner (revision, plan review, confirmation)" [label="no: consequential gap"];
+    "Spec reviewer subagent confirms code matches spec?" -> "Exit: coordinator sends to planner (revision, plan goal-fit check (B), confirmation)" [label="no: consequential gap"];
     "Implementer subagent fixes spec gaps" -> "Dispatch spec reviewer with reconciled scoped changes, including relevant uncommitted and untracked paths" [label="re-review"];
     "Spec reviewer subagent confirms code matches spec?" -> "Dispatch code quality reviewer with reconciled scoped changes, including relevant uncommitted and untracked paths" [label="yes"];
     "Dispatch code quality reviewer with reconciled scoped changes, including relevant uncommitted and untracked paths" -> "Code quality reviewer subagent approves?";
     "Code quality reviewer subagent approves?" -> "Implementer subagent fixes quality issues" [label="no: ordinary issue"];
-    "Code quality reviewer subagent approves?" -> "Exit: coordinator sends to planner (revision, plan review, confirmation)" [label="no: consequential issue"];
+    "Code quality reviewer subagent approves?" -> "Exit: coordinator sends to planner (revision, plan goal-fit check (B), confirmation)" [label="no: consequential issue"];
     "Implementer subagent fixes quality issues" -> "Dispatch code quality reviewer with reconciled scoped changes, including relevant uncommitted and untracked paths" [label="re-review"];
     "Code quality reviewer subagent approves?" -> "Mark task complete in TodoWrite" [label="yes"];
     "Mark task complete in TodoWrite" -> "Reconcile batch and dispatch next ready lanes";
@@ -112,7 +112,7 @@ digraph process {
 You: I'm using Subagent-Driven Development to execute this plan.
 
 [Read plan file once: docs/features/{{ISSUE_ID}}-{{FEATURE_NAME}}/plan.md]
-[Check the explicit plan review PASS and any applicable confirmation first: stop if either is missing]
+[Check the explicit plan goal-fit check (B) PASS and any applicable confirmation first: stop if either is missing]
 [Extract all 5 tasks with full text and context]
 [Create TodoWrite with all tasks]
 
@@ -246,7 +246,7 @@ Independent tasks may be implemented or reviewed in parallel when their writable
 
 **If reviewer finds issues:**
 
-- Implementer (same subagent) fixes each ordinary issue. A consequential finding (scope, approach, requirement, or plan) is not fixed here: it goes to the coordinator for the planner, plan review, and any applicable confirmation (see Direct Entry and Plan Changes).
+- Implementer (same subagent) fixes each ordinary issue. A consequential finding (scope, approach, requirement, or plan) is not fixed here: it goes to the coordinator for the planner, the plan goal-fit check (B), and any applicable confirmation (see Direct Entry and Plan Changes).
 - Reviewer reviews again
 - Repeat until approved
 - Don't skip the re-review

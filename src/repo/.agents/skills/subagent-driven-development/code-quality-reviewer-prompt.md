@@ -8,7 +8,7 @@ Use this template when dispatching a code quality reviewer subagent.
 
 ```
 Task tool (superpowers:code-reviewer):
-  Use template at requesting-code-review/code-reviewer.md. If the dispatch names a goal-fit or alignment contract, follow the reply format of any goal-fit or alignment contract instead of that template.
+  Use template at requesting-code-review/code-reviewer.md. If the dispatch names a goal-fit check or review contract, follow that contract's reply format instead of that template.
 
   WHAT_WAS_IMPLEMENTED: [from implementer's report]
   PLAN_OR_REQUIREMENTS: Task N from [plan-file]

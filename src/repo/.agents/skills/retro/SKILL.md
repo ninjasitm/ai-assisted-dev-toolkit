@@ -15,7 +15,7 @@ One acceptance decision of one Factory job. Read only the current job artifacts:
 
 - `decision.md` (the approver's or the escalation's decision, with its header lines `Round: N` and `Tested commit: <sha|none>`)
 - `build.md` and `qa.md` (in the build location)
-- `round-<R>/review-*.md` and `round-<R>/alignment-*.md` for the round the decision names
+- `round-<R>/review-*.md` and `round-<R>/post-build-fit-*.md` for the round the decision names (older installs: `alignment-*.md`, read as post-build fit checks)
 - `intake.md`, `plan.md`, `tasks.md`, and `spec.md` when it exists (a plan-only job has no `spec.md`, and that is expected)
 
 Manual use: the operator names a job id, or a feature folder that resolves to a job. With no job, name the artifacts to read. Do not read session logs, shell output, tracker data, or the network.

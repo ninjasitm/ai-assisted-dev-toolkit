@@ -86,8 +86,8 @@ for (const layout of ['repo', 'monorepo']) {
     assert.match(review, /before any write; a dry run stops after the report/);
     assert.match(review, /Write a short plan in chat/);
     assert.match(review, /No persistent plan file and no new artifact schema/);
-    assert.match(review, /independent, read-only alignment reviewer/);
-    assert.match(review, /`ALIGNED` addresses alignment only: it is not approval of the exact write set and grants no permission to expand scope/);
+    assert.match(review, /Run a plan goal-fit check \(B\) on the plan and original request/);
+    assert.match(review, /`VERDICT: PASS` addresses goal fit only: it is not approval of the exact write set and grants no permission to expand scope/);
     assert.match(review, /do not start the builder/);
     assert.match(review, /The builder \(not the reviewer\)/);
     assert.match(review, /independent read-only reviewer checks the same write set/);
@@ -96,7 +96,7 @@ for (const layout of ['repo', 'monorepo']) {
     assert.match(review, /two consecutive rounds return the same findings with no new evidence/);
     assert.match(review, /An unavailable reviewer or check is \*\*BLOCKED\*\*, never a pass/);
     assert.match(review, /With `--dry-run`, complete the report and the compiled write set from the verified source, then stop\. Do not ask to apply, and write nothing/);
-    assert.match(review, /`ALIGNED` and the independent `VERDICT: PASS` are separate guide-specific gates; neither is approval to write/);
+    assert.match(review, /The goal-fit check's `VERDICT: PASS` \(B\) is a separate gate; it is not approval to write/);
   });
 
   test(`${layout}: one compiled write set covers CLI state, handoff preservation, manual changes and before-states`, () => {
@@ -116,7 +116,7 @@ for (const layout of ['repo', 'monorepo']) {
     assert.match(apply, /Ask for approval\*\* of the exact write set/);
     assert.match(apply, /answers to any unresolved required question/);
     assert.match(apply, /A widened category or selection needs a fresh preview and proposal review/);
-    assert.match(apply, /A material change \(scope, criteria, or source\) needs planning, the Oracle alignment, and renewed user consent/);
+    assert.match(apply, /A material change \(scope, criteria, or source\) needs planning, a plan goal-fit check \(B\), and renewed user consent/);
     assert.match(apply, /Revalidate immediately before any target write/);
     assert.match(apply, /token supplied to `--expect` is byte-for-byte the reviewed 64-hex token/);
     assert.match(apply, /stop with no writes and return to the preview\/review gates/);

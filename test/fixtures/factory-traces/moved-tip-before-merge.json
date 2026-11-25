@@ -1,0 +1,15 @@
+{
+  "name": "the job tip moves after the preview enters merge and before the merge runs: no merge, both SHAs reported, the attempt retires without touching either branch, and the new tip is checked again",
+  "before": { "stage": "needs-human", "substate": "preview", "previewStep": "merge", "round": 1, "previewRound": 1, "previewBase": "P0", "previewJobSha": "A" },
+  "branches": { "default": "P0", "job": "B" },
+  "events": [
+    { "step": "merge-entered", "previewStep": "merge", "persisted": ["previewBase", "previewJobSha"] },
+    { "step": "tip-moved", "job_tip": "B", "by": "commit outside Factory" },
+    { "step": "merge-preconditions", "default_checked_out": true, "HEAD": "P0", "no_operation": true, "clean": true, "job_tip_equals_pinned": false, "merge_run": false },
+    { "step": "report", "reported": { "pinned": "A", "tip": "B" } },
+    { "step": "retire-attempt", "branches_changed": [], "previewStep": "eligibility", "retired_previewJobSha": "A" },
+    { "step": "rerun-checks", "lenses": ["code", "security"], "approval": true, "previewJobSha": "B" },
+    { "step": "restart-eligibility", "previewStep": "eligibility", "previewJobSha": "B" }
+  ],
+  "forbidden": ["merge of A", "adopting B without review"]
+}

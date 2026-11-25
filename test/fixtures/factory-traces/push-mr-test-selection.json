@@ -1,0 +1,17 @@
+{
+  "name": "monorepo push-mr test selection uses the base diff to reviewedSha, not PRE; a changed shared package runs its dependent workspace; an unresolved base stops the push",
+  "config": { "MERGE_MODE": "push-mr", "DEFAULT_BRANCH": "main" },
+  "job": { "reviewedSha": "A" },
+  "changed": ["packages/api/src/export.ts"],
+  "workspaces": { "packages/api": { "test": "pnpm -F api test" }, "apps/web": { "test": "pnpm -F web test", "depends_on": ["packages/api"] } },
+  "root_test_command": null,
+  "events": [
+    { "step": "select-paths", "command": "git diff --name-only main...A", "pre_used": false, "paths": ["packages/api/src/export.ts"] },
+    { "step": "run-tests", "commands": ["pnpm -F api test", "pnpm -F web test"], "root_test_run": false },
+    { "step": "push", "after_tests": true }
+  ],
+  "unresolved_base": {
+    "command": "git diff --name-only main...A", "resolved": false,
+    "events": [ { "step": "select-paths", "resolved": false }, { "step": "push", "ran": false, "reason": "base cannot be resolved" } ]
+  }
+}

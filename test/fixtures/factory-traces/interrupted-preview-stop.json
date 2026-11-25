@@ -1,0 +1,25 @@
+{
+  "name": "an interrupted preview state stops with no Git or filesystem mutation and reports: the expected HEAD is previewCommit once recorded and previewBase before that, and rework is offered only where the state table permits it",
+  "rule": "stop-and-report: prepare, merge, verify, deploy, or health with no recorded failure stops; only a failed verify, deploy, or health step is retried, and only with rollback none",
+  "affected": ["docs/w.md"],
+  "scenarios": [
+    {
+      "name": "interrupted after the in-place switch, before the merge",
+      "step": "prepare",
+      "parents": 1,
+      "expected": {"result": "stop", "observed_branch": "main", "stayed": "needs-human", "expected_head": "previewBase", "rework_offered": false}
+    },
+    {
+      "name": "merge made, previewCommit not recorded",
+      "step": "merge",
+      "parents": 2,
+      "expected": {"result": "stop", "observed_branch": "main", "stayed": "needs-human", "expected_head": "previewBase", "rework_offered": false}
+    },
+    {
+      "name": "verify interrupted after previewCommit was recorded",
+      "step": "verify",
+      "parents": 2,
+      "expected": {"result": "stop", "observed_branch": "main", "stayed": "needs-human", "expected_head": "previewCommit", "rework_offered": true}
+    }
+  ]
+}
