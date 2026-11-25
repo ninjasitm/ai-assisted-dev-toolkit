@@ -105,10 +105,16 @@ function normalizeRetired(entry, index) {
 // patch never falls back to re-adding files the project retired.
 function readRetired(cwd) {
   const p = path.join(cwd, RETIRED_FILE);
-  if (!fs.existsSync(p)) return { trackers: undefined, entries: [] };
+  return parseRetired(fs.existsSync(p) ? fs.readFileSync(p, 'utf8') : null);
+}
+
+// Parses the text of .nitm/retired.json, or null when the file is absent. Callers that already hold the bytes
+// (patch reads them once, through its snapshot) use this, so the list that classifies a path is the one reviewed.
+function parseRetired(text) {
+  if (text === null) return { trackers: undefined, entries: [] };
   let data;
   try {
-    data = JSON.parse(fs.readFileSync(p, 'utf8'));
+    data = JSON.parse(text);
   } catch (ex) {
     throw new Error(`${RETIRED_FILE} exists but is not valid JSON (${ex.message}). Fix or remove it; nothing was written.`);
   }
@@ -299,6 +305,7 @@ module.exports = {
   TRACKERS,
   MAX_KEY_POINTS,
   readRetired,
+  parseRetired,
   retiredFor,
   detectProject,
   topicOf,

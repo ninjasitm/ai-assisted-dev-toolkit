@@ -125,6 +125,34 @@ const DRY_RUN_UPGRADE_MIN = '5.0.1';
 // First supported release: 5.2.0.
 const RELEVANCE_MIN = '5.2.0';
 const VERSION_RE = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/;
+// First release with patch --skip-path and --expect. Upgrade refuses older targets that would ignore them.
+const SKIP_PATH_MIN = '5.4.4';
+const PATCH_REVIEW_SCHEMA = 'nitm-patch-review/1';
+// Project files by their posix key. Metadata keys are never skippable.
+const VERSION_KEY = '.toolkit-version';
+const MANIFEST_KEY = '.nitm/manifest.json';
+const CONFIG_KEY = '.nitm/toolkit.json';
+const RETIRED_KEY = '.nitm/retired.json';
+const HANDOFF_KEY = '.nitm/BOOTSTRAP.md';
+const MANDATORY_KEYS = [VERSION_KEY, MANIFEST_KEY, CONFIG_KEY];
+// Raw SHA-256 of the handoff that the 5.3.1 package wrote, keyed `<layout>:<env or all>`. Taken from the
+// published 5.3.1 package (bin/cli.js envHeader plus src/<layout>/.claude/prompt-snippets/bootstrap.md) and
+// checked against that package's own install output. Used only when the manifest has no handoff entry.
+const HANDOFF_STOCK_VERSION = '5.3.1';
+const STOCK_HANDOFF_5_3_1 = {
+  'repo:all': '53bb3c2e54006374d61a57f4ba88492daac0f02b99246309859a43d40d6ae640',
+  'repo:claude': '0f364a54a8cab2d8ca295d4e647202d54941ea68d67ff34a2b0f60752bfcaac4',
+  'repo:codex': 'b702c4ae9e81033bdd43d78a00d293e3b7a07a97d5d5090aa0c9759dafb1985a',
+  'repo:copilot': 'bd04b547e2ff3913e1c06b8a6e3f9ceccb011d55187e03fb0c3d1ac934fb335e',
+  'repo:cursor': '10288a1f250dfc442e43506af37d090eaeacce05d477ae6e04708ad078b729be',
+  'repo:opencode': 'a6b4cfb3badf6de3913aa2e06fa39541d10a8bfb8829f56f485c250cee947a9b',
+  'monorepo:all': '95c305de906fa4ddc7e26487c2c6f36263ce9b5b328fe6e6e4f81ab03653fa44',
+  'monorepo:claude': '32da5cedc1f7bb26e5c07106c2959b26b67232f69db75f8542dd631f8edf2cce',
+  'monorepo:codex': '84369051375a20cdaf81fa974c4d9591c30e58cdd2bf33717a870999367588e9',
+  'monorepo:copilot': '86409ce8cca6b8cbba7c00894f7400e0bf03e8b0ed14df2557bb4a9867f214e0',
+  'monorepo:cursor': '56c78a418906e60ea955df6710045b26735dc85d04dca1154b2e44aff86eae9d',
+  'monorepo:opencode': 'f30a09d9835c4ba21ea1c7f55f0a7ab16d3949c9ded28072b14af88871148962',
+};
 
 const C = {
   reset: '\x1b[0m',
@@ -272,25 +300,29 @@ function splitGroups(value) {
 
 // A missing saved config means no selection. One that exists but does not parse is an error:
 // treating it as empty would let patch add files the user excluded.
-function readConfigOrThrow(cwd) {
-  const p = path.join(cwd, CONFIG_FILE);
-  if (!fs.existsSync(p)) return null;
+function configFrom(st) {
+  if (st.kind === 'missing') return null;
+  if (st.kind === 'unsafe') throw new Error(`${CONFIG_FILE} is not a regular file (${st.reason}). Fix or remove it; nothing was written.`);
   try {
-    return JSON.parse(fs.readFileSync(p, 'utf8'));
+    return JSON.parse(st.buf.toString('utf8'));
   } catch (ex) {
     throw new Error(`${CONFIG_FILE} exists but is not valid JSON (${ex.message}). Fix or remove it; nothing was written.`);
   }
 }
 
+function readConfigOrThrow(cwd) { return configFrom(pathState(cwd, CONFIG_KEY)); }
+
 // Explicit --exclude/--only replace the saved selection; without them the saved one applies.
-function resolveSelection(cwd, flags) {
+// `configState` is a snapshot state of the saved config when the caller has one; otherwise it is read here.
+function resolveSelection(cwd, flags, configState) {
   const hasExclude = flags.exclude !== undefined;
   const hasOnly = flags.only !== undefined;
   if (hasExclude && hasOnly) throw new Error('Use either --exclude or --only, not both');
   if (hasExclude || hasOnly) {
     return { selection: normalizeSelection({ exclude: flags.exclude, only: flags.only }), explicit: true };
   }
-  return { selection: normalizeSelection(readConfigOrThrow(cwd)), explicit: false };
+  const saved = configState ? configFrom(configState) : readConfigOrThrow(cwd);
+  return { selection: normalizeSelection(saved), explicit: false };
 }
 
 function configText(sel) {
@@ -299,17 +331,117 @@ function configText(sel) {
 
 // ---- Planning ----
 
-// The path that blocks writing `dest` (an ancestor that is a file, or `dest` itself as a directory).
-function blockerOf(cwd, dest) {
-  const parts = path.normalize(dest).split(path.sep);
-  for (let i = 1; i <= parts.length; i++) {
-    const p = path.join(cwd, ...parts.slice(0, i));
-    if (!fs.existsSync(p)) return null;
-    const isDir = fs.statSync(p).isDirectory();
-    if (i < parts.length && !isDir) return parts.slice(0, i).join(path.sep);
-    if (i === parts.length && isDir) return dest;
+// Typed state of one project path, read without following links. Each ancestor is lstat'ed and must be a
+// directory; the final component is opened with O_NOFOLLOW and fstat'ed before its bytes are read. `kind` is
+// missing, file or unsafe. `chain` records the identity of each existing ancestor directory, so a later write
+// can tell that a directory the review relied on was replaced.
+function identityOf(st) {
+  return `${st.dev}:${st.ino}:${st.size}:${st.mtimeMs}:${st.ctimeMs}:${st.mode}:${st.nlink}`;
+}
+
+function readFileState(p, upto) {
+  let fd;
+  try {
+    fd = fs.openSync(p, fs.constants.O_RDONLY | (fs.constants.O_NOFOLLOW || 0));
+  } catch (ex) {
+    return { kind: 'unsafe', reason: `${upto} cannot be opened without following links (${ex.code || ex.message})` };
   }
-  return null;
+  try {
+    const st = fs.fstatSync(fd);
+    if (!st.isFile()) return { kind: 'unsafe', reason: `${upto} is not a regular file` };
+    const buf = fs.readFileSync(fd);
+    return { kind: 'file', buf, sha256: sha256(buf), mode: st.mode & 0o777, nlink: st.nlink, identity: identityOf(st) };
+  } finally {
+    fs.closeSync(fd);
+  }
+}
+
+function pathState(cwd, key) {
+  const parts = key.split('/');
+  const chain = [];
+  let p = cwd;
+  for (let i = 0; i < parts.length; i++) {
+    p = path.join(p, parts[i]);
+    const upto = parts.slice(0, i + 1).join('/');
+    let st;
+    try {
+      st = fs.lstatSync(p);
+    } catch (ex) {
+      if (ex.code === 'ENOENT') return { kind: 'missing', chain };
+      if (ex.code === 'ENOTDIR') return { kind: 'unsafe', reason: `${upto} is under a file`, chain };
+      throw ex;
+    }
+    if (st.isSymbolicLink()) return { kind: 'unsafe', reason: `${upto} is a symbolic link`, chain };
+    if (i < parts.length - 1) {
+      if (!st.isDirectory()) return { kind: 'unsafe', reason: `${upto} is not a directory`, chain };
+      chain.push({ upto, id: `${st.dev}:${st.ino}` });
+      continue;
+    }
+    if (st.isDirectory()) return { kind: 'unsafe', reason: `${upto} is a directory`, chain };
+    if (!st.isFile()) return { kind: 'unsafe', reason: `${upto} is not a regular file`, chain };
+    return { ...readFileState(p, upto), chain };
+  }
+  return { kind: 'missing', chain };
+}
+
+// One read per path per review: every decision about a path uses the same typed state.
+function makeSnapshot(cwd) {
+  const cache = new Map();
+  return {
+    get(key) {
+      if (!cache.has(key)) cache.set(key, pathState(cwd, key));
+      return cache.get(key);
+    },
+  };
+}
+
+// Same reviewed state, for a recheck: kind, bytes, mode, link count and identity of the target, and the
+// identity of each ancestor directory the review found. Directories created by earlier writes are allowed.
+function sameState(reviewed, now) {
+  if (reviewed.kind !== now.kind) return false;
+  if (reviewed.kind === 'unsafe') return reviewed.reason === now.reason;
+  if (reviewed.kind === 'file' && (reviewed.identity !== now.identity || reviewed.sha256 !== now.sha256)) return false;
+  return reviewed.chain.every((d, i) => Boolean(now.chain[i]) && now.chain[i].upto === d.upto && now.chain[i].id === d.id);
+}
+
+// The template's bytes, read once. Every hash, action and write for that entry comes from this buffer.
+function readSource(from) {
+  const buf = fs.readFileSync(from);
+  return { buf, hash: sha256(buf), mode: fs.statSync(from).mode & 0o777 };
+}
+
+function installEntry(e, force) {
+  if (e.snap.kind === 'missing') return { ...e, action: 'add', same: false };
+  const same = e.snap.sha256 === e.hash;
+  if (!force) return { ...e, action: 'conflict', reason: 'exists', same };
+  return { ...e, action: 'overwrite', same };
+}
+
+// Patch decision for one template file that is not retired and not blocked.
+function patchEntry(e) {
+  const relevant = relevance.relevanceOf(e.key, e.facts);
+  if (e.snap.kind === 'missing') {
+    if (relevant.status === 'add') return { ...e, action: 'add', same: false };
+    return { ...e, action: relevant.status === 'review' ? 'review' : 'irrelevant', reason: relevant.reason };
+  }
+  const same = e.snap.sha256 === e.hash;
+  if (relevant.status === 'irrelevant') {
+    return { ...e, action: 'irrelevant', same, present: true, reason: relevant.reason };
+  }
+  if (same) return { ...e, action: 'skip', same: true, reason: 'identical' };
+  if (relevant.status === 'add' && e.manifest[e.key] === e.snap.sha256) {
+    return { ...e, action: 'update', same: false, reason: 'unchanged since the toolkit wrote it' };
+  }
+  return { ...e, action: 'review', same: false, reason: 'kept, differs from template' };
+}
+
+// A write to a hard-linked file would also change its other names, so it is a conflict, never a write.
+function guardLinks(e) {
+  if (!['add', 'update', 'overwrite'].includes(e.action)) return e;
+  if (e.snap.kind === 'file' && e.snap.nlink > 1) {
+    return { ...e, action: 'conflict', reason: `hard-linked (${e.snap.nlink} names); writing it would change the other names` };
+  }
+  return e;
 }
 
 // One entry per template file the command touches. `action`:
@@ -320,55 +452,34 @@ function blockerOf(cwd, dest) {
 //   review:     locally changed, or missing while relevance is undecided; kept and reported, never overwritten
 //   irrelevant: does not apply to this project (missing: not added; present: kept, reported)
 //   retired:    listed in .nitm/retired.json; never added, updated or overwritten
-//   conflict:   install without --force on an existing file, or a path blocked by a file/dir of another type
-// `retired` and `facts` may be passed in; otherwise they are read from the project.
-function planFiles(type, cwd, { mode, force, env, selection, retired, facts }) {
+//   conflict:   a path blocked by a file or directory of another type, a symbolic link or a non-regular file,
+//               a hard-linked file that a write would change, or install without --force on an existing file
+// Each entry also carries `snap` (the typed state it was decided from), `buf` (the template bytes) and `mode`.
+// `retired`, `facts` and `manifest` may be passed in; `snap` is a shared snapshot (see makeSnapshot).
+function planFiles(type, cwd, { mode, force, env, selection, retired, facts, manifest, snap }) {
   const retiredConfig = retired || relevance.readRetired(cwd);
   const projectFacts = mode === 'patch' ? (facts || relevance.detectProject(cwd, retiredConfig)) : null;
-  const manifest = mode === 'patch' ? readManifest(cwd).files : {};
+  const known = mode === 'patch' ? (manifest || readManifest(cwd).files) : {};
+  const view = snap || makeSnapshot(cwd);
   const rels = scopeFiles(templateFiles(type), env).filter((rel) => selectionKeeps(rel, selection));
   return rels.map((rel) => {
     const dest = installName(rel);
     const from = path.join(SRC_DIR, type, rel);
-    const hash = fileHash(from);
+    const source = readSource(from);
     const key = dest.split(path.sep).join('/');
+    const st = view.get(key);
+    const base = { rel: dest, from, key, hash: source.hash, buf: source.buf, mode: source.mode, snap: st };
     const retirement = relevance.retiredFor(key, retiredConfig.entries);
     if (retirement) {
-      return { rel: dest, from, hash, action: 'retired', reason: `${retirement.reason} (retired ${retirement.date})` };
+      return { ...base, action: 'retired', reason: `${retirement.reason} (retired ${retirement.date})` };
     }
-    const blocker = blockerOf(cwd, dest);
-    if (blocker) return { rel: dest, from, hash, action: 'conflict', reason: `blocked by ${blocker}` };
-    const to = path.join(cwd, dest);
-    if (mode === 'install') {
-      if (!fs.existsSync(to)) return { rel: dest, from, hash, action: 'add', same: false };
-      const same = fileHash(to) === hash;
-      if (!force) return { rel: dest, from, hash, action: 'conflict', reason: 'exists', same };
-      return { rel: dest, from, hash, action: 'overwrite', same };
-    }
-    return patchEntry({ dest, from, hash, to, key, facts: projectFacts, manifest });
+    if (st.kind === 'unsafe') return { ...base, action: 'conflict', reason: `blocked by ${st.reason}` };
+    if (mode === 'install') return guardLinks(installEntry(base, force));
+    return guardLinks(patchEntry({ ...base, facts: projectFacts, manifest: known }));
   });
 }
 
-// Patch decision for one template file that is not retired and not blocked.
-function patchEntry({ dest, from, hash, to, key, facts, manifest }) {
-  const relevant = relevance.relevanceOf(key, facts);
-  if (!fs.existsSync(to)) {
-    if (relevant.status === 'add') return { rel: dest, from, hash, action: 'add', same: false };
-    return { rel: dest, from, hash, action: relevant.status === 'review' ? 'review' : 'irrelevant', reason: relevant.reason };
-  }
-  const local = fileHash(to);
-  const same = local === hash;
-  if (relevant.status === 'irrelevant') {
-    return { rel: dest, from, hash, action: 'irrelevant', same, present: true, reason: relevant.reason };
-  }
-  if (same) return { rel: dest, from, hash, action: 'skip', same: true, reason: 'identical' };
-  if (relevant.status === 'add' && manifest[key] === local) {
-    return { rel: dest, from, hash, action: 'update', same: false, reason: 'unchanged since the toolkit wrote it' };
-  }
-  return { rel: dest, from, hash, action: 'review', same: false, reason: 'kept, differs from template' };
-}
-
-const PLAN_ACTIONS = ['add', 'update', 'overwrite', 'skip', 'review', 'irrelevant', 'retired', 'conflict'];
+const PLAN_ACTIONS = ['add', 'update', 'overwrite', 'skip', 'review', 'irrelevant', 'retired', 'conflict', 'skipped'];
 
 function countActions(plan) {
   const counts = Object.fromEntries(PLAN_ACTIONS.map((a) => [a, 0]));
@@ -409,6 +520,7 @@ const PLAN_SECTIONS = [
   ['overwrite', 'Would overwrite'],
   ['review', 'Needs review (not written)'],
   ['irrelevant', 'Not relevant to this project (not written)'],
+  ['skipped', 'Skipped by --skip-path (not written)'],
   ['retired', 'Retired (never re-added)'],
   ['conflict', 'Conflicts'],
 ];
@@ -417,7 +529,7 @@ const PLAN_SECTIONS = [
 function printPlan(plan, dryRun) {
   const c = countActions(plan);
   const summary = `${c.add} add, ${c.update} update, ${c.overwrite} overwrite, ${c.review} need review, `
-    + `${c.irrelevant} not relevant, ${c.retired} retired, ${c.skip} already current, ${c.conflict} conflict.`;
+    + `${c.irrelevant} not relevant, ${c.skipped} skipped, ${c.retired} retired, ${c.skip} already current, ${c.conflict} conflict.`;
   info(dryRun ? `Dry run, nothing will be written: ${summary}` : `Plan: ${summary}`);
   for (const [action, label] of PLAN_SECTIONS) {
     // Present files that do not apply are kept silently here; doctor lists them as retirement candidates.
@@ -507,9 +619,31 @@ function backupHandoff(cwd) {
   }
 }
 
+// Lenient read, for doctor's read-only report only. Patch and install use manifestOf: an unreadable manifest
+// must not look empty, or the next write would drop the records it holds.
 function readManifest(cwd) {
   const m = readJson(path.join(cwd, MANIFEST_FILE));
   return m && m.files && typeof m.files === 'object' ? m : { files: {} };
+}
+
+// Strict read of a manifest state: absent is empty; anything else must be a JSON object whose "files" map holds
+// hash strings. Otherwise it throws before any write.
+function manifestOf(st) {
+  if (st.kind === 'missing') return {};
+  if (st.kind === 'unsafe') throw new Error(`${MANIFEST_FILE} is not a regular file (${st.reason}). Fix or remove it; nothing was written.`);
+  let m;
+  try {
+    m = JSON.parse(st.buf.toString('utf8'));
+  } catch (ex) {
+    throw new Error(`${MANIFEST_FILE} exists but is not valid JSON (${ex.message}). Fix or remove it; nothing was written.`);
+  }
+  if (!m || typeof m !== 'object' || Array.isArray(m) || !m.files || typeof m.files !== 'object' || Array.isArray(m.files)) {
+    throw new Error(`${MANIFEST_FILE} must be a JSON object with a "files" map. Fix or remove it; nothing was written.`);
+  }
+  for (const [k, v] of Object.entries(m.files)) {
+    if (typeof v !== 'string') throw new Error(`${MANIFEST_FILE}: "${k}" must map to a hash string. Fix or remove it; nothing was written.`);
+  }
+  return m.files;
 }
 
 // Manifest keys are template paths written with '/'. Anything absolute or escaping the target is ignored.
@@ -540,9 +674,9 @@ function findStale(cwd, type) {
   const stale = [];
   for (const [key, hashes] of Object.entries(KNOWN_HISTORICAL)) {
     const rel = path.join(...key.split('/'));
-    const p = path.join(cwd, rel);
-    if (current.has(rel) || !fs.existsSync(p) || !fs.statSync(p).isFile()) continue;
-    if (hashes.includes(fileHash(p))) stale.push(rel);
+    if (current.has(rel)) continue;
+    const st = pathState(cwd, key);
+    if (st.kind === 'file' && hashes.includes(st.sha256)) stale.push(rel);
   }
   return stale;
 }
@@ -559,18 +693,22 @@ function customizedOwned(cwd) {
   return out;
 }
 
-// Everything install/patch writes besides template files. Writes only when not dryRun.
-function recordState(cwd, { type, env, plan, selection, explicit, dryRun }) {
+// Install's compatibility path: everything install writes besides template files (the handoff, with its
+// backup when it differs, the install-time manifest and the saved selection). Patch never calls this; its checks
+// live in buildPatchReview. Writes only when not dryRun.
+function recordInstallState(cwd, { type, env, plan, selection, explicit, dryRun }) {
   const content = handoffContent(type, env);
   const handoff = handoffState(cwd, content);
   const versionText = packageVersion() + '\n';
   const version = writeState(path.join(cwd, VERSION_FILE), versionText);
-  const files = { ...readManifest(cwd).files };
+  const files = { ...manifestOf(pathState(cwd, MANIFEST_KEY)) };
   for (const e of plan) {
     if (['add', 'update', 'overwrite'].includes(e.action) || (e.action === 'skip' && e.same)) {
       files[e.rel.split(path.sep).join('/')] = e.hash;
     }
   }
+  // Install leaves the handoff holding exactly these bytes, so the manifest records its ownership.
+  files[HANDOFF_KEY] = sha256(Buffer.from(content));
   const manifest = manifestText(files);
   const manifestState = writeState(path.join(cwd, MANIFEST_FILE), manifest);
   const config = explicit ? writeState(path.join(cwd, CONFIG_FILE), configText(selection)) : null;
@@ -579,8 +717,9 @@ function recordState(cwd, { type, env, plan, selection, explicit, dryRun }) {
   if (config === 'write') writeText(cwd, CONFIG_FILE, configText(selection));
   if (handoff === 'replace') state.backup = backupHandoff(cwd);
   if (handoff !== 'unchanged') writeText(cwd, HANDOFF_FILE, content);
-  if (version === 'write') writeText(cwd, VERSION_FILE, versionText);
   if (manifestState === 'write') writeText(cwd, MANIFEST_FILE, manifest);
+  // The version marker is written last: it only says the patch finished.
+  if (version === 'write') writeText(cwd, VERSION_FILE, versionText);
   return state;
 }
 
@@ -600,7 +739,7 @@ function printStale(stale) {
   stale.forEach((f) => console.log('     - ' + f));
 }
 
-function printHandoff(env, state) {
+function printHandoffSteps(env) {
   if (env && ENV_INFO[env]) {
     info(`Scaffold complete (tailored to ${ENV_INFO[env].name}). Hand off to your AI agent:`);
     console.log(`    Bootstrap entry point: ${ENV_INFO[env].command}`);
@@ -613,8 +752,22 @@ function printHandoff(env, state) {
     console.log('       Other harnesses also have bootstrap commands; Codex uses the handoff file directly.');
   }
   console.log('    2. Run `npx nitm-ai-dev-toolkit doctor' + (env ? ` --env ${env}` : '') + '` to verify the install.');
+}
+
+function printHandoff(env, state) {
+  printHandoffSteps(env);
   if (state.handoff === 'unchanged') info(`${HANDOFF_FILE} already up to date (not rewritten).`);
   if (state.backup) info(`Previous ${HANDOFF_FILE} differed; backed up to ${state.backup}.`);
+}
+
+// Patch never backs up or replaces the handoff: it reports what it decided and why.
+function printPatchHandoff(env, h) {
+  printHandoffSteps(env);
+  if (h.decision === 'create') info(`${HANDOFF_KEY} created.`);
+  if (h.decision === 'refresh') info(`${HANDOFF_KEY} refreshed to this release (it was toolkit-owned and unchanged).`);
+  if (h.decision === 'unchanged') info(`${HANDOFF_KEY} already up to date (not rewritten).`);
+  if (h.decision === 'keep') warn(`${HANDOFF_KEY} is customized or of unknown origin: kept as is. Nothing was written or backed up for it.`);
+  if (h.decision === 'skipped') info(`${HANDOFF_KEY} was left out by --skip-path (not rewritten).`);
 }
 
 // ---- Commands ----
@@ -622,6 +775,8 @@ function printHandoff(env, state) {
 function cmdInstall(cwd, flags) {
   // Packaged skills are verified before any plan is built or file is written (dry run included).
   skillIntegrity.assertIntact(PKG_ROOT);
+  // A malformed manifest stops install before any template is written: the write would drop its records.
+  manifestOf(pathState(cwd, MANIFEST_KEY));
   const type = detectType(cwd, flags);
   if (flags.env && !ENV_DIRS[flags.env]) warn(`Unknown --env "${flags.env}"; scaffolding all environments.`);
   info(`Detected project type: ${type}` + (flags.env ? `, environment: ${flags.env}` : ''));
@@ -634,7 +789,7 @@ function cmdInstall(cwd, flags) {
 
   if (flags.dryRun) {
     printPlan(plan, true);
-    printDryState(recordState(cwd, { type, env: flags.env, plan, selection, explicit, dryRun: true }));
+    printDryState(recordInstallState(cwd, { type, env: flags.env, plan, selection, explicit, dryRun: true }));
     if (cf.length) process.exitCode = 1;
     return { copied: 0, skipped: 0, conflicts: cf.length, dryRun: true, planned: counts };
   }
@@ -654,47 +809,393 @@ function cmdInstall(cwd, flags) {
   }
   const copied = applyPlan(cwd, plan);
   ok(`Copied ${copied} file(s), skipped ${counts.skip} existing.`);
-  printHandoff(flags.env, recordState(cwd, { type, env: flags.env, plan, selection, explicit, dryRun: false }));
+  printHandoff(flags.env, recordInstallState(cwd, { type, env: flags.env, plan, selection, explicit, dryRun: false }));
   return { copied, skipped: counts.skip, conflicts: 0, dryRun: false, planned: counts };
 }
 
-// Classifies every template file against the project, shows the plan, then writes only add and update
-// entries. Existing files that differ are reported, never overwritten (not even with --force).
+// ---- Patch review: one plan for preview and apply ----
+//
+// `patch --dry-run` prints a Review token: a SHA-256 over everything a real patch depends on. It covers the
+// release bytes it would write, the patch logic (bin/cli.js, bin/relevance.js, bin/skill-integrity.js), the
+// flags, the project facts, and the typed state of every candidate (skipped and kept paths included) and of
+// every protected path. `patch --expect <token>` rebuilds the same review and writes only when the token
+// matches, and each write rechecks its target against the review immediately before it happens. There is no
+// atomic multi-file apply: a concurrent change stops the run, leaves the earlier writes in place, and does not
+// advance the version marker, which is written last.
+
+const HANDOFF_TEXT = {
+  create: 'create',
+  refresh: 'refresh (toolkit-owned and unchanged; this release replaces it)',
+  unchanged: 'no change (already this release)',
+  keep: 'keep (customized or ownership unknown; not replaced, not backed up)',
+  skipped: 'skipped by --skip-path (not written)',
+  conflict: 'conflict',
+};
+
+const REVIEW_LOGIC_FILES = ['cli.js', 'relevance.js', 'skill-integrity.js'];
+
+function toKey(rel) { return String(rel).split(path.sep).join('/'); }
+function sha256Text(text) { return sha256(Buffer.from(text)); }
+function matchesSkip(key, s) { return key === s || key.startsWith(s + '/'); }
+
+// Stable JSON: object keys sorted at every level, so the same state always digests to the same token.
+function canonicalJson(value) {
+  return JSON.stringify(value, (k, v) => (v && typeof v === 'object' && !Array.isArray(v)
+    ? Object.fromEntries(Object.keys(v).sort().map((x) => [x, v[x]])) : v));
+}
+
+// What the digest records about a typed state: its kind and facts, never a file's bytes or a directory id.
+function digestOf(st) {
+  const dirs = st.chain.map((d) => d.upto);
+  if (st.kind === 'file') return { kind: 'file', sha256: st.sha256, mode: st.mode, nlink: st.nlink, dirs };
+  if (st.kind === 'unsafe') return { kind: 'unsafe', reason: st.reason, dirs };
+  return { kind: 'missing', dirs };
+}
+
+function logicIdentity() {
+  return Object.fromEntries(REVIEW_LOGIC_FILES.map((f) => [f, sha256(fs.readFileSync(path.join(__dirname, f)))]));
+}
+
+// Every path a patch in this scope could touch, as posix keys: template files after install renames, the
+// environment scope and (when given) the saved selection, plus the handoff.
+function skipUniverse(type, env, selection) {
+  const names = scopeFiles(templateFiles(type), env)
+    .filter((rel) => !selection || selectionKeeps(rel, selection))
+    .map((rel) => toKey(installName(rel)));
+  return [...new Set([...names, HANDOFF_KEY])];
+}
+
+// A literal path: no globs, no absolute or climbing forms, no trailing or doubled separators.
+function literalPathError(s) {
+  if (!s || s.trim() !== s) return 'is empty or has surrounding spaces';
+  if (/[\\\0]/.test(s)) return 'must be a literal repo-relative path with / separators';
+  if (/[*?[\]{}!]/.test(s)) return 'globs are not supported; give a literal file or directory path';
+  if (s.startsWith('/') || /^[A-Za-z]:/.test(s)) return 'must be repo-relative, not absolute';
+  if (s.endsWith('/')) return 'must not end with /';
+  if (s.split('/').some((seg) => seg === '' || seg === '.' || seg === '..')) {
+    return 'must be canonical: no empty, . or .. segments';
+  }
+  return null;
+}
+
+function describeSelection(sel) {
+  return `exclude [${sel.exclude.join(', ')}], only [${sel.only.join(', ')}]`;
+}
+
+// Returns the validated, de-duplicated, sorted skip list. Whole-segment matching: `factory` skips factory/...
+// and nothing else. Typos, globs, metadata, and paths the saved selection already leaves out fail here,
+// before any write.
+function validateSkipPaths(raw, type, env, selection) {
+  const all = skipUniverse(type, env);
+  const kept = skipUniverse(type, env, selection);
+  const out = new Set();
+  for (const s of raw) {
+    const problem = literalPathError(s);
+    if (problem) throw new Error(`--skip-path "${s}" ${problem}.`);
+    if (MANDATORY_KEYS.some((m) => m === s || m.startsWith(s + '/'))) {
+      throw new Error(`--skip-path "${s}" would leave out patch metadata (${MANDATORY_KEYS.join(', ')}), which every patch checks. Nothing was written.`);
+    }
+    if (!all.some((u) => matchesSkip(u, s))) {
+      throw new Error(`--skip-path "${s}" matches no template path or the handoff in this scope (typo, or outside --env). Nothing was written.`);
+    }
+    if (!kept.some((u) => matchesSkip(u, s))) {
+      throw new Error(`--skip-path "${s}" matches only files the saved selection already leaves out (${describeSelection(selection)}). There is nothing to skip; remove it.`);
+    }
+    out.add(s);
+  }
+  return [...out].sort();
+}
+
+// Flag rules for patch and upgrade. Returns true when the review path (skip or token) is in use.
+function assertReviewOptions(flags) {
+  const skips = flags.skipPath || [];
+  const hasExpect = flags.expect !== undefined;
+  if (hasExpect && !/^[0-9a-f]{64}$/.test(flags.expect)) {
+    throw new Error('--expect takes the Review token printed by patch --dry-run (64 lowercase hex characters).');
+  }
+  if (hasExpect && flags.dryRun) throw new Error('--expect applies to a real patch; a dry run only prints the Review token. Nothing was written.');
+  if (skips.length && (flags.exclude !== undefined || flags.only !== undefined)) {
+    throw new Error('--skip-path cannot be combined with --exclude/--only: those rewrite the saved selection. Run them in a separate command.');
+  }
+  if (skips.length && !flags.dryRun && !hasExpect) {
+    throw new Error('--skip-path needs --expect <token>. Run the same command with --dry-run, review the plan, then apply with the Review token it prints.');
+  }
+  return skips.length > 0 || hasExpect;
+}
+
+// Options a command does not take are refused rather than ignored: a silently ignored flag can change what
+// gets written. `--force` on patch is the documented legacy flag and has no effect (it never overwrites).
+const NOT_FOR_COMMAND = {
+  patch: ['version', 'all', 'yes', 'dir', 'interval', 'abandoned'],
+  upgrade: ['all', 'yes', 'dir', 'interval', 'abandoned'],
+};
+function assertCommandFlags(cmd, flags) {
+  const positional = (flags._ || []).slice(1);
+  if (cmd === 'patch' && positional.length) throw new Error(`Unknown option for patch: ${positional[0]}`);
+  if (cmd === 'upgrade') {
+    const stray = positional.find((p) => p.startsWith('-'));
+    if (stray) throw new Error(`Unknown option for upgrade: ${stray}`);
+  }
+  for (const f of NOT_FOR_COMMAND[cmd]) {
+    if (flags[f] !== undefined && flags[f] !== false) throw new Error(`--${f} is not an option of ${cmd}. Nothing was written.`);
+  }
+  if (flags.repo && flags.monorepo) throw new Error('Use either --repo or --monorepo, not both. Nothing was written.');
+  if (flags.env !== undefined && !ENV_DIRS[flags.env]) {
+    throw new Error(`Unknown --env "${flags.env}". Valid: ${Object.keys(ENV_DIRS).join(', ')}. Nothing was written.`);
+  }
+}
+
+// Who owns the installed handoff. A recorded manifest entry is authoritative: it must match, otherwise the
+// handoff is not ours to replace. With no entry, an exact stock 5.3.1 handoff for this layout is ours.
+function handoffOwnership({ type, env, manifest, sha }) {
+  if (Object.prototype.hasOwnProperty.call(manifest, HANDOFF_KEY)) {
+    return manifest[HANDOFF_KEY] === sha ? 'unchanged since the toolkit wrote it' : null;
+  }
+  const layout = `${type}:${env && ENV_INFO[env] ? env : 'all'}`;
+  return STOCK_HANDOFF_5_3_1[layout] === sha ? `stock ${HANDOFF_STOCK_VERSION} handoff, byte-exact` : null;
+}
+
+function handoffPlan(type, env, { snap, manifest, skipped }) {
+  const content = handoffContent(type, env);
+  const release = sha256Text(content);
+  const before = snap.get(HANDOFF_KEY);
+  let decision;
+  let reason = null;
+  if (skipped) {
+    decision = 'skipped';
+    reason = 'excluded by --skip-path';
+  } else if (before.kind === 'missing') {
+    decision = 'create';
+  } else if (before.kind === 'unsafe') {
+    decision = 'conflict';
+    reason = before.reason;
+  } else if (before.sha256 === release) {
+    decision = 'unchanged';
+  } else {
+    const owner = handoffOwnership({ type, env, manifest, sha: before.sha256 });
+    decision = owner ? 'refresh' : 'keep';
+    reason = owner;
+  }
+  if (decision === 'refresh' && before.nlink > 1) {
+    decision = 'conflict';
+    reason = `hard-linked (${before.nlink} names); writing it would change the other names`;
+  }
+  return {
+    content, release, before, decision, reason,
+    write: decision === 'create' || decision === 'refresh',
+    record: decision === 'create' || decision === 'refresh' || decision === 'unchanged',
+  };
+}
+
+// A metadata write, or null when the file already holds exactly these bytes (it is not rewritten). Unsafe
+// targets are reported with the protected conflicts; a hard-linked target that would change is a conflict.
+function metaWrite(st, key, kind, buf, conflicts) {
+  if (st.kind === 'unsafe') return null;
+  if (st.kind === 'file' && st.buf.equals(buf)) return null;
+  if (st.kind === 'file' && st.nlink > 1) {
+    conflicts.push({ rel: key, reason: `hard-linked (${st.nlink} names); writing it would change the other names` });
+    return null;
+  }
+  return { path: key, kind, content: buf, sha256: sha256(buf), mode: null, reviewed: st };
+}
+
+// The complete patch decision for one project. Reads each path once, through one snapshot, and writes nothing.
+function buildPatchReview(cwd, flags, type) {
+  const env = flags.env;
+  const snap = makeSnapshot(cwd);
+  // Protected metadata and the handoff are read first, so every later decision uses these same states.
+  const { selection, explicit } = resolveSelection(cwd, flags, snap.get(CONFIG_KEY));
+  const skipPaths = validateSkipPaths(flags.skipPath || [], type, env, selection);
+  const manifest = manifestOf(snap.get(MANIFEST_KEY));
+  const skipped = (key) => skipPaths.some((s) => matchesSkip(key, s));
+  // The retirement list is parsed from the snapshot taken above. An unsafe file is refused before it is read, and
+  // the list that classifies the paths is the list whose bytes were reviewed.
+  const retiredState = snap.get(RETIRED_KEY);
+  if (retiredState.kind === 'unsafe') {
+    throw new Error(`${relevance.RETIRED_FILE} is not a regular file (${retiredState.reason}). Fix or remove it; nothing was written.`);
+  }
+  const retired = relevance.parseRetired(retiredState.kind === 'missing' ? null : retiredState.buf.toString('utf8'));
+  const facts = relevance.detectProject(cwd, retired);
+  const plan = planFiles(type, cwd, { mode: 'patch', env, selection, retired, facts, manifest, snap });
+  const conflicts = [];
+
+  const entries = plan.map((e) => {
+    const rel = toKey(e.rel);
+    let action = e.action;
+    let reason = e.reason || null;
+    if (action !== 'retired' && skipped(rel)) {
+      action = 'skipped';
+      reason = 'excluded by --skip-path';
+    }
+    return { rel, action, reason, same: Boolean(e.same), present: e.present, release: e.hash, mode: e.mode, buf: e.buf, snap: e.snap };
+  }).sort((a, b) => (a.rel < b.rel ? -1 : a.rel > b.rel ? 1 : 0));
+  for (const e of entries) if (e.action === 'conflict') conflicts.push({ rel: e.rel, reason: e.reason });
+
+  const handoff = handoffPlan(type, env, { snap, manifest, skipped: skipped(HANDOFF_KEY) });
+  if (handoff.decision === 'conflict') conflicts.push({ rel: HANDOFF_KEY, reason: handoff.reason });
+  const protectedKeys = [VERSION_KEY, MANIFEST_KEY, CONFIG_KEY, RETIRED_KEY];
+  for (const k of protectedKeys) {
+    const st = snap.get(k);
+    if (st.kind === 'unsafe') conflicts.push({ rel: k, reason: st.reason });
+  }
+
+  // Ordered writes: templates, the handoff, then metadata with the version marker last.
+  const writes = [];
+  for (const e of entries) {
+    if (e.action === 'add' || e.action === 'update') {
+      writes.push({
+        path: e.rel, kind: 'template', content: e.buf, sha256: e.release,
+        mode: e.action === 'add' ? e.mode : null, reviewed: e.snap,
+      });
+    }
+  }
+  if (handoff.write) {
+    writes.push({ path: HANDOFF_KEY, kind: 'handoff', content: Buffer.from(handoff.content), sha256: handoff.release, mode: null, reviewed: handoff.before });
+  }
+  if (explicit) {
+    const w = metaWrite(snap.get(CONFIG_KEY), CONFIG_KEY, 'config', Buffer.from(configText(selection)), conflicts);
+    if (w) writes.push(w);
+  }
+  // Only files that now hold release bytes are recorded. Skipped, kept and conflicting entries keep their record.
+  const files = { ...manifest };
+  for (const e of entries) {
+    if (e.action === 'add' || e.action === 'update' || (e.action === 'skip' && e.same)) files[e.rel] = e.release;
+  }
+  if (handoff.record) files[HANDOFF_KEY] = handoff.release;
+  const manifestWrite = metaWrite(snap.get(MANIFEST_KEY), MANIFEST_KEY, 'manifest', Buffer.from(manifestText(files)), conflicts);
+  if (manifestWrite) writes.push(manifestWrite);
+  const versionWrite = metaWrite(snap.get(VERSION_KEY), VERSION_KEY, 'version', Buffer.from(packageVersion() + '\n'), conflicts);
+  if (versionWrite) writes.push(versionWrite);
+
+  // The protected inputs were read before the relevance and manifest reads above; any change in between stops here.
+  for (const k of [...protectedKeys, HANDOFF_KEY]) {
+    if (!sameState(snap.get(k), pathState(cwd, k))) {
+      throw new Error(`${k} changed while the patch was being reviewed. Nothing was written; run patch --dry-run again.`);
+    }
+  }
+
+  const digestInput = {
+    schema: PATCH_REVIEW_SCHEMA,
+    toolkit: packageVersion(),
+    logic: logicIdentity(),
+    checkout: fs.realpathSync(cwd),
+    type,
+    env: env || null,
+    selection: { explicit, exclude: selection.exclude, only: selection.only },
+    skipPaths,
+    facts,
+    protected: Object.fromEntries([...protectedKeys, HANDOFF_KEY].map((k) => [k, digestOf(snap.get(k))])),
+    handoff: { decision: handoff.decision, release: handoff.release, reason: handoff.reason },
+    entries: entries.map((e) => ({ rel: e.rel, action: e.action, reason: e.reason, release: e.release, mode: e.mode, before: digestOf(e.snap) })),
+    writes: writes.map((w) => ({ path: w.path, kind: w.kind, sha256: w.sha256, mode: w.mode })),
+    conflicts,
+  };
+  // Protected inputs the marker depends on. Each is checked again just before the marker is written: a file we
+  // wrote must hold the bytes we wrote, and a file we did not write must still hold its reviewed state.
+  const guards = [MANIFEST_KEY, CONFIG_KEY, RETIRED_KEY, HANDOFF_KEY].map((k) => ({ path: k, reviewed: snap.get(k) }));
+  return {
+    plan: entries, handoff, writes, conflicts, facts, skipPaths, selection, explicit, guards,
+    token: sha256Text(canonicalJson(digestInput)),
+  };
+}
+
+function printReview(review, dryRun) {
+  printPlan(review.plan, dryRun);
+  const h = review.handoff;
+  info(`${HANDOFF_KEY}: ${HANDOFF_TEXT[h.decision]}${h.reason && h.decision !== 'keep' ? ` [${h.reason}]` : ''}`);
+  info(`${dryRun ? 'Would write' : 'Writing'} ${review.writes.length} item(s), in this order (metadata last):`);
+  if (!review.writes.length) console.log('    (none)');
+  review.writes.forEach((w, i) => console.log(`    ${i + 1}. ${w.path} [${w.kind}] sha256 ${w.sha256.slice(0, 12)}`));
+}
+
+// Writes the reviewed bytes in order. Each target is rechecked against its reviewed state first. A change
+// stops the run with the earlier writes in place and the version marker still at its prior value.
+function applyPatchReview(cwd, review) {
+  let done = 0;
+  const stop = (why) => new Error(`${why} Stopped after ${done} of ${review.writes.length} write(s); the version marker was not advanced. Run patch --dry-run again.`);
+  const written = new Map(review.writes.map((w) => [w.path, w]));
+  for (const w of review.writes) {
+    if (w.kind === 'version') {
+      for (const g of review.guards) {
+        const now = pathState(cwd, g.path);
+        const wrote = written.get(g.path);
+        const same = wrote ? now.kind === 'file' && now.sha256 === wrote.sha256 : sameState(g.reviewed, now);
+        if (!same) throw stop(`${g.path} changed during the writes.`);
+      }
+    }
+    if (!sameState(w.reviewed, pathState(cwd, w.path))) throw stop(`${w.path} changed after review.`);
+    const to = path.join(cwd, ...w.path.split('/'));
+    try {
+      fs.mkdirSync(path.dirname(to), { recursive: true });
+      fs.writeFileSync(to, w.content);
+      if (w.mode !== null) fs.chmodSync(to, w.mode);
+    } catch (ex) {
+      throw stop(`Failed writing ${w.path} (${ex.message}).`);
+    }
+    done++;
+  }
+}
+
+function printConflicts(conflicts) {
+  err(`${conflicts.length} path(s) conflict (blocked by another type, a symbolic link, a non-regular file, or a hard link):`);
+  conflicts.forEach((c) => console.log(`     - ${c.rel} (${c.reason})`));
+}
+
+// Classifies every template file, shows one plan, and writes it only when the plan is not blocked. Existing
+// files that differ are reported, never overwritten (not even with --force). A customised handoff is kept.
+// With --skip-path the approved review token is required, and the write set is exactly the plan it covers.
 function cmdPatch(cwd, flags) {
   // Packaged skills are verified before any plan is built or file is written (dry run included).
   skillIntegrity.assertIntact(PKG_ROOT);
+  assertCommandFlags('patch', flags);
+  assertReviewOptions(flags);
+  if (flags.force) warn('--force has no effect on patch: patch never overwrites a file. Use install --force or upgrade --force to overwrite on purpose.');
   const type = detectType(cwd, flags);
-  const { selection, explicit } = resolveSelection(cwd, flags);
-  const retired = relevance.readRetired(cwd);
-  const facts = relevance.detectProject(cwd, retired);
-  const plan = planFiles(type, cwd, { mode: 'patch', env: flags.env, selection, retired, facts });
-  const counts = countActions(plan);
-  const conflictEntries = plan.filter((e) => e.action === 'conflict');
+  const review = buildPatchReview(cwd, flags, type);
+  const counts = countActions(review.plan);
   const stale = findStale(cwd, type);
-  const wrappers = relevance.auditWrappers(cwd, plan);
+  // Blocked and unsafe paths are not audited: their content is not trusted, so they are reported as conflicts only.
+  const audited = review.plan.filter((e) => e.snap.kind === 'file' && e.action !== 'skipped' && e.action !== 'conflict');
+  const wrappers = relevance.auditWrappers(cwd, audited);
+  const blocked = review.conflicts.length > 0;
 
   if (flags.dryRun) {
-    printFacts(facts);
-    printPlan(plan, true);
+    printFacts(review.facts);
+    printReview(review, true);
     printWrappers(wrappers);
     printStale(stale);
-    printDryState(recordState(cwd, { type, env: flags.env, plan, selection, explicit, dryRun: true }));
-    if (conflictEntries.length) process.exitCode = 1;
-    return { copied: 0, skipped: counts.skip, conflicts: conflictEntries.length, stale, wrappers, facts, dryRun: true, planned: counts };
+    if (blocked) {
+      printConflicts(review.conflicts);
+      process.exitCode = 1;
+      warn('No Review token: resolve the conflicts above, or leave those paths out with --skip-path, then dry-run again.');
+    } else {
+      info(`Review token: ${review.token}`);
+      info(review.skipPaths.length
+        ? 'Apply with the same command plus --expect <token>. Skipped paths are not written.'
+        : 'Apply with the same command. Add --expect <token> to bind the apply to this exact plan.');
+    }
+    return { copied: 0, skipped: counts.skip, skippedByPath: counts.skipped, conflicts: review.conflicts.length, stale, wrappers, facts: review.facts, dryRun: true, planned: counts, token: blocked ? null : review.token };
   }
-  printFacts(facts);
-  printPlan(plan, false);
-  const copied = applyPlan(cwd, plan);
-  ok(`Patched: ${copied} file(s) written, ${counts.skip} already current, ${counts.review} kept for review.`);
-  if (conflictEntries.length) {
-    err(`${conflictEntries.length} path(s) could not be written (blocked by a file or directory of another type):`);
-    conflictEntries.forEach((e) => console.log(`     - ${e.rel} (${e.reason})`));
+  if (blocked) {
+    printFacts(review.facts);
+    printPlan(review.plan, false);
+    printConflicts(review.conflicts);
+    err('Nothing was written. Resolve the conflicts, or leave those paths out with --skip-path, then dry-run again.');
     process.exitCode = 1;
+    return { copied: 0, skipped: counts.skip, skippedByPath: counts.skipped, conflicts: review.conflicts.length, stale, wrappers, facts: review.facts, dryRun: false, planned: counts, token: review.token };
   }
+  if (flags.expect !== undefined && flags.expect !== review.token) {
+    throw new Error('Review token does not match the current files, flags or release. Nothing was written. Run patch --dry-run again and review the new token.');
+  }
+  printFacts(review.facts);
+  printReview(review, false);
+  applyPatchReview(cwd, review);
+  const copied = review.writes.filter((w) => w.kind === 'template').length;
+  ok(`Patched: ${copied} file(s) written, ${counts.skip} already current, ${counts.review} kept for review, ${counts.skipped} left out by --skip-path.`);
   printWrappers(wrappers);
   printStale(stale);
-  printHandoff(flags.env, recordState(cwd, { type, env: flags.env, plan, selection, explicit, dryRun: false }));
-  return { copied, skipped: counts.skip, conflicts: conflictEntries.length, stale, wrappers, facts, dryRun: false, planned: counts };
+  printPatchHandoff(flags.env, review.handoff);
+  return { copied, skipped: counts.skip, skippedByPath: counts.skipped, conflicts: 0, stale, wrappers, facts: review.facts, dryRun: false, planned: counts, token: review.token };
 }
 
 // Placeholders the agent fills per task or feature at runtime, so they are not bootstrap leftovers.
@@ -903,21 +1404,40 @@ function upgradeArgs(flags, version) {
   const force = Boolean(flags && flags.force);
   const args = ['--yes', `${PKG_NAME}@${version}`, force ? 'install' : 'patch'];
   if (force) args.push('--force');
+  // The layout is part of the write set: a monorepo or repo upgrade must not be re-detected by the pinned run.
+  if (flags && flags.monorepo) args.push('--monorepo');
+  else if (flags && flags.repo) args.push('--repo');
   if (flags && flags.env) args.push('--env', flags.env);
   if (flags && flags.exclude !== undefined) args.push('--exclude', flags.exclude.join(','));
   if (flags && flags.only !== undefined) args.push('--only', flags.only.join(','));
   if (flags && flags.dryRun) args.push('--dry-run');
+  for (const p of (flags && flags.skipPath) || []) args.push('--skip-path', p);
+  if (flags && flags.expect !== undefined) args.push('--expect', flags.expect);
   return args;
 }
 
 function cmdUpgrade(cwd, flags, deps = {}) {
+  // Every refusal here happens before the npm lookup and before anything runs.
+  assertCommandFlags('upgrade', flags);
   const requested = parseUpgradeTarget(flags);
+  const reviewActive = assertReviewOptions(flags);
+  // The review is bound to one release. A latest lookup could change between the dry run and the apply.
+  if (reviewActive && requested === undefined) {
+    throw new Error(`--skip-path and --expect need an exact pin, e.g. upgrade ${SKIP_PATH_MIN}. A latest lookup could change the release between the dry run and the apply.`);
+  }
+  if (reviewActive && flags.force) {
+    throw new Error('--skip-path and --expect are patch options and cannot be combined with --force (install).');
+  }
   // Reads the effective selection first: a corrupt saved config or a combined --exclude/--only stops here.
   const { selection, explicit } = resolveSelection(cwd, flags);
   // A malformed retirement list stops here too, before the npm lookup and before any write.
   const retired = relevance.readRetired(cwd);
   const target = resolveUpgradeVersion(requested, deps.npmView || npmQuery);
   info(`Resolved ${PKG_NAME}@${target} (installed toolkit: ${currentVersion()}).`);
+  if (reviewActive && compareVersions(target, SKIP_PATH_MIN) < 0) {
+    throw new Error(`${PKG_NAME}@${target} predates --skip-path/--expect and would ignore them, so it could write files you meant to leave out. `
+      + `Pin ${SKIP_PATH_MIN} or later.`);
+  }
   const retirementActive = retired.entries.length > 0 || retired.trackers !== undefined;
   if (retirementActive && compareVersions(target, RELEVANCE_MIN) < 0) {
     throw new Error(`${PKG_NAME}@${target} predates retirement support and would re-add the paths and tracker `
@@ -1049,9 +1569,29 @@ function parseFlags(argv) {
       if (!v) throw new Error('--env= requires a value');
       flags.env = v;
     }
+    else if (a === '--skip-path' || a === '--expect') {
+      const v = argv[++i];
+      if (v === undefined || v.startsWith('--')) throw new Error(`${a} requires a value`);
+      addReviewFlag(flags, a, v);
+    } else if (a.startsWith('--skip-path=') || a.startsWith('--expect=')) {
+      const eq = a.indexOf('=');
+      const v = a.slice(eq + 1);
+      if (!v) throw new Error(`${a.slice(0, eq)}= requires a value`);
+      addReviewFlag(flags, a.slice(0, eq), v);
+    }
     else flags._.push(a);
   }
   return flags;
+}
+
+// --skip-path repeats (one literal path per flag); --expect is given once.
+function addReviewFlag(flags, name, v) {
+  if (name === '--skip-path') {
+    flags.skipPath = [...(flags.skipPath || []), v];
+    return;
+  }
+  if (flags.expect !== undefined) throw new Error('--expect may be given only once');
+  flags.expect = v;
 }
 
 function usage() {
@@ -1064,13 +1604,17 @@ Usage:
       If files already exist, install aborts (use --force to overwrite, or \`patch\` to add missing).
       --dry-run lists adds, overwrites, skips and conflicts; writes nothing; exits 1 if there are conflicts.
 
-  npx nitm-ai-dev-toolkit patch [--monorepo|--repo] [--env <env>] [--exclude <groups>|--only <groups>] [--dry-run]
+  npx nitm-ai-dev-toolkit patch [--monorepo|--repo] [--env <env>] [--exclude <groups>|--only <groups>] [--dry-run] [--skip-path <path>]... [--expect <token>]
       Classify every template file against the project, print the plan, then write it: add
       files that apply, update files you never changed. Files that differ from the template are
       kept and listed for review; files that do not apply (other trackers, Playwright, Prisma,
       empty MCP configs) and retired paths (.nitm/retired.json) are never added. Harness wrappers
       that inline policy are reported, not changed. Then re-emit the bootstrap handoff.
       A given --exclude/--only is saved to .nitm/toolkit.json and used by later patch/doctor runs.
+      A customised .nitm/BOOTSTRAP.md is kept, never backed up or replaced by patch.
+      --skip-path <path> (repeatable): leave out one literal file or directory for this run only, without
+      changing the saved selection. A real patch with skips needs --expect <token>: run the same command with
+      --dry-run first, review the plan, then apply with the Review token it prints.
 
   npx nitm-ai-dev-toolkit upgrade [version] [--env <env>] [--force] [--dry-run] [--exclude <groups>|--only <groups>]
       Upgrade to a pinned version: the given one (\`upgrade 5.0.1\`, \`upgrade nitm-ai-dev-toolkit@5.0.1\`,
@@ -1129,6 +1673,11 @@ Options:
                and snippets). Feature groups apply everywhere, including factory/ and shared
                skills such as .agents/skills/gh-cli. Pass --exclude "" to clear the saved selection.
                Cannot be combined with --only.
+  --skip-path <path>
+               patch/upgrade: leave out one literal repo-relative file or directory (whole segments, e.g.
+               factory or AGENTS.md; no globs). Repeatable. Not written and not saved. Needs --expect for a real run.
+  --expect <token>
+               patch/upgrade: apply only the plan that this Review token (from --dry-run) covers.
   --only <groups>
                Keep only the listed groups. Untagged shared files are still kept, as with --exclude.
                Same group names as --exclude. Cannot be combined with --exclude.
@@ -1161,6 +1710,10 @@ function main() {
       return;
     }
     const cmd = flags._[0];
+    // Only patch and upgrade take the review flags. Elsewhere they would be silently ignored, so refuse them.
+    if ((flags.skipPath || flags.expect !== undefined) && cmd !== 'patch' && cmd !== 'upgrade') {
+      throw new Error(`--skip-path and --expect are only for patch and upgrade, not ${cmd || 'this command'}`);
+    }
     switch (cmd) {
       case 'install': return cmdInstall(cwd, flags);
       case 'patch': return cmdPatch(cwd, flags);
@@ -1227,4 +1780,7 @@ module.exports = {
   relevanceOf: relevance.relevanceOf,
   auditWrappers: relevance.auditWrappers,
   countActions,
+  validateSkipPaths,
+  assertReviewOptions,
+  STOCK_HANDOFF_5_3_1,
 };

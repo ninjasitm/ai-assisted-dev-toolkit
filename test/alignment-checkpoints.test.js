@@ -65,11 +65,11 @@ for (const layout of LAYOUTS) {
   test(`${layout}: brief forbids findings from authorizing scope and sends goal changes to the user`, () => {
     const brief = read(layout, BRIEF);
     assert.match(brief, /A reviewer finding alone never authorizes new scope/);
-    assert.match(brief, /Oracle may authorize a justified expansion of planned or implementation work when its reply states the basis, the addition traces to a quoted original goal or explicit amendment, and no goal changes/);
-    assert.match(brief, /Such an expansion is a planner revision request, not a direct edit/);
+    assert.match(brief, /Oracle advice may recommend considering an in-goal expansion .* this advice is not permission to expand scope/);
+    assert.match(brief, /Such a possibility is a planner revision request, not a direct edit/);
     assert.match(brief, /an accepted spec or plan still needs its existing human confirmation/);
-    assert.match(brief, /A fallback reviewer \(not Oracle\) never authorizes expansion: it reports the expansion as a blocking finding marked `requires user decision; do not auto-repair`/);
-    assert.match(brief, /A goal-changing, out-of-goal, or ambiguous expansion is always `requires user decision; do not auto-repair`/);
+    assert.match(brief, /A fallback reviewer \(not Oracle\) reports a possible expansion as a blocking finding marked `requires user decision; do not auto-repair`/);
+    assert.match(brief, /A goal-changing, out-of-goal, or ambiguous expansion always requires a user decision/);
     assert.doesNotMatch(brief, /never authorizes new scope or plan expansion/, 'no absolute prohibition on every expansion');
     assert.match(brief, /A goal, accepted spec, or accepted plan change goes through the flow's existing reconfirm gate when it has one/);
     assert.match(brief, /Unrelated authorized work continues/);
@@ -499,10 +499,10 @@ for (const layout of LAYOUTS) {
     assert.match(factory, /Pass them as text, not as paths alone, with the job's overall summary and goals as context \(never as authority\)/);
   });
 
-  test(`${layout}: the fallback reviewer never inherits Oracle's expansion authority`, () => {
+  test(`${layout}: Oracle advice is not permission and fallback review remains independent`, () => {
     const b = read(layout, BRIEF);
-    assert.match(b, /A fallback reviewer \(not Oracle\) never authorizes expansion/);
-    assert.match(b, /so Oracle or the user decides/);
+    assert.match(b, /Oracle advice may recommend considering an in-goal expansion .* this advice is not permission to expand scope/);
+    assert.match(b, /A fallback reviewer \(not Oracle\) reports a possible expansion as a blocking finding/);
     const factory = read(layout, FACTORY);
     assert.match(factory, /`oracle` when the harness has it configured read-only, otherwise `reviewer` in fresh context\. Oracle reads and advises only: it never authors or edits a plan or code\./);
   });
@@ -514,9 +514,9 @@ for (const layout of LAYOUTS) {
 for (const layout of LAYOUTS) {
   test(`${layout}: pending expansion is CHANGES, never PASS, until the planner revision is reviewed and human confirmations complete`, () => {
     const b = read(layout, BRIEF);
-    assert.match(b, /A justified expansion is never a PASS: its verdict is `VERDICT: CHANGES` with a blocking finding marked `pending expansion; planner revision required`/);
-    assert.match(b, /Oracle's stated basis is not authority to implement the unrevised plan\./);
-    assert.match(b, /PASS is possible only after the planner's revision is independently reviewed by an alignment checkpoint again, and any applicable human confirmation for an accepted spec or plan is complete\./);
+    assert.match(b, /A proposed expansion is never a PASS: its verdict is `VERDICT: CHANGES` with a blocking finding marked `pending expansion; planner revision required`/);
+    assert.match(b, /Oracle's stated basis is not authority to implement an unrevised plan\./);
+    assert.match(b, /PASS is possible only after the planner's revision is independently reviewed again, and any applicable human confirmation for an accepted spec or plan is complete\./);
     const c = read(layout, IMPLEMENT);
     assert.match(c, /A pending expansion is a `CHANGES`, never a PASS, until the planner's revision is reviewed again\./);
   });

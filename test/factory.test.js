@@ -1118,7 +1118,8 @@ test('contradictions: AGENTS keeps the confirmations and states plan-only; the w
     const agents = srcText(tpl, 'AGENTS.md');
     assert.doesNotMatch(agents, /stops at a spec gate and a plan gate for your confirmation/, tpl + ': old contradiction gone');
     assert.match(agents, /stops at a plan gate for your confirmation before any ticket or build/, tpl + ': plan gate stated');
-    assert.match(agents, /Spec and plan confirmations stay mandatory human steps in every approval mode\. On the plan-only route there is no spec to confirm/, tpl + ': confirmations and plan-only');
+    assert.match(agents, /Spec and plan confirmations stay mandatory human steps in every approval mode\./, tpl + ': mandatory human confirmations');
+    assert.match(agents, /When the configured workflow supports and selects the plan-only route, there is no spec to confirm/, tpl + ': plan-only is conditional on configured support');
     assert.match(agents, /With `--retro`, each acceptance decision also saves an advisory retro report, which never changes a gate\./, tpl + ': retro sentence');
     const wrapper = srcText(tpl, '.claude', 'prompt-snippets', 'factory.md');
     assert.match(wrapper, /Spec before plan, on the spec route only: the spec gate holds the spec, and no plan is written until the operator confirms it in chat\. Drafting a spec is not approval\./, tpl + ': spec before plan');

@@ -107,19 +107,20 @@ for (const layout of LAYOUTS) {
     assert.ok(order, 'migration order section present');
     assert.ok(text.indexOf('## Migration order and approvals') < text.indexOf('## OpenCode migration guardrails'));
     assert.match(order, /The native migration \(Steps 2–11, for the selected route\) runs first/);
-    assert.match(order, /The pinned CLI refresh of the version marker \(Step 12\) runs second/);
-    assert.match(order, /Each phase has its own approval/);
+    assert.match(order, /The pinned CLI refresh \(Step 12\) runs second/);
+    assert.match(order, /Each phase has its own independent review and human approval/);
     assert.match(order, /Scope, before any write \(read-only\)/);
-    assert.match(order, /`node "\$SOURCE_ROOT\/bin\/cli\.js" patch --dry-run`/);
-    assert.match(order, /name each known difference with the native change that causes it/);
-    assert.match(order, /Review both candidate sets/);
-    assert.match(order, /If the CLI path is barred, the independently approved structural path still proceeds/);
+    assert.match(order, /verified pinned source that supports both review-token preview and `--expect`/);
+    assert.match(order, /pre-native preview, when available, is .* informational for planning only/);
+    assert.match(order, /Review the native candidate set/);
+    assert.match(order, /native-only path may continue only under its own required evidence, independent review, and human approval/);
     assert.match(order, /Approve and apply the native set/);
-    assert.match(order, /Check the CLI set against the actual state/);
-    assert.match(order, /Approve and apply the refresh/);
-    assert.match(order, /Alignment is not repeated when the scope is unchanged/);
+    assert.match(order, /Preview the actual post-native CLI set/);
+    assert.match(order, /Independently review and approve the exact post-native CLI set/);
+    assert.match(order, /Any changed write needs review and its own approval/);
     assert.match(order, /An earlier approval never covers a changed write/);
     assert.match(order, /A `--dry-run` executes no native operation and no CLI apply/);
+    assert.match(order, /may run the read-only pre-native preview in step 1, then stops/);
     assert.match(order, /Category-level permission to inspect is not write approval/);
   });
 
@@ -128,20 +129,22 @@ for (const layout of LAYOUTS) {
     assert.doesNotMatch(text, /npx nitm-ai-dev-toolkit patch/, 'no unpinned npx patch shortcut');
     const s12 = step(text, 12);
     assert.match(s12, /phase 2 of the Migration order/);
-    assert.match(s12, /same verified source and the same invocation as `bootstrap-patch\.md` step 5/);
-    assert.match(s12, /node "\$SOURCE_ROOT\/bin\/cli\.js" patch --dry-run/);
-    assert.match(s12, /compare it with the reviewed expected CLI set and before-state for this phase, not with the earlier pre-native output/);
+    assert.match(s12, /same verified pinned source and exact invocation as `bootstrap-patch\.md` step 5/);
+    assert.match(s12, /patch --<resolved-layout> --dry-run \[same selected flags\]/);
+    assert.match(s12, /against the actual post-native state/);
+    assert.match(s12, /explicit omissions, and a 64-hex review token/);
+    assert.match(s12, /fresh independent review and separate human approval of the exact new post-native set/);
     assert.match(s12, /Do not download a second copy/);
-    assert.match(s12, /\*\*STOP\*\* before any CLI write/);
+    assert.match(s12, /\*\*STOP before CLI writes\*\*/);
     assert.match(s12, /protected v3 mutation \(any `update` or `overwrite` of an existing snippet, wrapper, or other v3 file\)/);
-    assert.match(s12, /or any difference, overlap, or conflict that was not reviewed and approved/);
-    assert.match(s12, /Re-enter planning, review, and consent for the changed set, or leave the refresh pending/);
+    assert.match(s12, /any overlap\/difference is not already understood and explicitly reviewed/);
+    assert.match(s12, /Do not mint a replacement token and treat it as accepted/);
+    assert.match(s12, /byte-for-byte equals the token reviewed and approved above/);
+    assert.match(s12, /`\.toolkit-version` marker last among CLI writes/);
+    assert.match(s12, /Patch creates no automatic handoff backup/);
+    assert.match(s12, /`keep`, `skip`, and `unchanged` mean it remains byte-identical/);
     assert.match(s12, /Never write `\.toolkit-version` by hand/);
-    assert.match(s12, /Keep the `\.toolkit-version` value the CLI writes \(the installed package version, 4\.0\.0 or later; never hard-coded\)/);
-    assert.match(s12, /Handoff backup \(recorded action\):\*\*/);
-    assert.match(s12, /`create`, `replace \(old copy backed up\)`, or `no change`/);
-    assert.match(s12, /exactly one new `BOOTSTRAP\.<UTC stamp>\[-N\]\.md` must appear/);
-    assert.match(s12, /zero new automatic handoff backups must appear/);
+    assert.match(s12, /records the installed package version, never a hard-coded value/);
     assert.match(s12, /Report the native and marker outcomes separately/);
     assert.match(s12, /Never mark the migration complete from the marker alone/);
   });
@@ -178,9 +181,9 @@ for (const layout of LAYOUTS) {
   test(`${layout}/bootstrap-upgrade: source gate precedes any CLI preview; the reviewer covers the actual outcome; reports stay in chat`, () => {
     const text = snippet(layout, 'bootstrap-upgrade');
     const order = section(text, 'Migration order and approvals (v3 and legacy routes)');
-    assert.match(order, /first pass the source gate in `bootstrap-patch\.md` step 1, or reuse the source already verified in this run \(minimum 5\.2\.0\)/);
-    assert.match(order, /If the gate fails, run no CLI invocation at all/);
-    assert.ok(order.indexOf('source gate') < order.indexOf('patch --dry-run'), 'gate precedes the preview');
+    assert.match(order, /pass the source gate in `bootstrap-patch\.md` step 1, or reuse the source already verified in this run/);
+    assert.match(order, /If the source gate fails, run no CLI invocation at all/);
+    assert.ok(order.indexOf('source gate') < order.indexOf('patch --<resolved-layout>'), 'gate precedes the preview');
     const s13 = text.slice(text.search(/^### (?:Step )?13[.:]/m), text.search(/^### (?:Step )?14[.:]/m));
     assert.match(s13, /\*\*Independent review of the actual outcome\.\*\*/);
     assert.match(s13, /the native set alone when the refresh was barred/);
@@ -194,12 +197,16 @@ for (const layout of LAYOUTS) {
   });
 }
 
-test('README: the touched paragraphs describe template changes, state files and the handoff backup', () => {
+test('README: patch preserves owned state and distinguishes install handoff backup behavior', () => {
   const readme = read('README.md');
   assert.doesNotMatch(readme, /the CLI `patch` command only adds missing files/);
   assert.doesNotMatch(readme, /or `patch` to add only missing files/);
-  assert.match(readme, /The CLI `patch` command adds missing files, updates files you never changed, and writes its state files/);
-  assert.match(readme, /It never overwrites a template file you changed; the handoff is backed up before it is replaced/);
-  assert.match(readme, /`\.nitm\/backups\/BOOTSTRAP\.<UTC timestamp>\.md`/);
-  assert.match(readme, /A new `--only` or `--exclude` selection is saved to `\.nitm\/toolkit\.json`/);
+  assert.match(readme, /When the target supports reviewed patch behavior, normal `upgrade` follows it: adds a missing handoff, refreshes a proven toolkit-owned unchanged handoff, and keeps customized or ownership-unknown handoffs/);
+  assert.match(readme, /When the target supports reviewed patch behavior, normal `upgrade` follows it/);
+  assert.match(readme, /`upgrade --force` uses `install --force`, so it overwrites existing files; only the existing handoff has the handoff-specific backup behavior/);
+  assert.match(readme, /Review-token flags \(`--skip-path` and `--expect`\) require an exact target-version pin/);
+  assert.match(readme, /Plain patch detects all conflicts before writing/);
+  assert.match(readme, /backs up that handoff under `\.nitm\/backups\/` before replacing it/);
+  assert.match(readme, /This is not a general backup of forced template writes/);
+  assert.match(readme, /historically this required target 5\.0\.1\+/);
 });

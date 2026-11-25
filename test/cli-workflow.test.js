@@ -302,27 +302,55 @@ test('parseFlags: --exclude/--only take comma lists, an empty value clears; --ve
 
 // ---- handoff, version, manifest ----
 
-test('handoff: rewritten only when it differs; the previous copy is backed up, and repeat runs are no-ops', (t) => {
+test('handoff: a customised one is kept and never backed up; a toolkit-owned, unchanged one is refreshed', (t) => {
   const d = tmp(t);
   run(() => cli.cmdInstall(d, { repo: true }));
   const handoff = path.join(d, '.nitm', 'BOOTSTRAP.md');
+  const release = cli.envHeader('repo', undefined) + '\n\n' + fs.readFileSync(BOOTSTRAP_SRC, 'utf8');
   const first = snapshot(d);
   run(() => cli.cmdPatch(d, { repo: true }));
   assert.deepEqual(snapshot(d), first);
   assert.equal(fs.existsSync(path.join(d, '.nitm', 'backups')), false);
 
+  // Customised: kept byte for byte, no backup, and the decision is shown in the dry run.
   fs.writeFileSync(handoff, 'user edited handoff\n');
+  const dry = run(() => cli.cmdPatch(d, { repo: true, dryRun: true }));
+  assert.match(dry.out, /\.nitm\/BOOTSTRAP\.md: keep \(customized/);
   const patched = run(() => cli.cmdPatch(d, { repo: true }));
-  const backups = fs.readdirSync(path.join(d, '.nitm', 'backups'));
-  assert.equal(backups.length, 1);
-  assert.equal(fs.readFileSync(path.join(d, '.nitm', 'backups', backups[0]), 'utf8'), 'user edited handoff\n');
-  assert.equal(fs.readFileSync(handoff, 'utf8'),
-    cli.envHeader('repo', undefined) + '\n\n' + fs.readFileSync(BOOTSTRAP_SRC, 'utf8'));
-  assert.match(patched.out, /backed up to \.nitm[\\/]backups[\\/]/);
+  assert.equal(fs.readFileSync(handoff, 'utf8'), 'user edited handoff\n');
+  assert.equal(fs.existsSync(path.join(d, '.nitm', 'backups')), false);
+  assert.match(patched.out, /customized or of unknown origin: kept as is/);
 
   const again = snapshot(d);
   run(() => cli.cmdPatch(d, { repo: true }));
   assert.deepEqual(snapshot(d), again);
+
+  // Toolkit-owned and unchanged since the toolkit wrote it (the manifest recorded these bytes): refreshed.
+  const older = 'older release handoff\n';
+  fs.writeFileSync(handoff, older);
+  const manifestPath = path.join(d, '.nitm', 'manifest.json');
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  manifest.files['.nitm/BOOTSTRAP.md'] = sha(handoff);
+  fs.writeFileSync(manifestPath, JSON.stringify(manifest));
+  run(() => cli.cmdPatch(d, { repo: true }));
+  assert.equal(fs.readFileSync(handoff, 'utf8'), release);
+  assert.equal(JSON.parse(fs.readFileSync(manifestPath, 'utf8')).files['.nitm/BOOTSTRAP.md'], crypto.createHash('sha256').update(release).digest('hex'));
+  assert.equal(fs.existsSync(path.join(d, '.nitm', 'backups')), false);
+});
+
+test('install: a handoff that differs is still backed up and replaced (install --force behaviour is unchanged)', (t) => {
+  const d = tmp(t);
+  fs.mkdirSync(path.join(d, '.nitm'), { recursive: true });
+  fs.writeFileSync(path.join(d, '.nitm', 'BOOTSTRAP.md'), 'user edited handoff\n');
+  run(() => cli.cmdInstall(d, { repo: true }));
+  const backups = fs.readdirSync(path.join(d, '.nitm', 'backups'));
+  assert.equal(backups.length, 1);
+  assert.equal(fs.readFileSync(path.join(d, '.nitm', 'backups', backups[0]), 'utf8'), 'user edited handoff\n');
+  assert.equal(fs.readFileSync(path.join(d, '.nitm', 'BOOTSTRAP.md'), 'utf8'),
+    cli.envHeader('repo', undefined) + '\n\n' + fs.readFileSync(BOOTSTRAP_SRC, 'utf8'));
+  // Install now records the handoff it wrote, so a later patch can tell it apart from an edit.
+  const manifest = JSON.parse(fs.readFileSync(path.join(d, '.nitm', 'manifest.json'), 'utf8'));
+  assert.equal(manifest.files['.nitm/BOOTSTRAP.md'], sha(path.join(d, '.nitm', 'BOOTSTRAP.md')));
 });
 
 test('.toolkit-version: written by install and patch, mismatch and missing reported by doctor', (t) => {
@@ -359,6 +387,7 @@ test('manifest: records owned template paths and hashes; a user-changed file is 
   for (const rel of cli.templateFiles('repo')) {
     expected[cli.installName(rel)] = sha(path.join(SRC, 'repo', rel));
   }
+  expected['.nitm/BOOTSTRAP.md'] = sha(path.join(d, '.nitm', 'BOOTSTRAP.md'));
   assert.deepEqual(manifest.files, expected);
 
   const bytes = fs.readFileSync(manifestPath, 'utf8');
@@ -529,21 +558,16 @@ test('upgrade dry run that finds conflicts reports that, not a failed upgrade', 
   assert.equal(r.exitCode, 1);
 });
 
-test('backups: a second replacement in the same millisecond gets a new name, earlier backups survive', (t) => {
+test('backups: patch writes none, so repeated patches never create or replace backup files', (t) => {
   const d = tmp(t);
   run(() => cli.cmdInstall(d, { repo: true }));
   const handoff = path.join(d, '.nitm', 'BOOTSTRAP.md');
-  const realIso = Date.prototype.toISOString;
-  Date.prototype.toISOString = () => '2026-01-01T00:00:00.000Z'; // fixed stamp: every backup collides
-  t.after(() => { Date.prototype.toISOString = realIso; });
   fs.writeFileSync(handoff, 'first edit\n');
   run(() => cli.cmdPatch(d, { repo: true }));
   fs.writeFileSync(handoff, 'second edit\n');
   run(() => cli.cmdPatch(d, { repo: true }));
-  const backups = fs.readdirSync(path.join(d, '.nitm', 'backups')).sort();
-  assert.equal(backups.length, 2);
-  const contents = backups.map((b) => fs.readFileSync(path.join(d, '.nitm', 'backups', b), 'utf8')).sort();
-  assert.deepEqual(contents, ['first edit\n', 'second edit\n']);
+  assert.equal(fs.existsSync(path.join(d, '.nitm', 'backups')), false);
+  assert.equal(fs.readFileSync(handoff, 'utf8'), 'second edit\n');
 });
 
 test('customizedOwned: manifest keys that are absolute or escape the target are ignored; keys use /', (t) => {

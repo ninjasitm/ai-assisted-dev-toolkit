@@ -71,7 +71,10 @@ for (const layout of ['repo', 'monorepo']) {
     assert.match(apply, /an explicit flag first; otherwise a readable `package\.json` with a `workspaces` field, or both `apps\/` and `packages\/` at root, means monorepo; otherwise repo/);
     assert.match(apply, /`--env <env>` only when the user confirmed one/);
     assert.match(apply, /Otherwise pass neither, and both runs use the same saved `\.nitm\/toolkit\.json`\. Never pass both flags/);
-    assert.match(apply, /Only `--dry-run` differs between the preview and the apply/);
+    assert.match(apply, /removing `--dry-run` and adding `--expect <review-token>`/);
+    assert.match(prompt, /initial preview command must include the selected layout and every invocation flag, including every `--skip-path`/);
+    assert.match(prompt, /repeatable `--skip-path <literal-repo-relative-file-or-directory>`/);
+    assert.match(prompt, /without changing saved `\.nitm\/toolkit\.json` categories/);
     assert.match(fetch, /node "\$SOURCE_ROOT\/bin\/cli\.js" patch/);
     assert.doesNotMatch(prompt, /npx nitm-ai-dev-toolkit patch/, 'no unpinned second resolution');
     assert.doesNotMatch(prompt, /upgrade@<version>/, 'the CLI pin is `upgrade <version>` or `--version <version>`');
@@ -84,7 +87,7 @@ for (const layout of ['repo', 'monorepo']) {
     assert.match(review, /Write a short plan in chat/);
     assert.match(review, /No persistent plan file and no new artifact schema/);
     assert.match(review, /independent, read-only alignment reviewer/);
-    assert.match(review, /Proceed only on `ALIGNED`/);
+    assert.match(review, /`ALIGNED` addresses alignment only: it is not approval of the exact write set and grants no permission to expand scope/);
     assert.match(review, /do not start the builder/);
     assert.match(review, /The builder \(not the reviewer\)/);
     assert.match(review, /independent read-only reviewer checks the same write set/);
@@ -93,19 +96,19 @@ for (const layout of ['repo', 'monorepo']) {
     assert.match(review, /two consecutive rounds return the same findings with no new evidence/);
     assert.match(review, /An unavailable reviewer or check is \*\*BLOCKED\*\*, never a pass/);
     assert.match(review, /With `--dry-run`, complete the report and the compiled write set from the verified source, then stop\. Do not ask to apply, and write nothing/);
-    assert.match(review, /A reviewer PASS is not approval to write/);
+    assert.match(review, /`ALIGNED` and the independent `VERDICT: PASS` are separate guide-specific gates; neither is approval to write/);
   });
 
-  test(`${layout}: one compiled write set covers CLI state, the handoff backup, manual changes, before-states and the bounded backup`, () => {
+  test(`${layout}: one compiled write set covers CLI state, handoff preservation, manual changes and before-states`, () => {
     assert.match(review, /Compile one write set/);
-    assert.match(review, /`\.toolkit-version`, `\.nitm\/manifest\.json`, `\.nitm\/toolkit\.json` when a selection is saved, and `\.nitm\/BOOTSTRAP\.md`/);
-    assert.match(review, /Record each path's before-state \(absent, or its sha256\)/);
-    assert.match(review, /Handoff backup \(a separate operation\)/);
-    assert.match(review, /replace \(old copy backed up\)`, not the path/);
-    assert.match(review, /exactly one new `BOOTSTRAP\.\*\.md` must match that sha256/);
+    assert.match(review, /including `\.toolkit-version`, `\.nitm\/manifest\.json`, `\.nitm\/toolkit\.json` when applicable, and `\.nitm\/BOOTSTRAP\.md`/);
+    assert.match(review, /Record the preview's review token and each target's before-state/);
+    assert.match(review, /refreshed only when proven toolkit-owned and unchanged/);
+    assert.match(review, /customized or ownership is unknown/);
+    assert.match(review, /patch does not create a handoff backup/);
+    assert.match(review, /every `--skip-path` is excluded from the entire guided write set, including manual smart merges, wrapper\/config edits, cleanup, and backups/);
     assert.match(review, /`\.nitm\/retired\.json` record, and every reference, hook, or config change/);
     assert.match(review, /copy each affected existing file to `\.nitm\/backups\/patch-<UTC timestamp>\/` at its relative path/);
-    assert.match(review, /names the directory and the source set, not a filename/);
     assert.match(review, /Never overwrite a backup/);
   });
 
@@ -114,11 +117,14 @@ for (const layout of ['repo', 'monorepo']) {
     assert.match(apply, /answers to any unresolved required question/);
     assert.match(apply, /A widened category or selection needs a fresh preview and proposal review/);
     assert.match(apply, /A material change \(scope, criteria, or source\) needs planning, the Oracle alignment, and renewed user consent/);
-    assert.match(apply, /Revalidate immediately before any target write, including backups/);
-    assert.match(apply, /before-state of every listed input and target/);
-    assert.match(apply, /return to the compiled write set and its review, and ask again/);
-    assert.match(apply, /make the bounded backup from the write set first, then run the CLI apply, then verify the handoff backup against its recorded sha256, then do the manual writes/);
-    assert.match(apply, /Do not run the apply while the dry run reports conflicts \(exit 1\)/);
+    assert.match(apply, /Revalidate immediately before any target write/);
+    assert.match(apply, /token supplied to `--expect` is byte-for-byte the reviewed 64-hex token/);
+    assert.match(apply, /stop with no writes and return to the preview\/review gates/);
+    assert.match(apply, /run the CLI apply with the reviewed token first/);
+    assert.match(apply, /Only after successful CLI apply, revalidate each manual-only target/);
+    assert.match(apply, /stop without writes if any reviewed target or protected state changed after preview/);
+    assert.match(apply, /version marker is written last and only after approved writes succeed/);
+    assert.match(apply, /Manifest hashes are recorded only for files matching release bytes/);
     assert.match(apply, /On confirmation:/);
     assert.match(apply, /[Dd]o not copy template files by hand/);
     assert.match(apply, /Do not delete files to retire them/);
